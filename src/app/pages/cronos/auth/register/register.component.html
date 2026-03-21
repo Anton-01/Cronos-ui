@@ -1,0 +1,90 @@
+<!--begin::Form-->
+<form class="form w-100" [formGroup]="registerForm" novalidate (ngSubmit)="submit()">
+  <div class="text-center mb-11">
+    <h1 class="text-gray-900 fw-bolder mb-3">Crear Cuenta</h1>
+    <div class="text-gray-500 fw-semibold fs-6">Cronos - Registro</div>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="mb-lg-15 alert alert-danger">
+      <div class="alert-text font-weight-bold">{{ errorMessage() }}</div>
+    </div>
+  }
+
+  <div class="fv-row mb-8">
+    <label class="form-label fs-6 fw-bolder text-gray-900">Usuario</label>
+    <input class="form-control bg-transparent" type="text" formControlName="username" autocomplete="off"
+      [class.is-invalid]="registerForm.controls['username'].invalid && registerForm.controls['username'].touched" />
+    @if (registerForm.controls['username'].hasError('required') && registerForm.controls['username'].touched) {
+      <div class="fv-plugins-message-container"><span role="alert">El usuario es requerido</span></div>
+    }
+  </div>
+
+  <div class="fv-row mb-8">
+    <label class="form-label fs-6 fw-bolder text-gray-900">Email</label>
+    <input class="form-control bg-transparent" type="email" formControlName="email" autocomplete="off"
+      [class.is-invalid]="registerForm.controls['email'].invalid && registerForm.controls['email'].touched" />
+    @if (registerForm.controls['email'].hasError('required') && registerForm.controls['email'].touched) {
+      <div class="fv-plugins-message-container"><span role="alert">El email es requerido</span></div>
+    }
+    @if (registerForm.controls['email'].hasError('email') && registerForm.controls['email'].touched) {
+      <div class="fv-plugins-message-container"><span role="alert">El email no es válido</span></div>
+    }
+  </div>
+
+  <div class="row mb-8">
+    <div class="col-md-6 fv-row">
+      <label class="form-label fs-6 fw-bolder text-gray-900">Nombre</label>
+      <input class="form-control bg-transparent" type="text" formControlName="firstName" autocomplete="off" />
+    </div>
+    <div class="col-md-6 fv-row">
+      <label class="form-label fs-6 fw-bolder text-gray-900">Apellido</label>
+      <input class="form-control bg-transparent" type="text" formControlName="lastName" autocomplete="off" />
+    </div>
+  </div>
+
+  <div class="fv-row mb-8">
+    <label class="form-label fs-6 fw-bolder text-gray-900">Teléfono</label>
+    <input class="form-control bg-transparent" type="text" formControlName="phoneNumber" autocomplete="off" />
+  </div>
+
+  <div class="fv-row mb-8">
+    <label class="form-label fw-bolder text-gray-900 fs-6">Contraseña</label>
+    <input class="form-control bg-transparent" type="password" formControlName="password" autocomplete="off"
+      [class.is-invalid]="registerForm.controls['password'].invalid && registerForm.controls['password'].touched" />
+    @if (registerForm.controls['password'].hasError('required') && registerForm.controls['password'].touched) {
+      <div class="fv-plugins-message-container"><span role="alert">La contraseña es requerida</span></div>
+    }
+    @if (registerForm.controls['password'].hasError('minlength') && registerForm.controls['password'].touched) {
+      <div class="fv-plugins-message-container"><span role="alert">Mínimo 6 caracteres</span></div>
+    }
+  </div>
+
+  <div class="fv-row mb-8">
+    <label class="form-label fw-bolder text-gray-900 fs-6">Confirmar Contraseña</label>
+    <input class="form-control bg-transparent" type="password" formControlName="confirmPassword" autocomplete="off"
+      [class.is-invalid]="registerForm.hasError('passwordMismatch') && registerForm.controls['confirmPassword'].touched" />
+    @if (registerForm.hasError('passwordMismatch') && registerForm.controls['confirmPassword'].touched) {
+      <div class="fv-plugins-message-container"><span role="alert">Las contraseñas no coinciden</span></div>
+    }
+  </div>
+
+  <div class="d-grid mb-10">
+    <button type="submit" class="btn btn-primary" [disabled]="registerForm.invalid || isLoading()">
+      @if (isLoading()) {
+        <span class="indicator-progress" style="display: block;">
+          Espera...
+          <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+        </span>
+      } @else {
+        <span class="indicator-label">Registrarse</span>
+      }
+    </button>
+  </div>
+
+  <div class="text-gray-500 text-center fw-semibold fs-6">
+    ¿Ya tienes cuenta?
+    <a routerLink="/auth/login" class="link-primary">Inicia sesión</a>
+  </div>
+</form>
+<!--end::Form-->

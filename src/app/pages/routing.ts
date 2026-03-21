@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { roleGuard } from '../core/guards/role.guard';
 
 const Routing: Routes = [
   {
@@ -12,27 +13,22 @@ const Routing: Routes = [
   {
     path: 'crafted/pages/profile',
     loadChildren: () => import('../modules/profile/profile.module').then((m) => m.ProfileModule),
-    // data: { layout: 'light-sidebar' },
   },
   {
     path: 'crafted/account',
     loadChildren: () => import('../modules/account/account.module').then((m) => m.AccountModule),
-    // data: { layout: 'dark-header' },
   },
   {
     path: 'crafted/pages/wizards',
     loadChildren: () => import('../modules/wizards/wizards.module').then((m) => m.WizardsModule),
-    // data: { layout: 'light-header' },
   },
   {
     path: 'crafted/widgets',
     loadChildren: () => import('../modules/widgets-examples/widgets-examples.module').then((m) => m.WidgetsExamplesModule),
-    // data: { layout: 'light-header' },
   },
   {
     path: 'apps/chat',
     loadChildren: () => import('../modules/apps/chat/chat.module').then((m) => m.ChatModule),
-    // data: { layout: 'light-sidebar' },
   },
   {
     path: 'apps/users',
@@ -45,6 +41,43 @@ const Routing: Routes = [
   {
     path: 'apps/permissions',
     loadChildren: () => import('./permission/permission.module').then((m) => m.PermissionModule),
+  },
+  // ─── Cronos CRUD Routes ───
+  {
+    path: 'cronos/tipos-unidad',
+    loadComponent: () => import('./cronos/tipos-unidad/tipos-unidad.component').then(m => m.TiposUnidadComponent),
+  },
+  {
+    path: 'cronos/categorias',
+    loadComponent: () => import('./cronos/categorias/categorias.component').then(m => m.CategoriasComponent),
+  },
+  {
+    path: 'cronos/alergenos',
+    loadComponent: () => import('./cronos/alergenos/alergenos.component').then(m => m.AlergenosComponent),
+  },
+  {
+    path: 'cronos/unidades-medida',
+    loadComponent: () => import('./cronos/unidades-medida/unidades-medida.component').then(m => m.UnidadesMedidaComponent),
+  },
+  {
+    path: 'cronos/ingredientes',
+    loadComponent: () => import('./cronos/ingredientes/ingredientes.component').then(m => m.IngredientesComponent),
+  },
+  // ─── Cuenta ───
+  {
+    path: 'cronos/cuenta/mi-cuenta',
+    loadComponent: () => import('./cronos/cuenta/mi-cuenta/mi-cuenta.component').then(m => m.MiCuentaComponent),
+  },
+  {
+    path: 'cronos/cuenta/seguridad',
+    loadComponent: () => import('./cronos/cuenta/seguridad/seguridad.component').then(m => m.SeguridadComponent),
+  },
+  // ─── Admin (role-guarded) ───
+  {
+    path: 'cronos/admin/usuarios',
+    loadComponent: () => import('./cronos/admin/user-management/user-management.component').then(m => m.UserManagementComponent),
+    canActivate: [roleGuard],
+    data: { role: 'ADMIN' },
   },
   {
     path: '',

@@ -1,0 +1,65 @@
+<div class="card">
+  <div class="card-header border-0 pt-6">
+    <div class="card-title"><h2>Tipos de Unidad</h2></div>
+    <div class="card-toolbar">
+      <button class="btn btn-primary btn-sm" (click)="openCreate()"><i class="ki-duotone ki-plus fs-2"></i> Nuevo Tipo</button>
+    </div>
+  </div>
+  <div class="card-body py-4">
+    @if (isLoading()) {
+      <div class="d-flex justify-content-center py-10"><span class="spinner-border text-primary"></span></div>
+    } @else if (errorMessage()) {
+      <div class="alert alert-danger">{{ errorMessage() }}</div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table align-middle table-row-dashed fs-6 gy-5">
+          <thead><tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+            <th class="min-w-50px">ID</th><th class="min-w-125px">Nombre</th><th class="min-w-200px">Descripción</th><th class="min-w-100px">Creado</th><th class="text-end min-w-100px">Acciones</th>
+          </tr></thead>
+          <tbody class="text-gray-600 fw-semibold">
+            @for (item of items(); track item.id) {
+              <tr>
+                <td>{{ item.id }}</td><td>{{ item.name }}</td><td>{{ item.description || '-' }}</td><td>{{ item.createdAt | date:'dd/MM/yyyy' }}</td>
+                <td class="text-end">
+                  <button class="btn btn-icon btn-light-primary btn-sm me-1" (click)="openEdit(item)"><i class="ki-duotone ki-pencil fs-6"></i></button>
+                  <button class="btn btn-icon btn-light-danger btn-sm" (click)="openDelete(item)"><i class="ki-duotone ki-trash fs-6"></i></button>
+                </td>
+              </tr>
+            } @empty { <tr><td colspan="5" class="text-center text-muted py-10">No hay tipos de unidad registrados</td></tr> }
+          </tbody>
+        </table>
+      </div>
+      @if (totalPages() > 1) {
+        <div class="d-flex justify-content-between align-items-center mt-5">
+          <span class="text-muted">Total: {{ totalElements() }} registros</span>
+          <ul class="pagination">@for (p of pages; track p) { <li class="page-item" [class.active]="p === pageRequest.page"><a class="page-link cursor-pointer" (click)="goToPage(p)">{{ p + 1 }}</a></li> }</ul>
+        </div>
+      }
+    }
+  </div>
+</div>
+@if (showForm()) {
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">{{ selectedItem() ? 'Editar' : 'Nuevo' }} Tipo de Unidad</h5><button type="button" class="btn-close" (click)="closeForm()"></button></div>
+    <form [formGroup]="form" (ngSubmit)="saveForm()">
+      <div class="modal-body">
+        <div class="fv-row mb-7"><label class="required fw-semibold fs-6 mb-2">Nombre</label><input type="text" class="form-control" formControlName="name" /></div>
+        <div class="fv-row mb-7"><label class="fw-semibold fs-6 mb-2">Descripción</label><textarea class="form-control" formControlName="description" rows="3"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="closeForm()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || isSaving()">@if (isSaving()) { <span class="spinner-border spinner-border-sm me-2"></span> } {{ selectedItem() ? 'Actualizar' : 'Crear' }}</button>
+      </div>
+    </form>
+  </div></div></div>
+}
+@if (showDeleteModal()) {
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Confirmar eliminación</h5><button type="button" class="btn-close" (click)="closeDeleteModal()"></button></div>
+    <div class="modal-body"><p>¿Eliminar <strong>{{ deletingItem()?.name }}</strong>?</p></div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light" (click)="closeDeleteModal()">Cancelar</button>
+      <button type="button" class="btn btn-danger" (click)="confirmDelete()" [disabled]="isDeleting()">@if (isDeleting()) { <span class="spinner-border spinner-border-sm me-2"></span> } Eliminar</button>
+    </div>
+  </div></div></div>
+}

@@ -1,8 +1,16 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { AuthGuard } from './modules/auth/services/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
 
 export const routes: Routes = [
+  {
+    path: 'oauth2-callback',
+    loadComponent: () =>
+      import('./pages/cronos/auth/oauth2-callback/oauth2-callback.component').then(
+        (m) => m.OAuth2CallbackComponent
+      ),
+  },
   {
     path: 'auth',
     loadChildren: () =>
