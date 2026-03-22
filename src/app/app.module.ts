@@ -13,6 +13,7 @@ import { AuthService } from './modules/auth/services/auth.service';
 import { environment } from 'src/environments/environment';
 import { SweetAlert2Module } from '@sweetalert2/ngx-sweetalert2';
 import { ToastContainerComponent } from './shared/components/toast-container/toast-container.component';
+import { GlobalAlertContainerComponent } from './shared/components/global-alert-container/global-alert-container.component';
 import { AuthInterceptorService } from './core/interceptors/auth-interceptor.service';
 import { ErrorInterceptorService } from './core/interceptors/error-interceptor.service';
 // #fake-start#
@@ -49,6 +50,7 @@ function appInitializer(authService: AuthService) {
     NgbModule,
     SweetAlert2Module.forRoot(),
     ToastContainerComponent,
+    GlobalAlertContainerComponent,
   ],
   providers: [
     {

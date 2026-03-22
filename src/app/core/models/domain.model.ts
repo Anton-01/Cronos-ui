@@ -40,19 +40,21 @@ export interface UpdateAllergenRequest {
 // Tipos de Unidad
 export interface UnitTypeResponse {
   id: number;
+  codeIdentity: string;
   name: string;
-  description: string | null;
-  createdAt: string;
-  updatedAt: string;
+  dimension: string;
+  status: 'ACTIVE' | 'INACTIVE';
 }
 export interface CreateUnitTypeRequest {
+  codeIdentity: string;
   name: string;
-  description?: string;
+  dimension: string;
 }
 export interface UpdateUnitTypeRequest {
   id: number;
+  codeIdentity: string;
   name: string;
-  description?: string;
+  dimension: string;
 }
 
 // Unidades de Medida

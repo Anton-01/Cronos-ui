@@ -1,7 +1,8 @@
 import { Component, HostBinding, OnDestroy, OnInit } from '@angular/core';
-import { Observable, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { TranslationService } from '../../../../../../modules/i18n';
-import { AuthService, UserType } from '../../../../../../modules/auth';
+import { AuthService as CoreAuthService } from '../../../../../../core/services/auth.service';
+import { TokenService } from '../../../../../../core/services/token.service';
 
 @Component({
   selector: 'app-user-inner',
@@ -13,29 +14,33 @@ export class UserInnerComponent implements OnInit, OnDestroy {
   @HostBinding('attr.data-kt-menu') dataKtMenu = 'true';
 
   language: LanguageFlag;
-  user$: Observable<UserType>;
   langs = languages;
   private unsubscribe: Subscription[] = [];
 
+  userName = '';
+  userEmail = '';
+  userRole = '';
+
   constructor(
-    private auth: AuthService,
+    private coreAuth: CoreAuthService,
+    private tokenService: TokenService,
     private translationService: TranslationService
   ) {}
 
   ngOnInit(): void {
-    this.user$ = this.auth.currentUserSubject.asObservable();
+    this.userName = this.tokenService.getUsername();
+    this.userEmail = this.tokenService.getEmail();
+    this.userRole = this.tokenService.getPrimaryRole();
     this.setLanguage(this.translationService.getSelectedLanguage());
   }
 
   logout() {
-    this.auth.logout();
-    document.location.reload();
+    this.coreAuth.performLogout();
   }
 
   selectLanguage(lang: string) {
     this.translationService.setLanguage(lang);
     this.setLanguage(lang);
-    // document.location.reload();
   }
 
   setLanguage(lang: string) {

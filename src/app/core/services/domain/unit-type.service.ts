@@ -11,11 +11,14 @@ export class UnitTypeService {
   private readonly API = environment.apiUrl + '/unit-types';
   private http = inject(HttpClient);
 
-  getAll(params: PageRequest): Observable<ApiResponse<Page<UnitTypeResponse>>> {
-    const httpParams = new HttpParams()
+  getAll(params: PageRequest, search?: string): Observable<ApiResponse<Page<UnitTypeResponse>>> {
+    let httpParams = new HttpParams()
       .set('page', params.page.toString())
       .set('size', params.size.toString())
       .set('sort', params.sort ?? 'name,asc');
+    if (search) {
+      httpParams = httpParams.set('search', search);
+    }
     return this.http.get<ApiResponse<Page<UnitTypeResponse>>>(this.API, { params: httpParams });
   }
 

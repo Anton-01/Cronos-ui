@@ -10,7 +10,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, catchError, filter, switchMap, take, throwError } from 'rxjs';
 import { TokenService } from '../services/token.service';
 import { AuthService } from '../services/auth.service';
-import { ToastService } from '../../shared/services/toast.service';
+import { AlertService } from '../../shared/services/alert.service';
 
 /**
  * HTTP interceptor that handles 401 errors with automatic JWT refresh.
@@ -41,7 +41,7 @@ export class ErrorInterceptorService implements HttpInterceptor {
     private tokenService: TokenService,
     private authService: AuthService,
     private router: Router,
-    private toast: ToastService
+    private alertService: AlertService
   ) {}
 
   intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
@@ -64,11 +64,11 @@ export class ErrorInterceptorService implements HttpInterceptor {
 
         // Case 3: 403/404/500 → toast error, do NOT logout
         if (error.status === 403) {
-          this.toast.error('Acceso denegado', error.error?.message || 'No tienes permisos para esta acción');
+          this.alertService.error(error.error?.message || 'No tienes permisos para esta acción', 'Acceso denegado');
         } else if (error.status === 404) {
-          this.toast.error('No encontrado', error.error?.message || 'El recurso no fue encontrado');
+          this.alertService.error(error.error?.message || 'El recurso no fue encontrado', 'No encontrado');
         } else if (error.status >= 500) {
-          this.toast.error('Error del servidor', error.error?.message || 'Ocurrió un error interno');
+          this.alertService.error(error.error?.message || 'Ocurrió un error interno', 'Error del servidor');
         }
 
         return throwError(() => error.error || error);
@@ -127,7 +127,7 @@ export class ErrorInterceptorService implements HttpInterceptor {
   }
 
   private performLogoutAndRedirect(): void {
-    this.toast.error('Sesión expirada', 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+    this.alertService.error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', 'Sesión expirada');
     this.tokenService.clearTokens();
     this.router.navigate(['/auth/login']);
   }

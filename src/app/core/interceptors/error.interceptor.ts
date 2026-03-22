@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, catchError, filter, switchMap, take, throwError } from 'rxjs';
 import { TokenService } from '../services/token.service';
 import { AuthService } from '../services/auth.service';
-import { ToastService } from '../../shared/services/toast.service';
+import { AlertService } from '../../shared/services/alert.service';
 
 /**
  * Functional HTTP interceptor for automatic JWT refresh on 401 errors.
@@ -34,7 +34,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const tokenService = inject(TokenService);
   const authService = inject(AuthService);
   const router = inject(Router);
-  const toast = inject(ToastService);
+  const alertService = inject(AlertService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
@@ -44,22 +44,22 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         !req.url.includes('/auth/refresh') &&
         !req.url.includes('/auth/login')
       ) {
-        return handle401(req, next, tokenService, authService, router, toast);
+        return handle401(req, next, tokenService, authService, router, alertService);
       }
 
       // Case 2: 401 on /auth/refresh → refresh token expired/revoked
       if (error.status === 401 && req.url.includes('/auth/refresh')) {
-        performLogoutAndRedirect(tokenService, router, toast);
+        performLogoutAndRedirect(tokenService, router, alertService);
         return throwError(() => error.error);
       }
 
-      // Case 3: 403/404/500 → toast error, do NOT logout
+      // Case 3: 403/404/500 → alert error, do NOT logout
       if (error.status === 403) {
-        toast.error('Acceso denegado', error.error?.message || 'No tienes permisos para esta acción');
+        alertService.error(error.error?.message || 'No tienes permisos para esta acción', 'Acceso denegado');
       } else if (error.status === 404) {
-        toast.error('No encontrado', error.error?.message || 'El recurso no fue encontrado');
+        alertService.error(error.error?.message || 'El recurso no fue encontrado', 'No encontrado');
       } else if (error.status >= 500) {
-        toast.error('Error del servidor', error.error?.message || 'Ocurrió un error interno');
+        alertService.error(error.error?.message || 'Ocurrió un error interno', 'Error del servidor');
       }
 
       // Case 4: propagate error
@@ -74,7 +74,7 @@ function handle401(
   tokenService: TokenService,
   authService: AuthService,
   router: Router,
-  toast: ToastService
+  alertService: AlertService
 ): Observable<HttpEvent<unknown>> {
   if (!isRefreshing) {
     isRefreshing = true;
@@ -84,7 +84,7 @@ function handle401(
     if (!rt) {
       isRefreshing = false;
       refreshTokenSubject.next(REFRESH_FAILED);
-      performLogoutAndRedirect(tokenService, router, toast);
+      performLogoutAndRedirect(tokenService, router, alertService);
       return throwError(() => ({ message: 'No refresh token available' }));
     }
 
@@ -99,7 +99,7 @@ function handle401(
         isRefreshing = false;
         // Emit sentinel so queued requests unblock and fail gracefully
         refreshTokenSubject.next(REFRESH_FAILED);
-        performLogoutAndRedirect(tokenService, router, toast);
+        performLogoutAndRedirect(tokenService, router, alertService);
         return throwError(() => err?.error || err);
       })
     );
@@ -122,9 +122,9 @@ function handle401(
 function performLogoutAndRedirect(
   tokenService: TokenService,
   router: Router,
-  toast: ToastService
+  alertService: AlertService
 ): void {
-  toast.error('Sesión expirada', 'Tu sesión ha expirado. Por favor, inicia sesión nuevamente.');
+  alertService.error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', 'Sesión expirada');
   tokenService.clearTokens();
   router.navigate(['/auth/login']);
 }
