@@ -29,7 +29,7 @@
         <span class="spinner-border text-primary"></span>
       </div>
     } @else if (errorMessage()) {
-      <div class="alert bg-light-danger text-danger border border-danger border-dashed d-flex align-items-center p-5 mb-5">
+      <div class="alert bg-light-danger text-danger d-flex align-items-center p-5 mb-5">
         <i class="ki-duotone ki-information-5 fs-2hx text-danger me-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
         <div class="d-flex flex-column">
           <span class="fw-bold">Error</span>
@@ -113,6 +113,12 @@
         </div>
         <form [formGroup]="form" (ngSubmit)="saveForm()">
           <div class="modal-body">
+            @if (!selectedItem()) {
+              <div class="d-flex bg-light-info rounded p-4 mb-7">
+                <i class="ki-duotone ki-information fs-2 text-info me-3 mt-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                <div class="text-gray-700 fs-7">El registro se dará de alta con el estatus de <strong>Activo</strong> por defecto.</div>
+              </div>
+            }
             <div class="fv-row mb-7">
               <label class="required fw-semibold fs-6 mb-2">Código Identificador</label>
               <input type="text" class="form-control form-control-solid" formControlName="codeIdentity" placeholder="Ej: COUNT, WEIGHT" />

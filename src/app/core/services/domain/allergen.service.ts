@@ -11,11 +11,14 @@ export class AllergenService {
   private readonly API = environment.apiUrl + '/allergen';
   private http = inject(HttpClient);
 
-  getAll(params: PageRequest): Observable<ApiResponse<Page<AllergenResponse>>> {
-    const httpParams = new HttpParams()
+  getAll(params: PageRequest, search?: string): Observable<ApiResponse<Page<AllergenResponse>>> {
+    let httpParams = new HttpParams()
       .set('page', params.page.toString())
       .set('size', params.size.toString())
       .set('sort', params.sort ?? 'name,asc');
+    if (search) {
+      httpParams = httpParams.set('search', search);
+    }
     return this.http.get<ApiResponse<Page<AllergenResponse>>>(this.API, { params: httpParams });
   }
 

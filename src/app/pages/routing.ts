@@ -63,6 +63,14 @@ const Routing: Routes = [
     path: 'cronos/ingredientes',
     loadComponent: () => import('./cronos/ingredientes/ingredientes.component').then(m => m.IngredientesComponent),
   },
+  {
+    path: 'cronos/ingredientes/nuevo',
+    loadComponent: () => import('./cronos/ingredientes/ingrediente-form/ingrediente-form.component').then(m => m.IngredienteFormComponent),
+  },
+  {
+    path: 'cronos/ingredientes/editar/:id',
+    loadComponent: () => import('./cronos/ingredientes/ingrediente-form/ingrediente-form.component').then(m => m.IngredienteFormComponent),
+  },
   // ─── Cuenta ───
   {
     path: 'cronos/cuenta/mi-cuenta',

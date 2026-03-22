@@ -11,11 +11,14 @@ export class MeasurementUnitService {
   private readonly API = environment.apiUrl + '/measurement-unit';
   private http = inject(HttpClient);
 
-  getAll(params: PageRequest): Observable<ApiResponse<Page<MeasurementUnitResponse>>> {
-    const httpParams = new HttpParams()
+  getAll(params: PageRequest, search?: string): Observable<ApiResponse<Page<MeasurementUnitResponse>>> {
+    let httpParams = new HttpParams()
       .set('page', params.page.toString())
       .set('size', params.size.toString())
       .set('sort', params.sort ?? 'name,asc');
+    if (search) {
+      httpParams = httpParams.set('search', search);
+    }
     return this.http.get<ApiResponse<Page<MeasurementUnitResponse>>>(`${this.API}/system`, { params: httpParams });
   }
 

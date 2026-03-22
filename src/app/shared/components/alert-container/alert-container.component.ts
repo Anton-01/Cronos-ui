@@ -10,18 +10,14 @@ import { AlertService } from '../../services/alert.service';
     @for (alert of alertService.alerts(); track alert.id) {
       <div class="alert d-flex align-items-center p-5 mb-5"
         [class.bg-light-success]="alert.type === 'success'"
-        [class.border-success]="alert.type === 'success'"
         [class.text-success]="alert.type === 'success'"
         [class.bg-light-danger]="alert.type === 'danger'"
-        [class.border-danger]="alert.type === 'danger'"
         [class.text-danger]="alert.type === 'danger'"
         [class.bg-light-warning]="alert.type === 'warning'"
-        [class.border-warning]="alert.type === 'warning'"
         [class.text-warning]="alert.type === 'warning'"
         [class.bg-light-info]="alert.type === 'info'"
-        [class.border-info]="alert.type === 'info'"
         [class.text-info]="alert.type === 'info'"
-        style="border-style: dashed !important; border-width: 1px !important;">
+        style="border: none !important;">
         <i class="ki-duotone fs-2hx me-4"
           [class]="alert.icon"
           [class.text-success]="alert.type === 'success'"
