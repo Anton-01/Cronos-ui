@@ -1,0 +1,114 @@
+<div class="card">
+  <div class="card-header border-0 pt-6">
+    <div class="card-title"><h2>Ingredientes</h2></div>
+    <div class="card-toolbar">
+      <button class="btn btn-primary btn-sm" (click)="openCreate()"><i class="ki-duotone ki-plus fs-2"></i> Nuevo Ingrediente</button>
+    </div>
+  </div>
+  <div class="card-body py-4">
+    @if (isLoading()) {
+      <div class="d-flex justify-content-center py-10"><span class="spinner-border text-primary"></span></div>
+    } @else if (errorMessage()) {
+      <div class="alert alert-danger">{{ errorMessage() }}</div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table align-middle table-row-dashed fs-6 gy-5">
+          <thead><tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+            <th>ID</th><th>Nombre</th><th>Categoría</th><th>Unidad</th><th>Alérgenos</th><th class="text-end">Acciones</th>
+          </tr></thead>
+          <tbody class="text-gray-600 fw-semibold">
+            @for (item of items(); track item.id) {
+              <tr>
+                <td>{{ item.id }}</td>
+                <td>{{ item.name }}</td>
+                <td>{{ item.category?.name || '-' }}</td>
+                <td>{{ item.measurementUnit ? item.measurementUnit.name + ' (' + item.measurementUnit.abbreviation + ')' : '-' }}</td>
+                <td>
+                  @for (a of item.allergens; track a.id) {
+                    <span class="badge badge-light-warning me-1">{{ a.name }}</span>
+                  } @empty { <span class="text-muted">-</span> }
+                </td>
+                <td class="text-end">
+                  <button class="btn btn-icon btn-light-primary btn-sm me-1" (click)="openEdit(item)"><i class="ki-duotone ki-pencil fs-6"></i></button>
+                  <button class="btn btn-icon btn-light-danger btn-sm" (click)="openDelete(item)"><i class="ki-duotone ki-trash fs-6"></i></button>
+                </td>
+              </tr>
+            } @empty { <tr><td colspan="6" class="text-center text-muted py-10">No hay ingredientes registrados</td></tr> }
+          </tbody>
+        </table>
+      </div>
+      @if (totalPages() > 1) {
+        <div class="d-flex justify-content-between align-items-center mt-5">
+          <span class="text-muted">Total: {{ totalElements() }}</span>
+          <ul class="pagination">@for (p of pages; track p) { <li class="page-item" [class.active]="p === pageRequest.page"><a class="page-link cursor-pointer" (click)="goToPage(p)">{{ p + 1 }}</a></li> }</ul>
+        </div>
+      }
+    }
+  </div>
+</div>
+
+@if (showForm()) {
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);"><div class="modal-dialog modal-dialog-centered modal-lg"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">{{ selectedItem() ? 'Editar' : 'Nuevo' }} Ingrediente</h5><button type="button" class="btn-close" (click)="closeForm()"></button></div>
+    <form [formGroup]="form" (ngSubmit)="saveForm()">
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-6 fv-row mb-7">
+            <label class="required fw-semibold fs-6 mb-2">Nombre</label>
+            <input type="text" class="form-control" formControlName="name" />
+          </div>
+          <div class="col-md-6 fv-row mb-7">
+            <label class="fw-semibold fs-6 mb-2">Categoría</label>
+            <select class="form-select" formControlName="categoryId">
+              <option [ngValue]="null">-- Sin categoría --</option>
+              @for (cat of categories(); track cat.id) { <option [ngValue]="cat.id">{{ cat.name }}</option> }
+            </select>
+          </div>
+        </div>
+        <div class="fv-row mb-7">
+          <label class="fw-semibold fs-6 mb-2">Descripción</label>
+          <textarea class="form-control" formControlName="description" rows="2"></textarea>
+        </div>
+        <div class="fv-row mb-7">
+          <label class="fw-semibold fs-6 mb-2">Unidad de Medida</label>
+          <select class="form-select" formControlName="measurementUnitId">
+            <option [ngValue]="null">-- Sin unidad --</option>
+            @for (mu of measurementUnits(); track mu.id) { <option [ngValue]="mu.id">{{ mu.name }} ({{ mu.abbreviation }})</option> }
+          </select>
+        </div>
+        <div class="fv-row mb-7">
+          <label class="fw-semibold fs-6 mb-2">Alérgenos</label>
+          <div class="d-flex flex-wrap gap-2">
+            @for (a of allergens(); track a.id) {
+              <label class="form-check form-check-custom form-check-sm">
+                <input class="form-check-input" type="checkbox" [checked]="isAllergenSelected(a.id)" (change)="toggleAllergen(a.id)" />
+                <span class="form-check-label">{{ a.name }}</span>
+              </label>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-light" (click)="closeForm()">Cancelar</button>
+        <button type="submit" class="btn btn-primary" [disabled]="form.invalid || isSaving()">
+          @if (isSaving()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+          {{ selectedItem() ? 'Actualizar' : 'Crear' }}
+        </button>
+      </div>
+    </form>
+  </div></div></div>
+}
+
+@if (showDeleteModal()) {
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title">Confirmar eliminación</h5><button type="button" class="btn-close" (click)="closeDeleteModal()"></button></div>
+    <div class="modal-body"><p>¿Eliminar el ingrediente <strong>{{ deletingItem()?.name }}</strong>?</p></div>
+    <div class="modal-footer">
+      <button type="button" class="btn btn-light" (click)="closeDeleteModal()">Cancelar</button>
+      <button type="button" class="btn btn-danger" (click)="confirmDelete()" [disabled]="isDeleting()">
+        @if (isDeleting()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+        Eliminar
+      </button>
+    </div>
+  </div></div></div>
+}

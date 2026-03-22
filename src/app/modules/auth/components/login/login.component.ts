@@ -1,10 +1,11 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Subscription, Observable } from 'rxjs';
-import { first } from 'rxjs/operators';
-import { UserModel } from '../../models/user.model';
-import { AuthService } from '../../services/auth.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
+import { Subscription } from 'rxjs';
+import { AuthService as CronosAuthService } from 'src/app/core/services/auth.service';
+import { TokenService } from 'src/app/core/services/token.service';
+import { ToastService } from 'src/app/shared/services/toast.service';
+import { LoginRequest } from 'src/app/core/models/auth.model';
 
 @Component({
   selector: 'app-login',
@@ -12,79 +13,83 @@ import { ActivatedRoute, Router } from '@angular/router';
   styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent implements OnInit, OnDestroy {
-  // KeenThemes mock, change it to:
-  defaultAuth: any = {
-    email: 'admin@demo.com',
-    password: 'demo',
-  };
   loginForm: FormGroup;
-  hasError: boolean;
-  returnUrl: string;
-  isLoading$: Observable<boolean>;
+  hasError = false;
+  errorMessage = '';
+  isLoading = false;
+  showTwoFactor = false;
 
-  // private fields
-  private unsubscribe: Subscription[] = []; // Read more: => https://brianflove.com/2016/12/11/anguar-2-unsubscribe-observables/
+  private unsubscribe: Subscription[] = [];
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService,
-    private route: ActivatedRoute,
-    private router: Router
+    private cronosAuth: CronosAuthService,
+    private tokenService: TokenService,
+    private router: Router,
+    private toast: ToastService
   ) {
-    this.isLoading$ = this.authService.isLoading$;
-    // redirect to home if already logged in
-    if (this.authService.currentUserValue) {
-      this.router.navigate(['/']);
+    if (this.tokenService.isLoggedIn()) {
+      this.router.navigate(['/dashboard']);
     }
   }
 
   ngOnInit(): void {
     this.initForm();
-    // get return url from route parameters or default to '/'
-    this.returnUrl =
-      this.route.snapshot.queryParams['returnUrl'.toString()] || '/';
   }
 
-  // convenience getter for easy access to form fields
   get f() {
     return this.loginForm.controls;
   }
 
   initForm() {
     this.loginForm = this.fb.group({
-      email: [
-        this.defaultAuth.email,
-        Validators.compose([
-          Validators.required,
-          Validators.email,
-          Validators.minLength(3),
-          Validators.maxLength(320), // https://stackoverflow.com/questions/386294/what-is-the-maximum-length-of-a-valid-email-address
-        ]),
-      ],
-      password: [
-        this.defaultAuth.password,
-        Validators.compose([
-          Validators.required,
-          Validators.minLength(3),
-          Validators.maxLength(100),
-        ]),
-      ],
+      username: ['', Validators.compose([Validators.required, Validators.minLength(3)])],
+      password: ['', Validators.compose([Validators.required, Validators.minLength(3)])],
+      twoFactorCode: [''],
     });
   }
 
   submit() {
     this.hasError = false;
-    const loginSubscr = this.authService
-      .login(this.f.email.value, this.f.password.value)
-      .pipe(first())
-      .subscribe((user: UserModel | undefined) => {
-        if (user) {
-          this.router.navigate([this.returnUrl]);
+    this.isLoading = true;
+
+    const request: LoginRequest = {
+      username: this.f.username.value,
+      password: this.f.password.value,
+    };
+
+    if (this.showTwoFactor && this.f.twoFactorCode.value) {
+      request.twoFactorCode = Number(this.f.twoFactorCode.value);
+    }
+
+    const loginSubscr = this.cronosAuth.login(request).subscribe({
+      next: res => {
+        this.isLoading = false;
+        if (res.data.requiresTwoFactor) {
+          this.showTwoFactor = true;
+          this.toast.success('Verificación requerida', 'Ingresa el código 2FA.');
         } else {
-          this.hasError = true;
+          this.tokenService.saveTokens(res.data.accessToken, res.data.refreshToken);
+          this.tokenService.saveUserInfo(res.data.username, res.data.email);
+          this.router.navigate(['/dashboard']);
         }
-      });
+      },
+      error: err => {
+        this.isLoading = false;
+        this.hasError = true;
+        this.errorMessage = err?.message || 'Credenciales incorrectas';
+        this.toast.error('Error', this.errorMessage);
+      },
+    });
     this.unsubscribe.push(loginSubscr);
+  }
+
+  loginWithGoogle(): void {
+    window.location.href = `${window.location.origin}/oauth2/authorization/google`;
+  }
+
+  loginWithFacebook(): void {
+    window.location.href = `${window.location.origin}/oauth2/authorization/facebook`;
   }
 
   ngOnDestroy() {

@@ -1,0 +1,140 @@
+<!-- Alert container -->
+<app-alert-container></app-alert-container>
+
+<div class="card">
+  <!-- Header with search and create button -->
+  <div class="card-header border-0 pt-6">
+    <div class="card-title">
+      <div class="d-flex align-items-center position-relative my-1">
+        <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+          <span class="path1"></span><span class="path2"></span>
+        </i>
+        <input type="text" class="form-control form-control-solid w-250px ps-13"
+          placeholder="Buscar tipo de unidad..."
+          [(ngModel)]="searchTerm"
+          (keyup.enter)="onSearch()" />
+      </div>
+    </div>
+    <div class="card-toolbar">
+      <button class="btn btn-primary" (click)="openCreate()">
+        <i class="ki-duotone ki-plus fs-2"></i> Nuevo Tipo
+      </button>
+    </div>
+  </div>
+
+  <!-- Table body -->
+  <div class="card-body py-4">
+    @if (isLoading()) {
+      <div class="d-flex justify-content-center py-10">
+        <span class="spinner-border text-primary"></span>
+      </div>
+    } @else if (errorMessage()) {
+      <div class="alert bg-light-danger text-danger border border-danger border-dashed d-flex align-items-center p-5 mb-5">
+        <i class="ki-duotone ki-information-5 fs-2hx text-danger me-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+        <div class="d-flex flex-column">
+          <span class="fw-bold">Error</span>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table align-middle table-row-dashed fs-6 gy-5">
+          <thead>
+            <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+              <th class="min-w-50px">ID</th>
+              <th class="min-w-125px">Código</th>
+              <th class="min-w-200px">Nombre</th>
+              <th class="min-w-125px">Dimensión</th>
+              <th class="min-w-100px">Estado</th>
+              <th class="text-end min-w-100px">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-600 fw-semibold">
+            @for (item of items(); track item.id) {
+              <tr>
+                <td>{{ item.id }}</td>
+                <td><span class="badge badge-light-info fw-bold">{{ item.codeIdentity }}</span></td>
+                <td class="fw-bold text-gray-800">{{ item.name }}</td>
+                <td>{{ item.dimension }}</td>
+                <td>
+                  <span [class]="getStatusBadgeClass(item.status)">{{ getStatusLabel(item.status) }}</span>
+                </td>
+                <td class="text-end">
+                  <button class="btn btn-icon btn-light-primary btn-sm me-1" title="Editar" (click)="openEdit(item)">
+                    <i class="ki-duotone ki-pencil fs-6"><span class="path1"></span><span class="path2"></span></i>
+                  </button>
+                  <button class="btn btn-icon btn-light-danger btn-sm" title="Eliminar" (click)="confirmDelete(item)">
+                    <i class="ki-duotone ki-trash fs-6"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="text-center text-muted py-10">No hay tipos de unidad registrados</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="d-flex justify-content-between align-items-center flex-wrap mt-5">
+        <div class="d-flex align-items-center">
+          <span class="text-muted me-3">Mostrando {{ items().length }} de {{ totalElements() }} registros</span>
+        </div>
+        @if (totalPages() > 1) {
+          <ul class="pagination">
+            <li class="page-item" [class.disabled]="pageRequest.page === 0">
+              <a class="page-link cursor-pointer" (click)="goToPage(pageRequest.page - 1)">&laquo;</a>
+            </li>
+            @for (p of pages; track p) {
+              <li class="page-item" [class.active]="p === pageRequest.page">
+                <a class="page-link cursor-pointer" (click)="goToPage(p)">{{ p + 1 }}</a>
+              </li>
+            }
+            <li class="page-item" [class.disabled]="pageRequest.page === totalPages() - 1">
+              <a class="page-link cursor-pointer" (click)="goToPage(pageRequest.page + 1)">&raquo;</a>
+            </li>
+          </ul>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Create/Edit Modal -->
+@if (showForm()) {
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ selectedItem() ? 'Editar' : 'Nuevo' }} Tipo de Unidad</h5>
+          <button type="button" class="btn-close" (click)="closeForm()"></button>
+        </div>
+        <form [formGroup]="form" (ngSubmit)="saveForm()">
+          <div class="modal-body">
+            <div class="fv-row mb-7">
+              <label class="required fw-semibold fs-6 mb-2">Código Identificador</label>
+              <input type="text" class="form-control form-control-solid" formControlName="codeIdentity" placeholder="Ej: COUNT, WEIGHT" />
+            </div>
+            <div class="fv-row mb-7">
+              <label class="required fw-semibold fs-6 mb-2">Nombre</label>
+              <input type="text" class="form-control form-control-solid" formControlName="name" placeholder="Ej: Conteo - Unidades" />
+            </div>
+            <div class="fv-row mb-7">
+              <label class="required fw-semibold fs-6 mb-2">Dimensión</label>
+              <input type="text" class="form-control form-control-solid" formControlName="dimension" placeholder="Ej: CONTEO, PESO, VOLUMEN" />
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-light" (click)="closeForm()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="form.invalid || isSaving()">
+              @if (isSaving()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+              {{ selectedItem() ? 'Actualizar' : 'Crear' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

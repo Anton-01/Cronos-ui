@@ -1,11 +1,10 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { Subscription, Observable } from 'rxjs';
+import { FormGroup, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
-import { AuthService } from '../../services/auth.service';
-import { ConfirmPasswordValidator } from './confirm-password.validator';
-import { UserModel } from '../../models/user.model';
-import { first } from 'rxjs/operators';
+import { AuthService as CronosAuthService } from 'src/app/core/services/auth.service';
+import { TokenService } from 'src/app/core/services/token.service';
+import { ToastService } from 'src/app/shared/services/toast.service';
 
 @Component({
   selector: 'app-registration',
@@ -14,21 +13,21 @@ import { first } from 'rxjs/operators';
 })
 export class RegistrationComponent implements OnInit, OnDestroy {
   registrationForm: FormGroup;
-  hasError: boolean;
-  isLoading$: Observable<boolean>;
+  hasError = false;
+  errorMessage = '';
+  isLoading = false;
 
-  // private fields
-  private unsubscribe: Subscription[] = []; // Read more: => https://brianflove.com/2016/12/11/anguar-2-unsubscribe-observables/
+  private unsubscribe: Subscription[] = [];
 
   constructor(
     private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router
+    private cronosAuth: CronosAuthService,
+    private tokenService: TokenService,
+    private router: Router,
+    private toast: ToastService
   ) {
-    this.isLoading$ = this.authService.isLoading$;
-    // redirect to home if already logged in
-    if (this.authService.currentUserValue) {
-      this.router.navigate(['/']);
+    if (this.tokenService.isLoggedIn()) {
+      this.router.navigate(['/dashboard']);
     }
   }
 
@@ -36,7 +35,6 @@ export class RegistrationComponent implements OnInit, OnDestroy {
     this.initForm();
   }
 
-  // convenience getter for easy access to form fields
   get f() {
     return this.registrationForm.controls;
   }
@@ -44,66 +42,53 @@ export class RegistrationComponent implements OnInit, OnDestroy {
   initForm() {
     this.registrationForm = this.fb.group(
       {
-        fullname: [
-          '',
-          Validators.compose([
-            Validators.required,
-            Validators.minLength(3),
-            Validators.maxLength(100),
-          ]),
-        ],
-        email: [
-          'qwe@qwe.qwe',
-          Validators.compose([
-            Validators.required,
-            Validators.email,
-            Validators.minLength(3),
-            Validators.maxLength(320), // https://stackoverflow.com/questions/386294/what-is-the-maximum-length-of-a-valid-email-address
-          ]),
-        ],
-        password: [
-          '',
-          Validators.compose([
-            Validators.required,
-            Validators.minLength(3),
-            Validators.maxLength(100),
-          ]),
-        ],
-        cPassword: [
-          '',
-          Validators.compose([
-            Validators.required,
-            Validators.minLength(3),
-            Validators.maxLength(100),
-          ]),
-        ],
-        agree: [false, Validators.compose([Validators.required])],
+        username: ['', Validators.compose([Validators.required, Validators.minLength(3)])],
+        email: ['', Validators.compose([Validators.required, Validators.email])],
+        firstName: [''],
+        lastName: [''],
+        phoneNumber: [''],
+        password: ['', Validators.compose([Validators.required, Validators.minLength(6)])],
+        confirmPassword: ['', Validators.compose([Validators.required])],
+        agree: [false, Validators.requiredTrue],
       },
-      {
-        validator: ConfirmPasswordValidator.MatchPassword,
-      }
+      { validators: [this.passwordMatchValidator] }
     );
+  }
+
+  passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+    const password = control.get('password')?.value;
+    const confirm = control.get('confirmPassword')?.value;
+    if (password && confirm && password !== confirm) {
+      return { passwordMismatch: true };
+    }
+    return null;
   }
 
   submit() {
     this.hasError = false;
-    const result: {
-      [key: string]: string;
-    } = {};
-    Object.keys(this.f).forEach((key) => {
-      result[key] = this.f[key].value;
-    });
-    const newUser = new UserModel();
-    newUser.setUser(result);
-    const registrationSubscr = this.authService
-      .registration(newUser)
-      .pipe(first())
-      .subscribe((user: UserModel) => {
-        if (user) {
-          this.router.navigate(['/']);
-        } else {
+    this.isLoading = true;
+
+    const registrationSubscr = this.cronosAuth
+      .register({
+        username: this.f.username.value,
+        email: this.f.email.value,
+        password: this.f.password.value,
+        firstName: this.f.firstName.value || undefined,
+        lastName: this.f.lastName.value || undefined,
+        phoneNumber: this.f.phoneNumber.value || undefined,
+      })
+      .subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.toast.success('Registro exitoso', 'Tu cuenta ha sido creada. Inicia sesión.');
+          this.router.navigate(['/auth/login']);
+        },
+        error: err => {
+          this.isLoading = false;
           this.hasError = true;
-        }
+          this.errorMessage = err?.message || 'Error al registrar';
+          this.toast.error('Error', this.errorMessage);
+        },
       });
     this.unsubscribe.push(registrationSubscr);
   }

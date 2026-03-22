@@ -1,0 +1,45 @@
+<div class="card">
+  <div class="card-header"><h3 class="card-title">Mi Cuenta</h3></div>
+  <div class="card-body">
+    @if (isLoading()) {
+      <div class="d-flex justify-content-center py-10"><span class="spinner-border text-primary"></span></div>
+    } @else {
+      <form [formGroup]="form" (ngSubmit)="save()">
+        <div class="row mb-6">
+          <label class="col-lg-4 col-form-label fw-semibold fs-6">Username</label>
+          <div class="col-lg-8"><input type="text" class="form-control" formControlName="username" /></div>
+        </div>
+        <div class="row mb-6">
+          <label class="col-lg-4 col-form-label fw-semibold fs-6">Email</label>
+          <div class="col-lg-8"><input type="text" class="form-control" [value]="user()?.email" disabled /></div>
+        </div>
+        <div class="row mb-6">
+          <label class="col-lg-4 col-form-label fw-semibold fs-6">Nombre</label>
+          <div class="col-lg-8"><input type="text" class="form-control" formControlName="firstName" /></div>
+        </div>
+        <div class="row mb-6">
+          <label class="col-lg-4 col-form-label fw-semibold fs-6">Apellido</label>
+          <div class="col-lg-8"><input type="text" class="form-control" formControlName="lastName" /></div>
+        </div>
+        <div class="row mb-6">
+          <label class="col-lg-4 col-form-label fw-semibold fs-6">Teléfono</label>
+          <div class="col-lg-8"><input type="text" class="form-control" formControlName="phoneNumber" /></div>
+        </div>
+        <div class="row mb-6">
+          <label class="col-lg-4 col-form-label fw-semibold fs-6">Roles</label>
+          <div class="col-lg-8">
+            @for (role of user()?.roles || []; track role) {
+              <span class="badge badge-light-primary me-1">{{ role }}</span>
+            }
+          </div>
+        </div>
+        <div class="d-flex justify-content-end">
+          <button type="submit" class="btn btn-primary" [disabled]="isSaving()">
+            @if (isSaving()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+            Guardar cambios
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</div>
