@@ -6,9 +6,23 @@ import { TokenService } from '../services/token.service';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
 
+/**
+ * Functional HTTP interceptor for automatic JWT refresh on 401 errors.
+ *
+ * Uses module-level singletons (isRefreshing + BehaviorSubject) to coordinate
+ * concurrent requests: only the first 401 triggers a refresh call, while all
+ * subsequent 401s are queued until the refresh completes.
+ *
+ * If the refresh fails, a REFRESH_FAILED sentinel is emitted so queued
+ * requests unblock and fail gracefully instead of hanging forever.
+ */
+
 // Module-level singletons for coordinating concurrent refresh
 let isRefreshing = false;
-let refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+const refreshTokenSubject = new BehaviorSubject<string | null>(null);
+
+/** Sentinel value emitted when refresh fails, so queued requests can unblock. */
+const REFRESH_FAILED = '__REFRESH_FAILED__';
 
 function cloneWithToken(req: HttpRequest<unknown>, token: string): HttpRequest<unknown> {
   return req.clone({
@@ -69,8 +83,9 @@ function handle401(
     const rt = tokenService.getRefreshToken();
     if (!rt) {
       isRefreshing = false;
+      refreshTokenSubject.next(REFRESH_FAILED);
       performLogoutAndRedirect(tokenService, router, toast);
-      return throwError(() => ({ message: 'No refresh token' }));
+      return throwError(() => ({ message: 'No refresh token available' }));
     }
 
     return authService.refreshToken(rt).pipe(
@@ -82,17 +97,25 @@ function handle401(
       }),
       catchError(err => {
         isRefreshing = false;
+        // Emit sentinel so queued requests unblock and fail gracefully
+        refreshTokenSubject.next(REFRESH_FAILED);
         performLogoutAndRedirect(tokenService, router, toast);
-        return throwError(() => err?.error);
+        return throwError(() => err?.error || err);
       })
     );
   }
 
-  // Request queued: wait until refreshTokenSubject emits real token
+  // Request queued: wait until refreshTokenSubject emits a non-null value
   return refreshTokenSubject.pipe(
     filter(token => token !== null),
     take(1),
-    switchMap(token => next(cloneWithToken(req, token!)))
+    switchMap(token => {
+      // If refresh failed, reject the queued request instead of retrying
+      if (token === REFRESH_FAILED) {
+        return throwError(() => ({ message: 'Session expired' }));
+      }
+      return next(cloneWithToken(req, token!));
+    })
   );
 }
 

@@ -12,10 +12,30 @@ import { TokenService } from '../services/token.service';
 import { AuthService } from '../services/auth.service';
 import { ToastService } from '../../shared/services/toast.service';
 
+/**
+ * HTTP interceptor that handles 401 errors with automatic JWT refresh.
+ *
+ * Flow:
+ * 1. A request returns 401 (and is not /auth/login or /auth/refresh).
+ * 2. If no refresh is in progress, start one:
+ *    - Set isRefreshing = true and reset the subject to null.
+ *    - POST to /auth/refresh with the current refresh token.
+ *    - On success: save new tokens, emit new access token on the subject,
+ *      and retry the original request with the new token.
+ *    - On failure: clear tokens, redirect to /auth/login.
+ * 3. If a refresh IS already in progress, queue the request:
+ *    - Wait on refreshTokenSubject until it emits a non-null token,
+ *      then retry the request with that token.
+ * 4. If refreshTokenSubject emits EMPTY_TOKEN (refresh failed),
+ *    queued requests receive an error instead of hanging forever.
+ */
 @Injectable()
 export class ErrorInterceptorService implements HttpInterceptor {
   private isRefreshing = false;
   private refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+
+  /** Sentinel value emitted when refresh fails, so queued requests can unblock. */
+  private static readonly REFRESH_FAILED = '__REFRESH_FAILED__';
 
   constructor(
     private tokenService: TokenService,
@@ -64,8 +84,9 @@ export class ErrorInterceptorService implements HttpInterceptor {
       const rt = this.tokenService.getRefreshToken();
       if (!rt) {
         this.isRefreshing = false;
+        this.refreshTokenSubject.next(ErrorInterceptorService.REFRESH_FAILED);
         this.performLogoutAndRedirect();
-        return throwError(() => ({ message: 'No refresh token' }));
+        return throwError(() => ({ message: 'No refresh token available' }));
       }
 
       return this.authService.refreshToken(rt).pipe(
@@ -77,17 +98,25 @@ export class ErrorInterceptorService implements HttpInterceptor {
         }),
         catchError(err => {
           this.isRefreshing = false;
+          // Emit sentinel so queued requests unblock and fail gracefully
+          this.refreshTokenSubject.next(ErrorInterceptorService.REFRESH_FAILED);
           this.performLogoutAndRedirect();
-          return throwError(() => err?.error);
+          return throwError(() => err?.error || err);
         })
       );
     }
 
-    // Request queued: wait until refreshTokenSubject emits a real token
+    // Request queued: wait until refreshTokenSubject emits a non-null value
     return this.refreshTokenSubject.pipe(
       filter(token => token !== null),
       take(1),
-      switchMap(token => next.handle(this.cloneWithToken(req, token!)))
+      switchMap(token => {
+        // If refresh failed, reject the queued request instead of retrying
+        if (token === ErrorInterceptorService.REFRESH_FAILED) {
+          return throwError(() => ({ message: 'Session expired' }));
+        }
+        return next.handle(this.cloneWithToken(req, token!));
+      })
     );
   }
 
