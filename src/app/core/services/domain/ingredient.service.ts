@@ -8,7 +8,7 @@ import { IngredientResponse, CreateIngredientRequest, UpdateIngredientRequest } 
 
 @Injectable({ providedIn: 'root' })
 export class IngredientService {
-  private readonly API = environment.apiUrl + '/ingredients';
+  private readonly API = environment.apiUrl + '/raw-material';
   private http = inject(HttpClient);
 
   getAll(params: PageRequest): Observable<ApiResponse<Page<IngredientResponse>>> {

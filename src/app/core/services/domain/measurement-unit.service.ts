@@ -8,7 +8,7 @@ import { MeasurementUnitResponse, CreateMeasurementUnitRequest, UpdateMeasuremen
 
 @Injectable({ providedIn: 'root' })
 export class MeasurementUnitService {
-  private readonly API = environment.apiUrl + '/measurement-units';
+  private readonly API = environment.apiUrl + '/measurement-unit';
   private http = inject(HttpClient);
 
   getAll(params: PageRequest): Observable<ApiResponse<Page<MeasurementUnitResponse>>> {

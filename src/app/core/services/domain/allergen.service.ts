@@ -8,7 +8,7 @@ import { AllergenResponse, CreateAllergenRequest, UpdateAllergenRequest } from '
 
 @Injectable({ providedIn: 'root' })
 export class AllergenService {
-  private readonly API = environment.apiUrl + '/allergens';
+  private readonly API = environment.apiUrl + '/allergen';
   private http = inject(HttpClient);
 
   getAll(params: PageRequest): Observable<ApiResponse<Page<AllergenResponse>>> {

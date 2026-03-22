@@ -2,13 +2,13 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { ApiResponse } from '../../models/api-response.model';
-import { Page, PageRequest } from '../../models/pagination.model';
+import { ApiResponse } from '../../models';
+import { Page, PageRequest } from '../../models';
 import { UnitTypeResponse, CreateUnitTypeRequest, UpdateUnitTypeRequest } from '../../models/domain.model';
 
 @Injectable({ providedIn: 'root' })
 export class UnitTypeService {
-  private readonly API = environment.apiUrl + '/unit-types';
+  private readonly API = environment.apiUrl + '/unit-type';
   private http = inject(HttpClient);
 
   getAll(params: PageRequest, search?: string): Observable<ApiResponse<Page<UnitTypeResponse>>> {
