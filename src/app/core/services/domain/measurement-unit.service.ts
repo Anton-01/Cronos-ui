@@ -16,7 +16,7 @@ export class MeasurementUnitService {
       .set('page', params.page.toString())
       .set('size', params.size.toString())
       .set('sort', params.sort ?? 'name,asc');
-    return this.http.get<ApiResponse<Page<MeasurementUnitResponse>>>(this.API, { params: httpParams });
+    return this.http.get<ApiResponse<Page<MeasurementUnitResponse>>>(`${this.API}/system`, { params: httpParams });
   }
 
   getById(id: number): Observable<ApiResponse<MeasurementUnitResponse>> {
