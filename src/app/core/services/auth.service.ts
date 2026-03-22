@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, finalize } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { ApiResponse } from '../models/api-response.model';
+import { ApiResponse } from '../models';
 import {
   LoginRequest,
   LoginResponse,
@@ -12,8 +12,8 @@ import {
   TwoFactorSetupResponse,
   VerifyTwoFactorRequest,
   ChangePasswordRequest,
-} from '../models/auth.model';
-import { ActiveSession, LoginHistoryEntry, UserResponse } from '../models/user.model';
+} from '../models';
+import { ActiveSession, LoginHistoryEntry, UserResponse } from '../models';
 import { TokenService } from './token.service';
 
 @Injectable({ providedIn: 'root' })
