@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MeasurementUnitService } from 'src/app/core/services/domain/measurement-unit.service';
@@ -28,13 +28,28 @@ export class UnidadesMedidaComponent implements OnInit {
   selectedItem = signal<MeasurementUnitResponse | null>(null);
   isSaving = signal(false);
 
-  searchTerm = '';
+  searchTerm = signal('');
   pageRequest: PageRequest = { page: 0, size: 10, sort: 'name,asc' };
 
+  filteredItems = computed(() => {
+    const term = this.searchTerm().toLowerCase().trim();
+    const all = this.items();
+    if (!term) return all;
+    return all.filter(item =>
+      item.name.toLowerCase().includes(term) ||
+      item.code.toLowerCase().includes(term) ||
+      item.pluralName.toLowerCase().includes(term) ||
+      item.dimensionName.toLowerCase().includes(term)
+    );
+  });
+
   form = this.fb.group({
-    codeIdentity: ['', [Validators.required, Validators.minLength(2)]],
+    code: ['', [Validators.required, Validators.minLength(1)]],
     name: ['', [Validators.required, Validators.minLength(2)]],
-    dimension: ['', [Validators.required, Validators.minLength(2)]],
+    pluralName: ['', [Validators.required, Validators.minLength(2)]],
+    dimensionName: ['', [Validators.required]],
+    baseFactor: [1 as number, [Validators.required, Validators.min(0.000001)]],
+    isBase: [false as boolean],
   });
 
   ngOnInit(): void {
@@ -44,7 +59,7 @@ export class UnidadesMedidaComponent implements OnInit {
   load(): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
-    this.measurementUnitService.getAll(this.pageRequest, this.searchTerm || undefined).subscribe({
+    this.measurementUnitService.getAll(this.pageRequest).subscribe({
       next: res => {
         this.items.set(res.data.content);
         this.totalElements.set(res.data.totalElements);
@@ -58,9 +73,8 @@ export class UnidadesMedidaComponent implements OnInit {
     });
   }
 
-  onSearch(): void {
-    this.pageRequest = { ...this.pageRequest, page: 0 };
-    this.load();
+  onSearchInput(event: Event): void {
+    this.searchTerm.set((event.target as HTMLInputElement).value);
   }
 
   goToPage(page: number): void {
@@ -83,16 +97,19 @@ export class UnidadesMedidaComponent implements OnInit {
 
   openCreate(): void {
     this.selectedItem.set(null);
-    this.form.reset();
+    this.form.reset({ baseFactor: 1, isBase: false });
     this.showForm.set(true);
   }
 
   openEdit(item: MeasurementUnitResponse): void {
     this.selectedItem.set(item);
     this.form.patchValue({
-      codeIdentity: item.codeIdentity,
+      code: item.code,
       name: item.name,
-      dimension: item.dimension,
+      pluralName: item.pluralName,
+      dimensionName: item.dimensionName,
+      baseFactor: item.baseFactor,
+      isBase: item.isBase,
     });
     this.showForm.set(true);
   }
@@ -108,9 +125,12 @@ export class UnidadesMedidaComponent implements OnInit {
     const isEdit = !!this.selectedItem();
     const val = this.form.value;
     const payload = {
-      codeIdentity: val.codeIdentity!,
+      code: val.code!,
       name: val.name!,
-      dimension: val.dimension!,
+      pluralName: val.pluralName!,
+      dimensionName: val.dimensionName!,
+      baseFactor: val.baseFactor!,
+      isBase: val.isBase!,
     };
 
     const obs = isEdit

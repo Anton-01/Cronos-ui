@@ -1,24 +1,34 @@
 <!-- Alert container -->
 <app-alert-container></app-alert-container>
 
+<!-- Page header -->
+<div class="d-flex align-items-center justify-content-between mb-6">
+  <div>
+    <h1 class="fs-2 fw-bold mb-1">Unidades de Medida</h1>
+    <p class="text-gray-500 fs-6 mb-0">Gestión del catálogo de unidades de medida del sistema</p>
+  </div>
+  <button class="btn btn-primary" (click)="openCreate()">
+    <i class="ki-duotone ki-plus fs-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Nueva Unidad
+  </button>
+</div>
+
 <div class="card">
-  <!-- Header with search and create button -->
+  <!-- Card header with search and count -->
   <div class="card-header border-0 pt-6">
     <div class="card-title">
-      <div class="d-flex align-items-center position-relative my-1">
+      <span class="fw-bold fs-5">Listado</span>
+    </div>
+    <div class="card-toolbar d-flex align-items-center gap-4">
+      <div class="d-flex align-items-center position-relative">
         <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
           <span class="path1"></span><span class="path2"></span>
         </i>
         <input type="text" class="form-control form-control-solid w-250px ps-13"
-          placeholder="Buscar unidad de medida..."
-          [(ngModel)]="searchTerm"
-          (keyup.enter)="onSearch()" />
+          placeholder="Buscar unidad..."
+          [value]="searchTerm()"
+          (input)="onSearchInput($event)" />
       </div>
-    </div>
-    <div class="card-toolbar">
-      <button class="btn btn-primary" (click)="openCreate()">
-        <i class="ki-duotone ki-plus fs-2"></i> Nueva Unidad
-      </button>
+      <span class="text-muted fs-7">{{ totalElements() }} registros</span>
     </div>
   </div>
 
@@ -41,21 +51,31 @@
         <table class="table align-middle table-row-dashed fs-6 gy-5" style="position: relative;">
           <thead style="position: sticky; top: 0; background: #fff; z-index: 1;">
             <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-              <th class="min-w-50px">ID</th>
-              <th class="min-w-125px">Código</th>
-              <th class="min-w-200px">Nombre</th>
-              <th class="min-w-125px">Dimensión</th>
-              <th class="min-w-100px">Estado</th>
+              <th class="min-w-40px">#</th>
+              <th class="min-w-80px">Código</th>
+              <th class="min-w-125px">Nombre</th>
+              <th class="min-w-125px">Plural</th>
+              <th class="min-w-150px">Tipo</th>
+              <th class="min-w-100px">Factor Base</th>
+              <th class="min-w-80px">Base</th>
+              <th class="min-w-80px">Estado</th>
               <th class="text-end min-w-100px">Acciones</th>
             </tr>
           </thead>
           <tbody class="text-gray-600 fw-semibold">
-            @for (item of items(); track item.id) {
+            @for (item of filteredItems(); track item.id; let i = $index) {
               <tr>
-                <td>{{ item.id }}</td>
-                <td><span class="badge badge-light-info fw-bold">{{ item.codeIdentity }}</span></td>
+                <td class="text-gray-400">{{ (pageRequest.page * pageRequest.size) + i + 1 }}</td>
+                <td><span class="badge badge-light fw-bold font-monospace px-3">{{ item.code }}</span></td>
                 <td class="fw-bold text-gray-800">{{ item.name }}</td>
-                <td>{{ item.dimension }}</td>
+                <td>{{ item.pluralName }}</td>
+                <td>{{ item.dimensionName }}</td>
+                <td class="fw-semibold">{{ item.baseFactor }}</td>
+                <td>
+                  <span [class]="item.isBase ? 'badge badge-light-primary' : 'badge badge-light-info'">
+                    {{ item.isBase ? 'Base' : 'Derivada' }}
+                  </span>
+                </td>
                 <td>
                   <span [class]="getStatusBadgeClass(item.status)">{{ getStatusLabel(item.status) }}</span>
                 </td>
@@ -70,7 +90,7 @@
               </tr>
             } @empty {
               <tr>
-                <td colspan="6" class="text-center text-muted py-10">No hay unidades de medida registradas</td>
+                <td colspan="9" class="text-center text-muted py-10">No hay unidades de medida registradas</td>
               </tr>
             }
           </tbody>
@@ -80,12 +100,14 @@
       <!-- Pagination -->
       <div class="d-flex justify-content-between align-items-center flex-wrap mt-5">
         <div class="d-flex align-items-center">
-          <span class="text-muted me-3">Mostrando {{ items().length }} de {{ totalElements() }} registros</span>
+          <span class="text-muted me-3">Página {{ pageRequest.page + 1 }} de {{ totalPages() || 1 }}</span>
         </div>
         @if (totalPages() > 1) {
           <ul class="pagination">
             <li class="page-item" [class.disabled]="pageRequest.page === 0">
-              <a class="page-link cursor-pointer" (click)="goToPage(pageRequest.page - 1)">&laquo;</a>
+              <a class="page-link cursor-pointer" (click)="goToPage(pageRequest.page - 1)">
+                <i class="ki-duotone ki-left fs-6"></i>
+              </a>
             </li>
             @for (p of pages; track p) {
               <li class="page-item" [class.active]="p === pageRequest.page">
@@ -93,7 +115,9 @@
               </li>
             }
             <li class="page-item" [class.disabled]="pageRequest.page === totalPages() - 1">
-              <a class="page-link cursor-pointer" (click)="goToPage(pageRequest.page + 1)">&raquo;</a>
+              <a class="page-link cursor-pointer" (click)="goToPage(pageRequest.page + 1)">
+                <i class="ki-duotone ki-right fs-6"></i>
+              </a>
             </li>
           </ul>
         }
@@ -119,17 +143,35 @@
                 <div class="text-gray-700 fs-7">El registro se dará de alta con el estatus de <strong>Activo</strong> por defecto.</div>
               </div>
             }
-            <div class="fv-row mb-7">
-              <label class="required fw-semibold fs-6 mb-2">Código Identificador</label>
-              <input type="text" class="form-control form-control-solid" formControlName="codeIdentity" placeholder="Ej: COUNT, WEIGHT" />
+            <div class="row mb-5">
+              <div class="col-md-4 fv-row">
+                <label class="required fw-semibold fs-6 mb-2">Código</label>
+                <input type="text" class="form-control form-control-solid" formControlName="code" placeholder="Ej: kg, g, ml" />
+              </div>
+              <div class="col-md-8 fv-row">
+                <label class="required fw-semibold fs-6 mb-2">Nombre</label>
+                <input type="text" class="form-control form-control-solid" formControlName="name" placeholder="Ej: Kilogramo" />
+              </div>
             </div>
-            <div class="fv-row mb-7">
-              <label class="required fw-semibold fs-6 mb-2">Nombre</label>
-              <input type="text" class="form-control form-control-solid" formControlName="name" placeholder="Ej: Conteo - Unidades" />
+            <div class="fv-row mb-5">
+              <label class="required fw-semibold fs-6 mb-2">Plural</label>
+              <input type="text" class="form-control form-control-solid" formControlName="pluralName" placeholder="Ej: Kilogramos" />
             </div>
-            <div class="fv-row mb-7">
-              <label class="required fw-semibold fs-6 mb-2">Dimensión</label>
-              <input type="text" class="form-control form-control-solid" formControlName="dimension" placeholder="Ej: CONTEO, PESO, VOLUMEN" />
+            <div class="fv-row mb-5">
+              <label class="required fw-semibold fs-6 mb-2">Tipo (Dimensión)</label>
+              <input type="text" class="form-control form-control-solid" formControlName="dimensionName" placeholder="Ej: Masa y Peso, Volumen y Capacidad" />
+            </div>
+            <div class="row mb-5">
+              <div class="col-md-6 fv-row">
+                <label class="required fw-semibold fs-6 mb-2">Factor Base</label>
+                <input type="number" class="form-control form-control-solid" formControlName="baseFactor" step="any" placeholder="Ej: 1000" />
+              </div>
+              <div class="col-md-6 fv-row d-flex align-items-end">
+                <div class="form-check form-switch form-check-custom form-check-solid">
+                  <input class="form-check-input" type="checkbox" formControlName="isBase" id="isBaseSwitch" />
+                  <label class="form-check-label fw-semibold" for="isBaseSwitch">Es unidad base</label>
+                </div>
+              </div>
             </div>
           </div>
           <div class="modal-footer">

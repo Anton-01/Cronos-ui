@@ -1,6 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { IngredientService } from 'src/app/core/services/domain/ingredient.service';
 import { IngredientResponse } from 'src/app/core/models/domain.model';
@@ -12,7 +11,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-ingredientes',
   standalone: true,
-  imports: [CommonModule, FormsModule, AlertContainerComponent],
+  imports: [CommonModule, AlertContainerComponent],
   templateUrl: './ingredientes.component.html',
 })
 export class IngredientesComponent implements OnInit {
@@ -26,8 +25,19 @@ export class IngredientesComponent implements OnInit {
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
 
-  searchTerm = '';
+  searchTerm = signal('');
   pageRequest: PageRequest = { page: 0, size: 10, sort: 'name,asc' };
+
+  filteredItems = computed(() => {
+    const term = this.searchTerm().toLowerCase().trim();
+    const all = this.items();
+    if (!term) return all;
+    return all.filter(item =>
+      item.name.toLowerCase().includes(term) ||
+      (item.categoryName && item.categoryName.toLowerCase().includes(term)) ||
+      (item.purchaseUnitCode && item.purchaseUnitCode.toLowerCase().includes(term))
+    );
+  });
 
   ngOnInit(): void {
     this.load();
@@ -36,7 +46,7 @@ export class IngredientesComponent implements OnInit {
   load(): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
-    this.ingredientService.getAll(this.pageRequest, this.searchTerm || undefined).subscribe({
+    this.ingredientService.getAll(this.pageRequest).subscribe({
       next: res => {
         this.items.set(res.data.content);
         this.totalElements.set(res.data.totalElements);
@@ -50,9 +60,8 @@ export class IngredientesComponent implements OnInit {
     });
   }
 
-  onSearch(): void {
-    this.pageRequest = { ...this.pageRequest, page: 0 };
-    this.load();
+  onSearchInput(event: Event): void {
+    this.searchTerm.set((event.target as HTMLInputElement).value);
   }
 
   goToPage(page: number): void {

@@ -60,24 +60,33 @@ export interface UpdateUnitTypeRequest {
 // Unidades de Medida
 export interface MeasurementUnitResponse {
   id: number;
-  codeIdentity: string;
+  code: string;
   name: string;
-  dimension: string;
+  pluralName: string;
+  dimensionName: string;
+  baseFactor: number;
+  isBase: boolean;
   status: 'ACTIVE' | 'INACTIVE';
 }
 export interface CreateMeasurementUnitRequest {
-  codeIdentity: string;
+  code: string;
   name: string;
-  dimension: string;
+  pluralName: string;
+  dimensionName: string;
+  baseFactor: number;
+  isBase: boolean;
 }
 export interface UpdateMeasurementUnitRequest {
   id: number;
-  codeIdentity: string;
+  code: string;
   name: string;
-  dimension: string;
+  pluralName: string;
+  dimensionName: string;
+  baseFactor: number;
+  isBase: boolean;
 }
 
-// Ingredientes
+// Ingredientes (List)
 export interface IngredientResponse {
   id: string;
   name: string;
@@ -85,24 +94,66 @@ export interface IngredientResponse {
   purchaseUnitCode: string;
   purchaseQuantity: number;
   unitCost: number;
+  currency: string;
   yieldPercentage: number;
   baseUnitCost: number;
   status: 'ACTIVE' | 'INACTIVE';
 }
+
+// Ingredientes (Detail for edit)
+export interface IngredientDetailResponse {
+  id: string;
+  name: string;
+  description: string | null;
+  brand: string | null;
+  supplier: string | null;
+  categoryId: number;
+  categoryName: string;
+  purchaseUnitId: number;
+  purchaseUnitCode: string;
+  purchaseQuantity: number;
+  unitCost: number;
+  currency: string;
+  yieldPercentage: number;
+  baseUnitCost: number;
+  minimumStock: number | null;
+  densityConversion: DensityConversion | null;
+  status: 'ACTIVE' | 'INACTIVE';
+}
+
+export interface DensityConversion {
+  gramsPerCup: number;
+  gramsPerTablespoon?: number;
+  gramsPerTeaspoon?: number;
+}
+
 export interface CreateIngredientRequest {
   name: string;
-  categoryName?: string;
-  purchaseUnitCode?: string;
-  purchaseQuantity?: number;
-  unitCost?: number;
-  yieldPercentage?: number;
+  description?: string;
+  brand?: string;
+  supplier?: string;
+  categoryId: number;
+  purchaseUnitId: number;
+  purchaseQuantity: number;
+  unitCost: number;
+  currency: string;
+  yieldPercentage: number;
+  minimumStock?: number;
+  densityConversion?: DensityConversion;
 }
+
 export interface UpdateIngredientRequest {
   id: string;
   name: string;
-  categoryName?: string;
-  purchaseUnitCode?: string;
-  purchaseQuantity?: number;
-  unitCost?: number;
-  yieldPercentage?: number;
+  description?: string;
+  brand?: string;
+  supplier?: string;
+  categoryId: number;
+  purchaseUnitId: number;
+  purchaseQuantity: number;
+  unitCost: number;
+  currency: string;
+  yieldPercentage: number;
+  minimumStock?: number;
+  densityConversion?: DensityConversion;
 }

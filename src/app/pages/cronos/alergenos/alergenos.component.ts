@@ -1,6 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AllergenService } from 'src/app/core/services/domain/allergen.service';
 import { AllergenResponse } from 'src/app/core/models/domain.model';
 import { PageRequest } from 'src/app/core/models/pagination.model';
@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-alergenos',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, AlertContainerComponent],
+  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
   templateUrl: './alergenos.component.html',
 })
 export class AlergenosComponent implements OnInit {
@@ -28,8 +28,19 @@ export class AlergenosComponent implements OnInit {
   selectedItem = signal<AllergenResponse | null>(null);
   isSaving = signal(false);
 
-  searchTerm = '';
+  searchTerm = signal('');
   pageRequest: PageRequest = { page: 0, size: 10, sort: 'name,asc' };
+
+  filteredItems = computed(() => {
+    const term = this.searchTerm().toLowerCase().trim();
+    const all = this.items();
+    if (!term) return all;
+    return all.filter(item =>
+      item.name.toLowerCase().includes(term) ||
+      (item.alternativeName && item.alternativeName.toLowerCase().includes(term)) ||
+      (item.description && item.description.toLowerCase().includes(term))
+    );
+  });
 
   form = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -44,7 +55,7 @@ export class AlergenosComponent implements OnInit {
   load(): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
-    this.allergenService.getAll(this.pageRequest, this.searchTerm || undefined).subscribe({
+    this.allergenService.getAll(this.pageRequest).subscribe({
       next: res => {
         this.items.set(res.data.content);
         this.totalElements.set(res.data.totalElements);
@@ -58,9 +69,8 @@ export class AlergenosComponent implements OnInit {
     });
   }
 
-  onSearch(): void {
-    this.pageRequest = { ...this.pageRequest, page: 0 };
-    this.load();
+  onSearchInput(event: Event): void {
+    this.searchTerm.set((event.target as HTMLInputElement).value);
   }
 
   goToPage(page: number): void {

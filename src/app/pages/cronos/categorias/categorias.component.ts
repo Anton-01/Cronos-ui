@@ -1,6 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { CategoryService } from 'src/app/core/services/domain/category.service';
 import { CategoryResponse } from 'src/app/core/models/domain.model';
 import { PageRequest } from 'src/app/core/models/pagination.model';
@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-categorias',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, AlertContainerComponent],
+  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
   templateUrl: './categorias.component.html',
 })
 export class CategoriasComponent implements OnInit {
@@ -28,8 +28,18 @@ export class CategoriasComponent implements OnInit {
   selectedItem = signal<CategoryResponse | null>(null);
   isSaving = signal(false);
 
-  searchTerm = '';
+  searchTerm = signal('');
   pageRequest: PageRequest = { page: 0, size: 10, sort: 'name,asc' };
+
+  filteredItems = computed(() => {
+    const term = this.searchTerm().toLowerCase().trim();
+    const all = this.items();
+    if (!term) return all;
+    return all.filter(item =>
+      item.name.toLowerCase().includes(term) ||
+      (item.description && item.description.toLowerCase().includes(term))
+    );
+  });
 
   form = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -43,7 +53,7 @@ export class CategoriasComponent implements OnInit {
   load(): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
-    this.categoryService.getAll(this.pageRequest, this.searchTerm || undefined).subscribe({
+    this.categoryService.getAll(this.pageRequest).subscribe({
       next: res => {
         this.items.set(res.data.content);
         this.totalElements.set(res.data.totalElements);
@@ -57,9 +67,8 @@ export class CategoriasComponent implements OnInit {
     });
   }
 
-  onSearch(): void {
-    this.pageRequest = { ...this.pageRequest, page: 0 };
-    this.load();
+  onSearchInput(event: Event): void {
+    this.searchTerm.set((event.target as HTMLInputElement).value);
   }
 
   goToPage(page: number): void {
