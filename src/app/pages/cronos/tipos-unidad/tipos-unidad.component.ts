@@ -1,6 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { UnitTypeService } from 'src/app/core/services/domain/unit-type.service';
 import { UnitTypeResponse } from 'src/app/core/models/domain.model';
 import { PageRequest } from 'src/app/core/models/pagination.model';
@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-tipos-unidad',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, AlertContainerComponent],
+  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
   templateUrl: './tipos-unidad.component.html',
 })
 export class TiposUnidadComponent implements OnInit {
@@ -28,8 +28,19 @@ export class TiposUnidadComponent implements OnInit {
   selectedItem = signal<UnitTypeResponse | null>(null);
   isSaving = signal(false);
 
-  searchTerm = '';
+  searchTerm = signal('');
   pageRequest: PageRequest = { page: 0, size: 10, sort: 'name,asc' };
+
+  filteredItems = computed(() => {
+    const term = this.searchTerm().toLowerCase().trim();
+    const all = this.items();
+    if (!term) return all;
+    return all.filter(item =>
+      item.name.toLowerCase().includes(term) ||
+      item.codeIdentity.toLowerCase().includes(term) ||
+      item.dimension.toLowerCase().includes(term)
+    );
+  });
 
   form = this.fb.group({
     codeIdentity: ['', [Validators.required, Validators.minLength(2)]],
@@ -44,7 +55,7 @@ export class TiposUnidadComponent implements OnInit {
   load(): void {
     this.isLoading.set(true);
     this.errorMessage.set(null);
-    this.unitTypeService.getAll(this.pageRequest, this.searchTerm || undefined).subscribe({
+    this.unitTypeService.getAll(this.pageRequest).subscribe({
       next: res => {
         this.items.set(res.data.content);
         this.totalElements.set(res.data.totalElements);
@@ -58,12 +69,12 @@ export class TiposUnidadComponent implements OnInit {
     });
   }
 
-  onSearch(): void {
-    this.pageRequest = { ...this.pageRequest, page: 0 };
-    this.load();
+  onSearchInput(event: Event): void {
+    this.searchTerm.set((event.target as HTMLInputElement).value);
   }
 
   goToPage(page: number): void {
+    if (page < 0 || page >= this.totalPages()) return;
     this.pageRequest = { ...this.pageRequest, page };
     this.load();
   }
@@ -73,9 +84,7 @@ export class TiposUnidadComponent implements OnInit {
   }
 
   getStatusBadgeClass(status: string): string {
-    return status === 'ACTIVE'
-      ? 'badge badge-light-success'
-      : 'badge badge-light-danger';
+    return status === 'ACTIVE' ? 'badge badge-light-success' : 'badge badge-light-danger';
   }
 
   getStatusLabel(status: string): string {

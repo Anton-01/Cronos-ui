@@ -2,8 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { ApiResponse } from '../../models/api-response.model';
-import { Page, PageRequest } from '../../models/pagination.model';
+import { ApiResponse } from '../../models';
+import { Page, PageRequest } from '../../models';
 import { CategoryResponse, CreateCategoryRequest, UpdateCategoryRequest } from '../../models/domain.model';
 
 @Injectable({ providedIn: 'root' })
@@ -11,11 +11,14 @@ export class CategoryService {
   private readonly API = environment.apiUrl + '/category';
   private http = inject(HttpClient);
 
-  getAll(params: PageRequest): Observable<ApiResponse<Page<CategoryResponse>>> {
-    const httpParams = new HttpParams()
+  getAll(params: PageRequest, search?: string): Observable<ApiResponse<Page<CategoryResponse>>> {
+    let httpParams = new HttpParams()
       .set('page', params.page.toString())
       .set('size', params.size.toString())
-      .set('sort', params.sort ?? 'name,asc');
+      .set('sort', params.sort ?? 'id,asc');
+    if (search) {
+      httpParams = httpParams.set('search', search);
+    }
     return this.http.get<ApiResponse<Page<CategoryResponse>>>(`${this.API}/system`, { params: httpParams });
   }
 

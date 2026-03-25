@@ -1,0 +1,87 @@
+.section-card {
+  border: 1px solid #E4E6EF;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  background: #fff;
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #EFF2F5;
+
+    .section-icon {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.5rem;
+      background: #F1FAFF;
+      color: #009EF7;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #181C32;
+      margin: 0;
+    }
+
+    .section-subtitle {
+      font-size: 0.85rem;
+      color: #A1A5B7;
+      margin: 0;
+    }
+  }
+}
+
+.sticky-sidebar {
+  position: sticky;
+  top: 80px;
+}
+
+.cost-card {
+  border-radius: 0.75rem;
+  overflow: hidden;
+  box-shadow: 0 0 20px 0 rgba(76, 87, 125, 0.08);
+
+  &-header {
+    background: linear-gradient(135deg, #3699FF 0%, #1B84FF 100%);
+    padding: 1.25rem 1.5rem;
+  }
+
+  &-body {
+    padding: 1.5rem;
+    background: #fff;
+  }
+}
+
+.cost-amount {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: #1B84FF;
+  line-height: 1.1;
+}
+
+.cost-currency {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #181C32;
+  vertical-align: super;
+}
+
+.conversion-card {
+  border: 1px solid #E1F0FF;
+  border-radius: 0.75rem;
+  background: #FAFCFF;
+}
+
+.ls-2 {
+  letter-spacing: 0.15em;
+}

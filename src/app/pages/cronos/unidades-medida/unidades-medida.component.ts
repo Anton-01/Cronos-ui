@@ -1,95 +1,178 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MeasurementUnitService } from 'src/app/core/services/domain/measurement-unit.service';
-import { UnitTypeService } from 'src/app/core/services/domain/unit-type.service';
-import { MeasurementUnitResponse, UnitTypeResponse } from 'src/app/core/models/domain.model';
+import { MeasurementUnitResponse } from 'src/app/core/models/domain.model';
 import { PageRequest } from 'src/app/core/models/pagination.model';
-import { ToastService } from 'src/app/shared/services/toast.service';
+import { AlertService } from 'src/app/shared/services/alert.service';
+import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-unidades-medida',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, AlertContainerComponent],
   templateUrl: './unidades-medida.component.html',
 })
 export class UnidadesMedidaComponent implements OnInit {
   private measurementUnitService = inject(MeasurementUnitService);
-  private unitTypeService = inject(UnitTypeService);
-  private toast = inject(ToastService);
+  private alertService = inject(AlertService);
   private fb = inject(FormBuilder);
 
   items = signal<MeasurementUnitResponse[]>([]);
-  unitTypes = signal<UnitTypeResponse[]>([]);
   totalElements = signal(0);
   totalPages = signal(0);
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
   showForm = signal(false);
   selectedItem = signal<MeasurementUnitResponse | null>(null);
-  showDeleteModal = signal(false);
-  deletingItem = signal<MeasurementUnitResponse | null>(null);
-  isDeleting = signal(false);
   isSaving = signal(false);
 
+  searchTerm = signal('');
   pageRequest: PageRequest = { page: 0, size: 10, sort: 'name,asc' };
+
+  filteredItems = computed(() => {
+    const term = this.searchTerm().toLowerCase().trim();
+    const all = this.items();
+    if (!term) return all;
+    return all.filter(item =>
+      item.name.toLowerCase().includes(term) ||
+      item.codeIdentity.toLowerCase().includes(term) ||
+      item.namePlural.toLowerCase().includes(term) ||
+      item.unitType.toLowerCase().includes(term)
+    );
+  });
+
   form = this.fb.group({
+    code: ['', [Validators.required, Validators.minLength(1)]],
     name: ['', [Validators.required, Validators.minLength(2)]],
-    abbreviation: ['', [Validators.required]],
-    unitTypeId: [null as number | null],
+    pluralName: ['', [Validators.required, Validators.minLength(2)]],
+    dimensionName: ['', [Validators.required]],
+    baseFactor: [1 as number, [Validators.required, Validators.min(0.000001)]],
+    isBase: [false as boolean],
   });
 
   ngOnInit(): void {
     this.load();
-    this.loadUnitTypes();
   }
 
   load(): void {
     this.isLoading.set(true);
+    this.errorMessage.set(null);
     this.measurementUnitService.getAll(this.pageRequest).subscribe({
-      next: res => { this.items.set(res.data.content); this.totalElements.set(res.data.totalElements); this.totalPages.set(res.data.totalPages); this.isLoading.set(false); },
-      error: err => { this.errorMessage.set(err?.message || 'Error'); this.isLoading.set(false); },
+      next: res => {
+        this.items.set(res.data.content);
+        this.totalElements.set(res.data.totalElements);
+        this.totalPages.set(res.data.totalPages);
+        this.isLoading.set(false);
+      },
+      error: err => {
+        this.errorMessage.set(err?.message || 'Error al cargar unidades de medida');
+        this.isLoading.set(false);
+      },
     });
   }
 
-  loadUnitTypes(): void {
-    this.unitTypeService.getAll({ page: 0, size: 100, sort: 'name,asc' }).subscribe({
-      next: res => this.unitTypes.set(res.data.content),
-    });
+  onSearchInput(event: Event): void {
+    this.searchTerm.set((event.target as HTMLInputElement).value);
   }
 
-  goToPage(page: number): void { this.pageRequest = { ...this.pageRequest, page }; this.load(); }
-  get pages(): number[] { return Array.from({ length: this.totalPages() }, (_, i) => i); }
-  openCreate(): void { this.selectedItem.set(null); this.form.reset(); this.showForm.set(true); }
-  openEdit(item: MeasurementUnitResponse): void {
-    this.selectedItem.set(item);
-    this.form.patchValue({ name: item.name, abbreviation: item.abbreviation, unitTypeId: item.unitType?.id ?? null });
+  goToPage(page: number): void {
+    if (page < 0 || page >= this.totalPages()) return;
+    this.pageRequest = { ...this.pageRequest, page };
+    this.load();
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages() }, (_, i) => i);
+  }
+
+  getStatusBadgeClass(status: string): string {
+    return status === 'ACTIVE' ? 'badge badge-light-success' : 'badge badge-light-danger';
+  }
+
+  getStatusLabel(status: string): string {
+    return status === 'ACTIVE' ? 'Activo' : 'Inactivo';
+  }
+
+  openCreate(): void {
+    this.selectedItem.set(null);
+    this.form.reset({ baseFactor: 1, isBase: false });
     this.showForm.set(true);
   }
-  closeForm(): void { this.showForm.set(false); this.selectedItem.set(null); }
+
+  openEdit(item: MeasurementUnitResponse): void {
+    this.selectedItem.set(item);
+    this.form.patchValue({
+      code: item.codeIdentity,
+      name: item.name,
+      pluralName: item.namePlural,
+      dimensionName: item.unitType,
+      baseFactor: item.multiplierToBase,
+      isBase: item.isBaseUnit,
+    });
+    this.showForm.set(true);
+  }
+
+  closeForm(): void {
+    this.showForm.set(false);
+    this.selectedItem.set(null);
+  }
 
   saveForm(): void {
     if (this.form.invalid) return;
     this.isSaving.set(true);
     const isEdit = !!this.selectedItem();
-    const payload = { name: this.form.value.name!, abbreviation: this.form.value.abbreviation!, unitTypeId: this.form.value.unitTypeId || undefined };
-    const obs = isEdit ? this.measurementUnitService.update({ id: this.selectedItem()!.id, ...payload }) : this.measurementUnitService.create(payload);
+    const val = this.form.value;
+    const payload = {
+      codeIdentity: val.code!,
+      name: val.name!,
+      namePlural: val.pluralName!,
+      unitType: val.dimensionName!,
+      multiplierToBase: val.baseFactor!,
+      isBaseUnit: val.isBase!,
+    };
+
+    const obs = isEdit
+      ? this.measurementUnitService.update({ id: this.selectedItem()!.id, ...payload })
+      : this.measurementUnitService.create(payload);
+
     obs.subscribe({
-      next: () => { this.isSaving.set(false); this.closeForm(); this.load(); this.toast.success(isEdit ? 'Unidad actualizada' : 'Unidad creada'); },
-      error: err => { this.isSaving.set(false); this.toast.error('Error', err?.message); },
+      next: () => {
+        this.isSaving.set(false);
+        this.closeForm();
+        this.load();
+        this.alertService.success(isEdit ? 'Unidad de medida actualizada correctamente' : 'Unidad de medida creada correctamente');
+      },
+      error: err => {
+        this.isSaving.set(false);
+        this.alertService.error(err?.message || 'Error al guardar');
+      },
     });
   }
 
-  openDelete(item: MeasurementUnitResponse): void { this.deletingItem.set(item); this.showDeleteModal.set(true); }
-  closeDeleteModal(): void { this.showDeleteModal.set(false); this.deletingItem.set(null); }
-
-  confirmDelete(): void {
-    const item = this.deletingItem();
-    if (!item) return;
-    this.isDeleting.set(true);
-    this.measurementUnitService.delete(item.id).subscribe({
-      next: () => { this.isDeleting.set(false); this.closeDeleteModal(); this.load(); this.toast.success('Unidad eliminada'); },
-      error: err => { this.isDeleting.set(false); this.closeDeleteModal(); this.toast.error('Error al eliminar', err?.message); },
+  confirmDelete(item: MeasurementUnitResponse): void {
+    Swal.fire({
+      title: '¿Eliminar unidad de medida?',
+      html: `Se eliminará <strong>${item.name}</strong>. Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.measurementUnitService.delete(item.id).subscribe({
+          next: () => {
+            this.load();
+            this.alertService.success('Unidad de medida eliminada correctamente');
+          },
+          error: err => {
+            this.alertService.error(err?.message || 'Error al eliminar');
+          },
+        });
+      }
     });
   }
 }

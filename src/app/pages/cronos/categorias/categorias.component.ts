@@ -1,20 +1,22 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { CategoryService } from 'src/app/core/services/domain/category.service';
 import { CategoryResponse } from 'src/app/core/models/domain.model';
 import { PageRequest } from 'src/app/core/models/pagination.model';
-import { ToastService } from 'src/app/shared/services/toast.service';
+import { AlertService } from 'src/app/shared/services/alert.service';
+import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-categorias',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
   templateUrl: './categorias.component.html',
 })
 export class CategoriasComponent implements OnInit {
   private categoryService = inject(CategoryService);
-  private toast = inject(ToastService);
+  private alertService = inject(AlertService);
   private fb = inject(FormBuilder);
 
   items = signal<CategoryResponse[]>([]);
@@ -24,12 +26,20 @@ export class CategoriasComponent implements OnInit {
   errorMessage = signal<string | null>(null);
   showForm = signal(false);
   selectedItem = signal<CategoryResponse | null>(null);
-  showDeleteModal = signal(false);
-  deletingItem = signal<CategoryResponse | null>(null);
-  isDeleting = signal(false);
   isSaving = signal(false);
 
+  searchTerm = signal('');
   pageRequest: PageRequest = { page: 0, size: 10, sort: 'name,asc' };
+
+  filteredItems = computed(() => {
+    const term = this.searchTerm().toLowerCase().trim();
+    const all = this.items();
+    if (!term) return all;
+    return all.filter(item =>
+      item.name.toLowerCase().includes(term) ||
+      (item.description && item.description.toLowerCase().includes(term))
+    );
+  });
 
   form = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -42,6 +52,7 @@ export class CategoriasComponent implements OnInit {
 
   load(): void {
     this.isLoading.set(true);
+    this.errorMessage.set(null);
     this.categoryService.getAll(this.pageRequest).subscribe({
       next: res => {
         this.items.set(res.data.content);
@@ -56,13 +67,26 @@ export class CategoriasComponent implements OnInit {
     });
   }
 
+  onSearchInput(event: Event): void {
+    this.searchTerm.set((event.target as HTMLInputElement).value);
+  }
+
   goToPage(page: number): void {
+    if (page < 0 || page >= this.totalPages()) return;
     this.pageRequest = { ...this.pageRequest, page };
     this.load();
   }
 
   get pages(): number[] {
     return Array.from({ length: this.totalPages() }, (_, i) => i);
+  }
+
+  getStatusBadgeClass(status: string): string {
+    return status === 'ACTIVE' ? 'badge badge-light-success' : 'badge badge-light-danger';
+  }
+
+  getStatusLabel(status: string): string {
+    return status === 'ACTIVE' ? 'Activo' : 'Inactivo';
   }
 
   openCreate(): void {
@@ -86,69 +110,51 @@ export class CategoriasComponent implements OnInit {
     if (this.form.invalid) return;
     this.isSaving.set(true);
     const isEdit = !!this.selectedItem();
+    const payload = {
+      name: this.form.value.name!,
+      description: this.form.value.description || undefined,
+    };
 
-    if (isEdit) {
-      this.categoryService.update({
-        id: this.selectedItem()!.id,
-        name: this.form.value.name!,
-        description: this.form.value.description || undefined,
-      }).subscribe({
-        next: () => {
-          this.isSaving.set(false);
-          this.closeForm();
-          this.load();
-          this.toast.success('Categoría actualizada');
-        },
-        error: err => {
-          this.isSaving.set(false);
-          this.toast.error('Error al actualizar', err?.message);
-        },
-      });
-    } else {
-      this.categoryService.create({
-        name: this.form.value.name!,
-        description: this.form.value.description || undefined,
-      }).subscribe({
-        next: () => {
-          this.isSaving.set(false);
-          this.closeForm();
-          this.load();
-          this.toast.success('Categoría creada');
-        },
-        error: err => {
-          this.isSaving.set(false);
-          this.toast.error('Error al crear', err?.message);
-        },
-      });
-    }
-  }
+    const obs = isEdit
+      ? this.categoryService.update({ id: this.selectedItem()!.id, ...payload })
+      : this.categoryService.create(payload);
 
-  openDelete(item: CategoryResponse): void {
-    this.deletingItem.set(item);
-    this.showDeleteModal.set(true);
-  }
-
-  closeDeleteModal(): void {
-    this.showDeleteModal.set(false);
-    this.deletingItem.set(null);
-  }
-
-  confirmDelete(): void {
-    const item = this.deletingItem();
-    if (!item) return;
-    this.isDeleting.set(true);
-    this.categoryService.delete(item.id).subscribe({
+    obs.subscribe({
       next: () => {
-        this.isDeleting.set(false);
-        this.closeDeleteModal();
+        this.isSaving.set(false);
+        this.closeForm();
         this.load();
-        this.toast.success('Categoría eliminada');
+        this.alertService.success(isEdit ? 'Categoría actualizada correctamente' : 'Categoría creada correctamente');
       },
       error: err => {
-        this.isDeleting.set(false);
-        this.closeDeleteModal();
-        this.toast.error('Error al eliminar', err?.message);
+        this.isSaving.set(false);
+        this.alertService.error(err?.message || 'Error al guardar');
       },
+    });
+  }
+
+  confirmDelete(item: CategoryResponse): void {
+    Swal.fire({
+      title: '¿Eliminar categoría?',
+      html: `Se eliminará <strong>${item.name}</strong>. Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.categoryService.delete(item.id).subscribe({
+          next: () => {
+            this.load();
+            this.alertService.success('Categoría eliminada correctamente');
+          },
+          error: err => {
+            this.alertService.error(err?.message || 'Error al eliminar');
+          },
+        });
+      }
     });
   }
 }

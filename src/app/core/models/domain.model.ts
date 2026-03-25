@@ -3,8 +3,8 @@ export interface CategoryResponse {
   id: number;
   name: string;
   description: string | null;
-  createdAt: string;
-  updatedAt: string;
+  isSystemDefault: boolean;
+  status: 'ACTIVE' | 'INACTIVE';
 }
 export interface CreateCategoryRequest {
   name: string;
@@ -20,21 +20,21 @@ export interface UpdateCategoryRequest {
 export interface AllergenResponse {
   id: number;
   name: string;
+  alternativeName: string | null;
   description: string | null;
-  icon: string | null;
-  createdAt: string;
-  updatedAt: string;
+  isSystemDefault: boolean;
+  status: 'ACTIVE' | 'INACTIVE';
 }
 export interface CreateAllergenRequest {
   name: string;
+  alternativeName?: string;
   description?: string;
-  icon?: string;
 }
 export interface UpdateAllergenRequest {
   id: number;
   name: string;
+  alternativeName?: string;
   description?: string;
-  icon?: string;
 }
 
 // Tipos de Unidad
@@ -60,47 +60,100 @@ export interface UpdateUnitTypeRequest {
 // Unidades de Medida
 export interface MeasurementUnitResponse {
   id: number;
+  codeIdentity: string;
   name: string;
-  abbreviation: string;
-  unitType: UnitTypeResponse | null;
-  createdAt: string;
-  updatedAt: string;
+  namePlural: string;
+  unitType: string;
+  multiplierToBase: number;
+  isBaseUnit: boolean;
+  status: 'ACTIVE' | 'INACTIVE';
 }
 export interface CreateMeasurementUnitRequest {
+  codeIdentity: string;
   name: string;
-  abbreviation: string;
-  unitTypeId?: number;
+  namePlural: string;
+  unitType: string;
+  multiplierToBase: number;
+  isBaseUnit: boolean;
 }
 export interface UpdateMeasurementUnitRequest {
   id: number;
+  codeIdentity: string;
   name: string;
-  abbreviation: string;
-  unitTypeId?: number;
+  namePlural: string;
+  unitType: string;
+  multiplierToBase: number;
+  isBaseUnit: boolean;
 }
 
-// Ingredientes
+// Ingredientes (List)
 export interface IngredientResponse {
-  id: number;
+  id: string;
+  name: string;
+  categoryName: string;
+  purchaseUnitCode: string;
+  purchaseQuantity: number;
+  unitCost: number;
+  currency: string;
+  yieldPercentage: number;
+  baseUnitCost: number;
+  status: 'ACTIVE' | 'INACTIVE';
+}
+
+// Ingredientes (Detail for edit)
+export interface IngredientDetailResponse {
+  id: string;
   name: string;
   description: string | null;
-  category: CategoryResponse | null;
-  measurementUnit: MeasurementUnitResponse | null;
-  allergens: AllergenResponse[];
-  createdAt: string;
-  updatedAt: string;
+  brand: string | null;
+  supplier: string | null;
+  categoryId: number;
+  categoryName: string;
+  purchaseUnitId: number;
+  purchaseUnitCode: string;
+  purchaseQuantity: number;
+  unitCost: number;
+  currency: string;
+  yieldPercentage: number;
+  baseUnitCost: number;
+  minimumStock: number | null;
+  densityConversion: DensityConversion | null;
+  status: 'ACTIVE' | 'INACTIVE';
 }
+
+export interface DensityConversion {
+  gramsPerCup: number;
+  gramsPerTablespoon?: number;
+  gramsPerTeaspoon?: number;
+}
+
 export interface CreateIngredientRequest {
   name: string;
   description?: string;
-  categoryId?: number;
-  measurementUnitId?: number;
-  allergenIds?: number[];
+  brand?: string;
+  supplier?: string;
+  categoryId: number;
+  purchaseUnitId: number;
+  purchaseQuantity: number;
+  unitCost: number;
+  currency: string;
+  yieldPercentage: number;
+  minimumStock?: number;
+  densityConversion?: DensityConversion;
 }
+
 export interface UpdateIngredientRequest {
-  id: number;
+  id: string;
   name: string;
   description?: string;
-  categoryId?: number;
-  measurementUnitId?: number;
-  allergenIds?: number[];
+  brand?: string;
+  supplier?: string;
+  categoryId: number;
+  purchaseUnitId: number;
+  purchaseQuantity: number;
+  unitCost: number;
+  currency: string;
+  yieldPercentage: number;
+  minimumStock?: number;
+  densityConversion?: DensityConversion;
 }

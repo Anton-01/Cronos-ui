@@ -1,126 +1,129 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { IngredientService } from 'src/app/core/services/domain/ingredient.service';
-import { CategoryService } from 'src/app/core/services/domain/category.service';
-import { MeasurementUnitService } from 'src/app/core/services/domain/measurement-unit.service';
-import { AllergenService } from 'src/app/core/services/domain/allergen.service';
-import { IngredientResponse, CategoryResponse, MeasurementUnitResponse, AllergenResponse } from 'src/app/core/models/domain.model';
+import { IngredientResponse } from 'src/app/core/models/domain.model';
 import { PageRequest } from 'src/app/core/models/pagination.model';
-import { ToastService } from 'src/app/shared/services/toast.service';
+import { AlertService } from 'src/app/shared/services/alert.service';
+import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-ingredientes',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, AlertContainerComponent],
   templateUrl: './ingredientes.component.html',
 })
 export class IngredientesComponent implements OnInit {
   private ingredientService = inject(IngredientService);
-  private categoryService = inject(CategoryService);
-  private measurementUnitService = inject(MeasurementUnitService);
-  private allergenService = inject(AllergenService);
-  private toast = inject(ToastService);
-  private fb = inject(FormBuilder);
+  private alertService = inject(AlertService);
+  private router = inject(Router);
 
   items = signal<IngredientResponse[]>([]);
-  categories = signal<CategoryResponse[]>([]);
-  measurementUnits = signal<MeasurementUnitResponse[]>([]);
-  allergens = signal<AllergenResponse[]>([]);
   totalElements = signal(0);
   totalPages = signal(0);
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
-  showForm = signal(false);
-  selectedItem = signal<IngredientResponse | null>(null);
-  showDeleteModal = signal(false);
-  deletingItem = signal<IngredientResponse | null>(null);
-  isDeleting = signal(false);
-  isSaving = signal(false);
-  selectedAllergenIds = signal<number[]>([]);
 
+  searchTerm = signal('');
   pageRequest: PageRequest = { page: 0, size: 10, sort: 'name,asc' };
-  form = this.fb.group({
-    name: ['', [Validators.required, Validators.minLength(2)]],
-    description: [''],
-    categoryId: [null as number | null],
-    measurementUnitId: [null as number | null],
+
+  filteredItems = computed(() => {
+    const term = this.searchTerm().toLowerCase().trim();
+    const all = this.items();
+    if (!term) return all;
+    return all.filter(item =>
+      item.name.toLowerCase().includes(term) ||
+      (item.categoryName && item.categoryName.toLowerCase().includes(term)) ||
+      (item.purchaseUnitCode && item.purchaseUnitCode.toLowerCase().includes(term))
+    );
   });
 
   ngOnInit(): void {
     this.load();
-    this.loadRelations();
   }
 
   load(): void {
     this.isLoading.set(true);
+    this.errorMessage.set(null);
     this.ingredientService.getAll(this.pageRequest).subscribe({
-      next: res => { this.items.set(res.data.content); this.totalElements.set(res.data.totalElements); this.totalPages.set(res.data.totalPages); this.isLoading.set(false); },
-      error: err => { this.errorMessage.set(err?.message || 'Error'); this.isLoading.set(false); },
+      next: res => {
+        this.items.set(res.data.content);
+        this.totalElements.set(res.data.totalElements);
+        this.totalPages.set(res.data.totalPages);
+        this.isLoading.set(false);
+      },
+      error: err => {
+        this.errorMessage.set(err?.message || 'Error al cargar ingredientes');
+        this.isLoading.set(false);
+      },
     });
   }
 
-  loadRelations(): void {
-    this.categoryService.getAll({ page: 0, size: 100, sort: 'name,asc' }).subscribe({ next: res => this.categories.set(res.data.content) });
-    this.measurementUnitService.getAll({ page: 0, size: 100, sort: 'name,asc' }).subscribe({ next: res => this.measurementUnits.set(res.data.content) });
-    this.allergenService.getAll({ page: 0, size: 100, sort: 'name,asc' }).subscribe({ next: res => this.allergens.set(res.data.content) });
+  onSearchInput(event: Event): void {
+    this.searchTerm.set((event.target as HTMLInputElement).value);
   }
 
-  goToPage(page: number): void { this.pageRequest = { ...this.pageRequest, page }; this.load(); }
-  get pages(): number[] { return Array.from({ length: this.totalPages() }, (_, i) => i); }
+  goToPage(page: number): void {
+    if (page < 0 || page >= this.totalPages()) return;
+    this.pageRequest = { ...this.pageRequest, page };
+    this.load();
+  }
+
+  get pages(): number[] {
+    return Array.from({ length: this.totalPages() }, (_, i) => i);
+  }
+
+  getStatusBadgeClass(status: string): string {
+    return status === 'ACTIVE' ? 'badge badge-light-success' : 'badge badge-light-danger';
+  }
+
+  getStatusLabel(status: string): string {
+    return status === 'ACTIVE' ? 'Activo' : 'Inactivo';
+  }
 
   openCreate(): void {
-    this.selectedItem.set(null);
-    this.form.reset();
-    this.selectedAllergenIds.set([]);
-    this.showForm.set(true);
+    this.router.navigate(['/cronos/ingredientes/nuevo']);
   }
 
   openEdit(item: IngredientResponse): void {
-    this.selectedItem.set(item);
-    this.form.patchValue({ name: item.name, description: item.description ?? '', categoryId: item.category?.id ?? null, measurementUnitId: item.measurementUnit?.id ?? null });
-    this.selectedAllergenIds.set(item.allergens.map(a => a.id));
-    this.showForm.set(true);
+    this.router.navigate(['/cronos/ingredientes/editar', item.id]);
   }
 
-  closeForm(): void { this.showForm.set(false); this.selectedItem.set(null); }
-
-  toggleAllergen(id: number): void {
-    this.selectedAllergenIds.update(ids => ids.includes(id) ? ids.filter(i => i !== id) : [...ids, id]);
-  }
-
-  isAllergenSelected(id: number): boolean {
-    return this.selectedAllergenIds().includes(id);
-  }
-
-  saveForm(): void {
-    if (this.form.invalid) return;
-    this.isSaving.set(true);
-    const isEdit = !!this.selectedItem();
-    const payload = {
-      name: this.form.value.name!,
-      description: this.form.value.description || undefined,
-      categoryId: this.form.value.categoryId || undefined,
-      measurementUnitId: this.form.value.measurementUnitId || undefined,
-      allergenIds: this.selectedAllergenIds().length ? this.selectedAllergenIds() : undefined,
-    };
-    const obs = isEdit ? this.ingredientService.update({ id: this.selectedItem()!.id, ...payload }) : this.ingredientService.create(payload);
-    obs.subscribe({
-      next: () => { this.isSaving.set(false); this.closeForm(); this.load(); this.toast.success(isEdit ? 'Ingrediente actualizado' : 'Ingrediente creado'); },
-      error: err => { this.isSaving.set(false); this.toast.error('Error', err?.message); },
+  confirmDelete(item: IngredientResponse): void {
+    Swal.fire({
+      title: '¿Eliminar ingrediente?',
+      html: `Se eliminará <strong>${item.name}</strong>. Esta acción no se puede deshacer.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.ingredientService.delete(item.id).subscribe({
+          next: () => {
+            this.load();
+            this.alertService.success('Ingrediente eliminado correctamente');
+          },
+          error: err => {
+            this.alertService.error(err?.message || 'Error al eliminar');
+          },
+        });
+      }
     });
   }
 
-  openDelete(item: IngredientResponse): void { this.deletingItem.set(item); this.showDeleteModal.set(true); }
-  closeDeleteModal(): void { this.showDeleteModal.set(false); this.deletingItem.set(null); }
+  formatCurrency(value: number): string {
+    return '$' + value.toFixed(2);
+  }
 
-  confirmDelete(): void {
-    const item = this.deletingItem();
-    if (!item) return;
-    this.isDeleting.set(true);
-    this.ingredientService.delete(item.id).subscribe({
-      next: () => { this.isDeleting.set(false); this.closeDeleteModal(); this.load(); this.toast.success('Ingrediente eliminado'); },
-      error: err => { this.isDeleting.set(false); this.closeDeleteModal(); this.toast.error('Error al eliminar', err?.message); },
-    });
+  formatPercentage(value: number): string {
+    return value.toFixed(2) + '%';
+  }
+
+  formatQuantity(value: number): string {
+    return value.toFixed(4);
   }
 }

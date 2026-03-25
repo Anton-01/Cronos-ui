@@ -4,34 +4,42 @@ import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
 import { ApiResponse } from '../../models/api-response.model';
 import { Page, PageRequest } from '../../models/pagination.model';
-import { IngredientResponse, CreateIngredientRequest, UpdateIngredientRequest } from '../../models/domain.model';
+import {
+  IngredientResponse,
+  IngredientDetailResponse,
+  CreateIngredientRequest,
+  UpdateIngredientRequest,
+} from '../../models/domain.model';
 
 @Injectable({ providedIn: 'root' })
 export class IngredientService {
   private readonly API = environment.apiUrl + '/raw-material';
   private http = inject(HttpClient);
 
-  getAll(params: PageRequest): Observable<ApiResponse<Page<IngredientResponse>>> {
-    const httpParams = new HttpParams()
+  getAll(params: PageRequest, search?: string): Observable<ApiResponse<Page<IngredientResponse>>> {
+    let httpParams = new HttpParams()
       .set('page', params.page.toString())
       .set('size', params.size.toString())
       .set('sort', params.sort ?? 'name,asc');
+    if (search) {
+      httpParams = httpParams.set('search', search);
+    }
     return this.http.get<ApiResponse<Page<IngredientResponse>>>(this.API, { params: httpParams });
   }
 
-  getById(id: number): Observable<ApiResponse<IngredientResponse>> {
-    return this.http.get<ApiResponse<IngredientResponse>>(`${this.API}/${id}`);
+  getById(id: string): Observable<ApiResponse<IngredientDetailResponse>> {
+    return this.http.get<ApiResponse<IngredientDetailResponse>>(`${this.API}/${id}`);
   }
 
-  create(req: CreateIngredientRequest): Observable<ApiResponse<IngredientResponse>> {
-    return this.http.post<ApiResponse<IngredientResponse>>(this.API, req);
+  create(req: CreateIngredientRequest): Observable<ApiResponse<IngredientDetailResponse>> {
+    return this.http.post<ApiResponse<IngredientDetailResponse>>(this.API, req);
   }
 
-  update(req: UpdateIngredientRequest): Observable<ApiResponse<IngredientResponse>> {
-    return this.http.put<ApiResponse<IngredientResponse>>(`${this.API}/${req.id}`, req);
+  update(req: UpdateIngredientRequest): Observable<ApiResponse<IngredientDetailResponse>> {
+    return this.http.put<ApiResponse<IngredientDetailResponse>>(`${this.API}/${req.id}`, req);
   }
 
-  delete(id: number): Observable<ApiResponse<void>> {
+  delete(id: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.API}/${id}`);
   }
 }
