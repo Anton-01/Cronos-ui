@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { IngredientService } from 'src/app/core/services/domain/ingredient.service';
 import { IngredientResponse } from 'src/app/core/models/domain.model';
 import { PageRequest } from 'src/app/core/models/pagination.model';
@@ -11,7 +11,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-ingredientes',
   standalone: true,
-  imports: [CommonModule, AlertContainerComponent],
+  imports: [CommonModule, RouterLink, AlertContainerComponent],
   templateUrl: './ingredientes.component.html',
 })
 export class IngredientesComponent implements OnInit {

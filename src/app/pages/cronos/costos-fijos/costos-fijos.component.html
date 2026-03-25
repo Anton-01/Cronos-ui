@@ -1,0 +1,234 @@
+<!-- Alert container -->
+<app-alert-container></app-alert-container>
+
+<!-- Breadcrumb + Page header -->
+<div class="d-flex align-items-center justify-content-between mb-6">
+  <div>
+    <!-- Breadcrumb: Dot Separator style (Metronic) -->
+    <ul class="breadcrumb breadcrumb-dot fw-semibold text-gray-600 fs-7 mb-1">
+      <li class="breadcrumb-item">
+        <a routerLink="/dashboard" class="text-gray-600 text-hover-primary">Inicio</a>
+      </li>
+      <li class="breadcrumb-item text-gray-600">Costos</li>
+      <li class="breadcrumb-item text-gray-500">Costos Fijos</li>
+    </ul>
+    <h1 class="fs-2 fw-bold mb-0">Catálogo de Costos Fijos</h1>
+    <p class="text-gray-500 fs-6 mb-0">Gestión de tarifas locales para tus recetas</p>
+  </div>
+  <button class="btn btn-primary" (click)="openCreate()">
+    <i class="ki-duotone ki-plus fs-2"></i> Nuevo Costo Fijo
+  </button>
+</div>
+
+<div class="card">
+  <!-- Header with search -->
+  <div class="card-header border-0 pt-6">
+    <div class="card-toolbar d-flex align-items-center gap-4">
+      <div class="d-flex align-items-center position-relative">
+        <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+          <span class="path1"></span><span class="path2"></span>
+        </i>
+        <input type="text" class="form-control form-control-solid w-250px ps-13"
+          placeholder="Buscar costo fijo..." (input)="onSearchInput($event)" />
+      </div>
+      <span class="text-muted fs-7">{{ totalElements() }} registros</span>
+    </div>
+  </div>
+
+  <!-- Table body -->
+  <div class="card-body py-4">
+    @if (isLoading()) {
+      <div class="d-flex justify-content-center py-10">
+        <span class="spinner-border text-primary"></span>
+      </div>
+    } @else if (errorMessage()) {
+      <div class="alert bg-light-danger text-danger d-flex align-items-center p-5 mb-5">
+        <i class="ki-duotone ki-information-5 fs-2hx text-danger me-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+        <div class="d-flex flex-column">
+          <span class="fw-bold">Error</span>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table align-middle table-row-dashed fs-6 gy-5" style="position: relative;">
+          <thead style="position: sticky; top: 0; background: #fff; z-index: 1;">
+            <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+              <th class="min-w-150px">Nombre</th>
+              <th class="min-w-150px">Descripción</th>
+              <th class="min-w-120px">Tipo de Costo</th>
+              <th class="min-w-100px">Monto</th>
+              <th class="min-w-140px">Método de Cálculo</th>
+              <th class="min-w-80px">Estado</th>
+              <th class="text-end min-w-100px">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-600 fw-semibold">
+            @for (item of items(); track item.id) {
+              <tr>
+                <td class="fw-bold text-gray-800">{{ item.name }}</td>
+                <td>{{ item.description || '-' }}</td>
+                <td>
+                  <span [class]="getTypeBadgeClass(item.type)">{{ getTypeLabel(item.type) }}</span>
+                </td>
+                <td class="fw-semibold">{{ formatCurrency(item.defaultAmount) }}</td>
+                <td>{{ getCalculationMethodLabel(item.calculationMethod) }}</td>
+                <td>
+                  <span [class]="getStatusBadgeClass(item.isActive)">{{ getStatusLabel(item.isActive) }}</span>
+                </td>
+                <td class="text-end">
+                  <button class="btn btn-icon btn-light-primary btn-sm me-1" title="Editar" (click)="openEdit(item)">
+                    <i class="ki-duotone ki-pencil fs-6"><span class="path1"></span><span class="path2"></span></i>
+                  </button>
+                  <button class="btn btn-icon btn-light-danger btn-sm" title="Eliminar" (click)="confirmDelete(item)">
+                    <i class="ki-duotone ki-trash fs-6"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="7" class="text-center text-muted py-10">No hay costos fijos registrados</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="d-flex justify-content-between align-items-center flex-wrap mt-5">
+        <div class="d-flex align-items-center">
+          <span class="text-muted me-3">Página {{ pageRequest.page + 1 }} de {{ totalPages() || 1 }}</span>
+        </div>
+        @if (totalPages() > 1) {
+          <ul class="pagination">
+            <li class="page-item" [class.disabled]="pageRequest.page === 0">
+              <a class="page-link cursor-pointer" (click)="goToPage(pageRequest.page - 1)">
+                <i class="ki-duotone ki-left fs-6"></i>
+              </a>
+            </li>
+            @for (p of pages; track p) {
+              <li class="page-item" [class.active]="p === pageRequest.page">
+                <a class="page-link cursor-pointer" (click)="goToPage(p)">{{ p + 1 }}</a>
+              </li>
+            }
+            <li class="page-item" [class.disabled]="pageRequest.page === totalPages() - 1">
+              <a class="page-link cursor-pointer" (click)="goToPage(pageRequest.page + 1)">
+                <i class="ki-duotone ki-right fs-6"></i>
+              </a>
+            </li>
+          </ul>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Create/Edit Modal -->
+@if (showForm()) {
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered mw-650px">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">{{ selectedItem() ? 'Editar' : 'Nuevo' }} Costo Fijo</h5>
+          <button type="button" class="btn-close" (click)="closeForm()"></button>
+        </div>
+        <form [formGroup]="form" (ngSubmit)="saveForm()">
+          <div class="modal-body">
+            @if (!selectedItem()) {
+              <div class="d-flex bg-light-info rounded p-4 mb-7">
+                <i class="ki-duotone ki-information fs-2 text-info me-3 mt-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                <div class="text-gray-700 fs-7">El registro se dará de alta con el estatus de <strong>Activo</strong> por defecto.</div>
+              </div>
+            }
+
+            <!-- Nombre -->
+            <div class="fv-row mb-7">
+              <label class="required fw-semibold fs-6 mb-2">Nombre</label>
+              <input type="text" class="form-control form-control-solid" formControlName="name"
+                placeholder="Ej: Hora de Chef, Servicio de Luz"
+                [class.is-invalid]="form.controls['name'].invalid && form.controls['name'].touched" />
+              @if (form.controls['name'].hasError('required') && form.controls['name'].touched) {
+                <div class="fv-plugins-message-container"><span class="text-danger fs-7">El nombre es obligatorio</span></div>
+              }
+              @if (form.controls['name'].hasError('minlength') && form.controls['name'].touched) {
+                <div class="fv-plugins-message-container"><span class="text-danger fs-7">El nombre debe tener al menos 2 caracteres</span></div>
+              }
+              @if (form.controls['name'].hasError('maxlength') && form.controls['name'].touched) {
+                <div class="fv-plugins-message-container"><span class="text-danger fs-7">El nombre no puede exceder 100 caracteres</span></div>
+              }
+            </div>
+
+            <!-- Descripción -->
+            <div class="fv-row mb-7">
+              <label class="fw-semibold fs-6 mb-2">Descripción</label>
+              <textarea class="form-control form-control-solid" formControlName="description" rows="2"
+                placeholder="Descripción opcional del costo fijo"
+                [class.is-invalid]="form.controls['description'].invalid && form.controls['description'].touched"></textarea>
+              @if (form.controls['description'].hasError('maxlength') && form.controls['description'].touched) {
+                <div class="fv-plugins-message-container"><span class="text-danger fs-7">La descripción no puede exceder 255 caracteres</span></div>
+              }
+            </div>
+
+            <!-- Tipo de Costo -->
+            <div class="fv-row mb-7">
+              <label class="required fw-semibold fs-6 mb-2">Tipo de Costo</label>
+              <select class="form-select form-select-solid" formControlName="type"
+                (change)="onTypeChange()"
+                [class.is-invalid]="form.controls['type'].invalid && form.controls['type'].touched">
+                <option value="">Seleccione un tipo...</option>
+                @for (opt of costTypes; track opt.value) {
+                  <option [value]="opt.value">{{ opt.label }}</option>
+                }
+              </select>
+              @if (form.controls['type'].hasError('required') && form.controls['type'].touched) {
+                <div class="fv-plugins-message-container"><span class="text-danger fs-7">El tipo de costo es obligatorio</span></div>
+              }
+            </div>
+
+            <!-- Monto por Defecto -->
+            <div class="fv-row mb-7">
+              <label class="required fw-semibold fs-6 mb-2">Monto por Defecto</label>
+              <div class="input-group input-group-solid">
+                <span class="input-group-text">$</span>
+                <input type="number" class="form-control form-control-solid" formControlName="defaultAmount"
+                  placeholder="0.00" step="0.01" min="0"
+                  [class.is-invalid]="form.controls['defaultAmount'].invalid && form.controls['defaultAmount'].touched" />
+              </div>
+              @if (form.controls['defaultAmount'].hasError('required') && form.controls['defaultAmount'].touched) {
+                <div class="fv-plugins-message-container"><span class="text-danger fs-7">El monto es obligatorio</span></div>
+              }
+              @if (form.controls['defaultAmount'].hasError('min') && form.controls['defaultAmount'].touched) {
+                <div class="fv-plugins-message-container"><span class="text-danger fs-7">El monto no puede ser negativo</span></div>
+              }
+            </div>
+
+            <!-- Método de Cálculo (dependiente del tipo) -->
+            <div class="fv-row mb-7">
+              <label class="required fw-semibold fs-6 mb-2">Método de Cálculo</label>
+              <select class="form-select form-select-solid" formControlName="calculationMethod"
+                [class.is-invalid]="form.controls['calculationMethod'].invalid && form.controls['calculationMethod'].touched">
+                <option value="">Seleccione un método...</option>
+                @for (opt of filteredCalculationMethods; track opt.value) {
+                  <option [value]="opt.value">{{ opt.label }} — {{ opt.hint }}</option>
+                }
+              </select>
+              @if (form.controls['calculationMethod'].hasError('required') && form.controls['calculationMethod'].touched) {
+                <div class="fv-plugins-message-container"><span class="text-danger fs-7">El método de cálculo es obligatorio</span></div>
+              }
+              @if (!form.controls['type'].value) {
+                <div class="fv-plugins-message-container"><span class="text-muted fs-7">Seleccione primero un tipo de costo</span></div>
+              }
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-light" (click)="closeForm()">Cancelar</button>
+            <button type="submit" class="btn btn-primary" [disabled]="form.invalid || isSaving()">
+              @if (isSaving()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+              {{ selectedItem() ? 'Actualizar' : 'Crear' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}

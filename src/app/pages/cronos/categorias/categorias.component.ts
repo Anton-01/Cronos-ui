@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { CategoryService } from 'src/app/core/services/domain/category.service';
 import { CategoryResponse } from 'src/app/core/models/domain.model';
@@ -11,7 +12,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-categorias',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, AlertContainerComponent],
   templateUrl: './categorias.component.html',
 })
 export class CategoriasComponent implements OnInit {

@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AllergenService } from 'src/app/core/services/domain/allergen.service';
 import { AllergenResponse } from 'src/app/core/models/domain.model';
@@ -11,7 +12,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-alergenos',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, AlertContainerComponent],
   templateUrl: './alergenos.component.html',
 })
 export class AlergenosComponent implements OnInit {

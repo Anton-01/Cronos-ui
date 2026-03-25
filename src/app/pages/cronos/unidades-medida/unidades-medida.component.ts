@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MeasurementUnitService } from 'src/app/core/services/domain/measurement-unit.service';
 import { MeasurementUnitResponse } from 'src/app/core/models/domain.model';
@@ -11,7 +12,7 @@ import Swal from 'sweetalert2';
 @Component({
   selector: 'app-unidades-medida',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, AlertContainerComponent],
+  imports: [CommonModule, RouterLink, FormsModule, ReactiveFormsModule, AlertContainerComponent],
   templateUrl: './unidades-medida.component.html',
 })
 export class UnidadesMedidaComponent implements OnInit {

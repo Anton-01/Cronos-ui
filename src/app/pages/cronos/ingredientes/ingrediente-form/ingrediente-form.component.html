@@ -7,6 +7,11 @@
     <i class="ki-duotone ki-arrow-left fs-3"><span class="path1"></span><span class="path2"></span></i>
   </button>
   <div>
+    <ul class="breadcrumb breadcrumb-dot fw-semibold text-gray-600 fs-7 mb-1">
+      <li class="breadcrumb-item"><a routerLink="/dashboard" class="text-gray-600 text-hover-primary">Inicio</a></li>
+      <li class="breadcrumb-item"><a routerLink="/cronos/ingredientes" class="text-gray-600 text-hover-primary">Ingredientes</a></li>
+      <li class="breadcrumb-item text-gray-500">{{ isEdit ? 'Editar' : 'Nuevo' }}</li>
+    </ul>
     <h1 class="fs-2 fw-bold mb-0">{{ isEdit ? 'Editar' : 'Nuevo' }} Ingrediente</h1>
     <p class="text-gray-500 fs-6 mb-0">Completa los campos para {{ isEdit ? 'actualizar el' : 'registrar un nuevo' }} ingrediente</p>
   </div>

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterLink } from '@angular/router';
 import { Subject, combineLatest, startWith, takeUntil, debounceTime } from 'rxjs';
 import { IngredientService } from 'src/app/core/services/domain/ingredient.service';
 import { CategoryService } from 'src/app/core/services/domain/category.service';
@@ -17,7 +17,7 @@ import { AlertContainerComponent } from 'src/app/shared/components/alert-contain
 @Component({
   selector: 'app-ingrediente-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, AlertContainerComponent],
   templateUrl: './ingrediente-form.component.html',
   styleUrls: ['./ingrediente-form.component.scss'],
 })

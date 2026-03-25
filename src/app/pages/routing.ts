@@ -71,6 +71,11 @@ const Routing: Routes = [
     path: 'cronos/ingredientes/editar/:id',
     loadComponent: () => import('./cronos/ingredientes/ingrediente-form/ingrediente-form.component').then(m => m.IngredienteFormComponent),
   },
+  // ─── Costos ───
+  {
+    path: 'cronos/costos-fijos',
+    loadComponent: () => import('./cronos/costos-fijos/costos-fijos.component').then(m => m.CostosFijosComponent),
+  },
   // ─── Cuenta ───
   {
     path: 'cronos/cuenta/mi-cuenta',
