@@ -90,7 +90,7 @@ export class IngredienteFormComponent implements OnInit, OnDestroy {
     const unitId = this.form.get('purchaseUnitId')?.value;
     if (!unitId) return '';
     const unit = this.measurementUnits().find(u => u.id === unitId);
-    return unit?.code || '';
+    return unit?.codeIdentity || '';
   });
 
   selectedCurrencyCode = computed(() => {
@@ -195,7 +195,7 @@ export class IngredienteFormComponent implements OnInit, OnDestroy {
         return;
       }
       const unit = this.measurementUnits().find(u => u.id === unitId);
-      const dim = unit?.dimensionName?.toLowerCase() || '';
+      const dim = unit?.unitType?.toLowerCase() || '';
       const isWeight = dim.includes('masa') || dim.includes('peso');
       this.showDensitySwitch.set(isWeight);
       if (!isWeight) {

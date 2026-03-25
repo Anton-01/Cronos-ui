@@ -60,30 +60,30 @@ export interface UpdateUnitTypeRequest {
 // Unidades de Medida
 export interface MeasurementUnitResponse {
   id: number;
-  code: string;
+  codeIdentity: string;
   name: string;
-  pluralName: string;
-  dimensionName: string;
-  baseFactor: number;
-  isBase: boolean;
+  namePlural: string;
+  unitType: string;
+  multiplierToBase: number;
+  isBaseUnit: boolean;
   status: 'ACTIVE' | 'INACTIVE';
 }
 export interface CreateMeasurementUnitRequest {
-  code: string;
+  codeIdentity: string;
   name: string;
-  pluralName: string;
-  dimensionName: string;
-  baseFactor: number;
-  isBase: boolean;
+  namePlural: string;
+  unitType: string;
+  multiplierToBase: number;
+  isBaseUnit: boolean;
 }
 export interface UpdateMeasurementUnitRequest {
   id: number;
-  code: string;
+  codeIdentity: string;
   name: string;
-  pluralName: string;
-  dimensionName: string;
-  baseFactor: number;
-  isBase: boolean;
+  namePlural: string;
+  unitType: string;
+  multiplierToBase: number;
+  isBaseUnit: boolean;
 }
 
 // Ingredientes (List)

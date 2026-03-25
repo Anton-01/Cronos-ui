@@ -96,7 +96,7 @@
               [class.is-invalid]="isFieldInvalid('purchaseUnitId')">
               <option [ngValue]="null" disabled>Selecciona una unidad</option>
               @for (unit of measurementUnits(); track unit.id) {
-                <option [ngValue]="unit.id">{{ unit.name }} ({{ unit.code }})</option>
+                <option [ngValue]="unit.id">{{ unit.name }} ({{ unit.codeIdentity }})</option>
               }
             </select>
             @if (isFieldInvalid('purchaseUnitId')) {
@@ -336,8 +336,7 @@
           }
           {{ isEdit ? 'Actualizar Ingrediente' : 'Crear Ingrediente' }}
         </button>
-        <button class="btn btn-light w-100" (click)="goBack()" [disabled]="isSaving()">
-          <i class="ki-duotone ki-cross fs-3 me-1"><span class="path1"></span><span class="path2"></span></i>
+        <button class="btn btn-secondary w-100" (click)="goBack()" [disabled]="isSaving()">
           Cancelar
         </button>
       </div>

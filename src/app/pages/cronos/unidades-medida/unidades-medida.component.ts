@@ -37,9 +37,9 @@ export class UnidadesMedidaComponent implements OnInit {
     if (!term) return all;
     return all.filter(item =>
       item.name.toLowerCase().includes(term) ||
-      item.code.toLowerCase().includes(term) ||
-      item.pluralName.toLowerCase().includes(term) ||
-      item.dimensionName.toLowerCase().includes(term)
+      item.codeIdentity.toLowerCase().includes(term) ||
+      item.namePlural.toLowerCase().includes(term) ||
+      item.unitType.toLowerCase().includes(term)
     );
   });
 
@@ -104,12 +104,12 @@ export class UnidadesMedidaComponent implements OnInit {
   openEdit(item: MeasurementUnitResponse): void {
     this.selectedItem.set(item);
     this.form.patchValue({
-      code: item.code,
+      code: item.codeIdentity,
       name: item.name,
-      pluralName: item.pluralName,
-      dimensionName: item.dimensionName,
-      baseFactor: item.baseFactor,
-      isBase: item.isBase,
+      pluralName: item.namePlural,
+      dimensionName: item.unitType,
+      baseFactor: item.multiplierToBase,
+      isBase: item.isBaseUnit,
     });
     this.showForm.set(true);
   }
@@ -125,12 +125,12 @@ export class UnidadesMedidaComponent implements OnInit {
     const isEdit = !!this.selectedItem();
     const val = this.form.value;
     const payload = {
-      code: val.code!,
+      codeIdentity: val.code!,
       name: val.name!,
-      pluralName: val.pluralName!,
-      dimensionName: val.dimensionName!,
-      baseFactor: val.baseFactor!,
-      isBase: val.isBase!,
+      namePlural: val.pluralName!,
+      unitType: val.dimensionName!,
+      multiplierToBase: val.baseFactor!,
+      isBaseUnit: val.isBase!,
     };
 
     const obs = isEdit

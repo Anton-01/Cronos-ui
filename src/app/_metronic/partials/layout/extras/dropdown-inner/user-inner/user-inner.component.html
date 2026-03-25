@@ -3,18 +3,20 @@
   <div class="menu-content d-flex align-items-center px-3">
     <div class="symbol symbol-50px me-5">
       <div class="symbol-label fs-2 fw-bold bg-light-primary text-primary">
-        {{ userName ? userName.charAt(0).toUpperCase() : 'U' }}
+        {{ userName.charAt(0).toUpperCase() }}
       </div>
     </div>
 
     <div class="d-flex flex-column">
       <div class="fw-bolder d-flex align-items-center fs-5">
-        {{ userName || 'Usuario' }}
-        <span class="badge badge-light-success fw-bolder fs-8 px-2 py-1 ms-2">{{ userRole }}</span>
+        {{ userName }}
       </div>
-      <a class="fw-bold text-muted text-hover-primary fs-7 cursor-pointer">
-        {{ userEmail || '' }}
-      </a>
+      <div class="fw-bold text-muted fs-7">
+        {{ userEmail }}
+      </div>
+      <div class="fw-normal text-muted fs-8">
+        {{ userRole }}
+      </div>
     </div>
   </div>
 </div>
@@ -35,40 +37,22 @@
 
 <div class="separator my-2"></div>
 
-<div
-  class="menu-item px-5"
-  data-kt-menu-trigger="hover"
-  data-kt-menu-placement="left-start"
-  data-kt-menu-flip="bottom"
->
+<div class="menu-item px-5" data-kt-menu-trigger="hover" data-kt-menu-placement="left-start" data-kt-menu-flip="bottom">
   <a class="menu-link px-5 cursor-pointer">
     <span class="menu-title position-relative">
       Language
-      <span
-        class="fs-8 rounded bg-light px-3 py-2 position-absolute translate-middle-y top-50 end-0"
-      >
-        {{ language?.name }}{{ " " }}
-        <img
-          class="w-15px h-15px rounded-1 ms-2"
-          [src]="language?.flag"
-          alt="metronic"
-        />
+      <span class="fs-8 rounded bg-light px-3 py-2 position-absolute translate-middle-y top-50 end-0">
+        {{ language.name }}{{ " " }}
+        <img class="w-15px h-15px rounded-1 ms-2" [ngSrc]="language!.flag!" width="15" height="15" alt="metronic"/>
       </span>
     </span>
   </a>
 
   <div class="menu-sub menu-sub-dropdown w-175px py-4">
-    <div
-      *ngFor="let l of langs"
-      class="menu-item px-3 cursor-pointer"
-      (click)="selectLanguage(l.lang)"
-    >
-      <a
-        class="menu-link d-flex px-5"
-        [ngClass]="l.lang === language?.lang ? 'active' : ''"
-      >
+    <div *ngFor="let l of langs" class="menu-item px-3 cursor-pointer" (click)="selectLanguage(l.lang)">
+      <a class="menu-link d-flex px-5" [ngClass]="l.lang === language.lang ? 'active' : ''" >
         <span class="symbol symbol-20px me-4">
-          <img class="rounded-1" [src]="l.flag" alt="metronic" />
+          <img class="rounded-1" [ngSrc]="l.flag!" width="20" height="20" alt="metronic" />
         </span>
         {{ l.name }}
       </a>

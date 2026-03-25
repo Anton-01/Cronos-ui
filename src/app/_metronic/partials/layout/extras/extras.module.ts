@@ -1,5 +1,5 @@
 import {NgModule} from '@angular/core';
-import {CommonModule} from '@angular/common';
+import {CommonModule, NgOptimizedImage} from '@angular/common';
 import {RouterModule} from '@angular/router';
 import {InlineSVGModule} from 'ng-inline-svg-2';
 import {NotificationsInnerComponent} from './dropdown-inner/notifications-inner/notifications-inner.component';
@@ -27,7 +27,8 @@ import { SharedModule } from "../../../shared/shared.module";
     RouterModule,
     TranslationModule,
     NgbTooltipModule,
-    SharedModule
+    SharedModule,
+    NgOptimizedImage
   ],
   exports: [
     NotificationsInnerComponent,
