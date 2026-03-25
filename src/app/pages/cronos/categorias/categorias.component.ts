@@ -1,23 +1,24 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { CategoryService } from 'src/app/core/services/domain/category.service';
 import { CategoryResponse } from 'src/app/core/models/domain.model';
 import { PageRequest } from 'src/app/core/models/pagination.model';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
+import { PageInfoService } from 'src/app/_metronic/layout/core/page-info.service';
 import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-categorias',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, AlertContainerComponent],
+  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
   templateUrl: './categorias.component.html',
 })
 export class CategoriasComponent implements OnInit {
   private categoryService = inject(CategoryService);
   private alertService = inject(AlertService);
+  private pageInfoService = inject(PageInfoService);
   private fb = inject(FormBuilder);
 
   items = signal<CategoryResponse[]>([]);
@@ -48,6 +49,13 @@ export class CategoriasComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.pageInfoService.updateTitle('Categorías');
+    this.pageInfoService.updateBreadcrumbs([
+      { title: 'Inicio', path: '/dashboard', isActive: false },
+      { title: '', path: '', isActive: false, isSeparator: true },
+      { title: 'Cronos', path: '/dashboard', isActive: false },
+      { title: '', path: '', isActive: false, isSeparator: true },
+    ]);
     this.load();
   }
 

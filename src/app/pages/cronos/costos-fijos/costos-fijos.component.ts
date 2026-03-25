@@ -1,6 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
@@ -9,6 +8,7 @@ import { UserFixedCostResponse } from 'src/app/core/models/domain.model';
 import { PageRequest } from 'src/app/core/models/pagination.model';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
+import { PageInfoService, PageLink } from 'src/app/_metronic/layout/core/page-info.service';
 import Swal from 'sweetalert2';
 
 interface SelectOption {
@@ -23,12 +23,13 @@ interface CalculationMethodOption extends SelectOption {
 @Component({
   selector: 'app-costos-fijos',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, AlertContainerComponent],
+  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
   templateUrl: './costos-fijos.component.html',
 })
 export class CostosFijosComponent implements OnInit, OnDestroy {
   private service = inject(UserFixedCostService);
   private alertService = inject(AlertService);
+  private pageInfoService = inject(PageInfoService);
   private fb = inject(FormBuilder);
   private destroy$ = new Subject<void>();
 
@@ -72,6 +73,13 @@ export class CostosFijosComponent implements OnInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    this.pageInfoService.updateTitle('Costos Fijos');
+    this.pageInfoService.updateBreadcrumbs([
+      { title: 'Inicio', path: '/dashboard', isActive: false },
+      { title: '', path: '', isActive: false, isSeparator: true },
+      { title: 'Costos', path: '/cronos/costos-fijos', isActive: false },
+      { title: '', path: '', isActive: false, isSeparator: true },
+    ]);
     this.load();
 
     this.searchSubject

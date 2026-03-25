@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { Router, ActivatedRoute, RouterLink } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, combineLatest, startWith, takeUntil, debounceTime } from 'rxjs';
 import { IngredientService } from 'src/app/core/services/domain/ingredient.service';
 import { CategoryService } from 'src/app/core/services/domain/category.service';
@@ -13,11 +13,12 @@ import {
 } from 'src/app/core/models/domain.model';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
+import { PageInfoService } from 'src/app/_metronic/layout/core/page-info.service';
 
 @Component({
   selector: 'app-ingrediente-form',
   standalone: true,
-  imports: [CommonModule, RouterLink, ReactiveFormsModule, AlertContainerComponent],
+  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
   templateUrl: './ingrediente-form.component.html',
   styleUrls: ['./ingrediente-form.component.scss'],
 })
@@ -27,6 +28,7 @@ export class IngredienteFormComponent implements OnInit, OnDestroy {
   private categoryService = inject(CategoryService);
   private measurementUnitService = inject(MeasurementUnitService);
   private alertService = inject(AlertService);
+  private pageInfoService = inject(PageInfoService);
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private destroy$ = new Subject<void>();
@@ -100,6 +102,14 @@ export class IngredienteFormComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.ingredientId = this.route.snapshot.paramMap.get('id');
     this.isEdit = !!this.ingredientId;
+
+    this.pageInfoService.updateTitle(this.isEdit ? 'Editar Ingrediente' : 'Nuevo Ingrediente');
+    this.pageInfoService.updateBreadcrumbs([
+      { title: 'Inicio', path: '/dashboard', isActive: false },
+      { title: '', path: '', isActive: false, isSeparator: true },
+      { title: 'Ingredientes', path: '/cronos/ingredientes', isActive: false },
+      { title: '', path: '', isActive: false, isSeparator: true },
+    ]);
 
     this.loadCategories();
     this.loadMeasurementUnits();

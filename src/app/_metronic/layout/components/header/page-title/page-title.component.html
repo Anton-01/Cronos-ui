@@ -33,21 +33,17 @@
         </ng-container>
         <!--begin::Breadcrumb-->
 
-        <ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0"
+        <ul class="breadcrumb breadcrumb-dot fw-semibold text-gray-600 fs-7 my-0"
           [ngClass]="{'pt-1': appPageTitleDirection === 'column'}">
-          <li *ngFor="let bc of _bc" class="breadcrumb-item"
-            [ngClass]="!bc.isSeparator && bc.isActive ? 'text-gray-900' : ''"
-            [ngClass]="!bc.isSeparator && !bc.isActive ? 'text-muted' : ''">
-            <ng-container *ngIf="!bc.isSeparator">
+          <ng-container *ngFor="let bc of _bc">
+            <li *ngIf="!bc.isSeparator" class="breadcrumb-item"
+              [ngClass]="bc.isActive ? 'text-gray-900' : 'text-muted'">
               <a class="text-muted text-hover-primary" [routerLink]="bc.path">
                 {{ bc.title }}
               </a>
-            </ng-container>
-            <ng-container *ngIf="bc.isSeparator">
-              <span class="bullet bg-gray-200 w-5px h-2px"></span>
-            </ng-container>
-          </li>
-          <li class="breadcrumb-item text-gray-900">{{ title }}</li>
+            </li>
+          </ng-container>
+          <li class="breadcrumb-item text-gray-500">{{ title }}</li>
         </ul>
         <!--end::Breadcrumb-->
 
