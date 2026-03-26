@@ -1,0 +1,596 @@
+<!-- Alert container -->
+<app-alert-container></app-alert-container>
+
+@if (isLoading()) {
+  <div class="d-flex justify-content-center py-20">
+    <span class="spinner-border text-primary"></span>
+  </div>
+} @else if (recipe()) {
+  <!-- Page header -->
+  <div class="d-flex align-items-center justify-content-between mb-6">
+    <div>
+      <div class="d-flex align-items-center gap-3">
+        <h1 class="fs-2 fw-bold mb-0">{{ recipe()!.name }}</h1>
+        <span [class]="recipe()!.status === 'ACTIVE' ? 'badge badge-light-success' : 'badge badge-light-warning'">
+          {{ recipe()!.status === 'ACTIVE' ? 'Activa' : 'Borrador' }}
+        </span>
+        <span class="badge badge-light">v{{ recipe()!.currentVersion }}</span>
+      </div>
+      @if (recipe()!.description) {
+        <p class="text-gray-500 fs-6 mb-0 mt-1">{{ recipe()!.description }}</p>
+      }
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-light" (click)="goBack()">
+        <i class="ki-duotone ki-arrow-left fs-4 me-1"><span class="path1"></span><span class="path2"></span></i> Volver
+      </button>
+      <button class="btn btn-light-primary" (click)="editRecipe()">
+        <i class="ki-duotone ki-pencil fs-4 me-1"><span class="path1"></span><span class="path2"></span></i> Editar Cabecera
+      </button>
+    </div>
+  </div>
+
+  <!-- Recipe summary bar -->
+  <div class="card mb-6">
+    <div class="card-body py-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center gap-4">
+        <div class="d-flex align-items-center gap-2">
+          <i class="ki-duotone ki-basket fs-2 text-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+          <div>
+            <span class="text-gray-500 fs-7 d-block">Rendimiento</span>
+            <span class="fw-bold fs-6">{{ recipe()!.yieldQuantity }} {{ recipe()!.yieldUnit }}</span>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <i class="ki-duotone ki-time fs-2 text-info"><span class="path1"></span><span class="path2"></span></i>
+          <div>
+            <span class="text-gray-500 fs-7 d-block">Preparación</span>
+            <span class="fw-bold fs-6">{{ recipe()!.preparationTimeMinutes || 0 }} min</span>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <i class="ki-duotone ki-fire fs-2 text-danger"><span class="path1"></span><span class="path2"></span></i>
+          <div>
+            <span class="text-gray-500 fs-7 d-block">Horneado</span>
+            <span class="fw-bold fs-6">{{ recipe()!.bakingTimeMinutes || 0 }} min</span>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <i class="ki-duotone ki-snow fs-2 text-primary"><span class="path1"></span><span class="path2"></span></i>
+          <div>
+            <span class="text-gray-500 fs-7 d-block">Enfriado</span>
+            <span class="fw-bold fs-6">{{ recipe()!.coolingTimeMinutes || 0 }} min</span>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <i class="ki-duotone ki-element-11 fs-2 text-success"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+          <div>
+            <span class="text-gray-500 fs-7 d-block">Ingredientes</span>
+            <span class="fw-bold fs-6">{{ ingredients().length }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-6">
+    <!-- Left: Tabs content -->
+    <div class="col-lg-8">
+      <!-- Tab navigation -->
+      <ul class="nav nav-tabs nav-line-tabs nav-line-tabs-2x mb-6 fs-6">
+        <li class="nav-item">
+          <a class="nav-link cursor-pointer" [class.active]="activeTab() === 'ingredients'" (click)="setTab('ingredients')">
+            <i class="ki-duotone ki-element-plus fs-4 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+            Ingredientes
+            @if (ingredients().length > 0) {
+              <span class="badge badge-light-primary ms-2">{{ ingredients().length }}</span>
+            }
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link cursor-pointer" [class.active]="activeTab() === 'fixed-costs'" (click)="setTab('fixed-costs')">
+            <i class="ki-duotone ki-dollar fs-4 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+            Costos Fijos
+            @if (recipeFixedCosts().length > 0) {
+              <span class="badge badge-light-warning ms-2">{{ recipeFixedCosts().length }}</span>
+            }
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link cursor-pointer" [class.active]="activeTab() === 'instructions'" (click)="setTab('instructions')">
+            <i class="ki-duotone ki-notepad fs-4 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+            Instrucciones
+          </a>
+        </li>
+      </ul>
+
+      <!-- ═══════════════════════════════════════════════ -->
+      <!-- TAB 1: INGREDIENTS -->
+      <!-- ═══════════════════════════════════════════════ -->
+      @if (activeTab() === 'ingredients') {
+        <!-- Add ingredient form -->
+        <div class="card mb-6">
+          <div class="card-header border-0">
+            <div class="card-title">
+              <h3 class="fw-bold m-0 fs-5">Agregar Materia Prima</h3>
+            </div>
+          </div>
+          <div class="card-body pt-0">
+            <div class="row align-items-end g-4">
+              <!-- Material search/select -->
+              <div class="col-md-5">
+                <label class="required fw-semibold fs-7 mb-2">Materia Prima</label>
+                <div class="position-relative">
+                  @if (selectedRawMaterial()) {
+                    <div class="d-flex align-items-center form-control form-control-solid">
+                      <span class="fw-semibold flex-grow-1">{{ selectedRawMaterial()!.name }}</span>
+                      <button type="button" class="btn btn-icon btn-sm btn-light-danger ms-2" (click)="clearRawMaterialSelection()">
+                        <i class="ki-duotone ki-cross fs-6"><span class="path1"></span><span class="path2"></span></i>
+                      </button>
+                    </div>
+                  } @else {
+                    <div class="position-relative">
+                      <i class="ki-duotone ki-magnifier fs-5 position-absolute ms-4" style="top: 50%; transform: translateY(-50%);">
+                        <span class="path1"></span><span class="path2"></span>
+                      </i>
+                      <input type="text" class="form-control form-control-solid ps-12"
+                        placeholder="Buscar materia prima..."
+                        [value]="ingredientSearch()"
+                        (input)="onIngredientSearchInput($event)"
+                        (focus)="filterRawMaterials(ingredientSearch())" />
+                    </div>
+                    <!-- Dropdown results -->
+                    @if (filteredRawMaterials().length > 0 && ingredientSearch().length > 0) {
+                      <div class="position-absolute w-100 bg-white shadow-sm rounded-bottom border mt-1" style="z-index: 100; max-height: 200px; overflow-y: auto;">
+                        @for (material of filteredRawMaterials(); track material.id) {
+                          <div class="d-flex align-items-center px-4 py-3 cursor-pointer bg-hover-light-primary" (click)="selectRawMaterial(material)">
+                            <div>
+                              <span class="fw-semibold d-block fs-7">{{ material.name }}</span>
+                              <span class="text-muted fs-8">{{ material.categoryName }} · {{ formatCurrency(material.unitCost) }}/{{ material.purchaseUnitCode }}</span>
+                            </div>
+                          </div>
+                        }
+                      </div>
+                    }
+                  }
+                </div>
+              </div>
+              <!-- Quantity -->
+              <div class="col-md-2">
+                <label class="required fw-semibold fs-7 mb-2">Cantidad</label>
+                <input type="number" class="form-control form-control-solid"
+                  [formControl]="ingredientForm.controls['quantity']"
+                  placeholder="0" step="0.01" min="0.001" />
+              </div>
+              <!-- Unit -->
+              <div class="col-md-3">
+                <label class="required fw-semibold fs-7 mb-2">Unidad</label>
+                <select class="form-select form-select-solid" [formControl]="ingredientForm.controls['unitId']">
+                  <option value="">Seleccionar...</option>
+                  @for (unit of measurementUnits(); track unit.id) {
+                    <option [value]="unit.id">{{ unit.name }} ({{ unit.codeIdentity }})</option>
+                  }
+                </select>
+              </div>
+              <!-- Add button -->
+              <div class="col-md-2">
+                <button type="button" class="btn btn-primary w-100" (click)="addIngredient()"
+                  [disabled]="ingredientForm.invalid || isAddingIngredient()">
+                  @if (isAddingIngredient()) {
+                    <span class="spinner-border spinner-border-sm"></span>
+                  } @else {
+                    <i class="ki-duotone ki-plus fs-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Agregar
+                  }
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ingredients table -->
+        <div class="card">
+          <div class="card-header border-0">
+            <div class="card-title">
+              <h3 class="fw-bold m-0 fs-5">Ingredientes de la Receta</h3>
+            </div>
+          </div>
+          <div class="card-body pt-0">
+            <div class="table-responsive">
+              <table class="table align-middle table-row-dashed fs-6 gy-5">
+                <thead>
+                  <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                    <th class="min-w-50px">#</th>
+                    <th class="min-w-200px">Materia Prima</th>
+                    <th class="min-w-100px">Cantidad</th>
+                    <th class="min-w-100px">Unidad</th>
+                    <th class="min-w-80px">Alérgenos</th>
+                    <th class="text-end min-w-100px">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody class="text-gray-600 fw-semibold">
+                  @for (ing of ingredients(); track ing.id; let i = $index) {
+                    <tr>
+                      <td class="text-muted">{{ i + 1 }}</td>
+                      <td>
+                        <span class="fw-bold text-gray-800">{{ ing.rawMaterialName }}</span>
+                        @if (ing.notes) {
+                          <span class="text-muted d-block fs-8">{{ ing.notes }}</span>
+                        }
+                        @if (ing.isOptional) {
+                          <span class="badge badge-light-info fs-8">Opcional</span>
+                        }
+                      </td>
+                      <td class="fw-semibold">{{ ing.quantity }}</td>
+                      <td>{{ ing.unitName }}</td>
+                      <td>
+                        @if (ing.hasAllergen) {
+                          <div class="d-flex align-items-center gap-1">
+                            <span class="text-warning fs-4" title="Contiene alérgenos: {{ ing.allergenNames.join(', ') }}">&#9888;&#65039;</span>
+                            <button class="btn btn-sm btn-light-warning py-1 px-2" (click)="openSubstituteModal(ing)">
+                              Sustituir
+                            </button>
+                          </div>
+                        } @else {
+                          <span class="badge badge-light-success">OK</span>
+                        }
+                      </td>
+                      <td class="text-end">
+                        <button class="btn btn-icon btn-light-danger btn-sm" title="Quitar" (click)="removeIngredient(ing)">
+                          <i class="ki-duotone ki-trash fs-6"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+                        </button>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="6" class="text-center text-muted py-10">
+                        <i class="ki-duotone ki-element-plus fs-3x text-gray-300 d-block mb-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+                        <span class="fs-6 d-block">No hay ingredientes</span>
+                        <span class="text-gray-400 fs-7">Usa el formulario de arriba para agregar materias primas</span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════════════════ -->
+      <!-- TAB 2: FIXED COSTS -->
+      <!-- ═══════════════════════════════════════════════ -->
+      @if (activeTab() === 'fixed-costs') {
+        <!-- Add fixed cost form -->
+        <div class="card mb-6">
+          <div class="card-header border-0">
+            <div class="card-title">
+              <h3 class="fw-bold m-0 fs-5">Agregar Costo Fijo</h3>
+            </div>
+          </div>
+          <div class="card-body pt-0">
+            <div class="row align-items-end g-4">
+              <!-- Cost select -->
+              <div class="col-md-5">
+                <label class="required fw-semibold fs-7 mb-2">Costo Fijo</label>
+                <select class="form-select form-select-solid" [formControl]="fixedCostForm.controls['userFixedCostId']"
+                  (change)="onFixedCostSelect()">
+                  <option value="">Seleccionar del catálogo...</option>
+                  @for (cost of userFixedCosts(); track cost.id) {
+                    <option [value]="cost.id">{{ cost.name }} ({{ formatCurrency(cost.defaultAmount) }})</option>
+                  }
+                </select>
+              </div>
+              <!-- Time in minutes (conditional for HOURLY_RATE) -->
+              @if (selectedFixedCostMethod() === 'HOURLY_RATE') {
+                <div class="col-md-3">
+                  <label class="fw-semibold fs-7 mb-2">Tiempo (minutos)</label>
+                  <div class="input-group input-group-solid">
+                    <input type="number" class="form-control form-control-solid"
+                      [formControl]="fixedCostForm.controls['timeInMinutes']"
+                      placeholder="0" min="0" />
+                    <span class="input-group-text">min</span>
+                  </div>
+                </div>
+              }
+              <!-- Percentage (conditional for PER_UNIT) -->
+              @if (selectedFixedCostMethod() === 'PER_UNIT') {
+                <div class="col-md-3">
+                  <label class="fw-semibold fs-7 mb-2">Porcentaje</label>
+                  <div class="input-group input-group-solid">
+                    <input type="number" class="form-control form-control-solid"
+                      [formControl]="fixedCostForm.controls['percentage']"
+                      placeholder="0" min="0" max="100" />
+                    <span class="input-group-text">%</span>
+                  </div>
+                </div>
+              }
+              <!-- Add button -->
+              <div class="col-md-2">
+                <button type="button" class="btn btn-primary w-100" (click)="addFixedCost()"
+                  [disabled]="fixedCostForm.controls['userFixedCostId'].invalid || isAddingFixedCost()">
+                  @if (isAddingFixedCost()) {
+                    <span class="spinner-border spinner-border-sm"></span>
+                  } @else {
+                    <i class="ki-duotone ki-plus fs-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Agregar
+                  }
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Fixed costs table -->
+        <div class="card">
+          <div class="card-header border-0">
+            <div class="card-title">
+              <h3 class="fw-bold m-0 fs-5">Costos Fijos de la Receta</h3>
+            </div>
+          </div>
+          <div class="card-body pt-0">
+            <div class="table-responsive">
+              <table class="table align-middle table-row-dashed fs-6 gy-5">
+                <thead>
+                  <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                    <th class="min-w-200px">Nombre</th>
+                    <th class="min-w-120px">Método</th>
+                    <th class="min-w-100px">Monto Base</th>
+                    <th class="min-w-100px">Tiempo / %</th>
+                    <th class="min-w-100px">Costo Calculado</th>
+                    <th class="text-end min-w-80px">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody class="text-gray-600 fw-semibold">
+                  @for (cost of recipeFixedCosts(); track cost.id) {
+                    <tr>
+                      <td class="fw-bold text-gray-800">{{ cost.userFixedCostName }}</td>
+                      <td>
+                        <span class="badge badge-light">{{ getFixedCostMethodLabel(cost.calculationMethod) }}</span>
+                      </td>
+                      <td>{{ formatCurrency(cost.defaultAmount) }}</td>
+                      <td>
+                        @if (cost.timeInMinutes != null) {
+                          {{ cost.timeInMinutes }} min
+                        } @else if (cost.percentage != null) {
+                          {{ cost.percentage }}%
+                        } @else {
+                          —
+                        }
+                      </td>
+                      <td class="fw-semibold text-success">{{ formatCurrency(cost.calculatedCost) }}</td>
+                      <td class="text-end">
+                        <button class="btn btn-icon btn-light-danger btn-sm" title="Quitar" (click)="removeFixedCost(cost)">
+                          <i class="ki-duotone ki-trash fs-6"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+                        </button>
+                      </td>
+                    </tr>
+                  } @empty {
+                    <tr>
+                      <td colspan="6" class="text-center text-muted py-10">
+                        <i class="ki-duotone ki-dollar fs-3x text-gray-300 d-block mb-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                        <span class="fs-6 d-block">No hay costos fijos</span>
+                        <span class="text-gray-400 fs-7">Selecciona un costo de tu catálogo para agregarlo</span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════════════════ -->
+      <!-- TAB 3: INSTRUCTIONS -->
+      <!-- ═══════════════════════════════════════════════ -->
+      @if (activeTab() === 'instructions') {
+        <div class="card">
+          <div class="card-header border-0">
+            <div class="card-title">
+              <h3 class="fw-bold m-0 fs-5">Instrucciones de la Receta</h3>
+            </div>
+          </div>
+          <div class="card-body pt-0">
+            <!-- Instructions -->
+            <div class="fv-row mb-7">
+              <label class="fw-semibold fs-6 mb-2">Pasos de Preparación</label>
+              <textarea class="form-control form-control-solid" rows="10"
+                placeholder="Escribe los pasos detallados para preparar esta receta...&#10;&#10;1. Precalentar el horno a 180°C&#10;2. Mezclar los ingredientes secos...&#10;3. ..."
+                [(ngModel)]="instructions" [ngModelOptions]="{standalone: true}"></textarea>
+            </div>
+
+            <!-- Storage instructions -->
+            <div class="fv-row mb-7">
+              <label class="fw-semibold fs-6 mb-2">Instrucciones de Almacenamiento</label>
+              <textarea class="form-control form-control-solid" rows="4"
+                placeholder="Ej: Mantener refrigerado entre 2-4°C, no congelar..."
+                [(ngModel)]="storageInstructions" [ngModelOptions]="{standalone: true}"></textarea>
+            </div>
+
+            <!-- Shelf life -->
+            <div class="fv-row mb-7">
+              <label class="fw-semibold fs-6 mb-2">Vida de Anaquel (días)</label>
+              <input type="number" class="form-control form-control-solid w-200px"
+                placeholder="Ej: 5" min="0"
+                [(ngModel)]="shelfLifeDays" [ngModelOptions]="{standalone: true}" />
+            </div>
+
+            <!-- Save button -->
+            <div class="d-flex justify-content-end">
+              <button type="button" class="btn btn-primary" (click)="saveInstructions()"
+                [disabled]="isSavingInstructions()">
+                @if (isSavingInstructions()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+                Guardar Instrucciones
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Right: Financial Panel (sticky sidebar) -->
+    <div class="col-lg-4">
+      <div style="position: sticky; top: 80px;">
+        <!-- Cost Analysis Card -->
+        <div class="card mb-6" [class.border-warning]="needsRecalculation()" [class.border]="needsRecalculation()">
+          <div class="card-header border-0">
+            <div class="card-title">
+              <h3 class="fw-bold m-0 fs-5">
+                <i class="ki-duotone ki-chart-simple fs-3 me-2 text-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+                Análisis de Costos
+              </h3>
+            </div>
+          </div>
+          <div class="card-body pt-0">
+            <!-- Recalculation warning -->
+            @if (needsRecalculation()) {
+              <div class="d-flex bg-light-warning rounded p-3 mb-5">
+                <i class="ki-duotone ki-information-2 fs-3 text-warning me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                <span class="text-gray-700 fs-7">La receta ha cambiado. Se recomienda <strong>recalcular costos</strong>.</span>
+              </div>
+            }
+
+            <!-- Calculate button -->
+            <button type="button" class="btn w-100 mb-5"
+              [class.btn-primary]="!needsRecalculation()"
+              [class.btn-warning]="needsRecalculation()"
+              (click)="calculateCosts(simulationYield() ?? undefined)"
+              [disabled]="isCalculating()">
+              @if (isCalculating()) {
+                <span class="spinner-border spinner-border-sm me-2"></span> Calculando...
+              } @else {
+                <i class="ki-duotone ki-calculator fs-4 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span><span class="path6"></span></i>
+                {{ needsRecalculation() ? 'Recalcular Costos' : 'Calcular Costos' }}
+              }
+            </button>
+
+            <!-- Cost breakdown -->
+            @if (costBreakdown()) {
+              <div class="d-flex flex-column gap-4 mb-6">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="text-gray-500 fs-7">Costo de Materiales</span>
+                  <span class="fw-bold fs-6">{{ formatCurrency(costBreakdown()!.materialsCost) }}</span>
+                </div>
+                <div class="separator separator-dashed"></div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="text-gray-500 fs-7">Sub-recetas</span>
+                  <span class="fw-bold fs-6">{{ formatCurrency(costBreakdown()!.subRecipesCost) }}</span>
+                </div>
+                <div class="separator separator-dashed"></div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="text-gray-500 fs-7">Costos Fijos</span>
+                  <span class="fw-bold fs-6">{{ formatCurrency(costBreakdown()!.fixedCosts) }}</span>
+                </div>
+                <div class="separator separator-solid my-2"></div>
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="fw-bold fs-6">Costo Total</span>
+                  <span class="fw-bolder fs-4 text-primary">{{ formatCurrency(costBreakdown()!.totalCost) }}</span>
+                </div>
+                <div class="separator separator-dashed"></div>
+                <div class="d-flex justify-content-between align-items-center bg-light-success rounded p-3">
+                  <span class="fw-bold fs-7 text-success">Costo por Unidad</span>
+                  <span class="fw-bolder fs-5 text-success">{{ formatCurrency(costBreakdown()!.costPerUnit) }}</span>
+                </div>
+              </div>
+
+              <!-- Scale factor info -->
+              @if (costBreakdown()!.scaleFactor !== 1) {
+                <div class="d-flex bg-light-info rounded p-3 mb-4">
+                  <i class="ki-duotone ki-information fs-4 text-info me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                  <span class="text-gray-700 fs-8">
+                    Factor de escala: <strong>{{ costBreakdown()!.scaleFactor.toFixed(2) }}x</strong>
+                    ({{ costBreakdown()!.targetYield }} {{ costBreakdown()!.yieldUnit }})
+                  </span>
+                </div>
+              }
+            }
+
+            <!-- Simulation section -->
+            <div class="separator separator-dashed my-5"></div>
+            <div class="mb-3">
+              <label class="fw-semibold fs-7 mb-2">
+                <i class="ki-duotone ki-abstract-26 fs-5 me-1 text-info"><span class="path1"></span><span class="path2"></span></i>
+                Simular para otro rendimiento
+              </label>
+              <div class="input-group input-group-solid">
+                <input type="number" class="form-control form-control-solid"
+                  placeholder="Ej: 25"
+                  [value]="simulationYield()"
+                  (input)="simulationYield.set(+$any($event.target).value)"
+                  (keydown)="onSimulateYieldKeydown($event)"
+                  min="0.01" step="1" />
+                <span class="input-group-text">{{ recipe()!.yieldUnit }}</span>
+              </div>
+              <span class="text-muted fs-8 mt-1 d-block">Presiona Enter para simular</span>
+            </div>
+            @if (simulationYield()) {
+              <button type="button" class="btn btn-sm btn-light-info w-100 mb-2" (click)="calculateCosts(simulationYield()!)">
+                Simular para {{ simulationYield() }} {{ recipe()!.yieldUnit }}
+              </button>
+              <button type="button" class="btn btn-sm btn-light w-100" (click)="resetSimulation()">
+                Restablecer rendimiento original
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- ALLERGEN SUBSTITUTE MODAL -->
+<!-- ═══════════════════════════════════════════════ -->
+@if (showSubstituteModal()) {
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered mw-650px">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Sustituir Ingrediente con Alérgeno</h5>
+          <button type="button" class="btn-close" (click)="closeSubstituteModal()"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Current ingredient info -->
+          @if (substituteTargetIngredient()) {
+            <div class="d-flex bg-light-warning rounded p-4 mb-5">
+              <span class="text-warning fs-3 me-3">&#9888;&#65039;</span>
+              <div>
+                <span class="fw-bold d-block">{{ substituteTargetIngredient()!.rawMaterialName }}</span>
+                <span class="text-muted fs-7">
+                  Alérgenos: <strong>{{ substituteTargetIngredient()!.allergenNames.join(', ') }}</strong>
+                </span>
+              </div>
+            </div>
+          }
+
+          <label class="fw-semibold fs-6 mb-3">Selecciona un sustituto:</label>
+          <div class="mh-300px overflow-auto">
+            @for (option of substituteOptions(); track option.id) {
+              <div class="d-flex align-items-center p-3 rounded cursor-pointer mb-2"
+                [class.bg-light-primary]="selectedSubstituteId() === option.id"
+                [class.bg-hover-light]="selectedSubstituteId() !== option.id"
+                (click)="selectedSubstituteId.set(option.id)">
+                <div class="form-check form-check-custom form-check-sm me-3">
+                  <input class="form-check-input" type="radio" [checked]="selectedSubstituteId() === option.id" />
+                </div>
+                <div>
+                  <span class="fw-semibold d-block">{{ option.name }}</span>
+                  <span class="text-muted fs-8">{{ option.categoryName }} · {{ formatCurrency(option.unitCost) }}/{{ option.purchaseUnitCode }}</span>
+                </div>
+              </div>
+            } @empty {
+              <div class="text-center text-muted py-5">No hay materias primas disponibles para sustitución</div>
+            }
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" (click)="closeSubstituteModal()">Cancelar</button>
+          <button type="button" class="btn btn-warning" (click)="confirmSubstitution()"
+            [disabled]="!selectedSubstituteId() || isSubstituting()">
+            @if (isSubstituting()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+            Confirmar Sustitución
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

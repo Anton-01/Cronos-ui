@@ -158,6 +158,113 @@ export interface UpdateIngredientRequest {
   densityConversion?: DensityConversion;
 }
 
+// Recetas
+export interface CreateRecipeRequest {
+  name: string;
+  description?: string;
+  categoryId?: string;
+  yieldQuantity: number;
+  yieldUnit: string;
+  preparationTimeMinutes?: number;
+  bakingTimeMinutes?: number;
+  coolingTimeMinutes?: number;
+  instructions?: string;
+  storageInstructions?: string;
+  shelfLifeDays?: number;
+}
+
+export interface RecipeResponse {
+  id: string;
+  name: string;
+  description: string;
+  yieldQuantity: number;
+  yieldUnit: string;
+  status: 'DRAFT' | 'ACTIVE';
+  isActive: boolean;
+  needsRecalculation: boolean;
+  currentVersion: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RecipeDetailResponse {
+  id: string;
+  name: string;
+  description: string | null;
+  categoryId: string | null;
+  yieldQuantity: number;
+  yieldUnit: string;
+  preparationTimeMinutes: number | null;
+  bakingTimeMinutes: number | null;
+  coolingTimeMinutes: number | null;
+  instructions: string | null;
+  storageInstructions: string | null;
+  shelfLifeDays: number | null;
+  status: 'DRAFT' | 'ACTIVE';
+  isActive: boolean;
+  needsRecalculation: boolean;
+  currentVersion: number;
+  ingredients: RecipeIngredientResponse[];
+  fixedCosts: RecipeFixedCostResponse[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RecipeIngredientRequest {
+  rawMaterialId: string;
+  quantity: number;
+  unitId: string;
+  displayOrder?: number;
+  isOptional?: boolean;
+  notes?: string;
+}
+
+export interface RecipeIngredientResponse {
+  id: string;
+  rawMaterialId: string;
+  rawMaterialName: string;
+  quantity: number;
+  unitId: string;
+  unitName: string;
+  displayOrder: number;
+  isOptional: boolean;
+  notes: string | null;
+  hasAllergen: boolean;
+  allergenNames: string[];
+}
+
+export interface SubstituteIngredientRequest {
+  substituteMaterialId: string;
+}
+
+export interface RecipeFixedCostRequest {
+  userFixedCostId: string;
+  timeInMinutes?: number;
+  percentage?: number;
+}
+
+export interface RecipeFixedCostResponse {
+  id: string;
+  userFixedCostId: string;
+  userFixedCostName: string;
+  calculationMethod: string;
+  defaultAmount: number;
+  timeInMinutes: number | null;
+  percentage: number | null;
+  calculatedCost: number;
+}
+
+export interface RecipeCostBreakdown {
+  targetYield: number;
+  yieldUnit: string;
+  scaleFactor: number;
+  materialsCost: number;
+  subRecipesCost: number;
+  fixedCosts: number;
+  totalCost: number;
+  costPerUnit: number;
+}
+
 // Costos Fijos del Usuario
 export interface UserFixedCostRequest {
   name: string;

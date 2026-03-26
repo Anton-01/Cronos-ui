@@ -71,6 +71,23 @@ const Routing: Routes = [
     path: 'cronos/ingredientes/editar/:id',
     loadComponent: () => import('./cronos/ingredientes/ingrediente-form/ingrediente-form.component').then(m => m.IngredienteFormComponent),
   },
+  // ─── Recetas ───
+  {
+    path: 'cronos/recetas',
+    loadComponent: () => import('./cronos/recetas/recetas.component').then(m => m.RecetasComponent),
+  },
+  {
+    path: 'cronos/recetas/nueva',
+    loadComponent: () => import('./cronos/recetas/receta-form/receta-form.component').then(m => m.RecetaFormComponent),
+  },
+  {
+    path: 'cronos/recetas/editar/:id',
+    loadComponent: () => import('./cronos/recetas/receta-form/receta-form.component').then(m => m.RecetaFormComponent),
+  },
+  {
+    path: 'cronos/recetas/:id',
+    loadComponent: () => import('./cronos/recetas/receta-detalle/receta-detalle.component').then(m => m.RecetaDetalleComponent),
+  },
   // ─── Costos ───
   {
     path: 'cronos/costos-fijos',
