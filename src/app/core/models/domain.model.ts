@@ -157,3 +157,24 @@ export interface UpdateIngredientRequest {
   minimumStock?: number;
   densityConversion?: DensityConversion;
 }
+
+// Costos Fijos del Usuario
+export interface UserFixedCostRequest {
+  name: string;
+  description?: string;
+  type: string;
+  defaultAmount: number;
+  calculationMethod: string;
+}
+
+export interface UserFixedCostResponse {
+  id: string;
+  name: string;
+  description: string | null;
+  type: string;
+  defaultAmount: number;
+  calculationMethod: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}

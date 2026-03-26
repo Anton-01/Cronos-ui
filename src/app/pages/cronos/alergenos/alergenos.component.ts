@@ -6,6 +6,7 @@ import { AllergenResponse } from 'src/app/core/models/domain.model';
 import { PageRequest } from 'src/app/core/models/pagination.model';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
+import { PageInfoService } from 'src/app/_metronic/layout/core/page-info.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -17,6 +18,7 @@ import Swal from 'sweetalert2';
 export class AlergenosComponent implements OnInit {
   private allergenService = inject(AllergenService);
   private alertService = inject(AlertService);
+  private pageInfoService = inject(PageInfoService);
   private fb = inject(FormBuilder);
 
   items = signal<AllergenResponse[]>([]);
@@ -49,6 +51,13 @@ export class AlergenosComponent implements OnInit {
   });
 
   ngOnInit(): void {
+    this.pageInfoService.updateTitle('Alérgenos');
+    this.pageInfoService.updateBreadcrumbs([
+      { title: 'Inicio', path: '/dashboard', isActive: false },
+      { title: '', path: '', isActive: false, isSeparator: true },
+      { title: 'Cronos', path: '/dashboard', isActive: false },
+      { title: '', path: '', isActive: false, isSeparator: true },
+    ]);
     this.load();
   }
 
