@@ -46,6 +46,14 @@ export class IngredienteFormComponent implements OnInit, OnDestroy {
   realUnitCost = signal(0);
   usableQuantity = signal(0);
 
+  // Category dropdown
+  showCategoryDropdown = signal(false);
+  selectedCategory = computed(() => {
+    const id = this.form.get('categoryId')?.value;
+    if (!id) return null;
+    return this.categories().find(c => c.id === id) ?? null;
+  });
+
   // Density conversion
   showDensitySwitch = signal(false);
   hasDensityConversion = signal(false);
@@ -321,6 +329,16 @@ export class IngredienteFormComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate(['/cronos/ingredientes']);
+  }
+
+  toggleCategoryDropdown(): void {
+    this.showCategoryDropdown.update(v => !v);
+  }
+
+  selectCategory(cat: CategoryResponse): void {
+    this.form.controls.categoryId.setValue(cat.id);
+    this.form.controls.categoryId.markAsTouched();
+    this.showCategoryDropdown.set(false);
   }
 
   isFieldInvalid(fieldName: string): boolean {
