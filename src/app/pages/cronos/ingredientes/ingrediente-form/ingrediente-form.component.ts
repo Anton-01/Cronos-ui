@@ -48,11 +48,7 @@ export class IngredienteFormComponent implements OnInit, OnDestroy {
 
   // Category dropdown
   showCategoryDropdown = signal(false);
-  selectedCategory = computed(() => {
-    const id = this.form.get('categoryId')?.value;
-    if (!id) return null;
-    return this.categories().find(c => c.id === id) ?? null;
-  });
+  selectedCategory = signal<CategoryResponse | null>(null);
 
   // Density conversion
   showDensitySwitch = signal(false);
@@ -167,6 +163,9 @@ export class IngredienteFormComponent implements OnInit, OnDestroy {
           yieldPercentage: data.yieldPercentage,
           minimumStock: data.minimumStock,
         });
+        // Sync category dropdown display
+        const cat = this.categories().find(c => c.id === data.categoryId);
+        if (cat) this.selectedCategory.set(cat);
         if (data.densityConversion) {
           this.densityData.set(data.densityConversion);
           this.hasDensityConversion.set(true);
@@ -338,6 +337,7 @@ export class IngredienteFormComponent implements OnInit, OnDestroy {
   selectCategory(cat: CategoryResponse): void {
     this.form.controls.categoryId.setValue(cat.id);
     this.form.controls.categoryId.markAsTouched();
+    this.selectedCategory.set(cat);
     this.showCategoryDropdown.set(false);
   }
 
