@@ -265,6 +265,38 @@ export interface RecipeCostBreakdown {
   costPerUnit: number;
 }
 
+// Archivos de Receta
+export interface RecipeFileResponse {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileType: string;
+  sizeBytes: number;
+  createdAt: string;
+}
+
+// Compartir Receta
+export interface CreateRecipeShareRequest {
+  expirationDays: number;
+  recipientEmail?: string;
+}
+
+export interface RecipeShareResponse {
+  id: string;
+  shareUrl: string;
+  expiresAt: string;
+  viewsCount: number;
+  isRevoked: boolean;
+  createdAt: string;
+}
+
+export interface RecipeShareAccessLogResponse {
+  id: string;
+  accessedAt: string;
+  ipAddress: string;
+  userAgent: string;
+}
+
 // Costos Fijos del Usuario
 export interface UserFixedCostRequest {
   name: string;

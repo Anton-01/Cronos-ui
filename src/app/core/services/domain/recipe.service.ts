@@ -14,6 +14,10 @@ import {
   RecipeFixedCostRequest,
   RecipeFixedCostResponse,
   RecipeCostBreakdown,
+  RecipeFileResponse,
+  CreateRecipeShareRequest,
+  RecipeShareResponse,
+  RecipeShareAccessLogResponse,
 } from '../../models/domain.model';
 
 @Injectable({ providedIn: 'root' })
@@ -84,5 +88,44 @@ export class RecipeService {
       httpParams = httpParams.set('targetYield', targetYield.toString());
     }
     return this.http.get<ApiResponse<RecipeCostBreakdown>>(`${this.API}/${recipeId}/cost`, { params: httpParams });
+  }
+
+  // --- Sync Costs (Cost Rollup) ---
+  syncCosts(recipeId: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${this.API}/${recipeId}/sync-costs`, {});
+  }
+
+  // --- Files ---
+  getFiles(recipeId: string): Observable<ApiResponse<RecipeFileResponse[]>> {
+    return this.http.get<ApiResponse<RecipeFileResponse[]>>(`${this.API}/${recipeId}/files`);
+  }
+
+  uploadFile(recipeId: string, file: File): Observable<ApiResponse<RecipeFileResponse>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post<ApiResponse<RecipeFileResponse>>(`${this.API}/${recipeId}/files`, formData);
+  }
+
+  deleteFile(recipeId: string, fileId: string): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.API}/${recipeId}/files/${fileId}`);
+  }
+
+  // --- Shares ---
+  getShares(recipeId: string): Observable<ApiResponse<RecipeShareResponse[]>> {
+    return this.http.get<ApiResponse<RecipeShareResponse[]>>(`${this.API}/${recipeId}/shares`);
+  }
+
+  createShare(recipeId: string, req: CreateRecipeShareRequest): Observable<ApiResponse<RecipeShareResponse>> {
+    return this.http.post<ApiResponse<RecipeShareResponse>>(`${this.API}/${recipeId}/shares`, req);
+  }
+
+  revokeShare(recipeId: string, shareId: string): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.API}/${recipeId}/shares/${shareId}`);
+  }
+
+  getShareAnalytics(recipeId: string, shareId: string): Observable<ApiResponse<RecipeShareAccessLogResponse[]>> {
+    return this.http.get<ApiResponse<RecipeShareAccessLogResponse[]>>(
+      `${this.API}/${recipeId}/shares/${shareId}/analytics`
+    );
   }
 }

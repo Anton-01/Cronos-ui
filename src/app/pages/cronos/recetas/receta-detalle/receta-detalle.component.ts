@@ -8,8 +8,8 @@ import { RecipeService } from 'src/app/core/services/domain/recipe.service';
 import { IngredientService } from 'src/app/core/services/domain/ingredient.service';
 import { UserFixedCostService } from 'src/app/core/services/domain/user-fixed-cost.service';
 import { MeasurementUnitService } from 'src/app/core/services/domain/measurement-unit.service';
-import { MeasurementUnitResponse } from 'src/app/core/models/domain.model';
 import {
+  MeasurementUnitResponse,
   RecipeDetailResponse,
   RecipeIngredientResponse,
   RecipeFixedCostResponse,
@@ -17,6 +17,9 @@ import {
   IngredientResponse,
   UserFixedCostResponse,
   CreateRecipeRequest,
+  RecipeFileResponse,
+  RecipeShareResponse,
+  RecipeShareAccessLogResponse,
 } from 'src/app/core/models/domain.model';
 import { PageRequest } from 'src/app/core/models/pagination.model';
 import { AlertService } from 'src/app/shared/services/alert.service';
@@ -24,7 +27,7 @@ import { AlertContainerComponent } from 'src/app/shared/components/alert-contain
 import { PageInfoService } from 'src/app/_metronic/layout/core/page-info.service';
 import Swal from 'sweetalert2';
 
-type TabId = 'ingredients' | 'fixed-costs' | 'instructions';
+type TabId = 'ingredients' | 'fixed-costs' | 'instructions' | 'files' | 'shares';
 
 @Component({
   selector: 'app-receta-detalle',
@@ -53,6 +56,12 @@ export class RecetaDetalleComponent implements OnInit, OnDestroy {
   // --- Change notification via RxJS ---
   private recipeChanged$ = new BehaviorSubject<void>(undefined);
   needsRecalculation = signal(false);
+
+  // --- Sync Costs ---
+  isSyncing = signal(false);
+
+  // --- Status Management ---
+  isPublishing = signal(false);
 
   // --- Ingredients Tab ---
   ingredients = signal<RecipeIngredientResponse[]>([]);
@@ -94,6 +103,28 @@ export class RecetaDetalleComponent implements OnInit, OnDestroy {
   storageInstructions = signal('');
   shelfLifeDays = signal<number | null>(null);
   isSavingInstructions = signal(false);
+
+  // --- Files Tab ---
+  files = signal<RecipeFileResponse[]>([]);
+  isLoadingFiles = signal(false);
+  isUploadingFile = signal(false);
+  isDragging = signal(false);
+
+  // --- Shares Tab ---
+  shares = signal<RecipeShareResponse[]>([]);
+  isLoadingShares = signal(false);
+  isCreatingShare = signal(false);
+
+  shareForm = this.fb.group({
+    expirationDays: [7, [Validators.required, Validators.min(1), Validators.max(30)]],
+    recipientEmail: ['', [Validators.email]],
+  });
+
+  // Share Analytics Modal
+  showAnalyticsModal = signal(false);
+  analyticsTarget = signal<RecipeShareResponse | null>(null);
+  analyticsLogs = signal<RecipeShareAccessLogResponse[]>([]);
+  isLoadingAnalytics = signal(false);
 
   // --- Financial Panel ---
   costBreakdown = signal<RecipeCostBreakdown | null>(null);
@@ -189,10 +220,97 @@ export class RecetaDetalleComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ─── SYNC COSTS (COST ROLLUP) ───
+
+  syncCosts(): void {
+    this.isSyncing.set(true);
+    this.recipeService.syncCosts(this.recipeId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.isSyncing.set(false);
+        this.alertService.success('Precios sincronizados correctamente');
+        this.loadRecipe();
+        this.costBreakdown.set(null); // Clear stale breakdown
+      },
+      error: err => {
+        this.isSyncing.set(false);
+        this.alertService.error(err?.error?.message || 'Error al sincronizar precios');
+      },
+    });
+  }
+
+  // ─── STATUS MANAGEMENT ───
+
+  publishRecipe(): void {
+    const recipe = this.recipe();
+    if (!recipe) return;
+
+    Swal.fire({
+      title: '¿Publicar receta?',
+      html: `La receta <strong>${recipe.name}</strong> pasará a estado <strong>Activa</strong> y estará disponible para producción.`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonColor: '#50cd89',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, publicar',
+      cancelButtonText: 'Cancelar',
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.isPublishing.set(true);
+        const payload: CreateRecipeRequest = {
+          name: recipe.name,
+          description: recipe.description ?? undefined,
+          yieldQuantity: recipe.yieldQuantity,
+          yieldUnit: recipe.yieldUnit,
+          preparationTimeMinutes: recipe.preparationTimeMinutes ?? undefined,
+          bakingTimeMinutes: recipe.bakingTimeMinutes ?? undefined,
+          coolingTimeMinutes: recipe.coolingTimeMinutes ?? undefined,
+          instructions: recipe.instructions ?? undefined,
+          storageInstructions: recipe.storageInstructions ?? undefined,
+          shelfLifeDays: recipe.shelfLifeDays ?? undefined,
+          status: 'ACTIVE',
+        } as any; // status added to the existing update payload
+
+        this.recipeService.update(this.recipeId, payload).pipe(takeUntil(this.destroy$)).subscribe({
+          next: () => {
+            this.isPublishing.set(false);
+            this.alertService.success('Receta publicada correctamente');
+            this.loadRecipe();
+          },
+          error: err => {
+            this.isPublishing.set(false);
+            this.alertService.error(err?.error?.message || 'Error al publicar la receta');
+          },
+        });
+      }
+    });
+  }
+
+  getStatusBadgeClass(status: string): string {
+    switch (status) {
+      case 'ACTIVE': return 'badge badge-light-success';
+      case 'ARCHIVED': return 'badge badge-light-dark';
+      default: return 'badge badge-light-warning';
+    }
+  }
+
+  getStatusLabel(status: string): string {
+    switch (status) {
+      case 'ACTIVE': return 'Activa';
+      case 'ARCHIVED': return 'Archivada';
+      default: return 'Borrador';
+    }
+  }
+
   // ─── TAB NAVIGATION ───
 
   setTab(tab: TabId): void {
     this.activeTab.set(tab);
+    if (tab === 'files' && this.files().length === 0) {
+      this.loadFiles();
+    }
+    if (tab === 'shares' && this.shares().length === 0) {
+      this.loadShares();
+    }
   }
 
   // ─── INGREDIENTS TAB ───
@@ -239,7 +357,7 @@ export class RecetaDetalleComponent implements OnInit, OnDestroy {
     const payload = {
       rawMaterialId: this.ingredientForm.value.rawMaterialId!,
       quantity: this.ingredientForm.value.quantity!,
-      unitId: this.ingredientForm.value.rawMaterialId!, // Use rawMaterialId's purchase unit
+      unitId: this.ingredientForm.value.unitId!,
       notes: this.ingredientForm.value.notes || undefined,
     };
 
@@ -250,7 +368,7 @@ export class RecetaDetalleComponent implements OnInit, OnDestroy {
         this.clearRawMaterialSelection();
         this.alertService.success('Ingrediente agregado');
         this.loadRecipe();
-        this.recipeChanged$.next(); // Notify financial panel
+        this.recipeChanged$.next();
       },
       error: err => {
         this.isAddingIngredient.set(false);
@@ -292,7 +410,6 @@ export class RecetaDetalleComponent implements OnInit, OnDestroy {
   openSubstituteModal(ingredient: RecipeIngredientResponse): void {
     this.substituteTargetIngredient.set(ingredient);
     this.selectedSubstituteId.set(null);
-    // Filter raw materials that could be substitutes (exclude current)
     this.substituteOptions.set(
       this.rawMaterials().filter(m => m.id !== ingredient.rawMaterialId)
     );
@@ -334,7 +451,6 @@ export class RecetaDetalleComponent implements OnInit, OnDestroy {
     const selectedId = this.fixedCostForm.value.userFixedCostId;
     const cost = this.userFixedCosts().find(c => c.id === selectedId);
     this.selectedFixedCostMethod.set(cost?.calculationMethod || '');
-    // Reset conditional fields
     this.fixedCostForm.controls['timeInMinutes'].setValue(null);
     this.fixedCostForm.controls['percentage'].setValue(null);
   }
@@ -424,6 +540,207 @@ export class RecetaDetalleComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ─── FILES TAB ───
+
+  loadFiles(): void {
+    this.isLoadingFiles.set(true);
+    this.recipeService.getFiles(this.recipeId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: res => {
+        this.files.set(res.data);
+        this.isLoadingFiles.set(false);
+      },
+      error: err => {
+        this.isLoadingFiles.set(false);
+        this.alertService.error(err?.error?.message || 'Error al cargar archivos');
+      },
+    });
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.uploadFile(input.files[0]);
+      input.value = '';
+    }
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging.set(true);
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging.set(false);
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging.set(false);
+    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+      this.uploadFile(event.dataTransfer.files[0]);
+    }
+  }
+
+  private uploadFile(file: File): void {
+    this.isUploadingFile.set(true);
+    this.recipeService.uploadFile(this.recipeId, file).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.isUploadingFile.set(false);
+        this.alertService.success('Archivo subido correctamente');
+        this.loadFiles();
+      },
+      error: err => {
+        this.isUploadingFile.set(false);
+        this.alertService.error(err?.error?.message || 'Error al subir archivo');
+      },
+    });
+  }
+
+  deleteFile(file: RecipeFileResponse): void {
+    Swal.fire({
+      title: '¿Eliminar archivo?',
+      html: `Se eliminará <strong>${file.fileName}</strong>.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar',
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.recipeService.deleteFile(this.recipeId, file.id)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.alertService.success('Archivo eliminado');
+              this.loadFiles();
+            },
+            error: err => {
+              this.alertService.error(err?.error?.message || 'Error al eliminar archivo');
+            },
+          });
+      }
+    });
+  }
+
+  isImageFile(fileType: string): boolean {
+    return fileType.startsWith('image/');
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+  }
+
+  // ─── SHARES TAB ───
+
+  loadShares(): void {
+    this.isLoadingShares.set(true);
+    this.recipeService.getShares(this.recipeId).pipe(takeUntil(this.destroy$)).subscribe({
+      next: res => {
+        this.shares.set(res.data);
+        this.isLoadingShares.set(false);
+      },
+      error: err => {
+        this.isLoadingShares.set(false);
+        this.alertService.error(err?.error?.message || 'Error al cargar enlaces');
+      },
+    });
+  }
+
+  createShare(): void {
+    if (this.shareForm.invalid) {
+      this.shareForm.markAllAsTouched();
+      return;
+    }
+
+    this.isCreatingShare.set(true);
+    const payload = {
+      expirationDays: this.shareForm.value.expirationDays!,
+      recipientEmail: this.shareForm.value.recipientEmail || undefined,
+    };
+
+    this.recipeService.createShare(this.recipeId, payload).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.isCreatingShare.set(false);
+        this.shareForm.reset({ expirationDays: 7, recipientEmail: '' });
+        this.alertService.success('Enlace generado correctamente');
+        this.loadShares();
+      },
+      error: err => {
+        this.isCreatingShare.set(false);
+        this.alertService.error(err?.error?.message || 'Error al generar enlace');
+      },
+    });
+  }
+
+  copyShareUrl(url: string): void {
+    navigator.clipboard.writeText(url).then(() => {
+      this.alertService.success('Enlace copiado al portapapeles');
+    });
+  }
+
+  revokeShare(share: RecipeShareResponse): void {
+    Swal.fire({
+      title: '¿Revocar enlace?',
+      text: 'El enlace dejará de funcionar inmediatamente.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Sí, revocar',
+      cancelButtonText: 'Cancelar',
+    }).then(result => {
+      if (result.isConfirmed) {
+        this.recipeService.revokeShare(this.recipeId, share.id)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.alertService.success('Enlace revocado');
+              this.loadShares();
+            },
+            error: err => {
+              this.alertService.error(err?.error?.message || 'Error al revocar enlace');
+            },
+          });
+      }
+    });
+  }
+
+  openAnalyticsModal(share: RecipeShareResponse): void {
+    this.analyticsTarget.set(share);
+    this.analyticsLogs.set([]);
+    this.showAnalyticsModal.set(true);
+    this.isLoadingAnalytics.set(true);
+
+    this.recipeService.getShareAnalytics(this.recipeId, share.id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: res => {
+          this.analyticsLogs.set(res.data);
+          this.isLoadingAnalytics.set(false);
+        },
+        error: err => {
+          this.isLoadingAnalytics.set(false);
+          this.alertService.error(err?.error?.message || 'Error al cargar analíticas');
+        },
+      });
+  }
+
+  closeAnalyticsModal(): void {
+    this.showAnalyticsModal.set(false);
+    this.analyticsTarget.set(null);
+  }
+
+  isShareExpired(share: RecipeShareResponse): boolean {
+    return new Date(share.expiresAt) < new Date();
+  }
+
   // ─── FINANCIAL PANEL ───
 
   calculateCosts(targetYield?: number): void {
@@ -482,6 +799,18 @@ export class RecetaDetalleComponent implements OnInit, OnDestroy {
     return '$' + value.toFixed(2);
   }
 
+  formatDate(date: string): string {
+    return new Date(date).toLocaleDateString('es-MX', {
+      year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
+    });
+  }
+
+  formatDateShort(date: string): string {
+    return new Date(date).toLocaleDateString('es-MX', {
+      year: 'numeric', month: 'short', day: 'numeric',
+    });
+  }
+
   getFixedCostMethodLabel(method: string): string {
     const map: Record<string, string> = {
       HOURLY_RATE: 'Tarifa por Hora',
@@ -489,5 +818,13 @@ export class RecetaDetalleComponent implements OnInit, OnDestroy {
       FIXED_PER_BATCH: 'Fijo por Lote',
     };
     return map[method] || method;
+  }
+
+  parseBrowser(userAgent: string): string {
+    if (userAgent.includes('Chrome')) return 'Chrome';
+    if (userAgent.includes('Firefox')) return 'Firefox';
+    if (userAgent.includes('Safari')) return 'Safari';
+    if (userAgent.includes('Edge')) return 'Edge';
+    return 'Otro';
   }
 }
