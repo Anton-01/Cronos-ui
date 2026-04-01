@@ -277,7 +277,7 @@
                             </button>
                           </div>
                         } @else {
-                          <span class="badge badge-light-success">OK</span>
+                          <span class="badge badge-light-success">NO</span>
                         }
                       </td>
                       <td class="text-end">
@@ -394,13 +394,9 @@
                       </td>
                       <td>{{ formatCurrency(cost.defaultAmount) }}</td>
                       <td>
-                        @if (cost.timeInMinutes != null) {
-                          {{ cost.timeInMinutes }} min
-                        } @else if (cost.percentage != null) {
-                          {{ cost.percentage }}%
-                        } @else {
-                          —
-                        }
+                        {{
+                          (cost.timeInMinutes != null) ? (cost.timeInMinutes + ' min') : (cost.percentage != null) ? (cost.percentage + '%') : '—'
+                        }}
                       </td>
                       <td class="fw-semibold text-success">{{ formatCurrency(cost.calculatedCost) }}</td>
                       <td class="text-end">
