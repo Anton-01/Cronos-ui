@@ -11,11 +11,11 @@ const Routing: Routes = [
     loadChildren: () => import('./builder/builder.module').then((m) => m.BuilderModule),
   },
   {
-    path: 'crafted/pages/profile',
+    path: 'cronos/perfil',
     loadChildren: () => import('../modules/profile/profile.module').then((m) => m.ProfileModule),
   },
   {
-    path: 'crafted/account',
+    path: 'cronos/cuenta',
     loadChildren: () => import('../modules/account/account.module').then((m) => m.AccountModule),
   },
   {
