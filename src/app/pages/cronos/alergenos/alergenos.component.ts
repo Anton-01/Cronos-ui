@@ -8,11 +8,12 @@ import { AlertService } from 'src/app/shared/services/alert.service';
 import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
 import { PageInfoService } from 'src/app/_metronic/layout/core/page-info.service';
 import Swal from 'sweetalert2';
+import {StatusToggleComponent} from "../../../shared/components/modal-toggle-status/status-toggle.component";
 
 @Component({
   selector: 'app-alergenos',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
+  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent, StatusToggleComponent],
   templateUrl: './alergenos.component.html',
 })
 export class AlergenosComponent implements OnInit {
@@ -92,14 +93,6 @@ export class AlergenosComponent implements OnInit {
     return Array.from({ length: this.totalPages() }, (_, i) => i);
   }
 
-  getStatusBadgeClass(status: string): string {
-    return status === 'ACTIVE' ? 'badge badge-light-success' : 'badge badge-light-danger';
-  }
-
-  getStatusLabel(status: string): string {
-    return status === 'ACTIVE' ? 'Activo' : 'Inactivo';
-  }
-
   openCreate(): void {
     this.selectedItem.set(null);
     this.form.reset();
@@ -172,5 +165,13 @@ export class AlergenosComponent implements OnInit {
         });
       }
     });
+  }
+
+  protected updateItemStatusInSignal(id: string, newStatus: "ACTIVE" | "INACTIVE") {
+    this.items.update(currentItems =>
+      currentItems.map(item =>
+        item.id === id ? { ...item, status: newStatus } : item
+      )
+    );
   }
 }
