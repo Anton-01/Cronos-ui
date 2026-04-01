@@ -8,11 +8,12 @@ import { AlertService } from 'src/app/shared/services/alert.service';
 import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
 import { PageInfoService } from 'src/app/_metronic/layout/core/page-info.service';
 import Swal from 'sweetalert2';
+import {StatusToggleComponent} from "../../../shared/components/modal-toggle-status/status-toggle.component";
 
 @Component({
   selector: 'app-ingredientes',
   standalone: true,
-  imports: [CommonModule, AlertContainerComponent],
+  imports: [CommonModule, AlertContainerComponent, StatusToggleComponent],
   templateUrl: './ingredientes.component.html',
 })
 export class IngredientesComponent implements OnInit {
@@ -83,14 +84,6 @@ export class IngredientesComponent implements OnInit {
     return Array.from({ length: this.totalPages() }, (_, i) => i);
   }
 
-  getStatusBadgeClass(status: string): string {
-    return status === 'ACTIVE' ? 'badge badge-light-success' : 'badge badge-light-danger';
-  }
-
-  getStatusLabel(status: string): string {
-    return status === 'ACTIVE' ? 'Activo' : 'Inactivo';
-  }
-
   openCreate(): void {
     this.router.navigate(['/cronos/ingredientes/nuevo']);
   }
@@ -134,5 +127,13 @@ export class IngredientesComponent implements OnInit {
 
   formatQuantity(value: number): string {
     return value.toFixed(4);
+  }
+
+  protected updateItemStatusInSignal(id: string, newStatus: "ACTIVE" | "INACTIVE") {
+    this.items.update(currentItems =>
+      currentItems.map(item =>
+        item.id === id ? { ...item, status: newStatus } : item
+      )
+    );
   }
 }

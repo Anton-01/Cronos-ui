@@ -46,13 +46,33 @@
         <div class="row mb-6">
           <div class="col-md-6 fv-row">
             <label class="required fw-semibold fs-6 mb-2">Categoría</label>
-            <select class="form-select" [formControl]="form.controls.categoryId"
-              [class.is-invalid]="isFieldInvalid('categoryId')">
-              <option [ngValue]="null" disabled>Selecciona una categoría</option>
-              @for (cat of categories(); track cat.id) {
-                <option [ngValue]="cat.id">{{ cat.name }}</option>
+            <div class="position-relative">
+              <div class="form-select d-flex align-items-center cursor-pointer"
+                [class.is-invalid]="isFieldInvalid('categoryId')"
+                (click)="toggleCategoryDropdown()">
+                @if (selectedCategory()) {
+                  <span>{{ selectedCategory()!.name }}</span>
+                } @else {
+                  <span class="text-gray-500">Selecciona una categoría</span>
+                }
+              </div>
+              @if (showCategoryDropdown()) {
+                <div class="position-absolute w-100 bg-white shadow rounded border mt-1" style="z-index: 100; max-height: 260px; overflow-y: auto;">
+                  @for (cat of categories(); track cat.id) {
+                    <div class="px-4 py-3 cursor-pointer bg-hover-light-primary"
+                      [class.bg-light-primary]="form.controls.categoryId.value === cat.id"
+                      (click)="selectCategory(cat)">
+                      <span class="fw-semibold d-block fs-6">{{ cat.name }}</span>
+                      @if (cat.description) {
+                        <span class="text-muted fs-8 d-block mt-1">{{ cat.description }}</span>
+                      }
+                    </div>
+                  } @empty {
+                    <div class="px-4 py-3 text-muted fs-7">No hay categorías disponibles</div>
+                  }
+                </div>
               }
-            </select>
+            </div>
             @if (isFieldInvalid('categoryId')) {
               <div class="text-danger fs-7 mt-1">La categoría es requerida</div>
             }

@@ -1,33 +1,65 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { Component, effect, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
+import { UserService } from 'src/app/core/services/user.service';
+import { TokenService } from 'src/app/core/services/token.service';
+import { ToastService } from 'src/app/shared/services/toast.service';
+import {ProfileStateService} from "../../../../../core/services/profile/ProfileStateService";
 
 @Component({
   selector: 'app-profile-details',
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './profile-details.component.html',
 })
-export class ProfileDetailsComponent implements OnInit, OnDestroy {
-  isLoading$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-  isLoading: boolean;
-  private unsubscribe: Subscription[] = [];
+export class ProfileDetailsComponent {
+  public profileState = inject(ProfileStateService);
+  private userService = inject(UserService);
+  private tokenService = inject(TokenService);
+  private toast = inject(ToastService);
+  private fb = inject(FormBuilder);
 
-  constructor(private cdr: ChangeDetectorRef) {
-    const loadingSubscr = this.isLoading$
-      .asObservable()
-      .subscribe((res) => (this.isLoading = res));
-    this.unsubscribe.push(loadingSubscr);
+  isSaving = signal(false);
+
+  form = this.fb.group({
+    firstName: [''], lastName: [''], phoneNumber: [''], username: [''],
+  });
+
+  constructor() {
+    effect(() => {
+      const currentUser = this.profileState.user();
+      if (currentUser) {
+        this.form.patchValue({
+          firstName: currentUser.firstName ?? '',
+          lastName: currentUser.lastName ?? '',
+          phoneNumber: currentUser.phoneNumber ?? '',
+          username: currentUser.username ?? '',
+        });
+      }
+    });
   }
 
-  ngOnInit(): void {}
+  saveSettings(): void {
+    this.isSaving.set(true);
+    const formValues = this.form.value;
 
-  saveSettings() {
-    this.isLoading$.next(true);
-    setTimeout(() => {
-      this.isLoading$.next(false);
-      this.cdr.detectChanges();
-    }, 1500);
-  }
+    this.userService.updateProfile({
+      firstName: formValues.firstName || undefined,
+      lastName: formValues.lastName || undefined,
+      phoneNumber: formValues.phoneNumber || undefined,
+      username: formValues.username || undefined,
+    }).subscribe({
+      next: (res) => {
+        this.isSaving.set(false);
+        this.profileState.user.set(res.data);
 
-  ngOnDestroy() {
-    this.unsubscribe.forEach((sb) => sb.unsubscribe());
+        this.tokenService.saveUserInfo(res.data.username, res.data.email);
+        this.toast.success('Perfil actualizado correctamente');
+      },
+      error: (err) => {
+        this.isSaving.set(false);
+        this.toast.error('Error al actualizar', err?.message);
+      },
+    });
   }
 }

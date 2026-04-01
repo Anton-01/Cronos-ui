@@ -46,6 +46,10 @@ export class IngredienteFormComponent implements OnInit, OnDestroy {
   realUnitCost = signal(0);
   usableQuantity = signal(0);
 
+  // Category dropdown
+  showCategoryDropdown = signal(false);
+  selectedCategory = signal<CategoryResponse | null>(null);
+
   // Density conversion
   showDensitySwitch = signal(false);
   hasDensityConversion = signal(false);
@@ -159,6 +163,9 @@ export class IngredienteFormComponent implements OnInit, OnDestroy {
           yieldPercentage: data.yieldPercentage,
           minimumStock: data.minimumStock,
         });
+        // Sync category dropdown display
+        const cat = this.categories().find(c => c.id === data.categoryId);
+        if (cat) this.selectedCategory.set(cat);
         if (data.densityConversion) {
           this.densityData.set(data.densityConversion);
           this.hasDensityConversion.set(true);
@@ -196,6 +203,8 @@ export class IngredienteFormComponent implements OnInit, OnDestroy {
     });
   }
 
+  private static readonly DENSITY_DIMENSIONS = new Set(['masa', 'mass', 'peso', 'volumen', 'volume', 'masa y peso', 'volumen y capacidad']);
+
   private setupUnitWatch(): void {
     this.form.get('purchaseUnitId')!.valueChanges.pipe(
       takeUntil(this.destroy$),
@@ -205,10 +214,12 @@ export class IngredienteFormComponent implements OnInit, OnDestroy {
         return;
       }
       const unit = this.measurementUnits().find(u => u.id === unitId);
-      const dim = unit?.unitType?.toLowerCase() || '';
-      const isWeight = dim.includes('masa') || dim.includes('peso');
-      this.showDensitySwitch.set(isWeight);
-      if (!isWeight) {
+      const dimension = (unit?.unitType ?? '').toLowerCase().trim();
+      console.log("*********** dimension -> " + dimension)
+      const canHaveDensity = IngredienteFormComponent.DENSITY_DIMENSIONS.has(dimension);
+
+      this.showDensitySwitch.set(canHaveDensity);
+      if (!canHaveDensity) {
         this.hasDensityConversion.set(false);
         this.densityData.set(null);
       }
@@ -318,6 +329,17 @@ export class IngredienteFormComponent implements OnInit, OnDestroy {
 
   goBack(): void {
     this.router.navigate(['/cronos/ingredientes']);
+  }
+
+  toggleCategoryDropdown(): void {
+    this.showCategoryDropdown.update(v => !v);
+  }
+
+  selectCategory(cat: CategoryResponse): void {
+    this.form.controls.categoryId.setValue(cat.id);
+    this.form.controls.categoryId.markAsTouched();
+    this.selectedCategory.set(cat);
+    this.showCategoryDropdown.set(false);
   }
 
   isFieldInvalid(fieldName: string): boolean {

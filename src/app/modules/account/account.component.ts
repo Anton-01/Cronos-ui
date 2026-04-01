@@ -1,11 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import {ProfileStateService} from "../../core/services/profile/ProfileStateService";
 
 @Component({
   selector: 'app-account',
   templateUrl: './account.component.html',
 })
 export class AccountComponent implements OnInit {
-  constructor() {}
+  private profileState = inject(ProfileStateService);
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.profileState.loadProfile();
+  }
 }

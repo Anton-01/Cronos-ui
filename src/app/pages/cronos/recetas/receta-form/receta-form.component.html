@@ -1,0 +1,201 @@
+<!-- Alert container -->
+<app-alert-container></app-alert-container>
+
+<!-- Page header -->
+<div class="d-flex align-items-center justify-content-between mb-6">
+  <div>
+    <h1 class="fs-2 fw-bold mb-0">{{ isEditMode() ? 'Editar Receta' : 'Nueva Receta' }}</h1>
+    <p class="text-gray-500 fs-6 mb-0">{{ isEditMode() ? 'Modifica los datos de la cabecera' : 'Define los datos básicos de tu receta' }}</p>
+  </div>
+  <button class="btn btn-light" (click)="cancel()">
+    <i class="ki-duotone ki-arrow-left fs-4 me-1"><span class="path1"></span><span class="path2"></span></i> Volver
+  </button>
+</div>
+
+@if (isLoading()) {
+  <div class="d-flex justify-content-center py-20">
+    <span class="spinner-border text-primary"></span>
+  </div>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="row g-6">
+      <!-- Left column: Form fields -->
+      <div class="col-lg-8">
+        <!-- Basic info card -->
+        <div class="card mb-6">
+          <div class="card-header border-0">
+            <div class="card-title">
+              <h3 class="fw-bold m-0">Información General</h3>
+            </div>
+          </div>
+          <div class="card-body pt-0">
+            <!-- Nombre -->
+            <div class="fv-row mb-7">
+              <label class="required fw-semibold fs-6 mb-2">Nombre de la Receta</label>
+              <input type="text" class="form-control form-control-solid" formControlName="name"
+                placeholder="Ej: Pastel de Tres Leches, Galletas de Mantequilla"
+                [class.is-invalid]="form.controls['name'].invalid && form.controls['name'].touched" />
+              @if (form.controls['name'].hasError('required') && form.controls['name'].touched) {
+                <div class="fv-plugins-message-container"><span class="text-danger fs-7">El nombre es obligatorio</span></div>
+              }
+              @if (form.controls['name'].hasError('minlength') && form.controls['name'].touched) {
+                <div class="fv-plugins-message-container"><span class="text-danger fs-7">El nombre debe tener al menos 2 caracteres</span></div>
+              }
+            </div>
+
+            <!-- Descripción -->
+            <div class="fv-row mb-7">
+              <label class="fw-semibold fs-6 mb-2">Descripción</label>
+              <textarea class="form-control form-control-solid" formControlName="description" rows="3"
+                placeholder="Descripción breve de la receta (opcional)"
+                [class.is-invalid]="form.controls['description'].invalid && form.controls['description'].touched"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Yield card -->
+        <div class="card mb-6">
+          <div class="card-header border-0">
+            <div class="card-title">
+              <h3 class="fw-bold m-0">Rendimiento</h3>
+            </div>
+          </div>
+          <div class="card-body pt-0">
+            <div class="row">
+              <div class="col-md-6 fv-row mb-7">
+                <label class="required fw-semibold fs-6 mb-2">Cantidad</label>
+                <input type="number" class="form-control form-control-solid" formControlName="yieldQuantity"
+                  placeholder="Ej: 10" step="0.5" min="0.01"
+                  [class.is-invalid]="form.controls['yieldQuantity'].invalid && form.controls['yieldQuantity'].touched" />
+                @if (form.controls['yieldQuantity'].hasError('required') && form.controls['yieldQuantity'].touched) {
+                  <div class="fv-plugins-message-container"><span class="text-danger fs-7">La cantidad es obligatoria</span></div>
+                }
+                @if (form.controls['yieldQuantity'].hasError('min') && form.controls['yieldQuantity'].touched) {
+                  <div class="fv-plugins-message-container"><span class="text-danger fs-7">La cantidad debe ser mayor a 0</span></div>
+                }
+              </div>
+              <div class="col-md-6 fv-row mb-7">
+                <label class="required fw-semibold fs-6 mb-2">Unidad de Rendimiento</label>
+                <input type="text" class="form-control form-control-solid" formControlName="yieldUnit"
+                  placeholder="Ej: Pasteles, Porciones, Piezas"
+                  [class.is-invalid]="form.controls['yieldUnit'].invalid && form.controls['yieldUnit'].touched" />
+                @if (form.controls['yieldUnit'].hasError('required') && form.controls['yieldUnit'].touched) {
+                  <div class="fv-plugins-message-container"><span class="text-danger fs-7">La unidad es obligatoria</span></div>
+                }
+                <!-- Quick unit selection -->
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                  @for (unit of commonYieldUnits; track unit) {
+                    <span class="badge badge-light cursor-pointer px-3 py-2"
+                      [class.badge-light-primary]="form.controls['yieldUnit'].value === unit"
+                      (click)="selectYieldUnit(unit)">
+                      {{ unit }}
+                    </span>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Times card -->
+        <div class="card mb-6">
+          <div class="card-header border-0">
+            <div class="card-title">
+              <h3 class="fw-bold m-0">Tiempos de Producción</h3>
+            </div>
+          </div>
+          <div class="card-body pt-0">
+            <div class="row">
+              <div class="col-md-4 fv-row mb-7">
+                <label class="fw-semibold fs-6 mb-2">Preparación (min)</label>
+                <div class="input-group input-group-solid">
+                  <input type="number" class="form-control form-control-solid" formControlName="preparationTimeMinutes"
+                    placeholder="0" min="0" />
+                  <span class="input-group-text">min</span>
+                </div>
+              </div>
+              <div class="col-md-4 fv-row mb-7">
+                <label class="fw-semibold fs-6 mb-2">Horneado (min)</label>
+                <div class="input-group input-group-solid">
+                  <input type="number" class="form-control form-control-solid" formControlName="bakingTimeMinutes"
+                    placeholder="0" min="0" />
+                  <span class="input-group-text">min</span>
+                </div>
+              </div>
+              <div class="col-md-4 fv-row mb-7">
+                <label class="fw-semibold fs-6 mb-2">Enfriado (min)</label>
+                <div class="input-group input-group-solid">
+                  <input type="number" class="form-control form-control-solid" formControlName="coolingTimeMinutes"
+                    placeholder="0" min="0" />
+                  <span class="input-group-text">min</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column: Summary & actions -->
+      <div class="col-lg-4">
+        <div style="position: sticky; top: 80px;">
+          <!-- Summary card -->
+          <div class="card mb-6">
+            <div class="card-header border-0">
+              <div class="card-title">
+                <h3 class="fw-bold m-0">Resumen</h3>
+              </div>
+            </div>
+            <div class="card-body pt-0">
+              <div class="d-flex flex-column gap-4">
+                <div class="d-flex justify-content-between">
+                  <span class="text-gray-500 fs-7">Nombre</span>
+                  <span class="fw-semibold fs-7">{{ form.controls['name'].value || '—' }}</span>
+                </div>
+                <div class="separator separator-dashed"></div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-gray-500 fs-7">Rendimiento</span>
+                  <span class="fw-semibold fs-7">
+                    {{ form.controls['yieldQuantity'].value || '—' }}
+                    {{ form.controls['yieldUnit'].value || '' }}
+                  </span>
+                </div>
+                <div class="separator separator-dashed"></div>
+                <div class="d-flex justify-content-between">
+                  <span class="text-gray-500 fs-7">Tiempo total</span>
+                  <span class="fw-semibold fs-7">
+                    {{ (form.controls['preparationTimeMinutes'].value || 0)
+                      + (form.controls['bakingTimeMinutes'].value || 0)
+                      + (form.controls['coolingTimeMinutes'].value || 0) }} min
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Info card -->
+          @if (!isEditMode()) {
+            <div class="card bg-light-info mb-6">
+              <div class="card-body py-5">
+                <div class="d-flex align-items-start">
+                  <i class="ki-duotone ki-information fs-2 text-info me-3 mt-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                  <div class="text-gray-700 fs-7">
+                    Al crear la receta serás redirigido al <strong>Hub de Receta</strong> donde podrás agregar ingredientes, costos fijos e instrucciones.
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Actions -->
+          <div class="d-flex flex-column gap-3">
+            <button type="submit" class="btn btn-primary w-100" [disabled]="form.invalid || isSaving()">
+              @if (isSaving()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+              {{ isEditMode() ? 'Actualizar Receta' : 'Crear y Continuar' }}
+            </button>
+            <button type="button" class="btn btn-light w-100" (click)="cancel()">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </form>
+}

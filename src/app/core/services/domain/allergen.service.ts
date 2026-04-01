@@ -2,8 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { ApiResponse } from '../../models/api-response.model';
-import { Page, PageRequest } from '../../models/pagination.model';
+import { ApiResponse } from '../../models';
+import { Page, PageRequest } from '../../models';
 import { AllergenResponse, CreateAllergenRequest, UpdateAllergenRequest } from '../../models/domain.model';
 
 @Injectable({ providedIn: 'root' })
@@ -34,7 +34,7 @@ export class AllergenService {
     return this.http.put<ApiResponse<AllergenResponse>>(`${this.API}/${req.id}`, req);
   }
 
-  delete(id: number): Observable<ApiResponse<void>> {
+  delete(id: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.API}/${id}`);
   }
 }

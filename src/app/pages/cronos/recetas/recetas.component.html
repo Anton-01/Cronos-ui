@@ -1,0 +1,142 @@
+<!-- Alert container -->
+<app-alert-container></app-alert-container>
+
+<!-- Page header -->
+<div class="d-flex align-items-center justify-content-between mb-6">
+  <div>
+    <h1 class="fs-2 fw-bold mb-0">Recetas</h1>
+    <p class="text-gray-500 fs-6 mb-0">Gestiona tus recetas, ingredientes y costos</p>
+  </div>
+  <button class="btn btn-primary" (click)="openCreate()">
+    <i class="ki-duotone ki-plus fs-2"></i> Nueva Receta
+  </button>
+</div>
+
+<div class="card">
+  <!-- Header with search -->
+  <div class="card-header border-0 pt-6">
+    <div class="card-toolbar d-flex align-items-center gap-4">
+      <div class="d-flex align-items-center position-relative">
+        <i class="ki-duotone ki-magnifier fs-3 position-absolute ms-5">
+          <span class="path1"></span><span class="path2"></span>
+        </i>
+        <input type="text" class="form-control form-control-solid w-250px ps-13"
+          placeholder="Buscar receta..." (input)="onSearchInput($event)" />
+      </div>
+      <span class="text-muted fs-7">{{ totalElements() }} recetas</span>
+    </div>
+  </div>
+
+  <!-- Table body -->
+  <div class="card-body py-4">
+    @if (isLoading()) {
+      <div class="d-flex justify-content-center py-10">
+        <span class="spinner-border text-primary"></span>
+      </div>
+    } @else if (errorMessage()) {
+      <div class="alert bg-light-danger text-danger d-flex align-items-center p-5 mb-5">
+        <i class="ki-duotone ki-information-5 fs-2hx text-danger me-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+        <div class="d-flex flex-column">
+          <span class="fw-bold">Error</span>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      </div>
+    } @else {
+      <div class="table-responsive">
+        <table class="table align-middle table-row-dashed fs-6 gy-5" style="position: relative;">
+          <thead style="position: sticky; top: 0; background: #fff; z-index: 1;">
+            <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+              <th class="min-w-50px">#</th>
+              <th class="min-w-200px">Nombre</th>
+              <th class="min-w-120px">Rendimiento</th>
+              <th class="min-w-100px">Estado</th>
+              <th class="min-w-80px">Versión</th>
+              <th class="min-w-120px">Actualizado</th>
+              <th class="text-end min-w-120px">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-600 fw-semibold">
+            @for (item of items(); track item.id; let i = $index) {
+              <tr>
+                <td>{{ i + 1 }}</td>
+                <td>
+                  <div class="d-flex flex-column">
+                    <a class="text-gray-800 fw-bold text-hover-primary cursor-pointer fs-6" (click)="openDetail(item)">
+                      {{ item.name }}
+                    </a>
+                    @if (item.description) {
+                      <span class="text-muted fs-7">{{ item.description }}</span>
+                    }
+                  </div>
+                </td>
+                <td>
+                  <span class="fw-semibold">{{ item.yieldQuantity }}</span>
+                  <span class="text-muted ms-1">{{ item.yieldUnit }}</span>
+                </td>
+                <td>
+                  <span [class]="getStatusBadgeClass(item.status)">{{ getStatusLabel(item.status) }}</span>
+                  @if (item.needsRecalculation) {
+                    <span class="badge badge-light-danger ms-2" title="Necesita recálculo">
+                      <i class="ki-duotone ki-information-2 fs-7 text-danger"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                    </span>
+                  }
+                </td>
+                <td>
+                  <span class="badge badge-light">v{{ item.currentVersion }}</span>
+                </td>
+                <td class="text-muted fs-7">{{ formatDate(item.updatedAt) }}</td>
+                <td class="text-end">
+                  <button class="btn btn-icon btn-light-info btn-sm me-1" title="Ver Detalle" (click)="openDetail(item)">
+                    <i class="ki-duotone ki-eye fs-6"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                  </button>
+                  <button class="btn btn-icon btn-light-primary btn-sm me-1" title="Editar" (click)="openEdit(item)">
+                    <i class="ki-duotone ki-pencil fs-6"><span class="path1"></span><span class="path2"></span></i>
+                  </button>
+                  <button class="btn btn-icon btn-light-danger btn-sm" title="Eliminar" (click)="confirmDelete(item)">
+                    <i class="ki-duotone ki-trash fs-6"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+                  </button>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="6" class="text-center text-muted py-10">
+                  <div class="d-flex flex-column align-items-center">
+                    <i class="ki-duotone ki-notepad fs-3x text-gray-300 mb-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+                    <span class="fs-6">No hay recetas registradas</span>
+                    <span class="text-gray-400 fs-7 mt-1">Comienza creando tu primera receta</span>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <div class="d-flex justify-content-between align-items-center flex-wrap mt-5">
+        <div class="d-flex align-items-center">
+          <span class="text-muted me-3">Página {{ pageRequest.page + 1 }} de {{ totalPages() || 1 }}</span>
+        </div>
+        @if (totalPages() > 1) {
+          <ul class="pagination">
+            <li class="page-item" [class.disabled]="pageRequest.page === 0">
+              <a class="page-link cursor-pointer" (click)="goToPage(pageRequest.page - 1)">
+                <i class="ki-duotone ki-left fs-6"></i>
+              </a>
+            </li>
+            @for (p of pages; track p) {
+              <li class="page-item" [class.active]="p === pageRequest.page">
+                <a class="page-link cursor-pointer" (click)="goToPage(p)">{{ p + 1 }}</a>
+              </li>
+            }
+            <li class="page-item" [class.disabled]="pageRequest.page === totalPages() - 1">
+              <a class="page-link cursor-pointer" (click)="goToPage(pageRequest.page + 1)">
+                <i class="ki-duotone ki-right fs-6"></i>
+              </a>
+            </li>
+          </ul>
+        }
+      </div>
+    }
+  </div>
+</div>

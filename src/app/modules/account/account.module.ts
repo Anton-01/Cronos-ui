@@ -1,6 +1,5 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
 import { AccountRoutingModule } from './account-routing.module';
 import { AccountComponent } from './account.component';
 import { OverviewComponent } from './overview/overview.component';
@@ -13,18 +12,18 @@ import { NotificationsComponent } from './settings/forms/notifications/notificat
 import { SignInMethodComponent } from './settings/forms/sign-in-method/sign-in-method.component';
 import { DropdownMenusModule, WidgetsModule } from '../../_metronic/partials';
 import {SharedModule} from "../../_metronic/shared/shared.module";
+import {ProfileStateService} from "../../core/services/profile/ProfileStateService";
 
 @NgModule({
   declarations: [
     AccountComponent,
     OverviewComponent,
     SettingsComponent,
-    ProfileDetailsComponent,
     ConnectedAccountsComponent,
     DeactivateAccountComponent,
     EmailPreferencesComponent,
     NotificationsComponent,
-    SignInMethodComponent,
+
   ],
   imports: [
     CommonModule,
@@ -32,6 +31,13 @@ import {SharedModule} from "../../_metronic/shared/shared.module";
     DropdownMenusModule,
     WidgetsModule,
     SharedModule,
+    ProfileDetailsComponent,
+    SignInMethodComponent,
   ],
+  providers: [
+    // Proveerlo aquí asegura que todos los componentes de este módulo
+    // compartan exactamente la misma instancia del servicio y sus Signals
+    ProfileStateService
+  ]
 })
 export class AccountModule {}

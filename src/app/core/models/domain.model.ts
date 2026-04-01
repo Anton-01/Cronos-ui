@@ -16,9 +16,8 @@ export interface UpdateCategoryRequest {
   description?: string;
 }
 
-// Alérgenos
 export interface AllergenResponse {
-  id: number;
+  id: string;
   name: string;
   alternativeName: string | null;
   description: string | null;
@@ -31,7 +30,7 @@ export interface CreateAllergenRequest {
   description?: string;
 }
 export interface UpdateAllergenRequest {
-  id: number;
+  id: string;
   name: string;
   alternativeName?: string;
   description?: string;
@@ -156,6 +155,145 @@ export interface UpdateIngredientRequest {
   yieldPercentage: number;
   minimumStock?: number;
   densityConversion?: DensityConversion;
+}
+
+// Recetas
+export interface CreateRecipeRequest {
+  name: string;
+  description?: string;
+  categoryId?: string;
+  yieldQuantity: number;
+  yieldUnit: string;
+  preparationTimeMinutes?: number;
+  bakingTimeMinutes?: number;
+  coolingTimeMinutes?: number;
+  instructions?: string;
+  storageInstructions?: string;
+  shelfLifeDays?: number;
+}
+
+export interface RecipeResponse {
+  id: string;
+  name: string;
+  description: string;
+  yieldQuantity: number;
+  yieldUnit: string;
+  status: 'DRAFT' | 'ACTIVE';
+  isActive: boolean;
+  needsRecalculation: boolean;
+  currentVersion: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RecipeDetailResponse {
+  id: string;
+  name: string;
+  description: string | null;
+  categoryId: string | null;
+  yieldQuantity: number;
+  yieldUnit: string;
+  preparationTimeMinutes: number | null;
+  bakingTimeMinutes: number | null;
+  coolingTimeMinutes: number | null;
+  instructions: string | null;
+  storageInstructions: string | null;
+  shelfLifeDays: number | null;
+  status: 'DRAFT' | 'ACTIVE';
+  isActive: boolean;
+  needsRecalculation: boolean;
+  currentVersion: number;
+  ingredients: RecipeIngredientResponse[];
+  fixedCosts: RecipeFixedCostResponse[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RecipeIngredientRequest {
+  rawMaterialId: string;
+  quantity: number;
+  unitId: string;
+  displayOrder?: number;
+  isOptional?: boolean;
+  notes?: string;
+}
+
+export interface RecipeIngredientResponse {
+  id: string;
+  rawMaterialId: string;
+  rawMaterialName: string;
+  quantity: number;
+  unitId: string;
+  unitName: string;
+  displayOrder: number;
+  isOptional: boolean;
+  notes: string | null;
+  hasAllergen: boolean;
+  allergenNames: string[];
+}
+
+export interface SubstituteIngredientRequest {
+  substituteMaterialId: string;
+}
+
+export interface RecipeFixedCostRequest {
+  userFixedCostId: string;
+  timeInMinutes?: number;
+  percentage?: number;
+}
+
+export interface RecipeFixedCostResponse {
+  id: string;
+  userFixedCostId: string;
+  userFixedCostName: string;
+  calculationMethod: string;
+  defaultAmount: number;
+  timeInMinutes: number | null;
+  percentage: number | null;
+  calculatedCost: number;
+}
+
+export interface RecipeCostBreakdown {
+  targetYield: number;
+  yieldUnit: string;
+  scaleFactor: number;
+  materialsCost: number;
+  subRecipesCost: number;
+  fixedCosts: number;
+  totalCost: number;
+  costPerUnit: number;
+}
+
+// Archivos de Receta
+export interface RecipeFileResponse {
+  id: string;
+  fileName: string;
+  fileUrl: string;
+  fileType: string;
+  sizeBytes: number;
+  createdAt: string;
+}
+
+// Compartir Receta
+export interface CreateRecipeShareRequest {
+  expirationDays: number;
+  recipientEmail?: string;
+}
+
+export interface RecipeShareResponse {
+  id: string;
+  shareUrl: string;
+  expiresAt: string;
+  viewsCount: number;
+  isRevoked: boolean;
+  createdAt: string;
+}
+
+export interface RecipeShareAccessLogResponse {
+  id: string;
+  accessedAt: string;
+  ipAddress: string;
+  userAgent: string;
 }
 
 // Costos Fijos del Usuario

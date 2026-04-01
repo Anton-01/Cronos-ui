@@ -74,7 +74,9 @@
                   </span>
                 </td>
                 <td>
-                  <span [class]="getStatusBadgeClass(item.status)">{{ getStatusLabel(item.status) }}</span>
+                  <app-status-toggle [item]="item" [endpoint]="'measurement-unit'" [nameEntity]="item.name"
+                                     (statusChanged)="updateItemStatusInSignal(item.id, $event)">
+                  </app-status-toggle>
                 </td>
                 <td class="text-end">
                   <button class="btn btn-icon btn-light-primary btn-sm me-1" title="Editar" (click)="openEdit(item)">
