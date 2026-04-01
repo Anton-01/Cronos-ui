@@ -8,11 +8,7 @@ import { DocumentsComponent } from './documents/documents.component';
 import { ProfileRoutingModule } from './profile-routing.module';
 import { ProfileComponent } from './profile.component';
 import { ConnectionsComponent } from './connections/connections.component';
-import {
-  CardsModule,
-  DropdownMenusModule,
-  WidgetsModule,
-} from '../../_metronic/partials';
+import { CardsModule, DropdownMenusModule, WidgetsModule,} from '../../_metronic/partials';
 import { SharedModule } from "../../_metronic/shared/shared.module";
 
 @NgModule({
