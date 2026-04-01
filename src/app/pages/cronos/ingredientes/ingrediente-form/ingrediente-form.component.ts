@@ -203,7 +203,7 @@ export class IngredienteFormComponent implements OnInit, OnDestroy {
     });
   }
 
-  private static readonly DENSITY_DIMENSIONS = new Set(['masa', 'mass', 'peso', 'volumen', 'volume']);
+  private static readonly DENSITY_DIMENSIONS = new Set(['masa', 'mass', 'peso', 'volumen', 'volume', 'masa y peso', 'volumen y capacidad']);
 
   private setupUnitWatch(): void {
     this.form.get('purchaseUnitId')!.valueChanges.pipe(
@@ -215,6 +215,7 @@ export class IngredienteFormComponent implements OnInit, OnDestroy {
       }
       const unit = this.measurementUnits().find(u => u.id === unitId);
       const dimension = (unit?.unitType ?? '').toLowerCase().trim();
+      console.log("*********** dimension -> " + dimension)
       const canHaveDensity = IngredienteFormComponent.DENSITY_DIMENSIONS.has(dimension);
 
       this.showDensitySwitch.set(canHaveDensity);
