@@ -11,9 +11,7 @@
     <div>
       <div class="d-flex align-items-center gap-3">
         <h1 class="fs-2 fw-bold mb-0">{{ recipe()!.name }}</h1>
-        <span [class]="recipe()!.status === 'ACTIVE' ? 'badge badge-light-success' : 'badge badge-light-warning'">
-          {{ recipe()!.status === 'ACTIVE' ? 'Activa' : 'Borrador' }}
-        </span>
+        <span [class]="getStatusBadgeClass(recipe()!.status)">{{ getStatusLabel(recipe()!.status) }}</span>
         <span class="badge badge-light">v{{ recipe()!.currentVersion }}</span>
       </div>
       @if (recipe()!.description) {
@@ -24,11 +22,41 @@
       <button class="btn btn-light" (click)="goBack()">
         <i class="ki-duotone ki-arrow-left fs-4 me-1"><span class="path1"></span><span class="path2"></span></i> Volver
       </button>
+      @if (recipe()!.status === 'DRAFT') {
+        <button class="btn btn-success" (click)="publishRecipe()" [disabled]="isPublishing()">
+          @if (isPublishing()) {
+            <span class="spinner-border spinner-border-sm me-2"></span>
+          } @else {
+            <i class="ki-duotone ki-check-circle fs-4 me-1"><span class="path1"></span><span class="path2"></span></i>
+          }
+          Publicar Receta
+        </button>
+      }
       <button class="btn btn-light-primary" (click)="editRecipe()">
         <i class="ki-duotone ki-pencil fs-4 me-1"><span class="path1"></span><span class="path2"></span></i> Editar Cabecera
       </button>
     </div>
   </div>
+
+  <!-- Cost sync banner -->
+  @if (recipe()!.needsRecalculation) {
+    <div class="alert d-flex align-items-center bg-light-danger text-danger p-5 mb-6" style="border: none !important;">
+      <i class="ki-duotone ki-information-5 fs-2hx text-danger me-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+      <div class="d-flex flex-grow-1 align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+          <span class="fw-bold d-block">Los precios de los insumos han cambiado</span>
+          <span class="fs-7">El costo actual de esta receta está desactualizado. Sincroniza para recalcular con los precios vigentes del catálogo.</span>
+        </div>
+        <button class="btn btn-danger btn-sm" (click)="syncCosts()" [disabled]="isSyncing()">
+          @if (isSyncing()) {
+            <span class="spinner-border spinner-border-sm me-2"></span> Sincronizando...
+          } @else {
+            <i class="ki-duotone ki-arrows-circle fs-5 me-1"><span class="path1"></span><span class="path2"></span></i> Sincronizar Precios
+          }
+        </button>
+      </div>
+    </div>
+  }
 
   <!-- Recipe summary bar -->
   <div class="card mb-6">
@@ -100,6 +128,24 @@
           <a class="nav-link cursor-pointer" [class.active]="activeTab() === 'instructions'" (click)="setTab('instructions')">
             <i class="ki-duotone ki-notepad fs-4 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
             Instrucciones
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link cursor-pointer" [class.active]="activeTab() === 'files'" (click)="setTab('files')">
+            <i class="ki-duotone ki-picture fs-4 me-2"><span class="path1"></span><span class="path2"></span></i>
+            Archivos
+            @if (files().length > 0) {
+              <span class="badge badge-light-info ms-2">{{ files().length }}</span>
+            }
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link cursor-pointer" [class.active]="activeTab() === 'shares'" (click)="setTab('shares')">
+            <i class="ki-duotone ki-share fs-4 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+            Compartir
+            @if (shares().length > 0) {
+              <span class="badge badge-light-success ms-2">{{ shares().length }}</span>
+            }
           </a>
         </li>
       </ul>
@@ -425,6 +471,215 @@
           </div>
         </div>
       }
+
+      <!-- ═══════════════════════════════════════════════ -->
+      <!-- TAB 4: FILES -->
+      <!-- ═══════════════════════════════════════════════ -->
+      @if (activeTab() === 'files') {
+        <div class="card">
+          <div class="card-header border-0">
+            <div class="card-title">
+              <h3 class="fw-bold m-0 fs-5">Galería y Documentos</h3>
+            </div>
+          </div>
+          <div class="card-body pt-0">
+            <!-- Drag & Drop upload area -->
+            <div class="border border-dashed rounded p-8 mb-6 text-center cursor-pointer"
+              [class.border-primary]="isDragging()"
+              [class.bg-light-primary]="isDragging()"
+              [class.border-gray-300]="!isDragging()"
+              (dragover)="onDragOver($event)"
+              (dragleave)="onDragLeave($event)"
+              (drop)="onDrop($event)"
+              (click)="fileInput.click()">
+              <input type="file" #fileInput hidden (change)="onFileSelected($event)"
+                accept="image/*,.pdf,.doc,.docx" />
+              @if (isUploadingFile()) {
+                <span class="spinner-border text-primary mb-3"></span>
+                <p class="text-gray-600 fw-semibold mb-0">Subiendo archivo...</p>
+              } @else {
+                <i class="ki-duotone ki-cloud-add fs-3x text-gray-400 mb-3"><span class="path1"></span><span class="path2"></span></i>
+                <p class="text-gray-600 fw-semibold mb-1">Arrastra archivos aquí o haz clic para seleccionar</p>
+                <p class="text-gray-400 fs-7 mb-0">Imágenes, PDF, documentos</p>
+              }
+            </div>
+
+            <!-- Files grid -->
+            @if (isLoadingFiles()) {
+              <div class="d-flex justify-content-center py-10">
+                <span class="spinner-border text-primary"></span>
+              </div>
+            } @else if (files().length > 0) {
+              <div class="row g-4">
+                @for (file of files(); track file.id) {
+                  <div class="col-md-4 col-sm-6">
+                    <div class="card border shadow-sm h-100">
+                      <!-- Thumbnail or icon -->
+                      <div class="card-body p-4 text-center">
+                        @if (isImageFile(file.fileType)) {
+                          <img [src]="file.fileUrl" [alt]="file.fileName"
+                            class="rounded mb-3" style="max-height: 140px; max-width: 100%; object-fit: cover;" />
+                        } @else {
+                          <div class="d-flex align-items-center justify-content-center bg-light-danger rounded mb-3" style="height: 100px;">
+                            <i class="ki-duotone ki-document fs-3x text-danger"><span class="path1"></span><span class="path2"></span></i>
+                          </div>
+                        }
+                        <div class="fw-semibold text-gray-800 fs-7 text-truncate" [title]="file.fileName">
+                          {{ file.fileName }}
+                        </div>
+                        <div class="text-gray-400 fs-8 mt-1">
+                          {{ formatFileSize(file.sizeBytes) }} · {{ formatDateShort(file.createdAt) }}
+                        </div>
+                      </div>
+                      <!-- Actions -->
+                      <div class="card-footer py-3 d-flex justify-content-center gap-2 border-top">
+                        <a [href]="file.fileUrl" target="_blank" class="btn btn-sm btn-light-primary">
+                          <i class="ki-duotone ki-eye fs-6"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Ver
+                        </a>
+                        <button class="btn btn-sm btn-light-danger" (click)="deleteFile(file)">
+                          <i class="ki-duotone ki-trash fs-6"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i> Eliminar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <div class="text-center text-muted py-10">
+                <i class="ki-duotone ki-picture fs-3x text-gray-300 d-block mb-3"><span class="path1"></span><span class="path2"></span></i>
+                <span class="fs-6 d-block">No hay archivos</span>
+                <span class="text-gray-400 fs-7">Sube fotos de tu receta o documentos de referencia</span>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- ═══════════════════════════════════════════════ -->
+      <!-- TAB 5: SHARES -->
+      <!-- ═══════════════════════════════════════════════ -->
+      @if (activeTab() === 'shares') {
+        <!-- Generate share link -->
+        <div class="card mb-6">
+          <div class="card-header border-0">
+            <div class="card-title">
+              <h3 class="fw-bold m-0 fs-5">Generar Enlace para Compartir</h3>
+            </div>
+          </div>
+          <div class="card-body pt-0">
+            <div class="row align-items-end g-4">
+              <div class="col-md-3">
+                <label class="required fw-semibold fs-7 mb-2">Días de vigencia</label>
+                <select class="form-select form-select-solid" [formControl]="shareForm.controls['expirationDays']">
+                  <option [ngValue]="1">1 día</option>
+                  <option [ngValue]="3">3 días</option>
+                  <option [ngValue]="7">7 días</option>
+                  <option [ngValue]="14">14 días</option>
+                  <option [ngValue]="30">30 días</option>
+                </select>
+              </div>
+              <div class="col-md-5">
+                <label class="fw-semibold fs-7 mb-2">Email del destinatario <span class="text-gray-400">(opcional)</span></label>
+                <input type="email" class="form-control form-control-solid"
+                  [formControl]="shareForm.controls['recipientEmail']"
+                  placeholder="ejemplo@correo.com"
+                  [class.is-invalid]="shareForm.controls['recipientEmail'].invalid && shareForm.controls['recipientEmail'].touched" />
+                @if (shareForm.controls['recipientEmail'].hasError('email') && shareForm.controls['recipientEmail'].touched) {
+                  <div class="text-danger fs-8 mt-1">Ingresa un email válido</div>
+                }
+              </div>
+              <div class="col-md-4">
+                <button type="button" class="btn btn-primary w-100" (click)="createShare()"
+                  [disabled]="shareForm.invalid || isCreatingShare()">
+                  @if (isCreatingShare()) {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                  } @else {
+                    <i class="ki-duotone ki-share fs-4 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                  }
+                  Generar Enlace
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Active shares table -->
+        <div class="card">
+          <div class="card-header border-0">
+            <div class="card-title">
+              <h3 class="fw-bold m-0 fs-5">Enlaces Activos</h3>
+            </div>
+          </div>
+          <div class="card-body pt-0">
+            @if (isLoadingShares()) {
+              <div class="d-flex justify-content-center py-10">
+                <span class="spinner-border text-primary"></span>
+              </div>
+            } @else {
+              <div class="table-responsive">
+                <table class="table align-middle table-row-dashed fs-6 gy-5">
+                  <thead>
+                    <tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+                      <th class="min-w-200px">URL</th>
+                      <th class="min-w-100px">Caduca</th>
+                      <th class="min-w-60px">Vistas</th>
+                      <th class="min-w-80px">Estado</th>
+                      <th class="text-end min-w-150px">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody class="text-gray-600 fw-semibold">
+                    @for (share of shares(); track share.id) {
+                      <tr>
+                        <td>
+                          <div class="d-flex align-items-center gap-2">
+                            <span class="text-truncate fs-7" style="max-width: 200px;" [title]="share.shareUrl">
+                              {{ share.shareUrl }}
+                            </span>
+                            <button class="btn btn-icon btn-sm btn-light-primary" title="Copiar" (click)="copyShareUrl(share.shareUrl)">
+                              <i class="ki-duotone ki-copy fs-6"><span class="path1"></span><span class="path2"></span></i>
+                            </button>
+                          </div>
+                        </td>
+                        <td class="fs-7">{{ formatDateShort(share.expiresAt) }}</td>
+                        <td>
+                          <span class="badge badge-light-info">{{ share.viewsCount }}</span>
+                        </td>
+                        <td>
+                          @if (share.isRevoked) {
+                            <span class="badge badge-light-danger">Revocado</span>
+                          } @else if (isShareExpired(share)) {
+                            <span class="badge badge-light-dark">Expirado</span>
+                          } @else {
+                            <span class="badge badge-light-success">Activo</span>
+                          }
+                        </td>
+                        <td class="text-end">
+                          <button class="btn btn-sm btn-light-info me-1" (click)="openAnalyticsModal(share)">
+                            <i class="ki-duotone ki-chart-simple fs-6"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i> Analíticas
+                          </button>
+                          @if (!share.isRevoked && !isShareExpired(share)) {
+                            <button class="btn btn-sm btn-light-danger" (click)="revokeShare(share)">
+                              <i class="ki-duotone ki-cross-circle fs-6"><span class="path1"></span><span class="path2"></span></i> Revocar
+                            </button>
+                          }
+                        </td>
+                      </tr>
+                    } @empty {
+                      <tr>
+                        <td colspan="5" class="text-center text-muted py-10">
+                          <i class="ki-duotone ki-share fs-3x text-gray-300 d-block mb-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                          <span class="fs-6 d-block">No hay enlaces compartidos</span>
+                          <span class="text-gray-400 fs-7">Genera un enlace para compartir esta receta</span>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        </div>
+      }
     </div>
 
     <!-- Right: Financial Panel (sticky sidebar) -->
@@ -589,6 +844,84 @@
             @if (isSubstituting()) { <span class="spinner-border spinner-border-sm me-2"></span> }
             Confirmar Sustitución
           </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SHARE ANALYTICS MODAL -->
+<!-- ═══════════════════════════════════════════════ -->
+@if (showAnalyticsModal()) {
+  <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+    <div class="modal-dialog modal-dialog-centered mw-650px">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="ki-duotone ki-chart-simple fs-3 me-2 text-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+            Analíticas del Enlace
+          </h5>
+          <button type="button" class="btn-close" (click)="closeAnalyticsModal()"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Share link info -->
+          @if (analyticsTarget()) {
+            <div class="d-flex bg-light rounded p-4 mb-5">
+              <div>
+                <span class="text-gray-500 fs-7 d-block">Enlace</span>
+                <span class="fw-semibold fs-7 text-truncate d-block" style="max-width: 450px;">{{ analyticsTarget()!.shareUrl }}</span>
+                <div class="d-flex gap-4 mt-2">
+                  <span class="text-gray-500 fs-8">
+                    Creado: <strong>{{ formatDateShort(analyticsTarget()!.createdAt) }}</strong>
+                  </span>
+                  <span class="text-gray-500 fs-8">
+                    Caduca: <strong>{{ formatDateShort(analyticsTarget()!.expiresAt) }}</strong>
+                  </span>
+                  <span class="text-gray-500 fs-8">
+                    Vistas: <strong class="text-primary">{{ analyticsTarget()!.viewsCount }}</strong>
+                  </span>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Access logs -->
+          @if (isLoadingAnalytics()) {
+            <div class="d-flex justify-content-center py-10">
+              <span class="spinner-border text-primary"></span>
+            </div>
+          } @else if (analyticsLogs().length > 0) {
+            <div class="table-responsive">
+              <table class="table align-middle table-row-dashed fs-7 gy-4">
+                <thead>
+                  <tr class="text-start text-muted fw-bold fs-8 text-uppercase gs-0">
+                    <th>Fecha de Acceso</th>
+                    <th>IP</th>
+                    <th>Navegador</th>
+                  </tr>
+                </thead>
+                <tbody class="text-gray-600 fw-semibold">
+                  @for (log of analyticsLogs(); track log.id) {
+                    <tr>
+                      <td>{{ formatDateShort(log.accessedAt) }}</td>
+                      <td><span class="badge badge-light">{{ log.ipAddress }}</span></td>
+                      <td class="text-truncate" style="max-width: 200px;" [title]="log.userAgent">{{ log.userAgent }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="text-center text-muted py-10">
+              <i class="ki-duotone ki-chart-simple fs-3x text-gray-300 d-block mb-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+              <span class="fs-6 d-block">Sin registros de acceso</span>
+              <span class="text-gray-400 fs-7">Nadie ha accedido a este enlace aún</span>
+            </div>
+          }
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" (click)="closeAnalyticsModal()">Cerrar</button>
         </div>
       </div>
     </div>
