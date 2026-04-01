@@ -16,9 +16,8 @@ export interface UpdateCategoryRequest {
   description?: string;
 }
 
-// Alérgenos
 export interface AllergenResponse {
-  id: number;
+  id: string;
   name: string;
   alternativeName: string | null;
   description: string | null;
@@ -31,7 +30,7 @@ export interface CreateAllergenRequest {
   description?: string;
 }
 export interface UpdateAllergenRequest {
-  id: number;
+  id: string;
   name: string;
   alternativeName?: string;
   description?: string;

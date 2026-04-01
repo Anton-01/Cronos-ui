@@ -34,7 +34,7 @@ export class AllergenService {
     return this.http.put<ApiResponse<AllergenResponse>>(`${this.API}/${req.id}`, req);
   }
 
-  delete(id: number): Observable<ApiResponse<void>> {
+  delete(id: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.API}/${id}`);
   }
 }
