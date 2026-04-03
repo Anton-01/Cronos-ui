@@ -1,0 +1,321 @@
+<!-- begin::Loading State -->
+<ng-container *ngIf="loading()">
+  <div class="d-flex flex-column align-items-center justify-content-center py-20">
+    <div class="spinner-border text-primary w-40px h-40px mb-5" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <span class="text-gray-500 fs-6">Cargando receta...</span>
+  </div>
+</ng-container>
+<!-- end::Loading State -->
+
+<!-- begin::Error State -->
+<ng-container *ngIf="!loading() && error()">
+  <div class="d-flex flex-column align-items-center justify-content-center py-20">
+    <div class="mb-8">
+      <i class="ki-duotone ki-cross-circle fs-3x text-danger">
+        <span class="path1"></span>
+        <span class="path2"></span>
+      </i>
+    </div>
+    <h2 class="fs-2x fw-bold text-gray-800 mb-3">Enlace no disponible</h2>
+    <p class="text-gray-600 fs-5 text-center mw-500px">{{ error() }}</p>
+    <a href="/" class="btn btn-sm btn-light-primary mt-5">
+      <i class="ki-duotone ki-arrow-left fs-4 me-1">
+        <span class="path1"></span>
+        <span class="path2"></span>
+      </i>
+      Ir al inicio
+    </a>
+  </div>
+</ng-container>
+<!-- end::Error State -->
+
+<!-- begin::Recipe Content -->
+<ng-container *ngIf="!loading() && !error() && recipe() as r">
+
+  <!-- ============================== -->
+  <!-- begin::Hero Section            -->
+  <!-- ============================== -->
+  <section class="hero-section position-relative overflow-hidden">
+    <div class="hero-bg"></div>
+    <div class="container position-relative py-12 py-lg-16">
+      <div class="text-center">
+        <h1 class="fs-3x fs-lg-4x fw-bolder text-white mb-4 recipe-title">
+          {{ r.recipeName }}
+        </h1>
+        <p *ngIf="r.description" class="fs-5 text-white text-opacity-85 mw-700px mx-auto mb-8 recipe-description">
+          {{ r.description }}
+        </p>
+      </div>
+    </div>
+  </section>
+  <!-- end::Hero Section -->
+
+  <!-- ============================== -->
+  <!-- begin::Info Ribbon             -->
+  <!-- ============================== -->
+  <section class="bg-white border-bottom shadow-sm">
+    <div class="container">
+      <div class="d-flex flex-column flex-md-row align-items-center justify-content-between py-4 gap-3">
+        <!-- Owner Info -->
+        <div class="d-flex align-items-center gap-3">
+          <div class="d-flex align-items-center justify-content-center w-40px h-40px rounded-circle bg-light-primary">
+            <i class="ki-duotone ki-profile-circle fs-2 text-primary">
+              <span class="path1"></span>
+              <span class="path2"></span>
+              <span class="path3"></span>
+            </i>
+          </div>
+          <div>
+            <span class="text-gray-500 fs-7">Compartido por</span>
+            <div class="fw-semibold text-gray-800 fs-6">
+              {{ r.owner.fullName }}
+              <span *ngIf="r.owner.brandName" class="text-gray-500">
+                de <strong class="text-primary">{{ r.owner.brandName }}</strong>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Expiry Countdown -->
+        <div class="d-flex align-items-center gap-2">
+          <i class="ki-duotone ki-time fs-3"
+             [class.text-warning]="!countdown().expired"
+             [class.text-danger]="countdown().expired">
+            <span class="path1"></span>
+            <span class="path2"></span>
+          </i>
+          <ng-container *ngIf="!countdown().expired; else expiredBlock">
+            <div class="d-flex align-items-center gap-3">
+              <span class="text-gray-500 fs-7 d-none d-sm-inline">Disponible por:</span>
+              <div class="d-flex gap-2">
+                <span *ngIf="countdown().days > 0" class="badge badge-light-warning fs-7 px-3 py-2">
+                  {{ countdown().days }}d
+                </span>
+                <span class="badge badge-light-warning fs-7 px-3 py-2">
+                  {{ countdown().hours }}h
+                </span>
+                <span class="badge badge-light-warning fs-7 px-3 py-2">
+                  {{ countdown().minutes }}m
+                </span>
+              </div>
+            </div>
+          </ng-container>
+          <ng-template #expiredBlock>
+            <span class="badge badge-light-danger fs-7 px-3 py-2">
+              Enlace expirado
+            </span>
+          </ng-template>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- end::Info Ribbon -->
+
+  <!-- ============================== -->
+  <!-- begin::Gallery Section         -->
+  <!-- ============================== -->
+  <section *ngIf="images().length > 0" class="bg-light py-8 py-lg-12">
+    <div class="container">
+      <div class="gallery-container">
+        <!-- Main Image -->
+        <div class="position-relative rounded-3 overflow-hidden shadow-sm gallery-main">
+          <img
+            [src]="images()[activeImageIndex()].url"
+            [alt]="images()[activeImageIndex()].description || r.recipeName"
+            class="w-100 gallery-main-img"
+          />
+          <!-- Navigation arrows -->
+          <ng-container *ngIf="images().length > 1">
+            <button
+              class="btn btn-icon btn-active-color-primary bg-white bg-opacity-75 shadow-sm position-absolute top-50 start-0 translate-middle-y ms-3 rounded-circle w-35px h-35px"
+              (click)="prevImage()"
+            >
+              <i class="ki-duotone ki-arrow-left fs-3">
+                <span class="path1"></span>
+                <span class="path2"></span>
+              </i>
+            </button>
+            <button
+              class="btn btn-icon btn-active-color-primary bg-white bg-opacity-75 shadow-sm position-absolute top-50 end-0 translate-middle-y me-3 rounded-circle w-35px h-35px"
+              (click)="nextImage()"
+            >
+              <i class="ki-duotone ki-arrow-right fs-3">
+                <span class="path1"></span>
+                <span class="path2"></span>
+              </i>
+            </button>
+          </ng-container>
+          <!-- Image description -->
+          <div *ngIf="images()[activeImageIndex()].description"
+               class="position-absolute bottom-0 start-0 end-0 bg-dark bg-opacity-50 text-white p-3 fs-7">
+            {{ images()[activeImageIndex()].description }}
+          </div>
+        </div>
+
+        <!-- Thumbnails -->
+        <div *ngIf="images().length > 1" class="d-flex gap-3 mt-4 justify-content-center flex-wrap">
+          <div
+            *ngFor="let img of images(); let i = index"
+            class="gallery-thumb rounded-2 overflow-hidden cursor-pointer border border-2"
+            [class.border-primary]="i === activeImageIndex()"
+            [class.border-transparent]="i !== activeImageIndex()"
+            (click)="setActiveImage(i)"
+          >
+            <img [src]="img.url" [alt]="img.description || 'Imagen ' + (i + 1)" class="w-100 h-100 object-fit-cover" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Placeholder when no images -->
+  <section *ngIf="images().length === 0" class="bg-light py-8 py-lg-10">
+    <div class="container">
+      <div class="d-flex flex-column align-items-center justify-content-center py-8 rounded-3 bg-white border border-dashed border-gray-300">
+        <i class="ki-duotone ki-picture fs-3x text-gray-300 mb-3">
+          <span class="path1"></span>
+          <span class="path2"></span>
+        </i>
+        <span class="text-gray-400 fs-6">Sin imágenes disponibles</span>
+      </div>
+    </div>
+  </section>
+  <!-- end::Gallery Section -->
+
+  <!-- ============================== -->
+  <!-- begin::Two Column Layout       -->
+  <!-- ============================== -->
+  <section class="py-8 py-lg-14">
+    <div class="container">
+      <div class="row g-6 g-lg-10">
+
+        <!-- ===== Left Column: Ingredients (1/3) ===== -->
+        <div class="col-12 col-lg-4">
+          <div class="card card-flush shadow-sm h-100">
+            <div class="card-header border-bottom pt-6 pb-4">
+              <h3 class="card-title fw-bold fs-3 text-gray-800">
+                <i class="ki-duotone ki-basket fs-2 me-2 text-primary">
+                  <span class="path1"></span>
+                  <span class="path2"></span>
+                  <span class="path3"></span>
+                  <span class="path4"></span>
+                </i>
+                Ingredientes
+              </h3>
+              <div class="card-toolbar">
+                <span class="badge badge-light-primary fs-7">
+                  {{ r.ingredients.length }}
+                </span>
+              </div>
+            </div>
+            <div class="card-body pt-5">
+              <div *ngFor="let ing of r.ingredients; let i = index"
+                   class="d-flex align-items-center gap-3 py-3 ingredient-item"
+                   [class.border-bottom]="i < r.ingredients.length - 1"
+                   [class.border-gray-200]="i < r.ingredients.length - 1">
+
+                <!-- Checkbox -->
+                <div class="form-check form-check-custom form-check-sm">
+                  <input
+                    class="form-check-input"
+                    type="checkbox"
+                    [id]="'ing-' + i"
+                    [checked]="isChecked(i)"
+                    (change)="toggleIngredient(i)"
+                  />
+                </div>
+
+                <!-- Ingredient info -->
+                <label [for]="'ing-' + i"
+                       class="d-flex flex-column flex-grow-1 cursor-pointer"
+                       [class.text-decoration-line-through]="isChecked(i)"
+                       [class.text-gray-400]="isChecked(i)">
+                  <span class="fw-semibold fs-6"
+                        [class.text-gray-800]="!isChecked(i)"
+                        [class.text-gray-400]="isChecked(i)">
+                    {{ ing.name }}
+                  </span>
+                  <span class="text-gray-500 fs-7">
+                    {{ ing.quantity }} {{ ing.unitName }}
+                  </span>
+                </label>
+
+                <!-- Optional badge -->
+                <span *ngIf="ing.isOptional" class="badge badge-light-info fs-8">
+                  Opcional
+                </span>
+              </div>
+
+              <!-- Empty state -->
+              <div *ngIf="r.ingredients.length === 0" class="text-center py-8">
+                <span class="text-gray-400 fs-6">Sin ingredientes listados</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== Right Column: Instructions (2/3) ===== -->
+        <div class="col-12 col-lg-8">
+          <!-- Instructions Card -->
+          <div class="card card-flush shadow-sm mb-6 mb-lg-10">
+            <div class="card-header border-bottom pt-6 pb-4">
+              <h3 class="card-title fw-bold fs-3 text-gray-800">
+                <i class="ki-duotone ki-notepad fs-2 me-2 text-primary">
+                  <span class="path1"></span>
+                  <span class="path2"></span>
+                  <span class="path3"></span>
+                  <span class="path4"></span>
+                  <span class="path5"></span>
+                </i>
+                Preparación
+              </h3>
+            </div>
+            <div class="card-body pt-6">
+              <ng-container *ngIf="instructionSteps().length > 0; else noInstructions">
+                <!-- Stepper-like layout -->
+                <div *ngFor="let step of instructionSteps(); let i = index; let last = last"
+                     class="d-flex gap-4 mb-0">
+                  <!-- Step indicator -->
+                  <div class="d-flex flex-column align-items-center">
+                    <div class="d-flex align-items-center justify-content-center w-35px h-35px rounded-circle bg-primary flex-shrink-0">
+                      <span class="fw-bold text-white fs-7">{{ i + 1 }}</span>
+                    </div>
+                    <div *ngIf="!last" class="stepper-line flex-grow-1 w-1px bg-gray-300 my-1"></div>
+                  </div>
+                  <!-- Step content -->
+                  <div class="pb-6" [class.pb-0]="last">
+                    <p class="fs-6 text-gray-700 mb-0 lh-lg pt-1">{{ step }}</p>
+                  </div>
+                </div>
+              </ng-container>
+              <ng-template #noInstructions>
+                <div class="text-center py-8">
+                  <span class="text-gray-400 fs-6">Sin instrucciones disponibles</span>
+                </div>
+              </ng-template>
+            </div>
+          </div>
+
+          <!-- Storage Instructions -->
+          <div *ngIf="r.storageInstructions" class="alert alert-secondary d-flex align-items-start gap-3 p-5">
+            <i class="ki-duotone ki-information-3 fs-2x text-gray-600 flex-shrink-0 mt-1">
+              <span class="path1"></span>
+              <span class="path2"></span>
+              <span class="path3"></span>
+            </i>
+            <div>
+              <h4 class="fw-bold text-gray-800 fs-5 mb-2">Almacenamiento</h4>
+              <p class="text-gray-600 fs-6 mb-0 lh-lg">{{ r.storageInstructions }}</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+  <!-- end::Two Column Layout -->
+
+</ng-container>
+<!-- end::Recipe Content -->

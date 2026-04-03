@@ -296,6 +296,34 @@ export interface RecipeShareAccessLogResponse {
   userAgent: string;
 }
 
+// Receta Compartida Pública
+export interface PublicSharedRecipeResponse {
+  recipeName: string;
+  description: string | null;
+  instructions: string | null;
+  storageInstructions: string | null;
+  owner: {
+    fullName: string;
+    brandName: string | null;
+  };
+  expiresAt: string;
+  ingredients: PublicRecipeIngredient[];
+  files: PublicRecipeFile[];
+}
+
+export interface PublicRecipeIngredient {
+  name: string;
+  quantity: number;
+  unitName: string;
+  isOptional: boolean;
+}
+
+export interface PublicRecipeFile {
+  url: string;
+  fileType: string;
+  description: string | null;
+}
+
 // Costos Fijos del Usuario
 export interface UserFixedCostRequest {
   name: string;
