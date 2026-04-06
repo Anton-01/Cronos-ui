@@ -1,0 +1,283 @@
+<!-- begin::Loading State -->
+<ng-container *ngIf="loading()">
+  <div class="d-flex flex-column align-items-center justify-content-center py-20">
+    <div class="spinner-border text-primary w-40px h-40px mb-5" role="status">
+      <span class="visually-hidden">Cargando...</span>
+    </div>
+    <span class="text-gray-500 fs-6">Cargando receta...</span>
+  </div>
+</ng-container>
+<!-- end::Loading State -->
+
+<!-- begin::Error State -->
+<ng-container *ngIf="!loading() && error()">
+  <div class="d-flex flex-column align-items-center justify-content-center py-20">
+    <div class="mb-8">
+      <i class="ki-duotone ki-cross-circle fs-3x text-danger">
+        <span class="path1"></span>
+        <span class="path2"></span>
+      </i>
+    </div>
+    <h2 class="fs-2x fw-bold text-gray-800 mb-3">Enlace no disponible</h2>
+    <p class="text-gray-600 fs-5 text-center mw-500px">{{ error() }}</p>
+    <a href="/" class="btn btn-sm btn-light-primary mt-5">
+      <i class="ki-duotone ki-arrow-left fs-4 me-1">
+        <span class="path1"></span>
+        <span class="path2"></span>
+      </i>
+      Ir al inicio
+    </a>
+  </div>
+</ng-container>
+<!-- end::Error State -->
+
+<!-- ============================================ -->
+<!-- begin::Recipe Content — Cookbook Style        -->
+<!-- ============================================ -->
+<ng-container *ngIf="!loading() && !error() && recipe() as r">
+
+  <div class="recipe-page">
+
+    <!-- ============================== -->
+    <!-- begin::Recipe Header (Book)    -->
+    <!-- ============================== -->
+    <header class="recipe-header">
+      <div class="container">
+        <div class="recipe-header-inner text-center py-10 py-lg-14">
+          <!-- Ornament top -->
+          <div class="ornament mb-4">&#10053;&ensp;&#10053;&ensp;&#10053;</div>
+
+          <h1 class="recipe-title mb-5">{{ r.recipeName }}</h1>
+
+          <p *ngIf="r.description" class="recipe-description mx-auto mb-6">
+            {{ r.description }}
+          </p>
+
+          <!-- Divider -->
+          <div class="header-divider mx-auto"></div>
+
+          <!-- Owner attribution -->
+          <div class="mt-5 d-flex flex-column flex-sm-row align-items-center justify-content-center gap-2 gap-sm-6">
+            <span class="recipe-meta">
+              <i class="ki-duotone ki-profile-circle fs-5 me-1 text-gray-500">
+                <span class="path1"></span><span class="path2"></span><span class="path3"></span>
+              </i>
+              {{ r.owner.fullName }}
+              <ng-container *ngIf="r.owner.brandName">
+                &mdash; <em class="text-primary">{{ r.owner.brandName }}</em>
+              </ng-container>
+            </span>
+
+            <!-- Expiry -->
+            <span class="recipe-meta">
+              <i class="ki-duotone ki-time fs-5 me-1"
+                 [class.text-gray-500]="!countdown().expired"
+                 [class.text-danger]="countdown().expired">
+                <span class="path1"></span><span class="path2"></span>
+              </i>
+              <ng-container *ngIf="!countdown().expired; else headerExpired">
+                Disponible por
+                <strong *ngIf="countdown().days > 0">{{ countdown().days }}d</strong>
+                <strong>{{ countdown().hours }}h {{ countdown().minutes }}m</strong>
+              </ng-container>
+              <ng-template #headerExpired>
+                <span class="text-danger fw-semibold">Enlace expirado</span>
+              </ng-template>
+            </span>
+          </div>
+        </div>
+      </div>
+    </header>
+    <!-- end::Recipe Header -->
+
+    <!-- ============================== -->
+    <!-- begin::Two Column Layout       -->
+    <!-- ============================== -->
+    <section class="recipe-body">
+      <div class="container">
+        <div class="row g-0">
+
+          <!-- ===== Left: Ingredients ===== -->
+          <div class="col-12 col-lg-4">
+            <div class="ingredients-panel">
+              <h2 class="section-title">
+                <span class="section-title-ornament">&#9670;</span>
+                Ingredientes
+              </h2>
+
+              <ul class="ingredient-list" *ngIf="r.ingredients.length > 0">
+                <li *ngFor="let ing of r.ingredients" class="ingredient-item">
+                  <span class="ingredient-qty">{{ ing.quantity }} {{ ing.unitName }}</span>
+                  <span class="ingredient-name">
+                    {{ ing.name }}
+                    <em *ngIf="ing.isOptional" class="ingredient-optional">(opcional)</em>
+                  </span>
+                </li>
+              </ul>
+
+              <p *ngIf="r.ingredients.length === 0" class="text-gray-400 fs-6 text-center py-6">
+                Sin ingredientes listados
+              </p>
+            </div>
+          </div>
+
+          <!-- ===== Right: Instructions ===== -->
+          <div class="col-12 col-lg-8">
+            <div class="instructions-panel">
+              <h2 class="section-title">
+                <span class="section-title-ornament">&#9670;</span>
+                Preparación
+              </h2>
+
+              <ng-container *ngIf="instructionSteps().length > 0; else noInstructions">
+                <ol class="instruction-list">
+                  <li *ngFor="let step of instructionSteps()" class="instruction-step">
+                    {{ step }}
+                  </li>
+                </ol>
+              </ng-container>
+              <ng-template #noInstructions>
+                <p class="text-gray-400 fs-6 text-center py-6">Sin instrucciones disponibles</p>
+              </ng-template>
+
+              <!-- Storage -->
+              <div *ngIf="r.storageInstructions" class="storage-block">
+                <div class="storage-icon">
+                  <i class="ki-duotone ki-archive fs-2">
+                    <span class="path1"></span><span class="path2"></span>
+                    <span class="path3"></span><span class="path4"></span>
+                  </i>
+                </div>
+                <div>
+                  <strong class="d-block mb-1">Conservación</strong>
+                  <span>{{ r.storageInstructions }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+    <!-- end::Two Column Layout -->
+
+    <!-- ============================== -->
+    <!-- begin::Image Slider            -->
+    <!-- ============================== -->
+    <section *ngIf="images().length > 0" class="slider-section">
+      <div class="container">
+        <div class="slider-wrapper">
+          <!-- Main slide -->
+          <div class="slider-viewport" (click)="openModal(images()[activeImageIndex()])">
+            <img
+              [src]="images()[activeImageIndex()].url"
+              [alt]="images()[activeImageIndex()].description || r.recipeName"
+              class="slider-image"
+            />
+            <!-- Hover overlay -->
+            <div class="slider-overlay">
+              <i class="ki-duotone ki-magnifier fs-2x text-white">
+                <span class="path1"></span><span class="path2"></span>
+              </i>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <ng-container *ngIf="images().length > 1">
+            <button class="slider-arrow slider-arrow-left" (click)="prevImage(); $event.stopPropagation()">
+              <i class="ki-duotone ki-left fs-1">
+                <span class="path1"></span><span class="path2"></span>
+              </i>
+            </button>
+            <button class="slider-arrow slider-arrow-right" (click)="nextImage(); $event.stopPropagation()">
+              <i class="ki-duotone ki-right fs-1">
+                <span class="path1"></span><span class="path2"></span>
+              </i>
+            </button>
+          </ng-container>
+
+          <!-- Dot indicators -->
+          <div *ngIf="images().length > 1" class="slider-dots">
+            <button
+              *ngFor="let img of images(); let i = index"
+              class="slider-dot"
+              [class.active]="i === activeImageIndex()"
+              (click)="setActiveImage(i); $event.stopPropagation()"
+            ></button>
+          </div>
+
+          <!-- Counter -->
+          <div *ngIf="images().length > 1" class="slider-counter">
+            {{ activeImageIndex() + 1 }} / {{ images().length }}
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- end::Image Slider -->
+
+    <!-- Ornament bottom -->
+    <div class="text-center py-8 recipe-footer-ornament">
+      <span>&#10053;&ensp;&#10053;&ensp;&#10053;</span>
+    </div>
+
+  </div>
+
+  <!-- ============================== -->
+  <!-- begin::Fullscreen Image Modal  -->
+  <!-- ============================== -->
+  <div
+    class="image-modal-backdrop"
+    [class.open]="modalOpen()"
+    (click)="closeModal()"
+  >
+    <div class="image-modal" *ngIf="modalOpen() && modalImage() as img" (click)="$event.stopPropagation()">
+      <!-- Header -->
+      <div class="image-modal-header">
+        <div class="d-flex flex-column">
+          <h3 class="image-modal-title mb-0">
+            Receta &mdash; {{ img.description || r.recipeName }}
+          </h3>
+          <span *ngIf="images().length > 1" class="text-gray-500 fs-7 mt-1">
+            Imagen {{ getModalImageIndex() + 1 }} de {{ images().length }}
+          </span>
+        </div>
+        <button class="image-modal-close" (click)="closeModal()">
+          <i class="ki-duotone ki-cross fs-1">
+            <span class="path1"></span><span class="path2"></span>
+          </i>
+        </button>
+      </div>
+
+      <!-- Image body -->
+      <div class="image-modal-body">
+        <img
+          [src]="img.url"
+          [alt]="img.description || r.recipeName"
+          class="image-modal-img"
+        />
+
+        <!-- Nav arrows inside modal -->
+        <ng-container *ngIf="images().length > 1">
+          <button class="modal-arrow modal-arrow-left" (click)="prevModalImage()">
+            <i class="ki-duotone ki-left fs-2x">
+              <span class="path1"></span><span class="path2"></span>
+            </i>
+          </button>
+          <button class="modal-arrow modal-arrow-right" (click)="nextModalImage()">
+            <i class="ki-duotone ki-right fs-2x">
+              <span class="path1"></span><span class="path2"></span>
+            </i>
+          </button>
+        </ng-container>
+      </div>
+
+      <!-- Footer info -->
+      <div *ngIf="img.description" class="image-modal-footer">
+        <p class="mb-0 text-gray-600 fs-6">{{ img.description }}</p>
+      </div>
+    </div>
+  </div>
+  <!-- end::Fullscreen Image Modal -->
+
+</ng-container>
+<!-- end::Recipe Content -->

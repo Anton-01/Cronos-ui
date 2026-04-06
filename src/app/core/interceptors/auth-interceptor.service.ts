@@ -3,7 +3,7 @@ import { HttpInterceptor, HttpRequest, HttpHandler, HttpEvent } from '@angular/c
 import { Observable } from 'rxjs';
 import { TokenService } from '../services/token.service';
 
-const PUBLIC_URLS = ['/auth/login', '/auth/register', '/auth/refresh'];
+const PUBLIC_URLS = ['/auth/login', '/auth/register', '/auth/refresh', '/public/recipes/share'];
 
 @Injectable()
 export class AuthInterceptorService implements HttpInterceptor {

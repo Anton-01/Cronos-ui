@@ -22,6 +22,22 @@ export const routes: Routes = [
       import('./modules/errors/errors.module').then((m) => m.ErrorsModule),
   },
   {
+    path: 'shared/recipe',
+    loadComponent: () =>
+      import('./pages/public/layout/public-layout.component').then(
+        (m) => m.PublicLayoutComponent
+      ),
+    children: [
+      {
+        path: ':token',
+        loadComponent: () =>
+          import('./pages/public/shared-recipe/shared-recipe.component').then(
+            (m) => m.SharedRecipeComponent
+          ),
+      },
+    ],
+  },
+  {
     path: '',
     canActivate: [AuthGuard],
     loadChildren: () =>

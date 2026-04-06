@@ -11,19 +11,19 @@ const Routing: Routes = [
     loadChildren: () => import('./builder/builder.module').then((m) => m.BuilderModule),
   },
   {
-    path: 'cronos/perfil',
+    path: 'cronos/pages/profile',
     loadChildren: () => import('../modules/profile/profile.module').then((m) => m.ProfileModule),
   },
   {
-    path: 'cronos/cuenta',
+    path: 'cronos/pages/account',
     loadChildren: () => import('../modules/account/account.module').then((m) => m.AccountModule),
   },
   {
-    path: 'crafted/pages/wizards',
+    path: 'cronos/pages/wizards',
     loadChildren: () => import('../modules/wizards/wizards.module').then((m) => m.WizardsModule),
   },
   {
-    path: 'crafted/widgets',
+    path: 'cronos/widgets',
     loadChildren: () => import('../modules/widgets-examples/widgets-examples.module').then((m) => m.WidgetsExamplesModule),
   },
   {

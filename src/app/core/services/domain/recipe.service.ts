@@ -120,7 +120,7 @@ export class RecipeService {
   }
 
   revokeShare(recipeId: string, shareId: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.API}/${recipeId}/shares/${shareId}`);
+    return this.http.delete<ApiResponse<void>>(`${this.API}/${recipeId}/shares/${shareId}/revoke`);
   }
 
   getShareAnalytics(recipeId: string, shareId: string): Observable<ApiResponse<RecipeShareAccessLogResponse[]>> {

@@ -1,0 +1,48 @@
+# Dependencias y paquetes
+node_modules/
+.npm/
+.pnpm-store/
+
+# Salida de compilación (Build)
+dist/
+.angular/
+out-tsc/
+bazel-out/
+
+# Logs y temporales
+*.log
+logs
+*.gz
+.tmp/
+
+# Pruebas y cobertura
+coverage/
+cypress/videos/
+cypress/screenshots/
+.nyc_output/
+
+# Configuración de IDEs
+.vscode/
+.idea/
+*.swp
+*.bak
+
+# Archivos de entorno (Seguridad)
+.env
+.env.*
+src/environments/environment.prod.ts
+
+# Formatos binarios y multimedia
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.ico
+*.pdf
+*.svg
+*.woff
+*.woff2
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
