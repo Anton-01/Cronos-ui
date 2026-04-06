@@ -22,7 +22,7 @@ export const routes: Routes = [
       import('./modules/errors/errors.module').then((m) => m.ErrorsModule),
   },
   {
-    path: 'shared',
+    path: 'shared/recipe',
     loadComponent: () =>
       import('./pages/public/layout/public-layout.component').then(
         (m) => m.PublicLayoutComponent

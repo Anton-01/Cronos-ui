@@ -39,7 +39,7 @@ export class SharedRecipeComponent implements OnInit, OnDestroy {
   images = computed(() => {
     const r = this.recipe();
     if (!r) return [];
-    return r.files.filter(f => f.fileType.startsWith('image'));
+    return r.files.filter(f => f.fileType.startsWith('IMAGE'));
   });
 
   instructionSteps = computed(() => {

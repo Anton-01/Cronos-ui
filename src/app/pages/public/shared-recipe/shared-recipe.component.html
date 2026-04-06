@@ -91,60 +91,6 @@
     <!-- end::Recipe Header -->
 
     <!-- ============================== -->
-    <!-- begin::Image Slider            -->
-    <!-- ============================== -->
-    <section *ngIf="images().length > 0" class="slider-section">
-      <div class="container">
-        <div class="slider-wrapper">
-          <!-- Main slide -->
-          <div class="slider-viewport" (click)="openModal(images()[activeImageIndex()])">
-            <img
-              [src]="images()[activeImageIndex()].url"
-              [alt]="images()[activeImageIndex()].description || r.recipeName"
-              class="slider-image"
-            />
-            <!-- Hover overlay -->
-            <div class="slider-overlay">
-              <i class="ki-duotone ki-magnifier fs-2x text-white">
-                <span class="path1"></span><span class="path2"></span>
-              </i>
-            </div>
-          </div>
-
-          <!-- Controls -->
-          <ng-container *ngIf="images().length > 1">
-            <button class="slider-arrow slider-arrow-left" (click)="prevImage(); $event.stopPropagation()">
-              <i class="ki-duotone ki-left fs-1">
-                <span class="path1"></span><span class="path2"></span>
-              </i>
-            </button>
-            <button class="slider-arrow slider-arrow-right" (click)="nextImage(); $event.stopPropagation()">
-              <i class="ki-duotone ki-right fs-1">
-                <span class="path1"></span><span class="path2"></span>
-              </i>
-            </button>
-          </ng-container>
-
-          <!-- Dot indicators -->
-          <div *ngIf="images().length > 1" class="slider-dots">
-            <button
-              *ngFor="let img of images(); let i = index"
-              class="slider-dot"
-              [class.active]="i === activeImageIndex()"
-              (click)="setActiveImage(i); $event.stopPropagation()"
-            ></button>
-          </div>
-
-          <!-- Counter -->
-          <div *ngIf="images().length > 1" class="slider-counter">
-            {{ activeImageIndex() + 1 }} / {{ images().length }}
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- end::Image Slider -->
-
-    <!-- ============================== -->
     <!-- begin::Two Column Layout       -->
     <!-- ============================== -->
     <section class="recipe-body">
@@ -214,6 +160,60 @@
       </div>
     </section>
     <!-- end::Two Column Layout -->
+
+    <!-- ============================== -->
+    <!-- begin::Image Slider            -->
+    <!-- ============================== -->
+    <section *ngIf="images().length > 0" class="slider-section">
+      <div class="container">
+        <div class="slider-wrapper">
+          <!-- Main slide -->
+          <div class="slider-viewport" (click)="openModal(images()[activeImageIndex()])">
+            <img
+              [src]="images()[activeImageIndex()].url"
+              [alt]="images()[activeImageIndex()].description || r.recipeName"
+              class="slider-image"
+            />
+            <!-- Hover overlay -->
+            <div class="slider-overlay">
+              <i class="ki-duotone ki-magnifier fs-2x text-white">
+                <span class="path1"></span><span class="path2"></span>
+              </i>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <ng-container *ngIf="images().length > 1">
+            <button class="slider-arrow slider-arrow-left" (click)="prevImage(); $event.stopPropagation()">
+              <i class="ki-duotone ki-left fs-1">
+                <span class="path1"></span><span class="path2"></span>
+              </i>
+            </button>
+            <button class="slider-arrow slider-arrow-right" (click)="nextImage(); $event.stopPropagation()">
+              <i class="ki-duotone ki-right fs-1">
+                <span class="path1"></span><span class="path2"></span>
+              </i>
+            </button>
+          </ng-container>
+
+          <!-- Dot indicators -->
+          <div *ngIf="images().length > 1" class="slider-dots">
+            <button
+              *ngFor="let img of images(); let i = index"
+              class="slider-dot"
+              [class.active]="i === activeImageIndex()"
+              (click)="setActiveImage(i); $event.stopPropagation()"
+            ></button>
+          </div>
+
+          <!-- Counter -->
+          <div *ngIf="images().length > 1" class="slider-counter">
+            {{ activeImageIndex() + 1 }} / {{ images().length }}
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- end::Image Slider -->
 
     <!-- Ornament bottom -->
     <div class="text-center py-8 recipe-footer-ornament">
