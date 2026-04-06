@@ -1,13 +1,3 @@
-<!-- <div class="d-flex flex-column flex-center flex-column-fluid">
-  <div class="d-flex flex-column flex-center text-center p-10">
-    <div class="card card-flush  w-lg-650px py-5">
-      <div class="card-body py-15 py-lg-20">
-        <router-outlet></router-outlet>
-      </div>
-    </div>
-  </div>
-</div> -->
-
 <div class="d-flex flex-column flex-lg-row flex-column-fluid">
 
   <!--begin::Body-->
@@ -15,7 +5,7 @@
     <!--begin::Form-->
     <div class="d-flex flex-center flex-column flex-lg-row-fluid">
       <!--begin::Wrapper-->
-      <div class="<?php echo $params['wrapperClass']?> p-10">
+      <div class="w-lg-500px p-10">
         <router-outlet></router-outlet>
       </div>
       <!--end::Wrapper-->
@@ -26,11 +16,11 @@
     <div class="d-flex flex-center flex-wrap px-5">
       <!--begin::Links-->
       <div class="d-flex fw-semibold text-primary fs-base">
-        <a href="#" class="px-5" target="_blank">Terms</a>
+        <a href="#" class="px-5" target="_blank">Términos</a>
 
-        <a href="#" class="px-5" target="_blank">Plans</a>
+        <a href="#" class="px-5" target="_blank">Planes</a>
 
-        <a href="#" class="px-5" target="_blank">Contact Us</a>
+        <a href="#" class="px-5" target="_blank">Contáctenos</a>
       </div>
       <!--end::Links-->
     </div>
@@ -39,8 +29,7 @@
   <!--end::Body-->
 
   <!--begin::Aside-->
-  <div class="d-flex flex-lg-row-fluid w-lg-50 bgi-size-cover bgi-position-center order-1 order-lg-2"
-    [ngStyle]="{'background-image': 'url(./assets/media/misc/auth-bg.png)'}">
+  <div class="d-flex flex-lg-row-fluid w-lg-50 bgi-size-cover bgi-position-center order-1 order-lg-2 auth-aside">
     <!--begin::Content-->
     <div class="d-flex flex-column flex-center py-15 px-5 px-md-15 w-100">
       <!--begin::Logo-->
@@ -50,24 +39,22 @@
       <!--end::Logo-->
 
       <!--begin::Image-->
-      <img class="mx-auto w-275px w-md-50 w-xl-500px mb-10 mb-lg-20" src="./assets/media/misc/auth-screens.png"
-        alt="" />
+      <img class="mx-auto w-275px w-md-50 w-xl-500px mb-10 mb-lg-20" src="./assets/media/misc/auth-screens.svg"
+        alt="Cronos Dashboard Preview" />
       <!--end::Image-->
 
       <!--begin::Title-->
       <h1 class="text-white fs-2qx fw-bolder text-center mb-7">
-        Fast, Efficient and Productive
+        Control Total de tu Gestión
       </h1>
       <!--end::Title-->
 
       <!--begin::Text-->
       <div class="text-white fs-base text-center">
-        In this kind of post, <a href="#" class="opacity-75-hover text-warning fw-bold me-1">the blogger</a>
-
-        introduces a person they’ve interviewed <br /> and provides some background information about
-
-        <a href="#" class="opacity-75-hover text-warning fw-bold me-1">the interviewee</a>
-        and their <br /> work following this is a transcript of the interview.
+        Administra <a href="#" class="opacity-75-hover text-warning fw-bold me-1">proyectos,</a>
+        tareas y equipos de trabajo desde un solo lugar. <br />
+        <a href="#" class="opacity-75-hover text-warning fw-bold me-1">Cronos</a>
+        te brinda las herramientas para <br /> optimizar procesos y alcanzar tus objetivos con eficiencia.
       </div>
       <!--end::Text-->
     </div>
