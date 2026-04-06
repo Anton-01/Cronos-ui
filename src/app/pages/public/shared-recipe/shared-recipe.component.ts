@@ -1,11 +1,10 @@
-import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil, interval } from 'rxjs';
 import { PublicRecipeService } from 'src/app/core/services/domain/public-recipe.service';
 import {
   PublicSharedRecipeResponse,
-  PublicRecipeIngredient,
   PublicRecipeFile,
 } from 'src/app/core/models/domain.model';
 
@@ -25,10 +24,13 @@ export class SharedRecipeComponent implements OnInit, OnDestroy {
   recipe = signal<PublicSharedRecipeResponse | null>(null);
   loading = signal(true);
   error = signal<string | null>(null);
-  checkedIngredients = signal<Set<number>>(new Set());
 
-  // Gallery
+  // Slider
   activeImageIndex = signal(0);
+
+  // Modal
+  modalOpen = signal(false);
+  modalImage = signal<PublicRecipeFile | null>(null);
 
   // Countdown
   countdown = signal({ days: 0, hours: 0, minutes: 0, expired: false });
@@ -78,20 +80,7 @@ export class SharedRecipeComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  toggleIngredient(index: number): void {
-    const current = new Set(this.checkedIngredients());
-    if (current.has(index)) {
-      current.delete(index);
-    } else {
-      current.add(index);
-    }
-    this.checkedIngredients.set(current);
-  }
-
-  isChecked(index: number): boolean {
-    return this.checkedIngredients().has(index);
-  }
-
+  // --- Slider ---
   setActiveImage(index: number): void {
     this.activeImageIndex.set(index);
   }
@@ -110,6 +99,44 @@ export class SharedRecipeComponent implements OnInit, OnDestroy {
     );
   }
 
+  // --- Modal ---
+  openModal(img: PublicRecipeFile): void {
+    this.modalImage.set(img);
+    this.modalOpen.set(true);
+    document.body.classList.add('overflow-hidden');
+  }
+
+  closeModal(): void {
+    this.modalOpen.set(false);
+    this.modalImage.set(null);
+    document.body.classList.remove('overflow-hidden');
+  }
+
+  nextModalImage(): void {
+    const imgs = this.images();
+    if (imgs.length <= 1) return;
+    const currentIdx = imgs.indexOf(this.modalImage()!);
+    const nextIdx = (currentIdx + 1) % imgs.length;
+    this.modalImage.set(imgs[nextIdx]);
+  }
+
+  prevModalImage(): void {
+    const imgs = this.images();
+    if (imgs.length <= 1) return;
+    const currentIdx = imgs.indexOf(this.modalImage()!);
+    const prevIdx = (currentIdx - 1 + imgs.length) % imgs.length;
+    this.modalImage.set(imgs[prevIdx]);
+  }
+
+  @HostListener('document:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent): void {
+    if (!this.modalOpen()) return;
+    if (event.key === 'Escape') this.closeModal();
+    if (event.key === 'ArrowRight') this.nextModalImage();
+    if (event.key === 'ArrowLeft') this.prevModalImage();
+  }
+
+  // --- Helpers ---
   formatDate(dateStr: string): string {
     const date = new Date(dateStr);
     return date.toLocaleDateString('es-ES', {
@@ -117,6 +144,12 @@ export class SharedRecipeComponent implements OnInit, OnDestroy {
       month: 'long',
       year: 'numeric',
     });
+  }
+
+  getModalImageIndex(): number {
+    const img = this.modalImage();
+    if (!img) return 0;
+    return this.images().indexOf(img);
   }
 
   private startCountdown(expiresAt: string): void {
