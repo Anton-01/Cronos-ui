@@ -1,178 +1,206 @@
 <div class="card mb-5 mb-xl-10">
-  <div class="card-header border-0 cursor-pointer" role="button" data-bs-toggle="collapse" data-bs-target="#kt_account_signin_method">
+  <div class="card-header border-0">
     <div class="card-title m-0">
-      <h3 class="fw-bolder m-0">Sign-in Method</h3>
+      <h3 class="fw-bolder m-0">Método de Inicio de Sesión</h3>
     </div>
   </div>
-  <div id="kt_account_signin_method" class="collapse show">
-    <div class="card-body border-top p-9">
-      <ng-container *ngIf="!showChangeEmailForm">
-        <div class="d-flex flex-wrap align-items-center">
-          <div id="kt_signin_email" class="false">
-            <div class="fs-6 fw-bolder mb-1">Email Address</div>
-            <div class="fw-bold text-gray-600"> {{ profileState.user()?.email }} </div>
-          </div>
-          <div id="kt_signin_email_edit" class="flex-row-fluid d-none">
-            <form id="kt_signin_change_email" [formGroup]="formEmail" (ngSubmit)="saveEmail()">
-              <div class="row mb-6">
-                <div class="col-lg-6 mb-4 mb-lg-0">
-                  <div class="fv-row mb-0">
-                    <label for="emailaddress" class="form-label fs-6 fw-bolder mb-3">Enter New Email Address</label>
-                    <input type="email" class="form-control form-control-lg form-control-solid" placeholder="Email Address" name="newEmail" formControlName="email" />
-                  </div>
-                </div>
-                <div class="col-lg-6">
-                  <div class="fv-row mb-0">
-                    <label for="confirmemailpassword" class="form-label fs-6 fw-bolder mb-3">Confirm Password</label>
-                    <input type="password" class="form-control form-control-lg form-control-solid" id="confirmemailpassword" name="confirmPassword" value="" />
-                    <div class="fv-plugins-message-container">
-                      <div class="fv-help-block">Password is required</div>
-                    </div>
-                  </div>
+  <div class="card-body border-top p-9">
+
+    <!--begin::Email-->
+    <div class="d-flex flex-wrap align-items-center mb-10">
+      <div>
+        <div class="fs-6 fw-bolder mb-1">Correo Electrónico</div>
+        <div class="fw-bold text-gray-600">{{ profileState.user()?.email }}</div>
+      </div>
+    </div>
+    <!--end::Email-->
+
+    <div class="separator separator-dashed my-6"></div>
+
+    <!--begin::Password-->
+    @if (!showChangePasswordForm()) {
+      <div class="d-flex flex-wrap align-items-center mb-10">
+        <div>
+          <div class="fs-6 fw-bolder mb-1">Contraseña</div>
+          <div class="fw-bold text-gray-600">************</div>
+        </div>
+        <div class="ms-auto">
+          <button class="btn btn-light btn-active-light-primary" (click)="togglePasswordForm(true)">
+            Cambiar Contraseña
+          </button>
+        </div>
+      </div>
+    } @else {
+      <div class="d-flex flex-wrap align-items-center mb-10">
+        <div class="flex-row-fluid">
+          <form [formGroup]="passwordForm" (ngSubmit)="savePassword()">
+            <div class="row mb-1">
+              <div class="col-lg-4">
+                <div class="fv-row mb-0">
+                  <label class="form-label fs-6 fw-bolder mb-3">Contraseña Actual</label>
+                  <input type="password" class="form-control form-control-lg form-control-solid" formControlName="currentPassword" />
                 </div>
               </div>
-              <div class="d-flex">
-                <button id="kt_signin_submit" type="submit" class="btn btn-primary me-2 px-6">Update Email</button>
-                <button id="kt_signin_cancel" type="button" class="btn btn-color-gray-500 btn-active-light-primary px-6">
-                  Cancel
+              <div class="col-lg-4">
+                <div class="fv-row mb-0">
+                  <label class="form-label fs-6 fw-bolder mb-3">Nueva Contraseña</label>
+                  <input type="password" class="form-control form-control-lg form-control-solid" formControlName="newPassword" />
+                </div>
+              </div>
+              <div class="col-lg-4">
+                <div class="fv-row mb-0">
+                  <label class="form-label fs-6 fw-bolder mb-3">Confirmar Contraseña</label>
+                  <input type="password" class="form-control form-control-lg form-control-solid" formControlName="confirmPassword" />
+                </div>
+              </div>
+            </div>
+            <div class="form-text mb-5">
+              La contraseña debe tener al menos 6 caracteres
+            </div>
+            <div class="d-flex">
+              <button type="submit" class="btn btn-primary me-2 px-6" [disabled]="passwordForm.invalid || isChangingPassword()">
+                @if (isChangingPassword()) {
+                  <span class="spinner-border spinner-border-sm align-middle me-2"></span>
+                  Guardando...
+                } @else {
+                  Actualizar Contraseña
+                }
+              </button>
+              <button type="button" class="btn btn-color-gray-500 btn-active-light-primary px-6" (click)="togglePasswordForm(false)">
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    }
+    <!--end::Password-->
+
+    <div class="separator separator-dashed my-6"></div>
+
+    <!--begin::2FA Notice-->
+    <div class="d-flex flex-wrap align-items-center">
+      <div class="d-flex align-items-center flex-grow-1">
+        <div class="symbol symbol-45px me-5">
+          <span class="symbol-label bg-light-primary">
+            <i class="ki-duotone ki-shield-tick fs-2x text-primary"><span class="path1"></span><span class="path2"></span></i>
+          </span>
+        </div>
+        <div class="d-flex flex-column">
+          <h4 class="text-gray-800 fw-bolder mb-0">Protege tu Cuenta</h4>
+          <div class="fs-7 text-gray-600">
+            La autenticación de dos factores añade una capa extra de seguridad.
+            @if (profileState.user()?.twoFactorEnabled) {
+              <span class="badge badge-light-success ms-2">Activo</span>
+            } @else {
+              <span class="badge badge-light-warning ms-2">Inactivo</span>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="ms-auto">
+        <button class="btn btn-primary px-6" (click)="open2FAModal()">
+          @if (profileState.user()?.twoFactorEnabled) {
+            Administrar 2FA
+          } @else {
+            Habilitar 2FA
+          }
+        </button>
+      </div>
+    </div>
+    <!--end::2FA Notice-->
+
+  </div>
+</div>
+
+<!--begin::2FA Modal-->
+@if (show2FAModal()) {
+  <div class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);" (click)="close2FAModal()">
+    <div class="modal-dialog modal-dialog-centered modal-lg" (click)="$event.stopPropagation()">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">
+            <i class="ki-duotone ki-shield-tick fs-2 text-primary me-2"><span class="path1"></span><span class="path2"></span></i>
+            Autenticación de Dos Factores (2FA)
+          </h5>
+          <button type="button" class="btn-close" (click)="close2FAModal()"></button>
+        </div>
+        <div class="modal-body">
+
+          @if (profileState.user()?.twoFactorEnabled) {
+            <!--begin::2FA Enabled State-->
+            <div class="text-center mb-8">
+              <div class="symbol symbol-70px mb-4">
+                <span class="symbol-label bg-light-success">
+                  <i class="ki-duotone ki-shield-tick fs-3x text-success"><span class="path1"></span><span class="path2"></span></i>
+                </span>
+              </div>
+              <h4 class="text-gray-800 fw-bold mb-2">2FA está activo en tu cuenta</h4>
+              <p class="text-muted fs-7">Para desactivar la autenticación de dos factores, ingresa un código de tu aplicación de autenticación.</p>
+            </div>
+            <form [formGroup]="twoFactorCode" class="d-flex flex-column align-items-center gap-4">
+              <input type="text" class="form-control form-control-solid text-center w-250px fs-4 letter-spacing-1" formControlName="code" placeholder="Código de 6 dígitos" maxlength="6" />
+              <button type="button" class="btn btn-light-danger px-8" (click)="disable2FA()" [disabled]="twoFactorCode.invalid">
+                Desactivar 2FA
+              </button>
+            </form>
+            <!--end::2FA Enabled State-->
+
+          } @else {
+
+            <!--begin::2FA Setup State-->
+            @if (!twoFactorSetup()) {
+              <div class="text-center">
+                <div class="symbol symbol-70px mb-4">
+                  <span class="symbol-label bg-light-warning">
+                    <i class="ki-duotone ki-shield-cross fs-3x text-warning"><span class="path1"></span><span class="path2"></span></i>
+                  </span>
+                </div>
+                <h4 class="text-gray-800 fw-bold mb-2">Configura la Autenticación de Dos Factores</h4>
+                <p class="text-muted fs-7 mb-6">Protege tu cuenta con una capa adicional de seguridad. Necesitarás una aplicación de autenticación como Google Authenticator o Authy.</p>
+                <button class="btn btn-primary" (click)="setup2FA()" [disabled]="isLoading2FA()">
+                  @if (isLoading2FA()) {
+                    <span class="spinner-border spinner-border-sm me-2"></span>
+                  }
+                  Comenzar Configuración
                 </button>
               </div>
-            </form>
-          </div>
-          <div id="kt_signin_email_button" class="ms-auto false">
-            <button class="btn btn-light btn-active-light-primary" (click)="toggleEmailForm(true)">
-              Change Email
-            </button>
-          </div>
-        </div>
-      </ng-container>
-
-      <ng-container *ngIf="showChangeEmailForm">
-        <div class="d-flex flex-wrap align-items-center">
-          <div id="kt_signin_email" class="d-none">
-            <div class="fs-6 fw-bolder mb-1">Email Address</div>
-            <div class="fw-bold text-gray-600">{{ profileState.user()?.email }}</div>
-          </div>
-          <div id="kt_signin_email_edit" class="flex-row-fluid false">
-            <form id="kt_signin_change_email" class="form" novalidate="">
-              <div class="row mb-6">
-                <div class="col-lg-6 mb-4 mb-lg-0">
-                  <div class="fv-row mb-0">
-                    <label for="emailaddress" class="form-label fs-6 fw-bolder mb-3">Enter New Email Address</label>
-                    <input type="email" class="form-control form-control-lg form-control-solid" placeholder="Email Address" formControlName="email" />
+            } @else {
+              <!--begin::QR Setup-->
+              <div class="row">
+                <div class="col-md-6 text-center mb-5 mb-md-0">
+                  <h6 class="fw-bold text-gray-800 mb-3">1. Escanea el código QR</h6>
+                  <p class="text-muted fs-8 mb-3">Abre tu aplicación de autenticación y escanea este código.</p>
+                  <div class="d-inline-block p-3 bg-white rounded shadow-sm mb-3">
+                    <img [src]="twoFactorSetup()!.qrCodeUrl" alt="Código QR" class="mw-180px" />
+                  </div>
+                  <div class="mt-2">
+                    <span class="text-muted fs-8 d-block mb-1">¿No puedes escanear? Usa esta clave:</span>
+                    <code class="fs-7 bg-light-primary text-primary px-3 py-1 rounded d-inline-block user-select-all">{{ twoFactorSetup()!.secret }}</code>
                   </div>
                 </div>
-              </div>
-              <div class="d-flex">
-                <button id="kt_signin_submit" type="button" class="btn btn-primary me-2 px-6" (click)="saveEmail()">
-                  <ng-container *ngIf="!isLoading"> Update Email </ng-container>
-                  <ng-container *ngIf="isLoading">
-                    <span class="indicator-progress" [style.display]="'block'">
-                      Please wait...{{ " " }}
-                      <span class="
-                          spinner-border spinner-border-sm
-                          align-middle
-                          ms-2
-                        "></span>
-                    </span>
-                  </ng-container></button><button id="kt_signin_cancel" type="button"
-                                                  class="btn btn-color-gray-500 btn-active-light-primary px-6" (click)="toggleEmailForm(false)">
-                Cancel
-              </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </ng-container>
-
-      <div class="separator separator-dashed my-6"></div>
-
-      <ng-container *ngIf="!showChangePasswordForm">
-        <div class="d-flex flex-wrap align-items-center mb-10">
-          <div id="kt_signin_password" class="false">
-            <div class="fs-6 fw-bolder mb-1">Password</div>
-            <div class="fw-bold text-gray-600">************</div>
-          </div>
-          <div id="kt_signin_password_button" class="ms-auto false">
-            <button class="btn btn-light btn-active-light-primary" (click)="togglePasswordForm(true)">
-              Reset Password
-            </button>
-          </div>
-        </div>
-      </ng-container>
-
-      <ng-container *ngIf="showChangePasswordForm">
-        <div class="d-flex flex-wrap align-items-center mb-10">
-          <div id="kt_signin_password_edit" class="flex-row-fluid false">
-            <form id="kt_signin_change_password" class="form" novalidate="">
-              <div class="row mb-1">
-                <div class="col-lg-4">
-                  <div class="fv-row mb-0">
-                    <label for="currentpassword" class="form-label fs-6 fw-bolder mb-3">Current Password</label><input
-                    type="password" class="form-control form-control-lg form-control-solid" id="currentpassword"
-                    name="currentPassword" value="1234" />
-                  </div>
-                </div>
-                <div class="col-lg-4">
-                  <div class="fv-row mb-0">
-                    <label for="newpassword" class="form-label fs-6 fw-bolder mb-3">New Password</label><input
-                    type="password" class="form-control form-control-lg form-control-solid" id="newpassword"
-                    name="newPassword" value="1234" />
-                  </div>
-                </div>
-                <div class="col-lg-4">
-                  <div class="fv-row mb-0">
-                    <label for="confirmpassword" class="form-label fs-6 fw-bolder mb-3">Confirm New
-                      Password</label><input type="password" class="form-control form-control-lg form-control-solid"
-                                             id="confirmpassword" name="passwordConfirmation" value="1234" />
-                  </div>
+                <div class="col-md-6 d-flex flex-column justify-content-center">
+                  <h6 class="fw-bold text-gray-800 mb-3">2. Ingresa el código de verificación</h6>
+                  <p class="text-muted fs-8 mb-4">Ingresa el código de 6 dígitos que aparece en tu aplicación de autenticación.</p>
+                  <form [formGroup]="twoFactorCode" (ngSubmit)="verify2FA()">
+                    <input type="text" class="form-control form-control-solid text-center fs-4 letter-spacing-1 mb-4" formControlName="code" placeholder="000000" maxlength="6" />
+                    <button type="submit" class="btn btn-primary w-100" [disabled]="twoFactorCode.invalid">
+                      Verificar y Activar
+                    </button>
+                  </form>
                 </div>
               </div>
-              <div class="form-text mb-5">
-                Password must be at least 8 character and contain symbols
-              </div>
-              <div class="d-flex">
-                <button id="kt_password_submit" type="button" class="btn btn-primary me-2 px-6"
-                        (click)="savePassword()">
-                  <ng-container *ngIf="!isLoading">Update Password</ng-container>
-                  <ng-container *ngIf="isLoading">
-                    <span class="indicator-progress" [style.display]="'block'">
-                      Please wait...{{ " " }}
-                      <span class="
-                          spinner-border spinner-border-sm
-                          align-middle
-                          ms-2
-                        "></span>
-                    </span>
-                  </ng-container></button><button id="kt_password_cancel" type="button"
-                                                  class="btn btn-color-gray-500 btn-active-light-primary px-6" (click)="togglePasswordForm(false)">
-                Cancel
-              </button>
-              </div>
-            </form>
-          </div>
-          <div id="kt_signin_password_button" class="ms-auto d-none">
-            <button class="btn btn-light btn-active-light-primary">
-              Reset Password
-            </button>
-          </div>
-        </div>
-      </ng-container>
+              <!--end::QR Setup-->
+            }
+            <!--end::2FA Setup State-->
+          }
 
-      <div class="notice d-flex bg-light-primary rounded border-primary border border-dashed p-6">
-        <app-keenicon name="shield-tick" class="fs-2 text-primary me-4"></app-keenicon>
-        <div class="d-flex flex-stack flex-grow-1 flex-wrap flex-md-nowrap">
-          <div class="mb-3 mb-md-0 fw-bold">
-            <h4 class="text-gray-800 fw-bolder">Secure Your Account</h4>
-            <div class="fs-6 text-gray-600 pe-7">
-              Two-factor authentication adds an extra layer of security to your
-              account. To log in, in addition you'll need to provide a 6 digit
-              code
-            </div>
-          </div>
-          <a class="btn btn-primary px-6 align-self-center text-nowrap cursor-pointer" data-bs-toggle="modal" data-bs-target="#kt_modal_two_factor_authentication">Enable</a>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-light" (click)="close2FAModal()">Cerrar</button>
         </div>
       </div>
     </div>
   </div>
-</div>
+}
+<!--end::2FA Modal-->

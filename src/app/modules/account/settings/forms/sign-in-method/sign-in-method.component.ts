@@ -1,69 +1,128 @@
-import { ChangeDetectorRef, Component, inject, effect } from '@angular/core';
-import { BehaviorSubject, Subscription } from 'rxjs';
+import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
-import {SharedModule} from "../../../../../_metronic/shared/shared.module";
-import {ProfileStateService} from "../../../../../core/services/profile/ProfileStateService";
+import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { AuthService } from 'src/app/core/services/auth.service';
+import { ProfileStateService } from 'src/app/core/services/profile/ProfileStateService';
+import { ToastService } from 'src/app/shared/services/toast.service';
 
 @Component({
   selector: 'app-sign-in-method',
   templateUrl: './sign-in-method.component.html',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, SharedModule],
+  imports: [CommonModule, ReactiveFormsModule],
 })
-export class SignInMethodComponent {
+export class SignInMethodComponent implements OnInit {
   public profileState = inject(ProfileStateService);
+  private authService = inject(AuthService);
+  private toast = inject(ToastService);
   private fb = inject(FormBuilder);
 
-  showChangeEmailForm: boolean = false;
-  showChangePasswordForm: boolean = false;
-  isLoading$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
-  isLoading: boolean;
-  private unsubscribe: Subscription[] = [];
+  showChangePasswordForm = signal(false);
+  isChangingPassword = signal(false);
+  show2FAModal = signal(false);
+  isLoading2FA = signal(false);
+  twoFactorSetup = signal<{ secret: string; qrCodeUrl: string } | null>(null);
 
-  formEmail = this.fb.group({
-    email: ['']
+  passwordForm = this.fb.group({
+    currentPassword: ['', [Validators.required]],
+    newPassword: ['', [Validators.required, Validators.minLength(6)]],
+    confirmPassword: ['', [Validators.required]],
   });
 
-  constructor(private cdr: ChangeDetectorRef) {
-    const loadingSubscr = this.isLoading$
-      .asObservable()
-      .subscribe((res) => (this.isLoading = res));
-    this.unsubscribe.push(loadingSubscr);
+  twoFactorCode = this.fb.group({
+    code: ['', [Validators.required, Validators.minLength(6)]],
+  });
 
-    effect(() => {
-      const currentUser = this.profileState.user();
-      if (currentUser) {
-        this.formEmail.patchValue({
-          email: currentUser.email ?? '',
-        });
-      }
+  ngOnInit(): void {
+    this.profileState.loadProfile();
+  }
+
+  togglePasswordForm(show: boolean): void {
+    this.showChangePasswordForm.set(show);
+    if (!show) this.passwordForm.reset();
+  }
+
+  savePassword(): void {
+    if (this.passwordForm.invalid) return;
+    if (this.passwordForm.value.newPassword !== this.passwordForm.value.confirmPassword) {
+      this.toast.error('Error', 'Las contraseñas no coinciden');
+      return;
+    }
+    this.isChangingPassword.set(true);
+    this.authService.changePassword({
+      currentPassword: this.passwordForm.value.currentPassword!,
+      newPassword: this.passwordForm.value.newPassword!,
+      confirmPassword: this.passwordForm.value.confirmPassword!,
+    }).subscribe({
+      next: () => {
+        this.isChangingPassword.set(false);
+        this.passwordForm.reset();
+        this.showChangePasswordForm.set(false);
+        this.toast.success('Contraseña actualizada correctamente');
+      },
+      error: err => {
+        this.isChangingPassword.set(false);
+        this.toast.error('Error', err?.message);
+      },
     });
   }
 
-  toggleEmailForm(show: boolean) {
-    this.showChangeEmailForm = show;
+  open2FAModal(): void {
+    this.show2FAModal.set(true);
+    this.twoFactorSetup.set(null);
+    this.twoFactorCode.reset();
   }
 
-  saveEmail() {
-    this.isLoading$.next(true);
-    setTimeout(() => {
-      this.isLoading$.next(false);
-      this.showChangeEmailForm = false;
-      this.cdr.detectChanges();
-    }, 1500);
+  close2FAModal(): void {
+    this.show2FAModal.set(false);
+    this.twoFactorSetup.set(null);
+    this.twoFactorCode.reset();
   }
 
-  togglePasswordForm(show: boolean) {
-    this.showChangePasswordForm = show;
+  setup2FA(): void {
+    this.isLoading2FA.set(true);
+    this.authService.setup2FA().subscribe({
+      next: res => {
+        this.twoFactorSetup.set({ secret: res.data.secret, qrCodeUrl: res.data.qrCodeUrl });
+        this.isLoading2FA.set(false);
+      },
+      error: err => {
+        this.isLoading2FA.set(false);
+        this.toast.error('Error', err?.message);
+      },
+    });
   }
 
-  savePassword() {
-    this.isLoading$.next(true);
-    setTimeout(() => {
-      this.isLoading$.next(false);
-      this.showChangePasswordForm = false;
-      this.cdr.detectChanges();
-    }, 1500);
+  verify2FA(): void {
+    if (this.twoFactorCode.invalid) return;
+    this.authService.verify2FA({ code: Number(this.twoFactorCode.value.code) }).subscribe({
+      next: () => {
+        this.twoFactorSetup.set(null);
+        this.twoFactorCode.reset();
+        this.close2FAModal();
+        const currentUser = this.profileState.user();
+        if (currentUser) {
+          this.profileState.updateUserSignal({ ...currentUser, twoFactorEnabled: true });
+        }
+        this.toast.success('2FA activado correctamente');
+      },
+      error: err => this.toast.error('Error', err?.message),
+    });
+  }
+
+  disable2FA(): void {
+    if (this.twoFactorCode.invalid) return;
+    this.authService.disable2FA({ code: Number(this.twoFactorCode.value.code) }).subscribe({
+      next: () => {
+        this.twoFactorCode.reset();
+        this.close2FAModal();
+        const currentUser = this.profileState.user();
+        if (currentUser) {
+          this.profileState.updateUserSignal({ ...currentUser, twoFactorEnabled: false });
+        }
+        this.toast.success('2FA desactivado correctamente');
+      },
+      error: err => this.toast.error('Error', err?.message),
+    });
   }
 }
