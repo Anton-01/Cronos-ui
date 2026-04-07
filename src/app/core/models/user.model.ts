@@ -56,7 +56,7 @@ export interface ActiveSession {
   os: string;
   device: string;
   location: string;
-  lastActivityAt: string;
+  lastActivityAt: Date;
   isActive: boolean;
   isCurrentSession: boolean;
 }
@@ -66,5 +66,5 @@ export interface LoginHistoryEntry {
   userAgent: string;
   status: string;
   failureReason: string | null;
-  createdAt: string;
+  createdAt: Date;
 }
