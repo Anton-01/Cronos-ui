@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <defs>
+    <linearGradient id="fg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="50%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#5b21b6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle -->
+  <circle cx="32" cy="32" r="30" fill="url(#fg)"/>
+
+  <!-- Clock ring -->
+  <circle cx="32" cy="32" r="24" fill="none" stroke="white" stroke-width="1.5" stroke-opacity="0.3"/>
+
+  <!-- Hour markers -->
+  <circle cx="32" cy="10" r="2" fill="white" opacity="0.9"/>
+  <circle cx="32" cy="54" r="2" fill="white" opacity="0.9"/>
+  <circle cx="10" cy="32" r="2" fill="white" opacity="0.9"/>
+  <circle cx="54" cy="32" r="2" fill="white" opacity="0.9"/>
+
+  <!-- Small markers -->
+  <circle cx="43" cy="13" r="1" fill="white" opacity="0.5"/>
+  <circle cx="51" cy="21" r="1" fill="white" opacity="0.5"/>
+  <circle cx="51" cy="43" r="1" fill="white" opacity="0.5"/>
+  <circle cx="43" cy="51" r="1" fill="white" opacity="0.5"/>
+  <circle cx="21" cy="51" r="1" fill="white" opacity="0.5"/>
+  <circle cx="13" cy="43" r="1" fill="white" opacity="0.5"/>
+  <circle cx="13" cy="21" r="1" fill="white" opacity="0.5"/>
+  <circle cx="21" cy="13" r="1" fill="white" opacity="0.5"/>
+
+  <!-- Clock hands -->
+  <line x1="32" y1="32" x2="32" y2="16" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="32" y1="32" x2="45" y2="25" stroke="white" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Center dot with cupcake -->
+  <circle cx="32" cy="32" r="5" fill="white"/>
+  <path d="M28 34 l2.5 -4.5 h3 l2.5 4.5 z" fill="#ec4899"/>
+  <ellipse cx="32" cy="29.5" rx="4.5" ry="2.8" fill="#fde68a"/>
+  <circle cx="32" cy="27.5" r="1.5" fill="#f43f5e"/>
+</svg>
