@@ -12,8 +12,11 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     setHeaders: { 'X-Requested-With': 'XMLHttpRequest' },
   });
 
-  // Skip Bearer for public URLs
-  const isPublic = PUBLIC_URLS.some(url => req.url.includes(url));
+  // Skip Bearer for public URLs (exact segment match to avoid /auth/login matching /auth/login-history)
+  const isPublic = PUBLIC_URLS.some(url => {
+    const urlPath = req.url.split('?')[0];
+    return urlPath.endsWith(url);
+  });
   if (isPublic) {
     return next(modifiedReq);
   }
