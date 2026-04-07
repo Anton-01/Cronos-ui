@@ -52,16 +52,19 @@ export interface ActiveSession {
   id: string;
   ipAddress: string;
   userAgent: string;
-  createdAt: string;
-  lastAccessedAt: string;
-  current: boolean;
+  browser: string;
+  os: string;
+  device: string;
+  location: string;
+  lastActivityAt: Date;
+  isActive: boolean;
+  isCurrentSession: boolean;
 }
 
 export interface LoginHistoryEntry {
-  id: string;
   ipAddress: string;
   userAgent: string;
-  loginAt: string;
-  success: boolean;
+  status: string;
   failureReason: string | null;
+  createdAt: Date;
 }

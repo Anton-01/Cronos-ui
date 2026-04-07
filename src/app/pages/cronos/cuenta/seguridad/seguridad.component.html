@@ -59,28 +59,71 @@
   </div>
   <!--end::2FA-->
 
+
   <!--begin::Sessions-->
   <div class="card">
     <div class="card-header">
       <h3 class="card-title">Sesiones Activas</h3>
-      <div class="card-toolbar"><button class="btn btn-sm btn-light" (click)="loadSessions()">Cargar sesiones</button></div>
+      <div class="card-toolbar">
+        <button class="btn btn-sm btn-light-primary" (click)="loadSessions()" [disabled]="isLoadingSessions()">
+          @if (isLoadingSessions()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+          <i class="ki-duotone ki-arrows-circle fs-4 me-1"><span class="path1"></span><span class="path2"></span></i>
+          Actualizar
+        </button>
+      </div>
     </div>
     <div class="card-body">
-      @if (sessions().length) {
+      @if (isLoadingSessions() && !sessions().length) {
+        <div class="d-flex justify-content-center py-10">
+          <span class="spinner-border text-primary"></span>
+        </div>
+      } @else if (sessions().length) {
         <div class="table-responsive">
-          <table class="table table-row-dashed fs-6 gy-5">
-            <thead><tr class="text-muted fw-bold fs-7 text-uppercase"><th>IP</th><th>Navegador</th><th>Último acceso</th><th class="text-end">Acción</th></tr></thead>
-            <tbody class="text-gray-600 fw-semibold">
+          <table class="table table-row-bordered table-row-gray-200 align-middle gy-4 gs-4">
+            <thead>
+              <tr class="fw-bold text-muted bg-light-primary rounded">
+                <th class="ps-4 rounded-start">Navegador / SO</th>
+                <th>Dispositivo</th>
+                <th>Última actividad</th>
+                <th>Estado</th>
+                <th class="text-end pe-4 rounded-end">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
               @for (s of sessions(); track s.id) {
                 <tr>
-                  <td>{{ s.ipAddress }}</td>
-                  <td>{{ s.userAgent }}</td>
-                  <td>{{ s.lastAccessedAt | date:'dd/MM/yyyy HH:mm' }}</td>
-                  <td class="text-end">
-                    @if (!s.current) {
-                      <button class="btn btn-sm btn-light-danger" (click)="revokeSession(s)">Revocar</button>
+                  <td class="ps-4">
+                    <div class="d-flex flex-column">
+                      <span class="text-gray-800 fw-bold fs-6">{{ s.browser }}</span>
+                      <span class="text-muted fs-7">{{ s.os }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="badge badge-light-info fw-semibold fs-7">{{ s.device }}</span>
+                  </td>
+                  <td>
+                    <span class="text-gray-600 fw-semibold">{{ s.lastActivityAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </td>
+                  <td>
+                    @if (s.isCurrentSession) {
+                      <span class="badge badge-light-success fs-7 fw-bold">
+                        <i class="ki-duotone ki-verify fs-6 text-success me-1"><span class="path1"></span><span class="path2"></span></i>
+                        Sesión actual
+                      </span>
+                    } @else if (s.isActive) {
+                      <span class="badge badge-light-warning fs-7 fw-bold">Activa</span>
                     } @else {
-                      <span class="badge badge-light-success">Actual</span>
+                      <span class="badge badge-light-secondary fs-7 fw-bold">Inactiva</span>
+                    }
+                  </td>
+                  <td class="text-end pe-4">
+                    <button class="btn btn-sm btn-icon btn-light-primary me-2" title="Ver detalles" (click)="showSessionDetail(s)">
+                      <i class="ki-duotone ki-eye fs-4"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                    </button>
+                    @if (!s.isCurrentSession) {
+                      <button class="btn btn-sm btn-icon btn-light-danger" title="Revocar sesión" (click)="confirmRevokeSession(s)">
+                        <i class="ki-duotone ki-cross-circle fs-4"><span class="path1"></span><span class="path2"></span></i>
+                      </button>
                     }
                   </td>
                 </tr>
@@ -89,40 +132,168 @@
           </table>
         </div>
       } @else {
-        <p class="text-muted">Haz clic en "Cargar sesiones" para ver tus sesiones activas.</p>
+        <div class="text-center py-10">
+          <i class="ki-duotone ki-shield-tick fs-3x text-gray-300 mb-4"><span class="path1"></span><span class="path2"></span></i>
+          <p class="text-muted fs-6">No se encontraron sesiones activas.</p>
+        </div>
       }
     </div>
   </div>
   <!--end::Sessions-->
 
+  <!--begin::Session Detail Modal-->
+  @if (selectedSession()) {
+    <div class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.4);" (click)="closeSessionDetail()">
+      <div class="modal-dialog modal-dialog-centered" (click)="$event.stopPropagation()">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold">Detalle de Sesión</h5>
+            <button type="button" class="btn-close" (click)="closeSessionDetail()"></button>
+          </div>
+          <div class="modal-body">
+            <div class="d-flex flex-column gap-5">
+              <div class="d-flex align-items-center gap-3">
+                <div class="symbol symbol-45px">
+                  <span class="symbol-label bg-light-primary">
+                    <i class="ki-duotone ki-technology-2 fs-2x text-primary"><span class="path1"></span><span class="path2"></span></i>
+                  </span>
+                </div>
+                <div>
+                  <span class="text-gray-800 fw-bold fs-5">{{ selectedSession()!.browser }}</span>
+                  <span class="text-muted d-block fs-7">{{ selectedSession()!.os }}</span>
+                </div>
+                @if (selectedSession()!.isCurrentSession) {
+                  <span class="badge badge-light-success ms-auto">Sesión actual</span>
+                }
+              </div>
+
+              <div class="separator"></div>
+
+              <div class="row g-4">
+                <div class="col-6">
+                  <span class="text-muted fs-7 d-block mb-1">Dirección IP</span>
+                  <span class="text-gray-800 fw-semibold fs-6">{{ selectedSession()!.ipAddress }}</span>
+                </div>
+                <div class="col-6">
+                  <span class="text-muted fs-7 d-block mb-1">Dispositivo</span>
+                  <span class="text-gray-800 fw-semibold fs-6">{{ selectedSession()!.device }}</span>
+                </div>
+                <div class="col-6">
+                  <span class="text-muted fs-7 d-block mb-1">Ubicación</span>
+                  <span class="text-gray-800 fw-semibold fs-6">{{ selectedSession()!.location }}</span>
+                </div>
+                <div class="col-6">
+                  <span class="text-muted fs-7 d-block mb-1">Última actividad</span>
+                  <span class="text-gray-800 fw-semibold fs-6">{{ selectedSession()!.lastActivityAt | date:'dd/MM/yyyy HH:mm:ss' }}</span>
+                </div>
+                <div class="col-12">
+                  <span class="text-muted fs-7 d-block mb-1">Estado</span>
+                  @if (selectedSession()!.isActive) {
+                    <span class="badge badge-light-success">Activa</span>
+                  } @else {
+                    <span class="badge badge-light-secondary">Inactiva</span>
+                  }
+                </div>
+                <div class="col-12">
+                  <span class="text-muted fs-7 d-block mb-1">User Agent</span>
+                  <code class="text-gray-600 fs-8 d-block" style="word-break: break-all;">{{ selectedSession()!.userAgent }}</code>
+                </div>
+                <div class="col-12">
+                  <span class="text-muted fs-7 d-block mb-1">ID de Sesión</span>
+                  <code class="text-gray-600 fs-8">{{ selectedSession()!.id }}</code>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            @if (!selectedSession()!.isCurrentSession) {
+              <button type="button" class="btn btn-light-danger" (click)="closeSessionDetail(); confirmRevokeSession(selectedSession()!)">
+                <i class="ki-duotone ki-cross-circle fs-4 me-1"><span class="path1"></span><span class="path2"></span></i>
+                Revocar sesión
+              </button>
+            }
+            <button type="button" class="btn btn-light" (click)="closeSessionDetail()">Cerrar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+  <!--end::Session Detail Modal-->
+
   <!--begin::Login History-->
   <div class="card">
     <div class="card-header">
       <h3 class="card-title">Historial de Accesos</h3>
-      <div class="card-toolbar"><button class="btn btn-sm btn-light" (click)="loadLoginHistory()">Cargar historial</button></div>
+      <div class="card-toolbar">
+        <button class="btn btn-sm btn-light-primary" (click)="loadLoginHistory()" [disabled]="isLoadingHistory()">
+          @if (isLoadingHistory()) { <span class="spinner-border spinner-border-sm me-2"></span> }
+          <i class="ki-duotone ki-arrows-circle fs-4 me-1"><span class="path1"></span><span class="path2"></span></i>
+          Actualizar
+        </button>
+      </div>
     </div>
     <div class="card-body">
-      @if (loginHistory().length) {
+      @if (isLoadingHistory() && !loginHistory().length) {
+        <div class="d-flex justify-content-center py-10">
+          <span class="spinner-border text-primary"></span>
+        </div>
+      } @else if (loginHistory().length) {
         <div class="table-responsive">
-          <table class="table table-row-dashed fs-6 gy-5">
-            <thead><tr class="text-muted fw-bold fs-7 text-uppercase"><th>Fecha</th><th>IP</th><th>Resultado</th><th>Motivo</th></tr></thead>
-            <tbody class="text-gray-600 fw-semibold">
-              @for (entry of loginHistory(); track entry.id) {
+          <table class="table table-row-bordered table-row-gray-200 align-middle gy-4 gs-4">
+            <thead>
+              <tr class="fw-bold text-muted bg-light-primary rounded">
+                <th class="ps-4 rounded-start">Fecha</th>
+                <th>Dirección IP</th>
+                <th>User Agent</th>
+                <th>Estado</th>
+                <th class="pe-4 rounded-end">Motivo de fallo</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of loginHistory(); track $index) {
                 <tr>
-                  <td>{{ entry.loginAt | date:'dd/MM/yyyy HH:mm' }}</td>
-                  <td>{{ entry.ipAddress }}</td>
-                  <td>
-                    @if (entry.success) { <span class="badge badge-light-success">Exitoso</span> }
-                    @else { <span class="badge badge-light-danger">Fallido</span> }
+                  <td class="ps-4">
+                    <span class="text-gray-800 fw-semibold">{{ entry.createdAt | date:'dd/MM/yyyy' }}</span>
+                    <span class="text-muted d-block fs-7">{{ entry.createdAt | date:'HH:mm:ss' }}</span>
                   </td>
-                  <td>{{ entry.failureReason || '-' }}</td>
+                  <td>
+                    <span class="text-gray-700 fw-semibold">{{ entry.ipAddress }}</span>
+                  </td>
+                  <td>
+                    <span class="text-gray-600 fs-7" style="max-width: 280px; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" [title]="entry.userAgent">
+                      {{ entry.userAgent }}
+                    </span>
+                  </td>
+                  <td>
+                    @if (entry.status === 'SUCCESS') {
+                      <span class="badge badge-light-success fs-7 fw-bold">
+                        <i class="ki-duotone ki-check-circle fs-6 text-success me-1"><span class="path1"></span><span class="path2"></span></i>
+                        Exitoso
+                      </span>
+                    } @else {
+                      <span class="badge badge-light-danger fs-7 fw-bold">
+                        <i class="ki-duotone ki-cross-circle fs-6 text-danger me-1"><span class="path1"></span><span class="path2"></span></i>
+                        Fallido
+                      </span>
+                    }
+                  </td>
+                  <td class="pe-4">
+                    @if (entry.failureReason) {
+                      <span class="text-danger fs-7">{{ entry.failureReason }}</span>
+                    } @else {
+                      <span class="text-muted fs-7">-</span>
+                    }
+                  </td>
                 </tr>
               }
             </tbody>
           </table>
         </div>
       } @else {
-        <p class="text-muted">Haz clic en "Cargar historial" para ver el historial de accesos.</p>
+        <div class="text-center py-10">
+          <i class="ki-duotone ki-time fs-3x text-gray-300 mb-4"><span class="path1"></span><span class="path2"></span></i>
+          <p class="text-muted fs-6">No se encontraron registros de acceso.</p>
+        </div>
       }
     </div>
   </div>
