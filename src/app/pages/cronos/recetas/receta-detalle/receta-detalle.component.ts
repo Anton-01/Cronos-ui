@@ -110,6 +110,16 @@ export class RecetaDetalleComponent implements OnInit, OnDestroy {
   isUploadingFile = signal(false);
   isDragging = signal(false);
 
+  // File Detail Modal
+  showFileDetailModal = signal(false);
+  selectedFile = signal<RecipeFileResponse | null>(null);
+  isUpdatingFile = signal(false);
+  replacementFile = signal<File | null>(null);
+  fileDetailForm = this.fb.group({
+    fileName: [''],
+    description: [''],
+  });
+
   // --- Shares Tab ---
   shares = signal<RecipeShareResponse[]>([]);
   isLoadingShares = signal(false);
@@ -635,6 +645,72 @@ export class RecetaDetalleComponent implements OnInit, OnDestroy {
     if (bytes < 1024) return bytes + ' B';
     if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
     return (bytes / 1048576).toFixed(1) + ' MB';
+  }
+
+  isPdfFile(fileType: string): boolean {
+    return fileType === 'application/pdf';
+  }
+
+  getFileIcon(fileType: string): { icon: string; bgClass: string; textClass: string } {
+    if (fileType.startsWith('image/')) return { icon: 'ki-picture', bgClass: 'bg-light-primary', textClass: 'text-primary' };
+    if (fileType === 'application/pdf') return { icon: 'ki-document', bgClass: 'bg-light-danger', textClass: 'text-danger' };
+    if (fileType.includes('word') || fileType.includes('document')) return { icon: 'ki-notepad', bgClass: 'bg-light-info', textClass: 'text-info' };
+    return { icon: 'ki-file', bgClass: 'bg-light-warning', textClass: 'text-warning' };
+  }
+
+  openFileDetail(file: RecipeFileResponse): void {
+    this.selectedFile.set(file);
+    this.replacementFile.set(null);
+    this.fileDetailForm.patchValue({
+      fileName: file.fileName,
+      description: file.description ?? '',
+    });
+    this.showFileDetailModal.set(true);
+  }
+
+  closeFileDetail(): void {
+    this.showFileDetailModal.set(false);
+    this.selectedFile.set(null);
+    this.replacementFile.set(null);
+  }
+
+  onReplacementFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.replacementFile.set(input.files[0]);
+    }
+  }
+
+  updateFileDetail(): void {
+    const file = this.selectedFile();
+    if (!file) return;
+
+    this.isUpdatingFile.set(true);
+    const formData = new FormData();
+    formData.append('id', file.id);
+    formData.append('fileName', this.fileDetailForm.value.fileName || file.fileName);
+    if (this.fileDetailForm.value.description) {
+      formData.append('description', this.fileDetailForm.value.description);
+    }
+    const replacement = this.replacementFile();
+    if (replacement) {
+      formData.append('file', replacement);
+    }
+
+    this.recipeService.updateFile(this.recipeId, file.id, formData)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (res) => {
+          this.isUpdatingFile.set(false);
+          this.alertService.success('Archivo actualizado correctamente');
+          this.selectedFile.set(res.data);
+          this.loadFiles();
+        },
+        error: err => {
+          this.isUpdatingFile.set(false);
+          this.alertService.error(err?.error?.message || 'Error al actualizar archivo');
+        },
+      });
   }
 
   // ─── SHARES TAB ───

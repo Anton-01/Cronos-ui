@@ -271,6 +271,8 @@ export interface RecipeFileResponse {
   fileUrl: string;
   fileType: string;
   sizeBytes: number;
+  description: string | null;
+  isPrimary: boolean;
   createdAt: string;
 }
 

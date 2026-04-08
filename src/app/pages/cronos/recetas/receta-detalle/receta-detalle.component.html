@@ -529,9 +529,9 @@
                       </div>
                       <!-- Actions -->
                       <div class="card-footer py-3 d-flex justify-content-center gap-2 border-top">
-                        <a [href]="file.fileUrl" target="_blank" class="btn btn-sm btn-light-primary">
+                        <button class="btn btn-sm btn-light-primary" (click)="openFileDetail(file)">
                           <i class="ki-duotone ki-eye fs-6"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i> Ver
-                        </a>
+                        </button>
                         <button class="btn btn-sm btn-light-danger" (click)="deleteFile(file)">
                           <i class="ki-duotone ki-trash fs-6"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i> Eliminar
                         </button>
@@ -549,6 +549,142 @@
             }
           </div>
         </div>
+
+        <!--begin::File Detail Modal-->
+        @if (showFileDetailModal() && selectedFile()) {
+          <div class="modal d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5); z-index: 1055;" (click)="closeFileDetail()">
+            <div class="modal-dialog modal-dialog-centered modal-xl" (click)="$event.stopPropagation()">
+              <div class="modal-content">
+                <div class="modal-header py-4">
+                  <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+                    <i class="ki-duotone ki-file fs-2 text-primary"><span class="path1"></span><span class="path2"></span></i>
+                    Detalle de Archivo
+                  </h5>
+                  <button type="button" class="btn-close" (click)="closeFileDetail()"></button>
+                </div>
+                <div class="modal-body p-0">
+                  <div class="row g-0">
+
+                    <!--begin::Left: Preview-->
+                    <div class="col-lg-7 d-flex align-items-center justify-content-center bg-gray-100 p-6" style="min-height: 400px;">
+                      @if (isImageFile(selectedFile()!.fileType)) {
+                        <img [src]="selectedFile()!.fileUrl" [alt]="selectedFile()!.fileName"
+                          class="rounded shadow-sm" style="max-height: 450px; max-width: 100%; object-fit: contain;" />
+                      } @else if (isPdfFile(selectedFile()!.fileType)) {
+                        <iframe [src]="selectedFile()!.fileUrl" class="w-100 rounded" style="height: 450px; border: none;"></iframe>
+                      } @else {
+                        <div class="text-center">
+                          <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-4"
+                            [ngClass]="getFileIcon(selectedFile()!.fileType).bgClass" style="width: 120px; height: 120px;">
+                            <i class="ki-duotone fs-4x" [ngClass]="[getFileIcon(selectedFile()!.fileType).icon, getFileIcon(selectedFile()!.fileType).textClass]">
+                              <span class="path1"></span><span class="path2"></span>
+                            </i>
+                          </div>
+                          <p class="text-gray-600 fw-semibold mb-2">Vista previa no disponible</p>
+                          <a [href]="selectedFile()!.fileUrl" target="_blank" class="btn btn-sm btn-light-primary">
+                            <i class="ki-duotone ki-cloud-download fs-6"><span class="path1"></span><span class="path2"></span></i>
+                            Descargar archivo
+                          </a>
+                        </div>
+                      }
+                    </div>
+                    <!--end::Left: Preview-->
+
+                    <!--begin::Right: Metadata & Edit-->
+                    <div class="col-lg-5 p-6 d-flex flex-column">
+
+                      <!--begin::Metadata-->
+                      <div class="mb-6">
+                        <h6 class="fw-bold text-gray-800 mb-4">
+                          <i class="ki-duotone ki-information-4 fs-5 text-primary me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                          Información del Archivo
+                        </h6>
+                        <div class="d-flex flex-column gap-3">
+                          <div class="d-flex justify-content-between align-items-start">
+                            <span class="text-muted fs-7 fw-semibold">Tipo</span>
+                            <span class="badge badge-light-info fs-8">{{ selectedFile()!.fileType }}</span>
+                          </div>
+                          <div class="separator separator-dashed"></div>
+                          <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted fs-7 fw-semibold">Tamaño</span>
+                            <span class="text-gray-800 fs-7">{{ formatFileSize(selectedFile()!.sizeBytes) }}</span>
+                          </div>
+                          <div class="separator separator-dashed"></div>
+                          <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted fs-7 fw-semibold">Primario</span>
+                            @if (selectedFile()!.isPrimary) {
+                              <span class="badge badge-light-success fs-8">Si</span>
+                            } @else {
+                              <span class="badge badge-light-secondary fs-8">No</span>
+                            }
+                          </div>
+                          <div class="separator separator-dashed"></div>
+                          <div class="d-flex justify-content-between align-items-center">
+                            <span class="text-muted fs-7 fw-semibold">Creado</span>
+                            <span class="text-gray-800 fs-7">{{ selectedFile()!.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                          </div>
+                          <div class="separator separator-dashed"></div>
+                          <div class="d-flex flex-column">
+                            <span class="text-muted fs-7 fw-semibold mb-1">ID</span>
+                            <code class="fs-8 text-gray-600 bg-light rounded px-2 py-1" style="word-break: break-all;">{{ selectedFile()!.id }}</code>
+                          </div>
+                        </div>
+                      </div>
+                      <!--end::Metadata-->
+
+                      <div class="separator my-4"></div>
+
+                      <!--begin::Edit Form-->
+                      <div class="flex-grow-1">
+                        <h6 class="fw-bold text-gray-800 mb-4">
+                          <i class="ki-duotone ki-pencil fs-5 text-warning me-1"><span class="path1"></span></i>
+                          Editar
+                        </h6>
+                        <form [formGroup]="fileDetailForm">
+                          <div class="fv-row mb-4">
+                            <label class="form-label fs-7 fw-semibold">Nombre del archivo</label>
+                            <input type="text" class="form-control form-control-sm form-control-solid" formControlName="fileName" />
+                          </div>
+                          <div class="fv-row mb-4">
+                            <label class="form-label fs-7 fw-semibold">Descripción</label>
+                            <textarea class="form-control form-control-sm form-control-solid" formControlName="description" rows="3" placeholder="Descripción del archivo..."></textarea>
+                          </div>
+                          <div class="fv-row mb-4">
+                            <label class="form-label fs-7 fw-semibold">Reemplazar archivo</label>
+                            <input type="file" class="form-control form-control-sm form-control-solid" (change)="onReplacementFileSelected($event)" accept="image/*,.pdf,.doc,.docx" />
+                            @if (replacementFile()) {
+                              <div class="text-success fs-8 mt-1">
+                                <i class="ki-duotone ki-check-circle fs-7 text-success"><span class="path1"></span><span class="path2"></span></i>
+                                {{ replacementFile()!.name }}
+                              </div>
+                            }
+                          </div>
+                        </form>
+                      </div>
+                      <!--end::Edit Form-->
+
+                    </div>
+                    <!--end::Right: Metadata & Edit-->
+
+                  </div>
+                </div>
+                <div class="modal-footer py-3">
+                  <button type="button" class="btn btn-sm btn-light" (click)="closeFileDetail()">Cerrar</button>
+                  <button type="button" class="btn btn-sm btn-primary" (click)="updateFileDetail()" [disabled]="isUpdatingFile()">
+                    @if (isUpdatingFile()) {
+                      <span class="spinner-border spinner-border-sm me-2"></span>
+                      Actualizando...
+                    } @else {
+                      <i class="ki-duotone ki-check fs-6 me-1"><span class="path1"></span><span class="path2"></span></i>
+                      Actualizar
+                    }
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+        <!--end::File Detail Modal-->
       }
 
       <!-- ═══════════════════════════════════════════════ -->
