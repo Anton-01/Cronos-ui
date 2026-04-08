@@ -346,3 +346,78 @@ export interface UserFixedCostResponse {
   createdAt: string;
   updatedAt: string;
 }
+
+// ─── Cotizaciones (Quotes) ───
+
+export interface QuoteItemRequest {
+  recipeId?: string;
+  productName: string;
+  productDescription?: string;
+  productSize?: string;
+  quantity: number;
+  unitCost: number;
+  profitPercentage: number;
+  unitPrice: number;
+  notes?: string;
+}
+
+export interface CreateQuoteRequest {
+  clientName: string;
+  clientEmail?: string;
+  clientPhone?: string;
+  clientAddress?: string;
+  notes?: string;
+  taxRate: number;
+  currency: string;
+  validDays: number;
+  items: QuoteItemRequest[];
+}
+
+export interface InternalQuoteResponse {
+  id: string;
+  quoteNumber: string;
+  clientName: string;
+  clientEmail: string | null;
+  clientPhone: string | null;
+  total: number;
+  currency: string;
+  status: string;
+  createdAt: string;
+  publicToken: string;
+}
+
+export interface PublicQuoteItemResponse {
+  productName: string;
+  productDescription: string | null;
+  productSize: string | null;
+  mainImageUrl: string | null;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+}
+
+export interface PublicQuoteResponse {
+  quoteNumber: string;
+  bakerName: string;
+  clientName: string;
+  notes: string | null;
+  quoteDate: string;
+  validUntil: string;
+  subtotal: number;
+  taxRate: number;
+  taxAmount: number;
+  total: number;
+  currency: string;
+  status: string;
+  isExpired: boolean;
+  items: PublicQuoteItemResponse[];
+}
+
+// Receta simplificada para el buscador de cotizaciones
+export interface RecipeSimpleResponse {
+  id: string;
+  name: string;
+  description: string | null;
+  costPerUnit: number;
+  yieldUnit: string;
+}

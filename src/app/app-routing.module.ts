@@ -38,6 +38,22 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'cronos/cotizaciones/ver',
+    loadComponent: () =>
+      import('./pages/public/layout/public-quote-layout.component').then(
+        (m) => m.PublicQuoteLayoutComponent
+      ),
+    children: [
+      {
+        path: ':token',
+        loadComponent: () =>
+          import('./pages/public/shared-quote/shared-quote.component').then(
+            (m) => m.SharedQuoteComponent
+          ),
+      },
+    ],
+  },
+  {
     path: '',
     canActivate: [AuthGuard],
     loadChildren: () =>

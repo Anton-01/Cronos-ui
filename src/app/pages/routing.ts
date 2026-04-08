@@ -88,6 +88,15 @@ const Routing: Routes = [
     path: 'cronos/recetas/:id',
     loadComponent: () => import('./cronos/recetas/receta-detalle/receta-detalle.component').then(m => m.RecetaDetalleComponent),
   },
+  // ─── Cotizaciones ───
+  {
+    path: 'cronos/cotizaciones',
+    loadComponent: () => import('./cronos/cotizaciones/cotizaciones.component').then(m => m.CotizacionesComponent),
+  },
+  {
+    path: 'cronos/cotizaciones/nueva',
+    loadComponent: () => import('./cronos/cotizaciones/cotizacion-form/cotizacion-form.component').then(m => m.CotizacionFormComponent),
+  },
   // ─── Costos ───
   {
     path: 'cronos/costos-fijos',
