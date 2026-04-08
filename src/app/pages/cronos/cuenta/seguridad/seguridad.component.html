@@ -1,64 +1,79 @@
 <div class="d-flex flex-column gap-5">
-  <!--begin::Change Password-->
-  <div class="card">
-    <div class="card-header"><h3 class="card-title">Cambiar Contraseña</h3></div>
-    <div class="card-body">
-      <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
-        <div class="row mb-6">
-          <label class="col-lg-4 col-form-label fw-semibold fs-6">Contraseña actual</label>
-          <div class="col-lg-8"><input type="password" class="form-control" formControlName="currentPassword" /></div>
-        </div>
-        <div class="row mb-6">
-          <label class="col-lg-4 col-form-label fw-semibold fs-6">Nueva contraseña</label>
-          <div class="col-lg-8"><input type="password" class="form-control" formControlName="newPassword" /></div>
-        </div>
-        <div class="row mb-6">
-          <label class="col-lg-4 col-form-label fw-semibold fs-6">Confirmar contraseña</label>
-          <div class="col-lg-8"><input type="password" class="form-control" formControlName="confirmPassword" /></div>
-        </div>
-        <div class="d-flex justify-content-end">
-          <button type="submit" class="btn btn-primary" [disabled]="passwordForm.invalid || isChangingPassword()">
-            @if (isChangingPassword()) { <span class="spinner-border spinner-border-sm me-2"></span> }
-            Cambiar Contraseña
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-  <!--end::Change Password-->
 
-  <!--begin::2FA-->
+  <!--begin::Overview (Profile Details)-->
   <div class="card">
     <div class="card-header">
-      <h3 class="card-title">Autenticación de Dos Factores (2FA)</h3>
-      <div class="card-toolbar">
-        <button class="btn btn-sm btn-primary" (click)="setup2FA()" [disabled]="isLoading2FA()">Configurar 2FA</button>
+      <div class="card-title m-0">
+        <h3 class="fw-bolder m-0">Detalles del Perfil</h3>
       </div>
+      <a routerLink="/cronos/cuenta/mi-cuenta" class="btn btn-primary align-self-center">
+        Editar Perfil
+      </a>
     </div>
-    <div class="card-body">
-      @if (twoFactorSetup()) {
-        <div class="mb-5">
-          <p class="fw-semibold">Escanea el código QR con tu aplicación de autenticación:</p>
-          <div class="mb-3">
-            <img [src]="twoFactorSetup()!.qrCodeUrl" alt="QR Code" class="mw-200px" />
-          </div>
-          <p class="text-muted">Clave secreta: <code>{{ twoFactorSetup()!.secret }}</code></p>
+    <div class="card-body p-9">
+      @if (isLoadingProfile()) {
+        <div class="d-flex justify-content-center py-10">
+          <span class="spinner-border text-primary"></span>
         </div>
-        <form [formGroup]="twoFactorCode" (ngSubmit)="verify2FA()" class="d-flex gap-3">
-          <input type="text" class="form-control w-200px" formControlName="code" placeholder="Código de 6 dígitos" />
-          <button type="submit" class="btn btn-primary" [disabled]="twoFactorCode.invalid">Verificar</button>
-        </form>
-      } @else {
-        <p class="text-muted">La autenticación de dos factores añade una capa adicional de seguridad a tu cuenta.</p>
-        <form [formGroup]="twoFactorCode" class="d-flex gap-3">
-          <input type="text" class="form-control w-200px" formControlName="code" placeholder="Código para desactivar" />
-          <button type="button" class="btn btn-light-danger" (click)="disable2FA()" [disabled]="twoFactorCode.invalid">Desactivar 2FA</button>
-        </form>
+      } @else if (user()) {
+        <div class="row mb-7">
+          <label class="col-lg-4 fw-bold text-muted">Nombre Completo</label>
+          <div class="col-lg-8">
+            <span class="fw-bolder fs-6 text-gray-900">
+              {{ user()!.firstName || '-' }} {{ user()!.lastName || '' }}
+            </span>
+          </div>
+        </div>
+        <div class="row mb-7">
+          <label class="col-lg-4 fw-bold text-muted">Usuario</label>
+          <div class="col-lg-8">
+            <span class="fw-bold fs-6">{{ user()!.username }}</span>
+          </div>
+        </div>
+        <div class="row mb-7">
+          <label class="col-lg-4 fw-bold text-muted">Correo Electrónico</label>
+          <div class="col-lg-8">
+            <span class="fw-bold fs-6">{{ user()!.email }}</span>
+          </div>
+        </div>
+        <div class="row mb-7">
+          <label class="col-lg-4 fw-bold text-muted">Teléfono</label>
+          <div class="col-lg-8">
+            <span class="fw-bold fs-6">{{ user()!.phoneNumber || 'No registrado' }}</span>
+          </div>
+        </div>
+        <div class="row mb-7">
+          <label class="col-lg-4 fw-bold text-muted">Roles</label>
+          <div class="col-lg-8">
+            @for (role of user()!.roles; track role) {
+              <span class="badge badge-light-primary me-2">{{ role }}</span>
+            }
+          </div>
+        </div>
+        <div class="row mb-7">
+          <label class="col-lg-4 fw-bold text-muted">2FA</label>
+          <div class="col-lg-8">
+            @if (user()!.twoFactorEnabled) {
+              <span class="badge badge-light-success">Activo</span>
+            } @else {
+              <span class="badge badge-light-warning">Inactivo</span>
+            }
+          </div>
+        </div>
+        <div class="row">
+          <label class="col-lg-4 fw-bold text-muted">Último Acceso</label>
+          <div class="col-lg-8">
+            <span class="fw-bold fs-6">{{ user()!.lastLoginAt ? (user()!.lastLoginAt | date:'dd/MM/yyyy HH:mm') : 'Sin registro' }}</span>
+          </div>
+        </div>
       }
     </div>
   </div>
-  <!--end::2FA-->
+  <!--end::Overview-->
 
+  <!--begin::Sign-In Method (Password + 2FA)-->
+  <app-sign-in-method></app-sign-in-method>
+  <!--end::Sign-In Method-->
 
   <!--begin::Sessions-->
   <div class="card">

@@ -106,6 +106,10 @@ export class RecipeService {
     return this.http.post<ApiResponse<RecipeFileResponse>>(`${this.API}/${recipeId}/files`, formData);
   }
 
+  updateFile(recipeId: string, fileId: string, data: FormData): Observable<ApiResponse<RecipeFileResponse>> {
+    return this.http.put<ApiResponse<RecipeFileResponse>>(`${this.API}/${recipeId}/files`, data);
+  }
+
   deleteFile(recipeId: string, fileId: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.API}/${recipeId}/files/${fileId}`);
   }
