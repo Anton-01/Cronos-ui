@@ -418,6 +418,7 @@ export interface RecipeSimpleResponse {
   id: string;
   name: string;
   description: string | null;
-  costPerUnit: number;
+  totalCost: number;
+  costPerUnit?: number;
   yieldUnit: string;
 }

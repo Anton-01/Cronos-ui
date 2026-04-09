@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
@@ -36,8 +36,10 @@ export class CotizacionesComponent implements OnInit, OnDestroy {
   searchSubject = new Subject<string>();
   pageRequest: PageRequest = { page: 0, size: 10, sort: 'createdAt,desc' };
 
-  // Dropdown state
+  // Dropdown state — stored with fixed coordinates to escape table overflow
   openDropdownId = signal<string | null>(null);
+  dropdownTop = signal(0);
+  dropdownLeft = signal(0);
 
   ngOnInit(): void {
     this.pageInfoService.updateTitle('Cotizaciones');
@@ -100,12 +102,46 @@ export class CotizacionesComponent implements OnInit, OnDestroy {
     this.router.navigate(['/cronos/cotizaciones/nueva']);
   }
 
-  toggleDropdown(id: string): void {
-    this.openDropdownId.set(this.openDropdownId() === id ? null : id);
+  // ─── Dropdown handling (fixed positioning) ───
+  toggleDropdown(id: string, event: MouseEvent): void {
+    event.stopPropagation();
+    if (this.openDropdownId() === id) {
+      this.closeDropdown();
+      return;
+    }
+    const btn = event.currentTarget as HTMLElement;
+    const rect = btn.getBoundingClientRect();
+    const menuWidth = 260;
+    const menuHeight = 340;
+
+    // Position below the button, aligned to its right edge
+    let top = rect.bottom + 4;
+    let left = rect.right - menuWidth;
+
+    // Clamp within viewport
+    if (top + menuHeight > window.innerHeight) {
+      top = Math.max(8, rect.top - menuHeight - 4);
+    }
+    if (left < 8) left = 8;
+
+    this.dropdownTop.set(top);
+    this.dropdownLeft.set(left);
+    this.openDropdownId.set(id);
   }
 
   closeDropdown(): void {
     this.openDropdownId.set(null);
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    if (this.openDropdownId()) this.closeDropdown();
+  }
+
+  @HostListener('window:scroll')
+  @HostListener('window:resize')
+  onWindowChange(): void {
+    if (this.openDropdownId()) this.closeDropdown();
   }
 
   // ─── Distribución ───
@@ -138,18 +174,8 @@ export class CotizacionesComponent implements OnInit, OnDestroy {
   }
 
   sendEmail(quote: InternalQuoteResponse): void {
-    if (!quote.clientEmail) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Sin correo electrónico',
-        html: 'Este cliente no tiene un correo registrado.<br>Edita la cotización para agregar uno antes de enviar.',
-        confirmButtonText: 'Entendido',
-        confirmButtonColor: '#3085d6',
-      });
-      this.closeDropdown();
-      return;
-    }
-
+    // The list endpoint may not include the email; trust the backend to validate
+    // and surface a specific error if the client has no email registered.
     this.sendingEmailId.set(quote.id);
     this.closeDropdown();
 
@@ -159,20 +185,37 @@ export class CotizacionesComponent implements OnInit, OnDestroy {
         Swal.fire({
           icon: 'success',
           title: '¡Correo enviado!',
-          html: `La cotización <strong>${quote.quoteNumber}</strong> fue enviada a <strong>${quote.clientEmail}</strong>.`,
+          html: `La cotización <strong>${quote.quoteNumber}</strong> fue enviada al cliente.`,
           confirmButtonText: 'Listo',
           confirmButtonColor: '#50cd89',
         });
       },
       error: err => {
         this.sendingEmailId.set(null);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error al enviar',
-          text: err?.error?.message || 'No se pudo enviar el correo. Intenta de nuevo.',
-          confirmButtonText: 'Cerrar',
-          confirmButtonColor: '#d33',
-        });
+        const backendMsg: string = err?.error?.message || '';
+        const status = err?.status;
+        const looksLikeMissingEmail =
+          status === 400 &&
+          /email|correo/i.test(backendMsg) &&
+          /(no|sin|falta|missing|required|registr)/i.test(backendMsg);
+
+        if (looksLikeMissingEmail) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Sin correo electrónico',
+            html: 'Este cliente no tiene un correo registrado.<br>Edita la cotización para agregar uno antes de enviar.',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#3085d6',
+          });
+        } else {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al enviar',
+            text: backendMsg || 'No se pudo enviar el correo. Intenta de nuevo.',
+            confirmButtonText: 'Cerrar',
+            confirmButtonColor: '#d33',
+          });
+        }
       },
     });
   }

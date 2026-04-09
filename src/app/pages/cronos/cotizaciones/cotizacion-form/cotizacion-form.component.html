@@ -64,11 +64,52 @@
           }
         </div>
 
-        <!-- Teléfono -->
+        <!-- Teléfono con selector de país -->
         <div class="col-md-6">
           <label class="form-label fw-semibold">Teléfono</label>
-          <input type="tel" class="form-control form-control-solid"
-            formControlName="clientPhone" placeholder="+52 55 1234 5678" />
+          <div class="input-group input-group-solid position-relative">
+            <!-- Country selector button -->
+            <button type="button"
+              class="btn btn-light d-flex align-items-center gap-2 border"
+              style="min-width: 120px;"
+              (click)="toggleCountryDropdown($event)">
+              <span style="font-size: 1.2rem; line-height: 1;">{{ selectedCountry().flag }}</span>
+              <span class="fw-semibold text-gray-700">{{ selectedCountry().dialCode }}</span>
+              <i class="ki-duotone ki-down fs-6 ms-auto"><span class="path1"></span><span class="path2"></span></i>
+            </button>
+
+            <!-- Phone input with mask -->
+            <input type="tel" class="form-control form-control-solid"
+              formControlName="clientPhone"
+              [placeholder]="selectedCountry().placeholder"
+              (input)="onPhoneInput($event)"
+              autocomplete="tel" />
+
+            <!-- Country dropdown -->
+            @if (showCountryDropdown()) {
+              <div class="position-absolute top-100 start-0 mt-1 bg-white shadow-lg rounded border"
+                style="z-index: 1050; min-width: 220px;"
+                (click)="$event.stopPropagation()">
+                @for (country of phoneCountries; track country.code) {
+                  <div class="d-flex align-items-center gap-3 px-4 py-3 cursor-pointer"
+                    [class.bg-light-primary]="selectedCountry().code === country.code"
+                    (click)="selectCountry(country)">
+                    <span style="font-size: 1.5rem; line-height: 1;">{{ country.flag }}</span>
+                    <div class="flex-grow-1">
+                      <div class="fw-bold text-gray-800 fs-7">{{ country.name }}</div>
+                      <div class="text-muted fs-8">{{ country.dialCode }}</div>
+                    </div>
+                    @if (selectedCountry().code === country.code) {
+                      <i class="ki-duotone ki-check fs-4 text-primary"><span class="path1"></span><span class="path2"></span></i>
+                    }
+                  </div>
+                }
+              </div>
+            }
+          </div>
+          <span class="text-muted fs-8 mt-1 d-block">
+            Formato: {{ selectedCountry().dialCode }} {{ selectedCountry().placeholder }}
+          </span>
         </div>
 
         <!-- Dirección -->
@@ -146,7 +187,7 @@
                                   <div class="text-muted fs-8">{{ recipe.description }}</div>
                                 }
                                 <div class="text-primary fs-8 fw-bold">
-                                  Costo: ${{ recipe.costPerUnit | number:'1.2-2' }} / {{ recipe.yieldUnit }}
+                                  Costo: ${{ recipe.totalCost | number:'1.2-2' }} / {{ recipe.yieldUnit }}
                                 </div>
                               </div>
                             </div>

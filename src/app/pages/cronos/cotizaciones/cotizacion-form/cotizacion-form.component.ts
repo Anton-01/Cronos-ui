@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   ReactiveFormsModule,
@@ -19,6 +19,16 @@ import { AlertService } from 'src/app/shared/services/alert.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
 import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
 import { PageInfoService } from 'src/app/_metronic/layout/core/page-info.service';
+
+interface PhoneCountry {
+  code: 'MX' | 'US';
+  name: string;
+  dialCode: string;
+  flag: string;
+  mask: string;      // pattern with '#' as digit placeholder
+  maxDigits: number;
+  placeholder: string;
+}
 
 @Component({
   selector: 'app-cotizacion-form',
@@ -44,11 +54,35 @@ export class CotizacionFormComponent implements OnInit, OnDestroy {
   showSuggestions = signal<number | null>(null); // index of active row
   activeSearchIndex = signal(-1);
 
+  // ─── Phone country selector ───
+  phoneCountries: PhoneCountry[] = [
+    {
+      code: 'MX',
+      name: 'México',
+      dialCode: '+52',
+      flag: '🇲🇽',
+      mask: '## #### ####',
+      maxDigits: 10,
+      placeholder: '55 1234 5678',
+    },
+    {
+      code: 'US',
+      name: 'Estados Unidos',
+      dialCode: '+1',
+      flag: '🇺🇸',
+      mask: '(###) ###-####',
+      maxDigits: 10,
+      placeholder: '(555) 123-4567',
+    },
+  ];
+  selectedCountry = signal<PhoneCountry>(this.phoneCountries[0]);
+  showCountryDropdown = signal(false);
+
   // ─── Form ───
   form = this.fb.group({
     clientName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(150)]],
     clientEmail: ['', [Validators.email, Validators.maxLength(255)]],
-    clientPhone: ['', [Validators.maxLength(20)]],
+    clientPhone: ['', [Validators.maxLength(25)]],
     clientAddress: ['', [Validators.maxLength(500)]],
     notes: ['', [Validators.maxLength(1000)]],
     taxRate: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
@@ -189,11 +223,12 @@ export class CotizacionFormComponent implements OnInit, OnDestroy {
 
   selectRecipe(recipe: RecipeSimpleResponse, rowIndex: number): void {
     const group = this.getItemGroup(rowIndex);
+    const cost = recipe.totalCost ?? recipe.costPerUnit ?? 0;
     group.patchValue({
       recipeId: recipe.id,
       productName: recipe.name,
       productDescription: recipe.description || '',
-      unitCost: recipe.costPerUnit || 0,
+      unitCost: cost,
     });
     this.onCostOrProfitChange(rowIndex);
     this.closeSuggestions();
@@ -222,6 +257,61 @@ export class CotizacionFormComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ─── Phone country selector ───
+  toggleCountryDropdown(event: MouseEvent): void {
+    event.stopPropagation();
+    this.showCountryDropdown.update(v => !v);
+  }
+
+  selectCountry(country: PhoneCountry): void {
+    this.selectedCountry.set(country);
+    this.showCountryDropdown.set(false);
+    // Re-format existing digits with the new mask
+    const current = this.form.get('clientPhone')!.value || '';
+    const digits = current.replace(/\D/g, '').slice(0, country.maxDigits);
+    this.form.get('clientPhone')!.setValue(this.applyMask(digits, country.mask));
+  }
+
+  closeCountryDropdown(): void {
+    this.showCountryDropdown.set(false);
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    if (this.showCountryDropdown()) this.closeCountryDropdown();
+  }
+
+  onPhoneInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const country = this.selectedCountry();
+    const digits = input.value.replace(/\D/g, '').slice(0, country.maxDigits);
+    const formatted = this.applyMask(digits, country.mask);
+    this.form.get('clientPhone')!.setValue(formatted, { emitEvent: false });
+    // Move cursor to end
+    queueMicrotask(() => input.setSelectionRange(formatted.length, formatted.length));
+  }
+
+  private applyMask(digits: string, mask: string): string {
+    let result = '';
+    let di = 0;
+    for (const ch of mask) {
+      if (di >= digits.length) break;
+      if (ch === '#') {
+        result += digits[di++];
+      } else {
+        result += ch;
+      }
+    }
+    return result;
+  }
+
+  private buildFullPhone(): string | undefined {
+    const local = (this.form.get('clientPhone')!.value || '').trim();
+    if (!local) return undefined;
+    const country = this.selectedCountry();
+    return `${country.dialCode} ${local}`;
+  }
+
   // ─── Submit ───
   save(): void {
     if (this.form.invalid || this.items.length === 0) {
@@ -237,7 +327,7 @@ export class CotizacionFormComponent implements OnInit, OnDestroy {
     const payload: CreateQuoteRequest = {
       clientName: formVal.clientName!,
       clientEmail: formVal.clientEmail || undefined,
-      clientPhone: formVal.clientPhone || undefined,
+      clientPhone: this.buildFullPhone(),
       clientAddress: formVal.clientAddress || undefined,
       notes: formVal.notes || undefined,
       taxRate: formVal.taxRate!,
