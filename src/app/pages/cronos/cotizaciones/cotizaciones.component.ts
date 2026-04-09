@@ -104,7 +104,6 @@ export class CotizacionesComponent implements OnInit, OnDestroy {
 
   // ─── Dropdown handling (fixed positioning) ───
   toggleDropdown(id: string, event: MouseEvent): void {
-    event.stopPropagation();
     if (this.openDropdownId() === id) {
       this.closeDropdown();
       return;
@@ -133,14 +132,23 @@ export class CotizacionesComponent implements OnInit, OnDestroy {
     this.openDropdownId.set(null);
   }
 
-  @HostListener('document:click')
-  onDocumentClick(): void {
-    if (this.openDropdownId()) this.closeDropdown();
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.openDropdownId()) return;
+    const target = event.target as HTMLElement | null;
+    if (!target) return;
+    // Ignore clicks inside the trigger button or the menu itself
+    if (
+      target.closest('[data-quote-actions-trigger]') ||
+      target.closest('[data-quote-actions-menu]')
+    ) {
+      return;
+    }
+    this.closeDropdown();
   }
 
-  @HostListener('window:scroll')
   @HostListener('window:resize')
-  onWindowChange(): void {
+  onWindowResize(): void {
     if (this.openDropdownId()) this.closeDropdown();
   }
 
