@@ -104,6 +104,11 @@ export class CotizacionesComponent implements OnInit, OnDestroy {
 
   // ─── Dropdown handling (fixed positioning) ───
   toggleDropdown(id: string, event: MouseEvent): void {
+    // Stop the click from bubbling to document:click, which would
+    // immediately close the dropdown we're about to open.
+    event.stopPropagation();
+    event.preventDefault();
+
     if (this.openDropdownId() === id) {
       this.closeDropdown();
       return;
