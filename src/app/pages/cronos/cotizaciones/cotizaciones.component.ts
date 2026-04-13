@@ -102,6 +102,11 @@ export class CotizacionesComponent implements OnInit, OnDestroy {
     this.router.navigate(['/cronos/cotizaciones/nueva']);
   }
 
+  editQuote(quote: InternalQuoteResponse): void {
+    this.closeDropdown();
+    this.router.navigate(['/cronos/cotizaciones/editar', quote.id]);
+  }
+
   // ─── Dropdown handling (fixed positioning) ───
   toggleDropdown(id: string, event: MouseEvent): void {
     // Stop the click from bubbling to document:click, which would
