@@ -1,0 +1,192 @@
+<!-- Loading state -->
+@if (loading()) {
+  <div class="d-flex flex-column align-items-center justify-content-center py-20">
+    <span class="spinner-border spinner-border-lg text-primary mb-4"></span>
+    <span class="text-muted fs-6">Cargando cotización...</span>
+  </div>
+}
+
+<!-- Error state -->
+@if (!loading() && error()) {
+  <div class="container py-15">
+    <div class="text-center">
+      <div class="mb-8">
+        <i class="ki-duotone ki-information-5 fs-5x text-gray-300">
+          <span class="path1"></span><span class="path2"></span><span class="path3"></span>
+        </i>
+      </div>
+      <h2 class="fw-bold text-gray-800 mb-3">Cotización no disponible</h2>
+      <p class="text-gray-500 fs-5 mb-8">{{ error() }}</p>
+      <a href="/" class="btn btn-sm btn-light-primary">Ir al inicio</a>
+    </div>
+  </div>
+}
+
+<!-- Quote content -->
+@if (!loading() && !error() && quote()) {
+  <div class="container py-8 py-lg-12 quote-invoice">
+
+    <!-- ═══ BLOCKED STATE (Expired/Revoked) ═══ -->
+    @if (isBlocked()) {
+      <div class="card shadow-sm mb-8">
+        <div class="card-body text-center py-15">
+          <div class="mb-6">
+            <i class="ki-duotone ki-lock-3 fs-5x text-gray-300">
+              <span class="path1"></span><span class="path2"></span><span class="path3"></span>
+            </i>
+          </div>
+          <h2 class="fw-bold text-gray-800 mb-3">Cotización no disponible</h2>
+          <p class="text-gray-500 fs-5 mb-3">{{ blockedReason() }}</p>
+          @if (quote()!.status === 'REVOKED') {
+            <span class="badge badge-light-dark fs-7 px-4 py-2">Revocada</span>
+          } @else {
+            <span class="badge badge-light-warning fs-7 px-4 py-2">Expirada</span>
+          }
+          <div class="mt-8">
+            <p class="text-muted fs-7">Contacta al vendedor para solicitar una nueva cotización.</p>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══ VISIBLE QUOTE ═══ -->
+    @if (!isBlocked()) {
+      <!-- Print button -->
+      <div class="d-flex justify-content-end mb-4 no-print">
+        <button class="btn btn-sm btn-light-primary" (click)="print()">
+          <i class="ki-duotone ki-printer fs-5 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+          Imprimir
+        </button>
+      </div>
+
+      <!-- Invoice Card -->
+      <div class="card shadow-sm">
+        <div class="card-body p-8 p-lg-12">
+
+          <!-- Header -->
+          <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start mb-10">
+            <div>
+              <h1 class="fw-bolder text-gray-900 fs-2x mb-2">COTIZACIÓN</h1>
+              <div class="d-flex flex-column gap-1">
+                <span class="text-gray-700 fs-5 fw-semibold">{{ quote()!.quoteNumber }}</span>
+                <span [class]="getStatusBadge().class + ' align-self-start mt-1'">{{ getStatusBadge().label }}</span>
+              </div>
+            </div>
+            <div class="text-sm-end mt-5 mt-sm-0">
+              <h3 class="fw-bold text-gray-800 mb-1">{{ quote()!.bakerName }}</h3>
+              <p class="text-muted fs-7 mb-0">Cotización generada con Cronos</p>
+            </div>
+          </div>
+
+          <div class="separator separator-dashed mb-8"></div>
+
+          <!-- Client info & Dates -->
+          <div class="row mb-10">
+            <div class="col-sm-6 mb-5 mb-sm-0">
+              <span class="text-muted fs-7 d-block mb-2 text-uppercase fw-bold">Cotizado para</span>
+              <h4 class="fw-bold text-gray-800 mb-1">{{ quote()!.clientName }}</h4>
+            </div>
+            <div class="col-sm-3">
+              <span class="text-muted fs-7 d-block mb-2 text-uppercase fw-bold">Fecha</span>
+              <span class="fw-semibold text-gray-700">{{ formatDate(quote()!.quoteDate) }}</span>
+            </div>
+            <div class="col-sm-3">
+              <span class="text-muted fs-7 d-block mb-2 text-uppercase fw-bold">Válida hasta</span>
+              <span class="fw-semibold text-gray-700">{{ formatDate(quote()!.validUntil) }}</span>
+            </div>
+          </div>
+
+          <!-- Notes -->
+          @if (quote()!.notes) {
+            <div class="bg-light-info rounded p-5 mb-8">
+              <div class="d-flex align-items-start">
+                <i class="ki-duotone ki-message-text-2 fs-3 text-info me-3 mt-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                <div>
+                  <span class="fw-semibold text-gray-700 fs-7">Notas del vendedor</span>
+                  <p class="text-gray-600 fs-6 mb-0 mt-1">{{ quote()!.notes }}</p>
+                </div>
+              </div>
+            </div>
+          }
+
+          <!-- Items -->
+          <div class="mb-10">
+            <h5 class="fw-bold text-gray-800 mb-5">Detalle de Productos</h5>
+            @for (item of quote()!.items; track $index; let last = $last) {
+              <div class="d-flex align-items-start p-4 rounded"
+                [class.border-bottom]="!last"
+                [class.border-bottom-dashed]="!last"
+                [class.mb-4]="!last">
+
+                <!-- Image -->
+                <div class="me-5 flex-shrink-0">
+                  @if (item.mainImageUrl) {
+                    <img [src]="item.mainImageUrl" [alt]="item.productName" class="item-image" />
+                  } @else {
+                    <div class="item-image-placeholder">
+                      <i class="ki-duotone ki-picture fs-2x text-gray-300"><span class="path1"></span><span class="path2"></span></i>
+                    </div>
+                  }
+                </div>
+
+                <!-- Product info -->
+                <div class="flex-grow-1">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <h6 class="fw-bold text-gray-800 mb-1 fs-5">{{ item.productName }}</h6>
+                      @if (item.productDescription) {
+                        <p class="text-muted fs-7 mb-1">{{ item.productDescription }}</p>
+                      }
+                      @if (item.productSize) {
+                        <span class="badge badge-light fs-8">{{ item.productSize }}</span>
+                      }
+                    </div>
+                    <div class="text-end ms-4">
+                      <div class="fw-bolder text-gray-800 fs-5">{{ formatCurrency(item.subtotal) }}</div>
+                      <div class="text-muted fs-7">
+                        {{ item.quantity }} x {{ formatCurrency(item.unitPrice) }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Totals -->
+          <div class="d-flex justify-content-end">
+            <div class="w-100 w-sm-350px">
+              <div class="d-flex justify-content-between mb-3">
+                <span class="text-gray-600 fs-6">Subtotal</span>
+                <span class="fw-semibold text-gray-800 fs-6">{{ formatCurrency(quote()!.subtotal) }}</span>
+              </div>
+
+              @if (quote()!.taxRate > 0) {
+                <div class="d-flex justify-content-between mb-3">
+                  <span class="text-gray-600 fs-6">Impuesto ({{ quote()!.taxRate }}%)</span>
+                  <span class="fw-semibold text-gray-800 fs-6">{{ formatCurrency(quote()!.taxAmount) }}</span>
+                </div>
+              }
+
+              <div class="separator separator-dashed my-3"></div>
+
+              <div class="d-flex justify-content-between">
+                <span class="fw-bolder text-gray-900 fs-4">TOTAL</span>
+                <span class="fw-bolder text-primary fs-3">
+                  {{ formatCurrency(quote()!.total) }}
+                  <span class="text-muted fs-6 fw-normal ms-1">{{ quote()!.currency }}</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer text -->
+      <div class="text-center mt-8 text-muted fs-7 no-print">
+        <p class="mb-1">Esta cotización es válida hasta el <strong>{{ formatDate(quote()!.validUntil) }}</strong>.</p>
+        <p class="mb-0">Contacta al vendedor para confirmar tu pedido.</p>
+      </div>
+    }
+  </div>
+}
