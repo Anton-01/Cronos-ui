@@ -449,6 +449,9 @@ export interface PublicQuoteResponse {
   subtotal: number;
   taxRate: number;
   taxAmount: number;
+  deliveryFee: number;
+  extraFee: number;
+  extraFeeDescription?: string | null;
   total: number;
   currency: string;
   status: string;
