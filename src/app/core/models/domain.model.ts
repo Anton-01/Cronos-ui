@@ -459,6 +459,51 @@ export interface PublicQuoteResponse {
   items: PublicQuoteItemResponse[];
 }
 
+// ─── Dashboard de Detalles de Cotización ───
+
+export interface QuoteAccessLogResponse {
+  ipAddress: string;
+  browserInfo: string;
+  accessedAt: Date;
+}
+
+export interface InternalQuoteItemResponse {
+  id: string;
+  recipeId: string | null;
+  productName: string;
+  productDescription: string | null;
+  productSize: string | null;
+  quantity: number;
+  unitCost: number;
+  profitPercentage: number;
+  unitPrice: number;
+  subtotal: number;
+  notes: string | null;
+}
+
+export interface BakerQuoteDetailResponse {
+  id: string;
+  quoteNumber: string;
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  status: string;
+  createdAt: Date;
+  validUntil: Date;
+  subtotal: number;
+  taxAmount: number;
+  deliveryFee: number;
+  extraFee: number;
+  totalRevenue: number;
+  totalProductCost: number;
+  estimatedProfit: number;
+  viewsCount: number;
+  isRevoked: boolean;
+  publicToken: string;
+  items: InternalQuoteItemResponse[];
+  accessLogs: QuoteAccessLogResponse[];
+}
+
 // Receta simplificada para el buscador de cotizaciones
 export interface RecipeSimpleResponse {
   id: string;

@@ -157,6 +157,16 @@
                           </div>
                         </div>
 
+                        <!-- Ver Detalles -->
+                        <div class="menu-item px-3">
+                          <a class="menu-link px-3 cursor-pointer" (click)="viewQuoteDetails(item)">
+                            <span class="menu-icon">
+                              <i class="ki-duotone ki-eye fs-4 text-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                            </span>
+                            <span class="menu-title">Ver Detalles</span>
+                          </a>
+                        </div>
+
                         <!-- Editar -->
                         <div class="menu-item px-3">
                           <a class="menu-link px-3 cursor-pointer" (click)="editQuote(item)">
@@ -300,6 +310,26 @@
           <div class="menu-content text-muted pb-2 px-3 fs-7 text-uppercase fw-bold">
             Acciones
           </div>
+        </div>
+
+        <!-- Ver Detalles -->
+        <div class="menu-item px-3">
+          <a class="menu-link px-3 cursor-pointer" (click)="viewQuoteDetails(item)">
+            <span class="menu-icon">
+              <i class="ki-duotone ki-eye fs-4 text-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+            </span>
+            <span class="menu-title">Ver Detalles</span>
+          </a>
+        </div>
+
+        <!-- Editar -->
+        <div class="menu-item px-3">
+          <a class="menu-link px-3 cursor-pointer" (click)="editQuote(item)">
+            <span class="menu-icon">
+              <i class="ki-duotone ki-notepad-edit fs-4"><span class="path1"></span><span class="path2"></span></i>
+            </span>
+            <span class="menu-title">Editar</span>
+          </a>
         </div>
 
         <!-- Revocar -->

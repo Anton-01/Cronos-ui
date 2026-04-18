@@ -102,6 +102,11 @@ export class CotizacionesComponent implements OnInit, OnDestroy {
     this.router.navigate(['/cronos/cotizaciones/nueva']);
   }
 
+  viewQuoteDetails(quote: InternalQuoteResponse): void {
+    this.closeDropdown();
+    this.router.navigate(['/cronos/cotizaciones/detalles', quote.id]);
+  }
+
   editQuote(quote: InternalQuoteResponse): void {
     this.closeDropdown();
     this.router.navigate(['/cronos/cotizaciones/editar', quote.id]);
