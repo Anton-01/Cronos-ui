@@ -30,7 +30,8 @@
 <!-- ════════════════════════════════════════════════════════════
      ESTADO: CARGADO — DASHBOARD
      ════════════════════════════════════════════════════════════ -->
-@else if (quote(); as q) {
+@else {
+@if (quote(); as q) {
 
   <!-- ═══════════════ A. HEADER / TOOLBAR ═══════════════ -->
   <div class="d-flex flex-column flex-sm-row align-items-sm-center justify-content-between mb-7 gap-4">
@@ -472,4 +473,5 @@
       </div>
     </div>
   </div>
+}
 }
