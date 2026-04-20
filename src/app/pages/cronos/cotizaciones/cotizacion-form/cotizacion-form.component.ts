@@ -88,12 +88,17 @@ export class CotizacionFormComponent implements OnInit, OnDestroy {
     taxRate: [0, [Validators.required, Validators.min(0), Validators.max(100)]],
     currency: ['MXN', [Validators.required]],
     validDays: [15, [Validators.required, Validators.min(1), Validators.max(365)]],
+    deliveryFee: [0, [Validators.required, Validators.min(0)]],
+    extraFee: [0, [Validators.required, Validators.min(0)]],
+    extraFeeDescription: ['', [Validators.maxLength(255)]],
     items: this.fb.array([], [Validators.minLength(1)]),
   });
 
   // ─── Computed totals ───
   subtotal = signal(0);
   taxAmount = signal(0);
+  deliveryFeeValue = signal(0);
+  extraFeeValue = signal(0);
   total = signal(0);
 
   currencies = ['MXN', 'USD', 'EUR', 'COP', 'ARS', 'CLP', 'PEN', 'GTQ'];
@@ -120,6 +125,14 @@ export class CotizacionFormComponent implements OnInit, OnDestroy {
       .subscribe(() => this.recalcTotals());
 
     this.form.get('taxRate')!.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.recalcTotals());
+
+    this.form.get('deliveryFee')!.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => this.recalcTotals());
+
+    this.form.get('extraFee')!.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => this.recalcTotals());
 
@@ -208,10 +221,14 @@ export class CotizacionFormComponent implements OnInit, OnDestroy {
     }
     sub = +sub.toFixed(2);
     const rate = this.form.get('taxRate')!.value || 0;
+    const delivery = +(this.form.get('deliveryFee')!.value || 0);
+    const extra = +(this.form.get('extraFee')!.value || 0);
     const tax = +(sub * rate / 100).toFixed(2);
     this.subtotal.set(sub);
     this.taxAmount.set(tax);
-    this.total.set(+(sub + tax).toFixed(2));
+    this.deliveryFeeValue.set(+delivery.toFixed(2));
+    this.extraFeeValue.set(+extra.toFixed(2));
+    this.total.set(+(sub + tax + delivery + extra).toFixed(2));
   }
 
   // ─── Typeahead ───
@@ -333,6 +350,9 @@ export class CotizacionFormComponent implements OnInit, OnDestroy {
       taxRate: formVal.taxRate!,
       currency: formVal.currency!,
       validDays: formVal.validDays!,
+      deliveryFee: formVal.deliveryFee ?? 0,
+      extraFee: formVal.extraFee ?? 0,
+      extraFeeDescription: formVal.extraFeeDescription || undefined,
       items: (formVal.items as any[]).map(item => ({
         recipeId: item.recipeId || undefined,
         productName: item.productName,
