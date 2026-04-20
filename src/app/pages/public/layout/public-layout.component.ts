@@ -15,13 +15,13 @@ import { RouterOutlet } from '@angular/router';
           <div class="d-flex align-items-center justify-content-between">
             <a href="/" class="d-flex align-items-center text-decoration-none">
               <img
-                alt="Cronos Logo"
-                src="./assets/media/logos/default.svg"
+                alt="Cronos Bakery"
+                src="./assets/media/logos/cronos-logo-light.svg"
                 class="h-30px h-lg-40px theme-light-show"
               />
               <img
-                alt="Cronos Logo"
-                src="./assets/media/logos/default-dark.svg"
+                alt="Cronos Bakery"
+                src="./assets/media/logos/cronos-logo-light.svg"
                 class="h-30px h-lg-40px theme-dark-show"
               />
             </a>

@@ -102,6 +102,16 @@ export class CotizacionesComponent implements OnInit, OnDestroy {
     this.router.navigate(['/cronos/cotizaciones/nueva']);
   }
 
+  viewQuoteDetails(quote: InternalQuoteResponse): void {
+    this.closeDropdown();
+    this.router.navigate(['/cronos/cotizaciones/detalles', quote.id]);
+  }
+
+  editQuote(quote: InternalQuoteResponse): void {
+    this.closeDropdown();
+    this.router.navigate(['/cronos/cotizaciones/editar', quote.id]);
+  }
+
   // ─── Dropdown handling (fixed positioning) ───
   toggleDropdown(id: string, event: MouseEvent): void {
     // Stop the click from bubbling to document:click, which would
@@ -115,17 +125,13 @@ export class CotizacionesComponent implements OnInit, OnDestroy {
     }
     const btn = event.currentTarget as HTMLElement;
     const rect = btn.getBoundingClientRect();
-
-    // Ajustamos el cálculo de posición
     const menuWidth = 250;
     let top = rect.bottom + 5;
     let left = rect.right - menuWidth;
 
-    // Evitar que se salga por la derecha o izquierda
     if (left < 10) left = 10;
 
-    // Si no cabe abajo, mostrar arriba
-    const menuHeight = 150; // Ajusta según el contenido real
+    const menuHeight = 150;
     if (top + menuHeight > window.innerHeight) {
       top = rect.top - menuHeight - 5;
     }

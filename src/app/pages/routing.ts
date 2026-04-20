@@ -97,6 +97,14 @@ const Routing: Routes = [
     path: 'cronos/cotizaciones/nueva',
     loadComponent: () => import('./cronos/cotizaciones/cotizacion-form/cotizacion-form.component').then(m => m.CotizacionFormComponent),
   },
+  {
+    path: 'cronos/cotizaciones/editar/:id',
+    loadComponent: () => import('./cronos/cotizaciones/cotizacion-edit/cotizacion-edit.component').then(m => m.CotizacionEditComponent),
+  },
+  {
+    path: 'cronos/cotizaciones/detalles/:id',
+    loadComponent: () => import('./cronos/cotizaciones/cotizacion-detalle/cotizacion-detalle.component').then(m => m.CotizacionDetalleComponent),
+  },
   // ─── Costos ───
   {
     path: 'cronos/costos-fijos',

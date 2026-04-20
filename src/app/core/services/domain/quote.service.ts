@@ -6,6 +6,8 @@ import { ApiResponse } from '../../models/api-response.model';
 import { Page, PageRequest } from '../../models/pagination.model';
 import {
   InternalQuoteResponse,
+  QuoteDetailResponse,
+  BakerQuoteDetailResponse,
   CreateQuoteRequest,
   RecipeSimpleResponse,
 } from '../../models/domain.model';
@@ -26,8 +28,12 @@ export class QuoteService {
     return this.http.get<ApiResponse<Page<InternalQuoteResponse>>>(this.API, { params: httpParams });
   }
 
-  getById(id: string): Observable<ApiResponse<InternalQuoteResponse>> {
-    return this.http.get<ApiResponse<InternalQuoteResponse>>(`${this.API}/${id}`);
+  getById(id: string): Observable<ApiResponse<QuoteDetailResponse>> {
+    return this.http.get<ApiResponse<QuoteDetailResponse>>(`${this.API}/${id}`);
+  }
+
+  getDetails(id: string): Observable<ApiResponse<BakerQuoteDetailResponse>> {
+    return this.http.get<ApiResponse<BakerQuoteDetailResponse>>(`${this.API}/${id}/details`);
   }
 
   create(req: CreateQuoteRequest): Observable<ApiResponse<InternalQuoteResponse>> {

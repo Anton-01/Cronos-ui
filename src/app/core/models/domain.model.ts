@@ -370,6 +370,9 @@ export interface CreateQuoteRequest {
   taxRate: number;
   currency: string;
   validDays: number;
+  deliveryFee?: number;
+  extraFee?: number;
+  extraFeeDescription?: string;
   items: QuoteItemRequest[];
 }
 
@@ -384,6 +387,46 @@ export interface InternalQuoteResponse {
   status: string;
   createdAt: string;
   publicToken: string;
+}
+
+// Item returned inside a QuoteDetailResponse (edit view)
+export interface QuoteItemDetailResponse {
+  id?: string;
+  recipeId?: string | null;
+  productName: string;
+  productDescription?: string | null;
+  productSize?: string | null;
+  quantity: number;
+  unitCost: number;
+  profitPercentage: number;
+  unitPrice: number;
+  subtotal?: number;
+  notes?: string | null;
+}
+
+// Full payload returned by GET /api/v1/quotes/{id} for the edit view.
+// Contains every field needed to rehydrate the quote form.
+export interface QuoteDetailResponse {
+  id: string;
+  quoteNumber: string;
+  clientName: string;
+  clientEmail: string | null;
+  clientPhone: string | null;
+  clientAddress: string | null;
+  notes: string | null;
+  taxRate: number;
+  currency: string;
+  validDays: number;
+  deliveryFee: number;
+  extraFee: number;
+  extraFeeDescription: string | null;
+  subtotal: number;
+  taxAmount: number;
+  total: number;
+  status: string;
+  createdAt: string;
+  publicToken: string;
+  items: QuoteItemDetailResponse[];
 }
 
 export interface PublicQuoteItemResponse {
@@ -406,11 +449,59 @@ export interface PublicQuoteResponse {
   subtotal: number;
   taxRate: number;
   taxAmount: number;
+  deliveryFee: number;
+  extraFee: number;
+  extraFeeDescription?: string | null;
   total: number;
   currency: string;
   status: string;
   isExpired: boolean;
   items: PublicQuoteItemResponse[];
+}
+
+// ─── Dashboard de Detalles de Cotización ───
+
+export interface QuoteAccessLogResponse {
+  ipAddress: string;
+  browserInfo: string;
+  accessedAt: Date;
+}
+
+export interface InternalQuoteItemResponse {
+  id: string;
+  recipeId: string | null;
+  productName: string;
+  productDescription: string | null;
+  productSize: string | null;
+  quantity: number;
+  unitCost: number;
+  profitPercentage: number;
+  unitPrice: number;
+  subtotal: number;
+  notes: string | null;
+}
+
+export interface BakerQuoteDetailResponse {
+  id: string;
+  quoteNumber: string;
+  clientName: string;
+  clientEmail: string;
+  clientPhone: string;
+  status: string;
+  createdAt: Date;
+  validUntil: Date;
+  subtotal: number;
+  taxAmount: number;
+  deliveryFee: number;
+  extraFee: number;
+  totalRevenue: number;
+  totalProductCost: number;
+  estimatedProfit: number;
+  viewsCount: number;
+  isRevoked: boolean;
+  publicToken: string;
+  items: InternalQuoteItemResponse[];
+  accessLogs: QuoteAccessLogResponse[];
 }
 
 // Receta simplificada para el buscador de cotizaciones
