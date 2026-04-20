@@ -1,12 +1,9 @@
-import { Component, OnInit, OnDestroy, inject, signal, HostListener } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, HostListener, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { QuoteService } from 'src/app/core/services/domain/quote.service';
-import {
-  BakerQuoteDetailResponse,
-  InternalQuoteItemResponse,
-} from 'src/app/core/models/domain.model';
+import { BakerQuoteDetailResponse, InternalQuoteItemResponse } from 'src/app/core/models/domain.model';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
 import { PageInfoService } from 'src/app/_metronic/layout/core/page-info.service';
@@ -32,6 +29,8 @@ export class CotizacionDetalleComponent implements OnInit, OnDestroy {
   loadError = signal<string | null>(null);
   sendingEmail = signal(false);
   showShareDropdown = signal(false);
+  dropdownTop = signal(0);
+  dropdownLeft = signal(0);
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -85,10 +84,47 @@ export class CotizacionDetalleComponent implements OnInit, OnDestroy {
     if (q) this.router.navigate(['/cronos/cotizaciones/editar', q.id]);
   }
 
+  constructor(private elementRef: ElementRef) {}
+
   // ─── Compartir dropdown ───
   toggleShareDropdown(event: MouseEvent): void {
     event.stopPropagation();
-    this.showShareDropdown.update(v => !v);
+
+    // Si ya está abierto, lo cerramos y terminamos
+    if (this.showShareDropdown()) {
+      this.showShareDropdown.set(false);
+      return;
+    }
+
+    // Calcular posición
+    const btn = event.currentTarget as HTMLElement;
+    const rect = btn.getBoundingClientRect();
+    const menuWidth = 250; // Coincide con tu clase w-250px
+    const menuHeight = 150; // Altura aproximada de tus 3 opciones
+
+    let top = rect.bottom + 5;
+    let left = rect.right - menuWidth;
+
+    // Ajuste si se sale por la izquierda
+    if (left < 10) left = 10;
+
+    // Ajuste si se sale por abajo de la pantalla
+    if (top + menuHeight > window.innerHeight) {
+      top = rect.top - menuHeight - 5;
+    }
+
+    // Aplicar valores y abrir el menú
+    this.dropdownTop.set(top);
+    this.dropdownLeft.set(left);
+    this.showShareDropdown.set(true);
+  }
+
+  @HostListener('document:click', ['$event'])
+  closeDropdown(event: Event) {
+    const clickAdentro = this.elementRef.nativeElement.contains(event.target);
+    if (this.showShareDropdown() && !clickAdentro) {
+      this.showShareDropdown.set(false);
+    }
   }
 
   @HostListener('document:click')
