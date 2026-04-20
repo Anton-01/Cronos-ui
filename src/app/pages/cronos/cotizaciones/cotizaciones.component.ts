@@ -125,17 +125,13 @@ export class CotizacionesComponent implements OnInit, OnDestroy {
     }
     const btn = event.currentTarget as HTMLElement;
     const rect = btn.getBoundingClientRect();
-
-    // Ajustamos el cálculo de posición
     const menuWidth = 250;
     let top = rect.bottom + 5;
     let left = rect.right - menuWidth;
 
-    // Evitar que se salga por la derecha o izquierda
     if (left < 10) left = 10;
 
-    // Si no cabe abajo, mostrar arriba
-    const menuHeight = 150; // Ajusta según el contenido real
+    const menuHeight = 150;
     if (top + menuHeight > window.innerHeight) {
       top = rect.top - menuHeight - 5;
     }
