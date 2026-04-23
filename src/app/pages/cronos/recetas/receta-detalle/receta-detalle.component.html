@@ -322,7 +322,7 @@
                   (change)="onFixedCostSelect()">
                   <option value="">Seleccionar del catálogo...</option>
                   @for (cost of userFixedCosts(); track cost.id) {
-                    <option [value]="cost.id">{{ cost.name }} ({{ formatCurrency(cost.defaultAmount) }})</option>
+                    <option [value]="cost.id">{{ formatCostLabel(cost) }}</option>
                   }
                 </select>
               </div>

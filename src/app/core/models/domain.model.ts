@@ -331,7 +331,8 @@ export interface UserFixedCostRequest {
   name: string;
   description?: string;
   type: string;
-  defaultAmount: number;
+  defaultAmount?: number;
+  percentage?: number;
   calculationMethod: string;
 }
 
@@ -341,6 +342,7 @@ export interface UserFixedCostResponse {
   description: string | null;
   type: string;
   defaultAmount: number;
+  percentage: number | null;
   calculationMethod: string;
   isActive: boolean;
   createdAt: string;

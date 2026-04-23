@@ -63,7 +63,7 @@
                 <td>
                   <span [class]="getTypeBadgeClass(item.type)">{{ getTypeLabel(item.type) }}</span>
                 </td>
-                <td class="fw-semibold">{{ formatCurrency(item.defaultAmount) }}</td>
+                <td class="fw-semibold">{{ formatAmountDisplay(item) }}</td>
                 <td>{{ getCalculationMethodLabel(item.calculationMethod) }}</td>
                 <td>
                   <span [class]="getStatusBadgeClass(item.isActive)">{{ getStatusLabel(item.isActive) }}</span>
@@ -177,22 +177,46 @@
               }
             </div>
 
-            <!-- Monto por Defecto -->
-            <div class="fv-row mb-7">
-              <label class="required fw-semibold fs-6 mb-2">Monto por Defecto</label>
-              <div class="input-group input-group-solid">
-                <span class="input-group-text">$</span>
-                <input type="number" class="form-control form-control-solid" formControlName="defaultAmount"
-                  placeholder="0.00" step="0.01" min="0"
-                  [class.is-invalid]="form.controls['defaultAmount'].invalid && form.controls['defaultAmount'].touched" />
+            <!-- Monto por Defecto (oculto cuando el método es PERCENTAGE) -->
+            @if (!isPercentageMethod()) {
+              <div class="fv-row mb-7">
+                <label class="required fw-semibold fs-6 mb-2">Monto por Defecto</label>
+                <div class="input-group input-group-solid">
+                  <span class="input-group-text">$</span>
+                  <input type="number" class="form-control form-control-solid" formControlName="defaultAmount"
+                    placeholder="0.00" step="0.01" min="0"
+                    [class.is-invalid]="form.controls['defaultAmount'].invalid && form.controls['defaultAmount'].touched" />
+                </div>
+                @if (form.controls['defaultAmount'].hasError('required') && form.controls['defaultAmount'].touched) {
+                  <div class="fv-plugins-message-container"><span class="text-danger fs-7">El monto es obligatorio</span></div>
+                }
+                @if (form.controls['defaultAmount'].hasError('min') && form.controls['defaultAmount'].touched) {
+                  <div class="fv-plugins-message-container"><span class="text-danger fs-7">El monto no puede ser negativo</span></div>
+                }
               </div>
-              @if (form.controls['defaultAmount'].hasError('required') && form.controls['defaultAmount'].touched) {
-                <div class="fv-plugins-message-container"><span class="text-danger fs-7">El monto es obligatorio</span></div>
-              }
-              @if (form.controls['defaultAmount'].hasError('min') && form.controls['defaultAmount'].touched) {
-                <div class="fv-plugins-message-container"><span class="text-danger fs-7">El monto no puede ser negativo</span></div>
-              }
-            </div>
+            }
+
+            <!-- Porcentaje (visible solo cuando el método es PERCENTAGE) -->
+            @if (isPercentageMethod()) {
+              <div class="fv-row mb-7">
+                <label class="required fw-semibold fs-6 mb-2">Porcentaje de Overhead</label>
+                <div class="input-group input-group-solid">
+                  <input type="number" class="form-control form-control-solid" formControlName="percentage"
+                    placeholder="Ej: 20" step="0.1" min="0.1"
+                    [class.is-invalid]="form.controls['percentage'].invalid && form.controls['percentage'].touched" />
+                  <span class="input-group-text">%</span>
+                </div>
+                @if (form.controls['percentage'].hasError('required') && form.controls['percentage'].touched) {
+                  <div class="fv-plugins-message-container"><span class="text-danger fs-7">El porcentaje es obligatorio</span></div>
+                }
+                @if (form.controls['percentage'].hasError('min') && form.controls['percentage'].touched) {
+                  <div class="fv-plugins-message-container"><span class="text-danger fs-7">El porcentaje debe ser mayor a 0</span></div>
+                }
+                <p class="text-muted fs-7 mt-2">
+                  Este porcentaje se calculará automáticamente sobre el costo total de los ingredientes cada vez que esta receta se cotice o se produzca.
+                </p>
+              </div>
+            }
 
             <!-- Método de Cálculo (dependiente del tipo) -->
             <div class="fv-row mb-7">

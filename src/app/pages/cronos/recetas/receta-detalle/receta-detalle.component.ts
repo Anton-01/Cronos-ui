@@ -875,6 +875,13 @@ export class RecetaDetalleComponent implements OnInit, OnDestroy {
     return '$' + value.toFixed(2);
   }
 
+  formatCostLabel(cost: UserFixedCostResponse): string {
+    if (cost.calculationMethod === 'PERCENTAGE' && cost.percentage != null) {
+      return `${cost.name} (${cost.percentage.toFixed(2)}%)`;
+    }
+    return `${cost.name} ($${cost.defaultAmount.toFixed(2)})`;
+  }
+
   formatDate(date: string): string {
     return new Date(date).toLocaleDateString('es-MX', {
       year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',

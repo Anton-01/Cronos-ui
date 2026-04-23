@@ -278,7 +278,72 @@
     </div>
   </div>
 
-  <!-- ═══════════════ SECCIÓN 3: CONFIGURACIÓN Y RESUMEN ═══════════════ -->
+  <!-- ═══════════════ SECCIÓN 3: LOGÍSTICA Y CARGOS ADICIONALES ═══════════════ -->
+  <div class="card mb-6">
+    <div class="card-header border-0 pt-6 pb-0">
+      <h3 class="card-title align-items-start flex-column">
+        <span class="card-label fw-bold fs-4">
+          <i class="ki-duotone ki-delivery fs-3 me-2 text-primary">
+            <span class="path1"></span><span class="path2"></span><span class="path3"></span>
+            <span class="path4"></span><span class="path5"></span>
+          </i>
+          Logística y Cargos Adicionales
+        </span>
+        <span class="text-muted mt-1 fw-semibold fs-7">
+          Separa los servicios (envío, urgencias) de los productos físicos
+        </span>
+      </h3>
+    </div>
+
+    <div class="card-body pt-5">
+      <div class="row g-5">
+        <!-- Delivery Fee -->
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">
+            <i class="ki-duotone ki-truck fs-6 me-1 text-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+            Costo de Envío
+          </label>
+          <div class="input-group input-group-solid">
+            <span class="input-group-text">$</span>
+            <input type="number" class="form-control form-control-solid"
+              formControlName="deliveryFee" min="0" step="0.01" placeholder="0.00" />
+          </div>
+          @if (isFieldInvalid('deliveryFee')) {
+            <span class="text-danger fs-7">El costo de envío no puede ser negativo</span>
+          }
+        </div>
+
+        <!-- Extra Fee -->
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">
+            <i class="ki-duotone ki-rocket fs-6 me-1 text-primary"><span class="path1"></span><span class="path2"></span></i>
+            Cargo Extra
+          </label>
+          <div class="input-group input-group-solid">
+            <span class="input-group-text">$</span>
+            <input type="number" class="form-control form-control-solid"
+              formControlName="extraFee" min="0" step="0.01" placeholder="0.00" />
+          </div>
+          @if (isFieldInvalid('extraFee')) {
+            <span class="text-danger fs-7">El cargo extra no puede ser negativo</span>
+          }
+        </div>
+
+        <!-- Extra Fee Description -->
+        <div class="col-md-4">
+          <label class="form-label fw-semibold">Razón del Cargo Extra</label>
+          <input type="text" class="form-control form-control-solid"
+            formControlName="extraFeeDescription"
+            placeholder="Ej: Entrega urgente, decoración especial…" />
+          <span class="text-muted fs-8 mt-1 d-block">
+            Motivo visible para el cliente
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ SECCIÓN 4: CONFIGURACIÓN Y RESUMEN ═══════════════ -->
   <div class="row g-6">
     <!-- Configuración -->
     <div class="col-lg-6">
@@ -336,41 +401,68 @@
       <div class="card h-100 bg-light-primary">
         <div class="card-header border-0 pt-6 pb-0">
           <h3 class="card-title align-items-start flex-column">
-            <span class="card-label fw-bold fs-4 text-primary">
-              <i class="ki-duotone ki-wallet fs-3 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
+            <span class="card-label fw-bolder fs-3 text-primary">
+              <i class="ki-duotone ki-wallet fs-2 me-2"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
               Resumen
             </span>
+            <span class="text-muted mt-1 fw-semibold fs-7">Cálculo reactivo en tiempo real</span>
           </h3>
         </div>
         <div class="card-body pt-5">
-          <div class="d-flex flex-column gap-4">
+          <div class="d-flex flex-column gap-3 text-end">
             <!-- Subtotal -->
             <div class="d-flex justify-content-between align-items-center">
-              <span class="text-gray-700 fs-6 fw-semibold">Subtotal</span>
+              <span class="text-gray-700 fs-6 fw-semibold text-start">Subtotal Productos</span>
               <span class="text-gray-800 fs-5 fw-bold">
                 ${{ subtotal() | number:'1.2-2' }}
-                <span class="text-muted fs-7 ms-1">{{ form.get('currency')?.value }}</span>
               </span>
             </div>
 
             <!-- Impuesto -->
             <div class="d-flex justify-content-between align-items-center">
-              <span class="text-gray-700 fs-6 fw-semibold">
-                Impuesto ({{ form.get('taxRate')?.value }}%)
+              <span class="text-gray-700 fs-6 fw-semibold text-start">
+                Impuestos ({{ form.get('taxRate')?.value }}%)
               </span>
               <span class="text-gray-800 fs-5 fw-bold">
                 ${{ taxAmount() | number:'1.2-2' }}
               </span>
             </div>
 
-            <div class="separator separator-dashed my-1"></div>
-
-            <!-- Total -->
+            <!-- Delivery Fee -->
             <div class="d-flex justify-content-between align-items-center">
-              <span class="text-primary fs-3 fw-bolder">TOTAL</span>
-              <span class="text-primary fs-2 fw-bolder">
+              <span class="text-gray-700 fs-6 fw-semibold text-start">
+                <i class="ki-duotone ki-truck fs-6 me-1 text-muted"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+                Costo de Envío
+              </span>
+              <span class="text-gray-800 fs-5 fw-bold">
+                ${{ deliveryFeeValue() | number:'1.2-2' }}
+              </span>
+            </div>
+
+            <!-- Extra Fee -->
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="text-gray-700 fs-6 fw-semibold text-start">
+                <i class="ki-duotone ki-rocket fs-6 me-1 text-muted"><span class="path1"></span><span class="path2"></span></i>
+                Cargo Extra
+                @if (form.get('extraFeeDescription')?.value) {
+                  <span class="text-muted fs-8 fw-normal d-block ms-4">
+                    {{ form.get('extraFeeDescription')?.value }}
+                  </span>
+                }
+              </span>
+              <span class="text-gray-800 fs-5 fw-bold">
+                ${{ extraFeeValue() | number:'1.2-2' }}
+              </span>
+            </div>
+
+            <div class="separator separator-dashed my-2"></div>
+
+            <!-- GRAN TOTAL -->
+            <div class="d-flex justify-content-between align-items-center mt-2">
+              <span class="text-primary fs-2 fw-bolder text-start">TOTAL</span>
+              <span class="text-primary fw-bolder" style="font-size: 2.25rem; line-height: 1;">
                 ${{ total() | number:'1.2-2' }}
-                <span class="fs-6 fw-semibold ms-1">{{ form.get('currency')?.value }}</span>
+                <span class="fs-5 fw-bold ms-1">{{ form.get('currency')?.value }}</span>
               </span>
             </div>
           </div>
@@ -379,7 +471,7 @@
           <div class="mt-6 p-4 bg-white rounded">
             <div class="d-flex align-items-center">
               <i class="ki-duotone ki-basket fs-2 text-primary me-3"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span></i>
-              <div>
+              <div class="text-start">
                 <span class="fw-bold text-gray-800">{{ items.length }}</span>
                 <span class="text-muted fs-7 ms-1">producto(s) en esta cotización</span>
               </div>

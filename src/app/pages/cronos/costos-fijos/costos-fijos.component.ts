@@ -8,7 +8,7 @@ import { UserFixedCostResponse } from 'src/app/core/models/domain.model';
 import { PageRequest } from 'src/app/core/models/pagination.model';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
-import { PageInfoService, PageLink } from 'src/app/_metronic/layout/core/page-info.service';
+import { PageInfoService } from 'src/app/_metronic/layout/core/page-info.service';
 import Swal from 'sweetalert2';
 
 interface SelectOption {
@@ -42,6 +42,9 @@ export class CostosFijosComponent implements OnInit, OnDestroy {
   selectedItem = signal<UserFixedCostResponse | null>(null);
   isSaving = signal(false);
 
+  // Tracks whether PERCENTAGE method is active (drives @if in template)
+  isPercentageMethod = signal(false);
+
   searchTerm = signal('');
   searchSubject = new Subject<string>();
   pageRequest: PageRequest = { page: 0, size: 10, sort: 'name,asc' };
@@ -60,6 +63,7 @@ export class CostosFijosComponent implements OnInit, OnDestroy {
     { value: 'HOURLY_RATE', label: 'Tarifa por Hora', hint: 'Ideal para LABOR o UTILITY' },
     { value: 'PER_UNIT', label: 'Costo por Unidad', hint: 'Ideal para PACKAGING' },
     { value: 'FIXED_PER_BATCH', label: 'Costo fijo por lote producido', hint: 'Ideal para RENT u OVERHEAD' },
+    { value: 'PERCENTAGE', label: 'Porcentaje (%) sobre insumos', hint: 'Aplica un % global al costo total de la receta' },
   ];
 
   filteredCalculationMethods: CalculationMethodOption[] = [...this.allCalculationMethods];
@@ -70,6 +74,7 @@ export class CostosFijosComponent implements OnInit, OnDestroy {
     type: ['', [Validators.required]],
     defaultAmount: [null as number | null, [Validators.required, Validators.min(0)]],
     calculationMethod: ['', [Validators.required]],
+    percentage: [null as number | null],
   });
 
   ngOnInit(): void {
@@ -89,11 +94,34 @@ export class CostosFijosComponent implements OnInit, OnDestroy {
         this.pageRequest = { ...this.pageRequest, page: 0 };
         this.load();
       });
+
+    // Reactive: swap validators when calculationMethod changes
+    this.form.get('calculationMethod')!.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(method => this.onCalculationMethodChange(method));
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private onCalculationMethodChange(method: string | null): void {
+    const percentageCtrl = this.form.controls['percentage'];
+    const defaultAmountCtrl = this.form.controls['defaultAmount'];
+
+    if (method === 'PERCENTAGE') {
+      this.isPercentageMethod.set(true);
+      percentageCtrl.setValidators([Validators.required, Validators.min(0.1)]);
+      defaultAmountCtrl.clearValidators();
+    } else {
+      this.isPercentageMethod.set(false);
+      percentageCtrl.clearValidators();
+      defaultAmountCtrl.setValidators([Validators.required, Validators.min(0)]);
+    }
+
+    percentageCtrl.updateValueAndValidity({ emitEvent: false });
+    defaultAmountCtrl.updateValueAndValidity({ emitEvent: false });
   }
 
   load(): void {
@@ -159,6 +187,13 @@ export class CostosFijosComponent implements OnInit, OnDestroy {
     return isActive ? 'Activo' : 'Inactivo';
   }
 
+  formatAmountDisplay(item: UserFixedCostResponse): string {
+    if (item.calculationMethod === 'PERCENTAGE' && item.percentage != null) {
+      return item.percentage + '%';
+    }
+    return '$' + item.defaultAmount.toFixed(2);
+  }
+
   onTypeChange(): void {
     const type = this.form.value.type;
     this.form.controls['calculationMethod'].setValue('');
@@ -176,14 +211,18 @@ export class CostosFijosComponent implements OnInit, OnDestroy {
         );
         break;
       case 'RENT':
-      case 'OVERHEAD':
         this.filteredCalculationMethods = this.allCalculationMethods.filter(m =>
           m.value === 'FIXED_PER_BATCH'
         );
         break;
+      case 'OVERHEAD':
+        this.filteredCalculationMethods = this.allCalculationMethods.filter(m =>
+          m.value === 'FIXED_PER_BATCH' || m.value === 'PERCENTAGE'
+        );
+        break;
       case 'MARKETING':
         this.filteredCalculationMethods = this.allCalculationMethods.filter(m =>
-          m.value === 'PER_UNIT' || m.value === 'FIXED_PER_BATCH'
+          m.value === 'PER_UNIT' || m.value === 'FIXED_PER_BATCH' || m.value === 'PERCENTAGE'
         );
         break;
       default:
@@ -199,7 +238,13 @@ export class CostosFijosComponent implements OnInit, OnDestroy {
   openCreate(): void {
     this.selectedItem.set(null);
     this.form.reset();
+    this.isPercentageMethod.set(false);
     this.filteredCalculationMethods = [...this.allCalculationMethods];
+    // Ensure defaultAmount starts required after reset
+    this.form.controls['defaultAmount'].setValidators([Validators.required, Validators.min(0)]);
+    this.form.controls['defaultAmount'].updateValueAndValidity({ emitEvent: false });
+    this.form.controls['percentage'].clearValidators();
+    this.form.controls['percentage'].updateValueAndValidity({ emitEvent: false });
     this.showForm.set(true);
   }
 
@@ -209,12 +254,12 @@ export class CostosFijosComponent implements OnInit, OnDestroy {
       name: item.name,
       description: item.description ?? '',
       type: item.type,
-      defaultAmount: item.defaultAmount,
+      defaultAmount: item.calculationMethod !== 'PERCENTAGE' ? item.defaultAmount : null,
+      percentage: item.percentage ?? null,
       calculationMethod: item.calculationMethod,
     });
-    // Trigger filtered methods based on type
+    // Trigger type-based filtering, then restore the saved method
     this.onTypeChange();
-    // Re-set calculationMethod after filtering
     this.form.controls['calculationMethod'].setValue(item.calculationMethod);
     this.showForm.set(true);
   }
@@ -231,11 +276,13 @@ export class CostosFijosComponent implements OnInit, OnDestroy {
     }
     this.isSaving.set(true);
     const isEdit = !!this.selectedItem();
+    const isPercentage = this.form.value.calculationMethod === 'PERCENTAGE';
     const payload = {
       name: this.form.value.name!,
       description: this.form.value.description || undefined,
       type: this.form.value.type!,
-      defaultAmount: this.form.value.defaultAmount!,
+      defaultAmount: isPercentage ? undefined : this.form.value.defaultAmount!,
+      percentage: isPercentage ? this.form.value.percentage! : undefined,
       calculationMethod: this.form.value.calculationMethod!,
     };
 
