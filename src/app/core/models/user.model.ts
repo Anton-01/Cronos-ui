@@ -56,7 +56,7 @@ export interface RegisterUserRequest {
   firstName?: string | null;
   lastName?: string | null;
   phoneNumber?: string | null;
-  roles: string[];
+  roleIds: number[];
 }
 
 export interface ActiveSession {

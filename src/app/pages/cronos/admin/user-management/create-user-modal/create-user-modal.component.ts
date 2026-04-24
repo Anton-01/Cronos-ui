@@ -41,7 +41,8 @@ export class CreateUserModalComponent implements OnInit, OnDestroy {
 
   // ─── Roles state ─────────────────────────────────────────────────────────────
   availableRoles = signal<RoleResponse[]>([]);
-  selectedRoles = signal<Set<string>>(new Set());
+  /** Stores numeric role IDs — matches backend Set<Long> roleIds */
+  selectedRoleIds = signal<Set<number>>(new Set());
   isLoadingRoles = signal(false);
 
   // ─── Image cropper state ─────────────────────────────────────────────────────
@@ -74,7 +75,7 @@ export class CreateUserModalComponent implements OnInit, OnDestroy {
   /** Save is allowed when: form valid + at least one role selected + not already saving */
   canSubmit = computed(() =>
     this.formStatus() === 'VALID' &&
-    this.selectedRoles().size > 0 &&
+    this.selectedRoleIds().size > 0 &&
     !this.isSaving(),
   );
 
@@ -109,16 +110,16 @@ export class CreateUserModalComponent implements OnInit, OnDestroy {
     });
   }
 
-  toggleRole(roleName: string): void {
-    this.selectedRoles.update(set => {
+  toggleRole(roleId: number): void {
+    this.selectedRoleIds.update(set => {
       const next = new Set(set);
-      next.has(roleName) ? next.delete(roleName) : next.add(roleName);
+      next.has(roleId) ? next.delete(roleId) : next.add(roleId);
       return next;
     });
   }
 
-  isRoleSelected(roleName: string): boolean {
-    return this.selectedRoles().has(roleName);
+  isRoleSelected(roleId: number): boolean {
+    return this.selectedRoleIds().has(roleId);
   }
 
   // ─── Image Cropper ────────────────────────────────────────────────────────────
@@ -176,7 +177,7 @@ export class CreateUserModalComponent implements OnInit, OnDestroy {
       firstName:   this.form.value.firstName?.trim() || null,
       lastName:    this.form.value.lastName?.trim() || null,
       phoneNumber: this.form.value.phoneNumber?.trim() || null,
-      roles:       Array.from(this.selectedRoles()),
+      roleIds:     Array.from(this.selectedRoleIds()), // number[], matches Set<Long>
     };
 
     // Backend expects: @RequestPart("userData") — must be application/json Blob

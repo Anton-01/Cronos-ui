@@ -282,9 +282,9 @@
                   </h6>
                   <span
                     class="badge fs-8"
-                    [ngClass]="selectedRoles().size > 0 ? 'badge-light-success' : 'badge-light-danger'">
-                    {{ selectedRoles().size > 0
-                        ? selectedRoles().size + ' seleccionado' + (selectedRoles().size !== 1 ? 's' : '')
+                    [ngClass]="selectedRoleIds().size > 0 ? 'badge-light-success' : 'badge-light-danger'">
+                    {{ selectedRoleIds().size > 0
+                        ? selectedRoleIds().size + ' seleccionado' + (selectedRoleIds().size !== 1 ? 's' : '')
                         : 'Ninguno seleccionado'
                     }}
                   </span>
@@ -304,14 +304,14 @@
                         <label
                           class="d-flex align-items-start gap-3 p-4 rounded-2 border cursor-pointer"
                           style="transition: background 0.15s, border-color 0.15s;"
-                          [class.border-primary]="isRoleSelected(role.name)"
-                          [class.bg-light-primary]="isRoleSelected(role.name)"
-                          [class.border-gray-200]="!isRoleSelected(role.name)">
+                          [class.border-primary]="isRoleSelected(role.id)"
+                          [class.bg-light-primary]="isRoleSelected(role.id)"
+                          [class.border-gray-200]="!isRoleSelected(role.id)">
                           <input
                             class="form-check-input form-check-input-lg flex-shrink-0 mt-1"
                             type="checkbox"
-                            [checked]="isRoleSelected(role.name)"
-                            (change)="toggleRole(role.name)" />
+                            [checked]="isRoleSelected(role.id)"
+                            (change)="toggleRole(role.id)" />
                           <div class="d-flex flex-column min-w-0">
                             <span class="fw-bold fs-7 text-gray-800 text-truncate">{{ role.name }}</span>
                             @if (role.description) {
@@ -327,7 +327,7 @@
                   </div>
 
                   <!-- Role validation hint -->
-                  @if (selectedRoles().size === 0 && form.touched) {
+                  @if (selectedRoleIds().size === 0 && form.touched) {
                     <div class="d-flex align-items-center gap-1 text-danger fs-8 mt-3">
                       <i class="ki-duotone ki-information-5 fs-5">
                         <span class="path1"></span><span class="path2"></span><span class="path3"></span>
