@@ -11,10 +11,10 @@ export class PermissionService {
   private http = inject(HttpClient);
 
   getAll(): Observable<ApiResponse<PermissionResponse[]>> {
-    return this.http.get<ApiResponse<PermissionResponse[]>>(`${this.API}/admin/permissions`);
+    return this.http.get<ApiResponse<PermissionResponse[]>>(`${this.API}/admin/roles/permissions`);
   }
 
   getById(id: number): Observable<ApiResponse<PermissionResponse>> {
-    return this.http.get<ApiResponse<PermissionResponse>>(`${this.API}/admin/permissions/${id}`);
+    return this.http.get<ApiResponse<PermissionResponse>>(`${this.API}/admin/roles/permissions/${id}`);
   }
 }

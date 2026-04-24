@@ -55,7 +55,7 @@ function appInitializer(authService: AuthService) {
       provide: HTTP_INTERCEPTORS,
       useClass: ErrorInterceptorService,
       multi: true,
-    },
+    }
   ],
   bootstrap: [AppComponent],
 })

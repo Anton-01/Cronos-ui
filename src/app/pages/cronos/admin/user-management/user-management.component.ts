@@ -39,6 +39,10 @@ export class UserManagementComponent implements OnInit {
   roleFilter = signal<string>('');
   statusFilter = signal<string>('');
 
+  // Dropdown state — stored with fixed coordinates to escape table overflow
+  dropdownTop = signal(0);
+  dropdownLeft = signal(0);
+
   pageRequest: UserFilterRequest = { page: 0, size: 10, sort: 'createdAt,desc' };
 
   rolesForm = this.fb.group({
@@ -109,8 +113,37 @@ export class UserManagementComponent implements OnInit {
     this.load();
   }
 
-  toggleDropdown(id: string): void {
-    this.openDropdownId.update(current => current === id ? null : id);
+  // ─── Dropdown handling (fixed positioning) ───
+  toggleDropdown(id: string, event: MouseEvent): void {
+    // Stop the click from bubbling to document:click, which would
+    // immediately close the dropdown we're about to open.
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (this.openDropdownId() === id) {
+      this.closeDropdown();
+      return;
+    }
+    const btn = event.currentTarget as HTMLElement;
+    const rect = btn.getBoundingClientRect();
+    const menuWidth = 250;
+    let top = rect.bottom + 5;
+    let left = rect.right - menuWidth;
+
+    if (left < 10) left = 10;
+
+    const menuHeight = 150;
+    if (top + menuHeight > window.innerHeight) {
+      top = rect.top - menuHeight - 5;
+    }
+
+    this.dropdownTop.set(top);
+    this.dropdownLeft.set(left);
+    this.openDropdownId.set(id);
+  }
+
+  closeDropdown(): void {
+    this.openDropdownId.set(null);
   }
 
   viewDetails(user: UserResponse): void {
