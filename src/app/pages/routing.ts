@@ -127,6 +127,12 @@ const Routing: Routes = [
     data: { role: 'ADMIN' },
   },
   {
+    path: 'cronos/admin/roles',
+    loadComponent: () => import('./cronos/admin/roles-management/roles-management.component').then(m => m.RolesManagementComponent),
+    canActivate: [roleGuard],
+    data: { role: 'SUPER_ADMIN' },
+  },
+  {
     path: '',
     redirectTo: '/dashboard',
     pathMatch: 'full',

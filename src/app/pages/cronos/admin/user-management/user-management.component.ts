@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { UserService, UserFilterRequest } from 'src/app/core/services/user.service';
 import { UserResponse } from 'src/app/core/models/user.model';
 import { ToastService } from 'src/app/shared/services/toast.service';
+import { CreateUserModalComponent } from './create-user-modal/create-user-modal.component';
 
 const ROLE_BADGE: Record<string, string> = {
   SUPER_ADMIN: 'badge-primary',
@@ -16,7 +17,7 @@ const ROLE_BADGE: Record<string, string> = {
 @Component({
   selector: 'app-user-management',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, CreateUserModalComponent],
   templateUrl: './user-management.component.html',
 })
 export class UserManagementComponent implements OnInit {
@@ -33,9 +34,14 @@ export class UserManagementComponent implements OnInit {
   selectedUser = signal<UserResponse | null>(null);
   activePanel = signal<'none' | 'details' | 'roles'>('none');
   openDropdownId = signal<string | null>(null);
+  showCreateModal = signal(false);
 
   roleFilter = signal<string>('');
   statusFilter = signal<string>('');
+
+  // Dropdown state — stored with fixed coordinates to escape table overflow
+  dropdownTop = signal(0);
+  dropdownLeft = signal(0);
 
   pageRequest: UserFilterRequest = { page: 0, size: 10, sort: 'createdAt,desc' };
 
@@ -98,8 +104,46 @@ export class UserManagementComponent implements OnInit {
     return (first + last).toUpperCase();
   }
 
-  toggleDropdown(id: string): void {
-    this.openDropdownId.update(current => current === id ? null : id);
+  openCreateModal(): void {
+    this.showCreateModal.set(true);
+  }
+
+  onUserCreated(): void {
+    this.showCreateModal.set(false);
+    this.load();
+  }
+
+  // ─── Dropdown handling (fixed positioning) ───
+  toggleDropdown(id: string, event: MouseEvent): void {
+    // Stop the click from bubbling to document:click, which would
+    // immediately close the dropdown we're about to open.
+    event.stopPropagation();
+    event.preventDefault();
+
+    if (this.openDropdownId() === id) {
+      this.closeDropdown();
+      return;
+    }
+    const btn = event.currentTarget as HTMLElement;
+    const rect = btn.getBoundingClientRect();
+    const menuWidth = 250;
+    let top = rect.bottom + 5;
+    let left = rect.right - menuWidth;
+
+    if (left < 10) left = 10;
+
+    const menuHeight = 150;
+    if (top + menuHeight > window.innerHeight) {
+      top = rect.top - menuHeight - 5;
+    }
+
+    this.dropdownTop.set(top);
+    this.dropdownLeft.set(left);
+    this.openDropdownId.set(id);
+  }
+
+  closeDropdown(): void {
+    this.openDropdownId.set(null);
   }
 
   viewDetails(user: UserResponse): void {

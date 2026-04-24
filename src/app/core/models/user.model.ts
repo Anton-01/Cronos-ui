@@ -48,6 +48,17 @@ export interface AssignRolesRequest {
   roles: string[];
 }
 
+/** Payload sent as the 'userData' @RequestPart when registering a new user.
+ *  Password is intentionally absent — the backend auto-generates a temporary one. */
+export interface RegisterUserRequest {
+  username: string;
+  email: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  phoneNumber?: string | null;
+  roleIds: number[];
+}
+
 export interface ActiveSession {
   id: string;
   ipAddress: string;
