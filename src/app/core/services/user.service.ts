@@ -12,6 +12,7 @@ import {
   AssignRolesRequest,
 } from '../models';
 
+
 export interface UserFilterRequest {
   page: number;
   size: number;
@@ -65,5 +66,14 @@ export class UserService {
 
   assignRoles(id: string, req: AssignRolesRequest): Observable<ApiResponse<UserResponse>> {
     return this.http.put<ApiResponse<UserResponse>>(`${this.API}/admin/users/${id}/roles`, req);
+  }
+
+  /**
+   * Multipart registration: userData (@RequestPart application/json) +
+   * optional profilePicture (@RequestPart image file).
+   * Password is auto-generated server-side.
+   */
+  registerUser(formData: FormData): Observable<ApiResponse<UserResponse>> {
+    return this.http.post<ApiResponse<UserResponse>>(`${this.API}/admin/users/register`, formData);
   }
 }

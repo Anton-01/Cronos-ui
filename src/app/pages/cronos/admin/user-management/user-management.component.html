@@ -5,6 +5,10 @@
       <div class="card-header border-0 pt-6">
         <div class="card-title"><h2>Gestión de Usuarios</h2></div>
         <div class="card-toolbar gap-3">
+          <button class="btn btn-primary" (click)="openCreateModal()">
+            <i class="ki-duotone ki-plus fs-2 me-1"></i>
+            Nuevo Usuario
+          </button>
           <!--begin::Filters-->
           <select class="form-select form-select-sm w-150px" [(ngModel)]="roleFilter" (ngModelChange)="applyFilters()" [ngModelOptions]="{standalone: true}">
             <option value="">Todos los roles</option>
@@ -155,3 +159,12 @@
   }
   <!--end::Side Panel-->
 </div>
+
+<!--begin::Create User Modal-->
+@if (showCreateModal()) {
+  <app-create-user-modal
+    (closed)="showCreateModal.set(false)"
+    (userCreated)="onUserCreated()">
+  </app-create-user-modal>
+}
+<!--end::Create User Modal-->

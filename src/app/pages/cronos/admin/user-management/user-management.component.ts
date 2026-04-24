@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { UserService, UserFilterRequest } from 'src/app/core/services/user.service';
 import { UserResponse } from 'src/app/core/models/user.model';
 import { ToastService } from 'src/app/shared/services/toast.service';
+import { CreateUserModalComponent } from './create-user-modal/create-user-modal.component';
 
 const ROLE_BADGE: Record<string, string> = {
   SUPER_ADMIN: 'badge-primary',
@@ -16,7 +17,7 @@ const ROLE_BADGE: Record<string, string> = {
 @Component({
   selector: 'app-user-management',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, CreateUserModalComponent],
   templateUrl: './user-management.component.html',
 })
 export class UserManagementComponent implements OnInit {
@@ -33,6 +34,7 @@ export class UserManagementComponent implements OnInit {
   selectedUser = signal<UserResponse | null>(null);
   activePanel = signal<'none' | 'details' | 'roles'>('none');
   openDropdownId = signal<string | null>(null);
+  showCreateModal = signal(false);
 
   roleFilter = signal<string>('');
   statusFilter = signal<string>('');
@@ -96,6 +98,15 @@ export class UserManagementComponent implements OnInit {
     const first = user.firstName?.charAt(0) || user.username.charAt(0);
     const last = user.lastName?.charAt(0) || '';
     return (first + last).toUpperCase();
+  }
+
+  openCreateModal(): void {
+    this.showCreateModal.set(true);
+  }
+
+  onUserCreated(): void {
+    this.showCreateModal.set(false);
+    this.load();
   }
 
   toggleDropdown(id: string): void {
