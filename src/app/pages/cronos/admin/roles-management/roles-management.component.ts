@@ -5,9 +5,11 @@ import {
   signal,
   computed,
 } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { map } from 'rxjs';
 import { RoleService } from 'src/app/core/services/role.service';
 import { PermissionService } from 'src/app/core/services/permission.service';
 import { RoleResponse, PermissionResponse } from 'src/app/core/models';
@@ -49,6 +51,20 @@ export class RolesManagementComponent implements OnInit {
     description: [''],
   });
 
+  /**
+   * Bridge reactive-form observables → Signals so that computed() can track them.
+   * form.valid / form.dirty are plain getters, NOT signals — computed() would never
+   * re-evaluate when only those change. toSignal() solves this by emitting on every
+   * statusChanges / valueChanges event.
+   */
+  private formStatus = toSignal(this.form.statusChanges, {
+    initialValue: this.form.status,
+  });
+  private formDirty = toSignal(
+    this.form.valueChanges.pipe(map(() => this.form.dirty)),
+    { initialValue: false },
+  );
+
   // ─── Derived state ────────────────────────────────────────────────────────────
 
   /** Permissions grouped by resource for checkbox matrix */
@@ -85,12 +101,12 @@ export class RolesManagementComponent implements OnInit {
 
   /** Combined dirty check: form fields OR permissions changed */
   isDirty = computed<boolean>(
-    () => this.form.dirty || this.permissionsChanged()
+    () => this.formDirty() || this.permissionsChanged(),
   );
 
   /** True when the panel save button should be active */
   canSave = computed<boolean>(
-    () => this.form.valid && this.isDirty() && !this.isSaving()
+    () => this.formStatus() === 'VALID' && this.isDirty() && !this.isSaving(),
   );
 
   // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -223,6 +239,7 @@ export class RolesManagementComponent implements OnInit {
   // ─── Submit ───────────────────────────────────────────────────────────────────
 
   onSubmit(): void {
+    this.form.markAllAsTouched();
     if (!this.canSave()) return;
 
     const rawName = (this.form.get('name')!.value ?? '').trim().toUpperCase();
