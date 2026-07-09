@@ -38,19 +38,19 @@ const Routing: Routes = [
   // ─── Recetas ───
   {
     path: 'cronos/recetas',
-    loadComponent: () => import('./cronos/recetas/recetas.component').then(m => m.RecetasComponent),
+    loadComponent: () => import('./cronos/recipes/recipes.component').then(m => m.RecipesComponent),
   },
   {
     path: 'cronos/recetas/nueva',
-    loadComponent: () => import('./cronos/recetas/receta-form/receta-form.component').then(m => m.RecetaFormComponent),
+    loadComponent: () => import('./cronos/recipes/recipe-form/recipe-form.component').then(m => m.RecipeFormComponent),
   },
   {
     path: 'cronos/recetas/editar/:id',
-    loadComponent: () => import('./cronos/recetas/receta-form/receta-form.component').then(m => m.RecetaFormComponent),
+    loadComponent: () => import('./cronos/recipes/recipe-form/recipe-form.component').then(m => m.RecipeFormComponent),
   },
   {
     path: 'cronos/recetas/:id',
-    loadComponent: () => import('./cronos/recetas/receta-detalle/receta-detalle.component').then(m => m.RecetaDetalleComponent),
+    loadComponent: () => import('./cronos/recipes/recipe-detail/recipe-detail.component').then(m => m.RecipeDetailComponent),
   },
   // ─── Cotizaciones ───
   {

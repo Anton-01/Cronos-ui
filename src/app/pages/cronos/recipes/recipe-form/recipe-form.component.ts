@@ -1,34 +1,65 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
-
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { ChipModule } from 'primeng/chip';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+
 import { RecipeService } from 'src/app/core/services/domain/recipe.service';
 import { CreateRecipeRequest } from 'src/app/core/models/domain.model';
-import { AlertService } from 'src/app/shared/services/alert.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
+import { AlertService } from 'src/app/shared/services/alert.service';
+
+const COMMON_YIELD_UNITS = [
+  'Pasteles',
+  'Porciones',
+  'Piezas',
+  'Docenas',
+  'Galletas',
+  'Cupcakes',
+  'Barras',
+  'Litros',
+  'Kilogramos',
+];
 
 @Component({
-    selector: 'app-receta-form',
-    imports: [ReactiveFormsModule],
-    templateUrl: './receta-form.component.html'
+  selector: 'app-recipe-form',
+  standalone: true,
+  imports: [
+    ReactiveFormsModule,
+    ButtonModule,
+    CardModule,
+    ChipModule,
+    InputNumberModule,
+    InputTextModule,
+    TextareaModule,
+  ],
+  templateUrl: './recipe-form.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RecetaFormComponent implements OnInit, OnDestroy {
-  private service = inject(RecipeService);
-  private alertService = inject(AlertService);
-  private pageInfoService = inject(PageInfoService);
-  private fb = inject(FormBuilder);
-  private router = inject(Router);
-  private route = inject(ActivatedRoute);
-  private destroy$ = new Subject<void>();
+export class RecipeFormComponent implements OnInit, OnDestroy {
+  private readonly recipeService = inject(RecipeService);
+  private readonly alertService = inject(AlertService);
+  private readonly pageInfoService = inject(PageInfoService);
+  private readonly fb = inject(FormBuilder);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroy$ = new Subject<void>();
 
-  isEditMode = signal(false);
-  recipeId = signal<string | null>(null);
-  isLoading = signal(false);
-  isSaving = signal(false);
+  readonly isEditMode = signal(false);
+  readonly recipeId = signal<string | null>(null);
+  readonly isLoading = signal(false);
+  readonly isSaving = signal(false);
 
-  form = this.fb.group({
+  readonly commonYieldUnits = COMMON_YIELD_UNITS;
+
+  readonly form = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(150)]],
     description: ['', [Validators.maxLength(500)]],
     yieldQuantity: [null as number | null, [Validators.required, Validators.min(0.01)]],
@@ -37,11 +68,6 @@ export class RecetaFormComponent implements OnInit, OnDestroy {
     bakingTimeMinutes: [null as number | null, [Validators.min(0)]],
     coolingTimeMinutes: [null as number | null, [Validators.min(0)]],
   });
-
-  commonYieldUnits = [
-    'Pasteles', 'Porciones', 'Piezas', 'Docenas', 'Galletas',
-    'Cupcakes', 'Barras', 'Litros', 'Kilogramos',
-  ];
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
@@ -54,9 +80,8 @@ export class RecetaFormComponent implements OnInit, OnDestroy {
     this.pageInfoService.updateTitle(id ? 'Editar Receta' : 'Nueva Receta');
     this.pageInfoService.updateBreadcrumbs([
       { title: 'Inicio', path: '/dashboard', isActive: false },
-      { title: '', path: '', isActive: false, isSeparator: true },
       { title: 'Recetas', path: '/cronos/recetas', isActive: false },
-      { title: '', path: '', isActive: false, isSeparator: true },
+      { title: id ? 'Editar' : 'Nueva', path: '', isActive: true },
     ]);
   }
 
@@ -67,8 +92,8 @@ export class RecetaFormComponent implements OnInit, OnDestroy {
 
   private loadRecipe(id: string): void {
     this.isLoading.set(true);
-    this.service.getById(id).pipe(takeUntil(this.destroy$)).subscribe({
-      next: res => {
+    this.recipeService.getById(id).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res) => {
         this.form.patchValue({
           name: res.data.name,
           description: res.data.description ?? '',
@@ -80,7 +105,7 @@ export class RecetaFormComponent implements OnInit, OnDestroy {
         });
         this.isLoading.set(false);
       },
-      error: err => {
+      error: (err) => {
         this.alertService.error(err?.error?.message || 'Error al cargar la receta');
         this.isLoading.set(false);
       },
@@ -104,24 +129,21 @@ export class RecetaFormComponent implements OnInit, OnDestroy {
       coolingTimeMinutes: this.form.value.coolingTimeMinutes ?? undefined,
     };
 
-    const obs = this.isEditMode()
-      ? this.service.update(this.recipeId()!, payload)
-      : this.service.create(payload);
+    const request$ = this.isEditMode()
+      ? this.recipeService.update(this.recipeId()!, payload)
+      : this.recipeService.create(payload);
 
-    obs.pipe(takeUntil(this.destroy$)).subscribe({
-      next: res => {
+    request$.pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res) => {
         this.isSaving.set(false);
         this.alertService.success(
           this.isEditMode() ? 'Receta actualizada correctamente' : 'Receta creada correctamente'
         );
-        // Redirect to detail view after create, or back to list after edit
-        if (this.isEditMode()) {
-          this.router.navigate(['/cronos/recetas', this.recipeId()!]);
-        } else {
-          this.router.navigate(['/cronos/recetas', res.data.id]);
-        }
+        // Redirect to detail view after create, or back to detail after edit
+        const targetId = this.isEditMode() ? this.recipeId()! : res.data.id;
+        this.router.navigate(['/cronos/recetas', targetId]);
       },
-      error: err => {
+      error: (err) => {
         this.isSaving.set(false);
         this.alertService.error(err?.error?.message || 'Error al guardar la receta');
       },
@@ -137,6 +159,6 @@ export class RecetaFormComponent implements OnInit, OnDestroy {
   }
 
   selectYieldUnit(unit: string): void {
-    this.form.controls['yieldUnit'].setValue(unit);
+    this.form.controls.yieldUnit.setValue(unit);
   }
 }
