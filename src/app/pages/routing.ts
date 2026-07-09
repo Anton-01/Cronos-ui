@@ -13,7 +13,7 @@ const Routing: Routes = [
   },
   {
     path: 'cronos/categorias',
-    loadComponent: () => import('./cronos/categorias/categorias.component').then(m => m.CategoriasComponent),
+    loadComponent: () => import('./cronos/categories/categories.component').then(m => m.CategoriesComponent),
   },
   {
     path: 'cronos/alergenos',

@@ -10,3 +10,20 @@
 @import "./assets/plugins/keenicons/duotone/style.css";
 @import "./assets/plugins/keenicons/outline/style.css";
 @import "./assets/plugins/keenicons/solid/style.css";
+
+// ── PrimeFlex token bridge ─────────────────────────────────────────────
+// PrimeFlex utility classes (text-color, text-color-secondary, surface-*)
+// consume the legacy --text-color/--surface-* variables; map them to the
+// PrimeNG v21 theme tokens so they follow light/dark mode.
+:root {
+  --text-color: var(--p-text-color);
+  --text-color-secondary: var(--p-text-muted-color);
+  --surface-ground: var(--p-surface-50);
+  --surface-card: var(--p-content-background);
+  --surface-border: var(--p-content-border-color);
+  --primary-color: var(--p-primary-color);
+}
+
+.app-dark {
+  --surface-ground: var(--p-surface-950);
+}
