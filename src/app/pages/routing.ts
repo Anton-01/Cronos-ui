@@ -72,7 +72,7 @@ const Routing: Routes = [
   // ─── Costos ───
   {
     path: 'cronos/costos-fijos',
-    loadComponent: () => import('./cronos/costos-fijos/costos-fijos.component').then(m => m.CostosFijosComponent),
+    loadComponent: () => import('./cronos/fixed-costs/fixed-costs.component').then(m => m.FixedCostsComponent),
   },
   // ─── Cuenta ───
   {

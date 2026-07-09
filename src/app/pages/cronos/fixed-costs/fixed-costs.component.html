@@ -1,0 +1,228 @@
+<div class="flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+  <div>
+    <h2 class="m-0 text-xl font-semibold text-color">Costos Fijos</h2>
+    <p class="mt-1 mb-0 text-color-secondary">Gestión de los costos fijos de tu operación</p>
+  </div>
+  <p-button label="Nuevo Costo Fijo" icon="pi pi-plus" (onClick)="openCreate()" />
+</div>
+
+<p-card>
+  <p-table
+    #table
+    [value]="items()"
+    dataKey="id"
+    [loading]="isLoading()"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    [globalFilterFields]="['name', 'description', 'type', 'calculationMethod']"
+    sortField="name"
+    [sortOrder]="1"
+    [rowHover]="true"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} - {last} de {totalRecords} registros"
+  >
+    <ng-template pTemplate="caption">
+      <div class="flex align-items-center justify-content-between flex-wrap gap-2">
+        <p-iconfield iconPosition="left">
+          <p-inputicon styleClass="pi pi-search" />
+          <input
+            pInputText
+            type="text"
+            placeholder="Buscar costo fijo..."
+            (input)="table.filterGlobal($any($event.target).value, 'contains')"
+          />
+        </p-iconfield>
+        <span class="text-color-secondary text-sm">{{ items().length }} registros</span>
+      </div>
+    </ng-template>
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="name" style="min-width: 11rem">
+          Nombre
+          <p-sortIcon field="name" />
+          <p-columnFilter type="text" field="name" display="menu" placeholder="Filtrar por nombre" />
+        </th>
+        <th style="min-width: 12rem">Descripción</th>
+        <th pSortableColumn="type" style="min-width: 11rem">
+          Tipo de Costo
+          <p-sortIcon field="type" />
+          <p-columnFilter field="type" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
+            <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+              <p-select
+                [ngModel]="value"
+                [options]="costTypes"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Todos"
+                [showClear]="true"
+                (onChange)="filter($event.value)"
+              />
+            </ng-template>
+          </p-columnFilter>
+        </th>
+        <th style="min-width: 7rem">Monto</th>
+        <th style="min-width: 12rem">Método de Cálculo</th>
+        <th style="width: 8rem">
+          Estado
+          <p-columnFilter field="isActive" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
+            <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+              <p-select
+                [ngModel]="value"
+                [options]="statusFilterOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Todos"
+                [showClear]="true"
+                (onChange)="filter($event.value)"
+              />
+            </ng-template>
+          </p-columnFilter>
+        </th>
+        <th style="width: 8rem" class="text-right">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-item>
+      <tr>
+        <td class="font-semibold">{{ item.name }}</td>
+        <td>{{ item.description || '-' }}</td>
+        <td>
+          <p-tag [value]="getTypeLabel(item.type)" [severity]="getTypeSeverity(item.type)" />
+        </td>
+        <td>{{ formatAmountDisplay(item) }}</td>
+        <td>{{ getCalculationMethodLabel(item.calculationMethod) }}</td>
+        <td>
+          <p-tag
+            [value]="item.isActive ? 'Activo' : 'Inactivo'"
+            [severity]="item.isActive ? 'success' : 'danger'"
+          />
+        </td>
+        <td class="text-right">
+          <p-button
+            icon="pi pi-pencil"
+            severity="info"
+            [text]="true"
+            [rounded]="true"
+            pTooltip="Editar"
+            (onClick)="openEdit(item)"
+          />
+          <p-button
+            icon="pi pi-trash"
+            severity="danger"
+            [text]="true"
+            [rounded]="true"
+            pTooltip="Eliminar"
+            (onClick)="confirmDelete(item)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" class="text-center text-color-secondary py-5">No hay costos fijos registrados</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-dialog
+  [header]="selectedItem() ? 'Editar Costo Fijo' : 'Nuevo Costo Fijo'"
+  [visible]="showForm()"
+  (visibleChange)="!$event && closeForm()"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '34rem' }"
+>
+  <form [formGroup]="form" (ngSubmit)="saveForm()" id="fixedCostForm" class="flex flex-column gap-3">
+    <div class="flex flex-column gap-1">
+      <label for="fixedCostName" class="font-medium">Nombre <span class="text-red-500">*</span></label>
+      <input pInputText id="fixedCostName" formControlName="name" placeholder="Ej. Renta del local" />
+      @if (form.controls.name.hasError('required') && form.controls.name.touched) {
+        <small class="text-red-500">El nombre es requerido</small>
+      }
+    </div>
+    <div class="flex flex-column gap-1">
+      <label for="fixedCostDescription" class="font-medium">Descripción</label>
+      <textarea pTextarea id="fixedCostDescription" formControlName="description" rows="2" placeholder="Descripción opcional"></textarea>
+    </div>
+    <div class="flex flex-column gap-1">
+      <label for="fixedCostType" class="font-medium">Tipo de Costo <span class="text-red-500">*</span></label>
+      <p-select
+        inputId="fixedCostType"
+        formControlName="type"
+        [options]="costTypes"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Selecciona un tipo"
+        (onChange)="onTypeChange()"
+      />
+      @if (form.controls.type.hasError('required') && form.controls.type.touched) {
+        <small class="text-red-500">El tipo es requerido</small>
+      }
+    </div>
+    <div class="flex flex-column gap-1">
+      <label for="fixedCostMethod" class="font-medium">Método de Cálculo <span class="text-red-500">*</span></label>
+      <p-select
+        inputId="fixedCostMethod"
+        formControlName="calculationMethod"
+        [options]="filteredCalculationMethods()"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="Selecciona un método"
+      >
+        <ng-template pTemplate="item" let-option>
+          <div class="flex flex-column">
+            <span>{{ option.label }}</span>
+            <small class="text-color-secondary">{{ option.hint }}</small>
+          </div>
+        </ng-template>
+      </p-select>
+      @if (form.controls.calculationMethod.hasError('required') && form.controls.calculationMethod.touched) {
+        <small class="text-red-500">El método de cálculo es requerido</small>
+      }
+    </div>
+    @if (isPercentageMethod()) {
+      <div class="flex flex-column gap-1">
+        <label for="fixedCostPercentage" class="font-medium">Porcentaje (%) <span class="text-red-500">*</span></label>
+        <p-inputnumber
+          inputId="fixedCostPercentage"
+          formControlName="percentage"
+          suffix=" %"
+          [min]="0.1"
+          [maxFractionDigits]="2"
+        />
+        @if (form.controls.percentage.hasError('required') && form.controls.percentage.touched) {
+          <small class="text-red-500">El porcentaje es requerido</small>
+        }
+      </div>
+    } @else {
+      <div class="flex flex-column gap-1">
+        <label for="fixedCostAmount" class="font-medium">Monto <span class="text-red-500">*</span></label>
+        <p-inputnumber
+          inputId="fixedCostAmount"
+          formControlName="defaultAmount"
+          mode="currency"
+          currency="MXN"
+          locale="es-MX"
+          [min]="0"
+        />
+        @if (form.controls.defaultAmount.hasError('required') && form.controls.defaultAmount.touched) {
+          <small class="text-red-500">El monto es requerido</small>
+        }
+      </div>
+    }
+  </form>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="closeForm()" />
+    <p-button
+      [label]="selectedItem() ? 'Actualizar' : 'Crear'"
+      type="submit"
+      form="fixedCostForm"
+      [disabled]="form.invalid"
+      [loading]="isSaving()"
+    />
+  </ng-template>
+</p-dialog>
