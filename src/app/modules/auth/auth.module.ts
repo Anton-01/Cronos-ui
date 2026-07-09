@@ -8,7 +8,6 @@ import { RegistrationComponent } from './components/registration/registration.co
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { LogoutComponent } from './components/logout/logout.component';
 import { AuthComponent } from './auth.component';
-import { TranslationModule } from '../i18n/translation.module';
 
 @NgModule({
   declarations: [
@@ -20,7 +19,6 @@ import { TranslationModule } from '../i18n/translation.module';
   ],
   imports: [
     CommonModule,
-    TranslationModule,
     AuthRoutingModule,
     FormsModule,
     ReactiveFormsModule,

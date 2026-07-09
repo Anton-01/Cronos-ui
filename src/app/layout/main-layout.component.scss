@@ -1,0 +1,141 @@
+:host {
+  display: block;
+  min-height: 100vh;
+  background: var(--p-surface-50);
+}
+
+:host-context(.app-dark) {
+  background: var(--p-surface-950);
+}
+
+.layout-wrapper {
+  min-height: 100vh;
+}
+
+.layout-topbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1rem;
+  background: var(--p-content-background);
+  border-bottom: 1px solid var(--p-content-border-color);
+}
+
+.layout-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+}
+
+.layout-logo-img {
+  height: 2rem;
+}
+
+.layout-logo-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--p-text-color);
+}
+
+.layout-user-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  border-radius: var(--p-border-radius-md, 6px);
+  background: transparent;
+  color: var(--p-text-color);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--p-content-hover-background, rgba(0, 0, 0, 0.04));
+  }
+}
+
+.layout-user-name {
+  font-weight: 500;
+}
+
+.layout-sidebar {
+  position: fixed;
+  top: 4rem;
+  bottom: 0;
+  left: 0;
+  width: 17rem;
+  overflow-y: auto;
+  padding: 1rem 0.75rem;
+  background: var(--p-content-background);
+  border-right: 1px solid var(--p-content-border-color);
+}
+
+.layout-main {
+  padding: 5rem 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+@media (min-width: 992px) {
+  .layout-main {
+    margin-left: 17rem;
+  }
+}
+
+.layout-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.layout-page-title {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--p-text-color);
+}
+
+.layout-content {
+  flex: 1;
+}
+
+.layout-footer {
+  margin-top: 2rem;
+  padding: 1rem 0;
+  border-top: 1px solid var(--p-content-border-color);
+  color: var(--p-text-muted-color);
+  font-size: 0.875rem;
+  text-align: center;
+}
+
+:host ::ng-deep {
+  .layout-panelmenu {
+    .p-panelmenu-panel {
+      border: none;
+      box-shadow: none;
+      background: transparent;
+      margin-bottom: 0.25rem;
+    }
+
+    .p-panelmenu-header-content {
+      border: none;
+      background: transparent;
+    }
+  }
+
+  .layout-breadcrumb {
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+}

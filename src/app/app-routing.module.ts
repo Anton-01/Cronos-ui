@@ -1,7 +1,7 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { AuthGuard } from './modules/auth/services/auth.guard';
-import { guestGuard } from './core/guards/guest.guard';
+import { Routing } from './pages/routing';
 
 export const routes: Routes = [
   {
@@ -17,9 +17,9 @@ export const routes: Routes = [
       import('./modules/auth/auth.module').then((m) => m.AuthModule),
   },
   {
-    path: 'error',
-    loadChildren: () =>
-      import('./modules/errors/errors.module').then((m) => m.ErrorsModule),
+    path: 'error/:code',
+    loadComponent: () =>
+      import('./pages/errors/error-page.component').then((m) => m.ErrorPageComponent),
   },
   {
     path: 'shared/recipe',
@@ -56,8 +56,9 @@ export const routes: Routes = [
   {
     path: '',
     canActivate: [AuthGuard],
-    loadChildren: () =>
-      import('./_metronic/layout/layout.module').then((m) => m.LayoutModule),
+    loadComponent: () =>
+      import('./layout/main-layout.component').then((m) => m.MainLayoutComponent),
+    children: Routing,
   },
   { path: '**', redirectTo: 'error/404' },
 ];

@@ -6,9 +6,9 @@ import { AlertService } from '../../services/alert.service';
     selector: 'app-global-alert-container',
     imports: [],
     template: `
-    <div class="position-fixed top-0 end-0 p-5" style="z-index: 9999; max-width: 450px;">
+    <div class="position-fixed top-0 end-0 p-5" style="z-index: 9999; max-width: 450px; pointer-events: none;">
       @for (alert of alertService.alerts(); track alert.id) {
-        <div class="alert d-flex align-items-center p-5 mb-3 shadow-sm"
+        <div class="alert d-flex align-items-center p-5 mb-3 shadow-sm" style="pointer-events: auto;"
           [class.bg-light-success]="alert.type === 'success'"
           [class.text-success]="alert.type === 'success'"
           [class.bg-light-danger]="alert.type === 'danger'"

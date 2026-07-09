@@ -8,7 +8,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { TooltipModule } from 'primeng/tooltip';
 import { map } from 'rxjs';
 import { RoleService } from 'src/app/core/services/role.service';
 import { PermissionService } from 'src/app/core/services/permission.service';
@@ -20,7 +20,7 @@ const MAX_BADGE_PREVIEW = 4;
 
 @Component({
     selector: 'app-roles-management',
-    imports: [CommonModule, ReactiveFormsModule, NgbTooltipModule],
+    imports: [CommonModule, ReactiveFormsModule, TooltipModule],
     templateUrl: './roles-management.component.html'
 })
 export class RolesManagementComponent implements OnInit {

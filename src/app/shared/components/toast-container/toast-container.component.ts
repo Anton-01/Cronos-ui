@@ -6,9 +6,9 @@ import { ToastService } from '../../services/toast.service';
     selector: 'app-toast-container',
     imports: [],
     template: `
-    <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999; pointer-events: none;">
       @for (toast of toastService.toasts(); track toast.id) {
-        <div class="toast show mb-2" role="alert"
+        <div class="toast show mb-2" role="alert" style="pointer-events: auto;"
           [class.bg-light-success]="toast.type === 'success'"
           [class.bg-light-danger]="toast.type === 'error'">
           <div class="toast-header">

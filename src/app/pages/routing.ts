@@ -4,27 +4,7 @@ import { roleGuard } from '../core/guards/role.guard';
 const Routing: Routes = [
   {
     path: 'dashboard',
-    loadChildren: () => import('./dashboard/dashboard.module').then((m) => m.DashboardModule),
-  },
-  {
-    path: 'builder',
-    loadChildren: () => import('./builder/builder.module').then((m) => m.BuilderModule),
-  },
-  {
-    path: 'cronos/pages/profile',
-    loadChildren: () => import('../modules/profile/profile.module').then((m) => m.ProfileModule),
-  },
-  {
-    path: 'cronos/pages/account',
-    loadChildren: () => import('../modules/account/account.module').then((m) => m.AccountModule),
-  },
-  {
-    path: 'cronos/pages/wizards',
-    loadChildren: () => import('../modules/wizards/wizards.module').then((m) => m.WizardsModule),
-  },
-  {
-    path: 'apps/chat',
-    loadChildren: () => import('../modules/apps/chat/chat.module').then((m) => m.ChatModule),
+    loadComponent: () => import('./dashboard/dashboard.component').then((m) => m.DashboardComponent),
   },
   // ─── Cronos CRUD Routes ───
   {

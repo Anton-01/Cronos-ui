@@ -13,7 +13,7 @@ import {
 import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { NgbTooltipModule } from '@ng-bootstrap/ng-bootstrap';
+import { TooltipModule } from 'primeng/tooltip';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 import { map } from 'rxjs';
 import { UserService } from 'src/app/core/services/user.service';
@@ -24,7 +24,7 @@ import { RoleResponse } from 'src/app/core/models/role.model';
 
 @Component({
     selector: 'app-create-user-modal',
-    imports: [CommonModule, ReactiveFormsModule, NgbTooltipModule, ImageCropperComponent],
+    imports: [CommonModule, ReactiveFormsModule, TooltipModule, ImageCropperComponent],
     templateUrl: './create-user-modal.component.html'
 })
 export class CreateUserModalComponent implements OnInit, OnDestroy {

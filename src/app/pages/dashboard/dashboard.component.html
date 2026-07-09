@@ -1,83 +1,20 @@
-<!--begin::Row-->
-<div class="row g-5 g-xl-10 mb-5 mb-xl-10">
-  <!--begin::Col-->
-  <div class="col-md-6 col-lg-6 col-xl-6 col-xxl-3 mb-md-5 mb-xl-10">
-    <app-cards-widget20 cssClass="h-md-50 mb-5 mb-xl-10" description="Active Projects" color="#F1416C"
-      img="./assets/media/patterns/vector-1.png"></app-cards-widget20>
-
-    <app-cards-widget7 cssClass="h-md-50 mb-5 mb-xl-10" [icon]="false" [stats]="357" description="Professionals"
-      labelColor="dark" textColor="gray-300"></app-cards-widget7>
-  </div>
-  <!--end::Col-->
-
-  <!--begin::Col-->
-  <div class="col-md-6 col-lg-6 col-xl-6 col-xxl-3 mb-md-5 mb-xl-10">
-    <app-cards-widget17 cssClass="h-md-50 mb-5 mb-xl-10"></app-cards-widget17>
-    <app-lists-widget26 class="h-lg-50"></app-lists-widget26>
-  </div>
-  <!--end::Col-->
-
-
-  <!--begin::Col-->
-  <app-engage-widget10 class="col-xxl-6" cssClass="h-md-100"></app-engage-widget10>
-  <!--end::Col-->
-</div>
-<!--end::Row-->
-
-<!--begin::Row-->
-<div class="row gx-5 gx-xl-10">
-  <!--begin::Col-->
-  <div class="col-xxl-6 mb-5 mb-xl-10">
-    
-  </div>
-  <!--end::Col-->
-
-  <!--begin::Col-->
-  <div class="col-xxl-6 mb-5 mb-xl-10">
-    <app-cards-widget18 cssClass="h-xl-100" image="./assets/media/stock/600x600/img-65.jpg"></app-cards-widget18>
-  </div>
-  <!--end::Col-->
-</div>
-<!--end::Row-->
-
-<!-- begin::Row -->
-<div class="row gy-5 gx-xl-8">
-  <div class="col-xxl-4">
-    <app-lists-widget3 class="card card-xxl-stretch mb-xl-3"></app-lists-widget3>
-  </div>
-  <div class="col-xl-8">
-    <app-tables-widget10 class="card card-xxl-stretch mb-5 mb-xl-8"></app-tables-widget10>
-  </div>
-</div>
-<!-- end::Row -->
-
-<!-- begin::Row -->
-<div class="row gy-5 g-xl-8">
-  <div class="col-xl-4">
-    <app-lists-widget2 class="card card-xl-stretch mb-xl-8"></app-lists-widget2>
-  </div>
-  <div class="col-xl-4">
-    <app-lists-widget6 class="card card-xl-stretch mb-xl-8"></app-lists-widget6>
-  </div>
-  <div class="col-xl-4">
-    <app-lists-widget4 class="card card-xl-stretch mb-5 mb-xl-8"></app-lists-widget4>
-  </div>
-</div>
-<!-- end::Row -->
-
-<div class="row g-5 gx-xxl-8">
-  <div class="col-xxl-4">
-    
-  </div>
-  <div class="col-xxl-8">
-    <app-tables-widget5 class="card card-xxl-stretch mb-5 mb-xxl-8"></app-tables-widget5>
-  </div>
+<div class="mb-4">
+  <h2 class="m-0 text-2xl font-semibold dashboard-greeting">{{ greeting() }}</h2>
+  <p class="mt-1 mb-0 text-color-secondary">¿Qué quieres hacer hoy?</p>
 </div>
 
-<!-- begin:: Modal example -->
-<!-- <app-modal #modal [modalConfig]="modalConfig">
-  Modal body html
-</app-modal>
-<button class="btn btn-primary" (click)="openModal()">Open modal</button> -->
-<!-- Note: Don't forget import ModalsModule (from _metronic/partials) into your module -->
-<!-- end:: Modal example -->
+<div class="grid">
+  @for (link of quickLinks; track link.route) {
+    <div class="col-12 md:col-6 xl:col-3">
+      <a [routerLink]="link.route" class="quick-link-card">
+        <p-card>
+          <div class="flex flex-column gap-2">
+            <i class="quick-link-icon" [class]="link.icon"></i>
+            <span class="text-lg font-semibold">{{ link.label }}</span>
+            <span class="text-color-secondary text-sm">{{ link.description }}</span>
+          </div>
+        </p-card>
+      </a>
+    </div>
+  }
+</div>

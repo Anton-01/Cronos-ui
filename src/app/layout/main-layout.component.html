@@ -1,0 +1,68 @@
+<div class="layout-wrapper">
+  <!-- Topbar -->
+  <header class="layout-topbar">
+    <div class="flex align-items-center gap-2">
+      <p-button
+        icon="pi pi-bars"
+        severity="secondary"
+        [text]="true"
+        styleClass="lg:hidden"
+        (onClick)="toggleSidebar()"
+        ariaLabel="Abrir menú"
+      />
+      <a class="layout-logo cursor-pointer" (click)="navigateHome()">
+        <img src="./assets/media/logos/favicon.svg" alt="Cronos" class="layout-logo-img" />
+        <span class="layout-logo-text">Cronos</span>
+      </a>
+    </div>
+
+    <div class="flex align-items-center gap-2">
+      <p-button
+        [icon]="theme.mode() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
+        severity="secondary"
+        [text]="true"
+        (onClick)="theme.toggle()"
+        pTooltip="Cambiar tema"
+        tooltipPosition="bottom"
+        ariaLabel="Cambiar tema"
+      />
+      <button type="button" class="layout-user-button" (click)="userMenu.toggle($event)">
+        <p-avatar [label]="userInitials()" shape="circle" styleClass="layout-user-avatar" />
+        <span class="layout-user-name hidden md:inline">{{ userFullName() }}</span>
+        <i class="pi pi-angle-down text-sm"></i>
+      </button>
+      <p-menu #userMenu [model]="userMenuItems" [popup]="true" appendTo="body" />
+    </div>
+  </header>
+
+  <!-- Static sidebar (desktop) -->
+  <aside class="layout-sidebar hidden lg:block">
+    <p-panelmenu [model]="menuModel" [multiple]="true" styleClass="layout-panelmenu" />
+  </aside>
+
+  <!-- Drawer sidebar (mobile) -->
+  <p-drawer
+    [visible]="sidebarVisible()"
+    (visibleChange)="sidebarVisible.set($event)"
+    header="Cronos"
+    styleClass="layout-drawer"
+  >
+    <p-panelmenu [model]="menuModel" [multiple]="true" styleClass="layout-panelmenu" />
+  </p-drawer>
+
+  <!-- Main content -->
+  <main class="layout-main">
+    <div class="layout-page-header">
+      <h1 class="layout-page-title">{{ pageInfo.title() }}</h1>
+      @if (breadcrumbItems().length > 0) {
+        <p-breadcrumb [model]="breadcrumbItems()" [home]="breadcrumbHome" styleClass="layout-breadcrumb" />
+      }
+    </div>
+    <div class="layout-content">
+      <router-outlet />
+    </div>
+    <footer class="layout-footer">
+      <span>Cronos — Sistema de Gestión para Repostería Especializada</span>
+    </footer>
+  </main>
+</div>

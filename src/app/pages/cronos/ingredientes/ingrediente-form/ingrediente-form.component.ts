@@ -13,7 +13,7 @@ import {
 } from 'src/app/core/models/domain.model';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
-import { PageInfoService } from 'src/app/_metronic/layout/core/page-info.service';
+import { PageInfoService } from 'src/app/core/services/page-info.service';
 
 @Component({
     selector: 'app-ingrediente-form',

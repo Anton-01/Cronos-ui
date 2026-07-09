@@ -6,7 +6,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
 import { UserService } from 'src/app/core/services/user.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
 import { ActiveSession, LoginHistoryEntry, UserResponse } from 'src/app/core/models/user.model';
-import { SignInMethodComponent } from 'src/app/modules/account/settings/forms/sign-in-method/sign-in-method.component';
+import { SignInMethodComponent } from './sign-in-method/sign-in-method.component';
 import Swal from 'sweetalert2';
 
 @Component({
