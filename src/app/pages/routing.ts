@@ -55,19 +55,19 @@ const Routing: Routes = [
   // ─── Cotizaciones ───
   {
     path: 'cronos/cotizaciones',
-    loadComponent: () => import('./cronos/cotizaciones/cotizaciones.component').then(m => m.CotizacionesComponent),
+    loadComponent: () => import('./cronos/quotes/quotes.component').then(m => m.QuotesComponent),
   },
   {
     path: 'cronos/cotizaciones/nueva',
-    loadComponent: () => import('./cronos/cotizaciones/cotizacion-form/cotizacion-form.component').then(m => m.CotizacionFormComponent),
+    loadComponent: () => import('./cronos/quotes/quote-form/quote-form.component').then(m => m.QuoteFormComponent),
   },
   {
     path: 'cronos/cotizaciones/editar/:id',
-    loadComponent: () => import('./cronos/cotizaciones/cotizacion-edit/cotizacion-edit.component').then(m => m.CotizacionEditComponent),
+    loadComponent: () => import('./cronos/quotes/quote-edit/quote-edit.component').then(m => m.QuoteEditComponent),
   },
   {
     path: 'cronos/cotizaciones/detalles/:id',
-    loadComponent: () => import('./cronos/cotizaciones/cotizacion-detalle/cotizacion-detalle.component').then(m => m.CotizacionDetalleComponent),
+    loadComponent: () => import('./cronos/quotes/quote-detail/quote-detail.component').then(m => m.QuoteDetailComponent),
   },
   // ─── Costos ───
   {

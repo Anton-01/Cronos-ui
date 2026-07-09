@@ -1,0 +1,136 @@
+<div class="flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+  <div>
+    <h2 class="m-0 text-xl font-semibold text-color">Mis Cotizaciones</h2>
+    <p class="mt-1 mb-0 text-color-secondary">Genera y comparte cotizaciones con tus clientes</p>
+  </div>
+  <p-button label="Nueva Cotización" icon="pi pi-plus" (onClick)="openCreate()" />
+</div>
+
+<p-card>
+  <p-table
+    #table
+    [value]="items()"
+    dataKey="id"
+    [loading]="isLoading()"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    [globalFilterFields]="['quoteNumber', 'clientName']"
+    sortField="createdAt"
+    [sortOrder]="-1"
+    [rowHover]="true"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} - {last} de {totalRecords} registros"
+  >
+    <ng-template pTemplate="caption">
+      <div class="flex align-items-center justify-content-between flex-wrap gap-2">
+        <p-iconfield iconPosition="left">
+          <p-inputicon styleClass="pi pi-search" />
+          <input
+            pInputText
+            type="text"
+            placeholder="Buscar cotización..."
+            (input)="table.filterGlobal($any($event.target).value, 'contains')"
+          />
+        </p-iconfield>
+        <span class="text-color-secondary text-sm">{{ items().length }} registros</span>
+      </div>
+    </ng-template>
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="quoteNumber" style="min-width: 10rem">
+          N° Cotización
+          <p-sortIcon field="quoteNumber" />
+          <p-columnFilter type="text" field="quoteNumber" display="menu" placeholder="Filtrar" />
+        </th>
+        <th pSortableColumn="clientName" style="min-width: 12rem">
+          Cliente
+          <p-sortIcon field="clientName" />
+          <p-columnFilter type="text" field="clientName" display="menu" placeholder="Filtrar por cliente" />
+        </th>
+        <th pSortableColumn="total" style="min-width: 8rem" class="text-right">
+          Total
+          <p-sortIcon field="total" />
+        </th>
+        <th style="width: 9rem">
+          Estado
+          <p-columnFilter field="status" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
+            <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+              <p-select
+                [ngModel]="value"
+                [options]="statusFilterOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Todos"
+                [showClear]="true"
+                (onChange)="filter($event.value)"
+              />
+            </ng-template>
+          </p-columnFilter>
+        </th>
+        <th pSortableColumn="createdAt" style="min-width: 8rem">
+          Fecha
+          <p-sortIcon field="createdAt" />
+        </th>
+        <th style="width: 11rem" class="text-right">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-item>
+      <tr>
+        <td>
+          <a class="font-bold cursor-pointer text-primary" (click)="viewQuoteDetails(item)">{{ item.quoteNumber }}</a>
+        </td>
+        <td>
+          <div class="flex flex-column">
+            <span class="font-medium">{{ item.clientName }}</span>
+            @if (item.clientPhone) {
+              <span class="text-color-secondary text-sm">{{ item.clientPhone }}</span>
+            }
+          </div>
+        </td>
+        <td class="text-right font-semibold">{{ formatCurrency(item.total, item.currency) }}</td>
+        <td>
+          <p-tag [value]="getStatusLabel(item.status)" [severity]="getStatusSeverity(item.status)" />
+        </td>
+        <td class="text-color-secondary text-sm">{{ formatDate(item.createdAt) }}</td>
+        <td class="text-right">
+          <p-button
+            icon="pi pi-eye"
+            severity="help"
+            [text]="true"
+            [rounded]="true"
+            pTooltip="Ver Detalles"
+            (onClick)="viewQuoteDetails(item)"
+          />
+          <p-button
+            icon="pi pi-pencil"
+            severity="info"
+            [text]="true"
+            [rounded]="true"
+            pTooltip="Editar"
+            (onClick)="editQuote(item)"
+          />
+          <p-button
+            icon="pi pi-share-alt"
+            severity="secondary"
+            [text]="true"
+            [rounded]="true"
+            pTooltip="Compartir / más acciones"
+            [loading]="sendingEmailId() === item.id"
+            (onClick)="buildActionMenu(item); actionsMenu.toggle($event)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="6" class="text-center text-color-secondary py-5">No hay cotizaciones registradas</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-menu #actionsMenu [model]="actionMenuItems()" [popup]="true" appendTo="body" />
