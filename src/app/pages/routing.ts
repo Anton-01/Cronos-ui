@@ -30,18 +30,6 @@ const Routing: Routes = [
     path: 'apps/chat',
     loadChildren: () => import('../modules/apps/chat/chat.module').then((m) => m.ChatModule),
   },
-  {
-    path: 'apps/users',
-    loadChildren: () => import('./user/user.module').then((m) => m.UserModule),
-  },
-  {
-    path: 'apps/roles',
-    loadChildren: () => import('./role/role.module').then((m) => m.RoleModule),
-  },
-  {
-    path: 'apps/permissions',
-    loadChildren: () => import('./permission/permission.module').then((m) => m.PermissionModule),
-  },
   // ─── Cronos CRUD Routes ───
   {
     path: 'cronos/tipos-unidad',
