@@ -3,10 +3,9 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 
 @Component({
-  selector: 'app-public-layout',
-  standalone: true,
-  imports: [CommonModule, RouterOutlet],
-  template: `
+    selector: 'app-public-layout',
+    imports: [CommonModule, RouterOutlet],
+    template: `
     <!-- begin::Public Layout -->
     <div class="d-flex flex-column flex-root app-root" id="kt_app_root">
       <!-- begin::Header -->
@@ -55,7 +54,7 @@ import { RouterOutlet } from '@angular/router';
     </div>
     <!-- end::Public Layout -->
   `,
-  styles: [`
+    styles: [`
     :host {
       display: flex;
       flex-direction: column;
@@ -64,6 +63,6 @@ import { RouterOutlet } from '@angular/router';
     .app-root {
       min-height: 100vh;
     }
-  `],
+  `]
 })
 export class PublicLayoutComponent {}

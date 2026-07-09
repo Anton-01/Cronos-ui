@@ -11,10 +11,9 @@ import Swal from 'sweetalert2';
 import {StatusToggleComponent} from "../../../shared/components/modal-toggle-status/status-toggle.component";
 
 @Component({
-  selector: 'app-ingredientes',
-  standalone: true,
-  imports: [CommonModule, AlertContainerComponent, StatusToggleComponent],
-  templateUrl: './ingredientes.component.html',
+    selector: 'app-ingredientes',
+    imports: [CommonModule, AlertContainerComponent, StatusToggleComponent],
+    templateUrl: './ingredientes.component.html'
 })
 export class IngredientesComponent implements OnInit {
   private ingredientService = inject(IngredientService);

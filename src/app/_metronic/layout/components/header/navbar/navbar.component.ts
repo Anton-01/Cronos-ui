@@ -2,9 +2,10 @@ import { AfterViewInit, Component, Input, OnInit } from '@angular/core';
 import { menuReinitialization } from 'src/app/_metronic/kt/kt-helpers';
 
 @Component({
-	selector: 'app-navbar',
-	templateUrl: './navbar.component.html',
-	styleUrls: ['./navbar.component.scss'],
+    selector: 'app-navbar',
+    templateUrl: './navbar.component.html',
+    styleUrls: ['./navbar.component.scss'],
+    standalone: false
 })
 export class NavbarComponent implements OnInit, AfterViewInit {
 	@Input() appHeaderDefaulMenuDisplay: boolean;

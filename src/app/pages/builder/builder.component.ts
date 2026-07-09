@@ -5,8 +5,9 @@ import { LayoutService } from '../../_metronic/layout';
 type Tabs = 'Sidebar' | 'Header' | 'Toolbar';
 
 @Component({
-  selector: 'app-builder',
-  templateUrl: './builder.component.html',
+    selector: 'app-builder',
+    templateUrl: './builder.component.html',
+    standalone: false
 })
 export class BuilderComponent implements OnInit {
   activeTab: Tabs = 'Sidebar';

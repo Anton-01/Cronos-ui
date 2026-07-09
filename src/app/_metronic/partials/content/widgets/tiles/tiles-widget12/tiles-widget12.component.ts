@@ -1,8 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'app-tiles-widget12',
-  templateUrl: './tiles-widget12.component.html',
+    selector: 'app-tiles-widget12',
+    templateUrl: './tiles-widget12.component.html',
+    standalone: false
 })
 export class TilesWidget12Component implements OnInit {
   @Input() cssClass = '';

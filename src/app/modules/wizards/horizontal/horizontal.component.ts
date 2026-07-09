@@ -2,8 +2,9 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { ICreateAccount, inits } from '../create-account.helper';
 @Component({
-  selector: 'app-horizontal',
-  templateUrl: './horizontal.component.html',
+    selector: 'app-horizontal',
+    templateUrl: './horizontal.component.html',
+    standalone: false
 })
 export class HorizontalComponent implements OnInit, OnDestroy {
   formsCount = 5;

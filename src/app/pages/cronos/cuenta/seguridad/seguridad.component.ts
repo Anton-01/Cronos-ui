@@ -10,10 +10,9 @@ import { SignInMethodComponent } from 'src/app/modules/account/settings/forms/si
 import Swal from 'sweetalert2';
 
 @Component({
-  selector: 'app-seguridad',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, SignInMethodComponent],
-  templateUrl: './seguridad.component.html',
+    selector: 'app-seguridad',
+    imports: [CommonModule, ReactiveFormsModule, RouterLink, SignInMethodComponent],
+    templateUrl: './seguridad.component.html'
 })
 export class SeguridadComponent implements OnInit {
   private authService = inject(AuthService);

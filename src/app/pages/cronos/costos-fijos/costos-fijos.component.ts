@@ -21,10 +21,9 @@ interface CalculationMethodOption extends SelectOption {
 }
 
 @Component({
-  selector: 'app-costos-fijos',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
-  templateUrl: './costos-fijos.component.html',
+    selector: 'app-costos-fijos',
+    imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
+    templateUrl: './costos-fijos.component.html'
 })
 export class CostosFijosComponent implements OnInit, OnDestroy {
   private service = inject(UserFixedCostService);

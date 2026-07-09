@@ -16,11 +16,10 @@ import { AlertContainerComponent } from 'src/app/shared/components/alert-contain
 import { PageInfoService } from 'src/app/_metronic/layout/core/page-info.service';
 
 @Component({
-  selector: 'app-ingrediente-form',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
-  templateUrl: './ingrediente-form.component.html',
-  styleUrls: ['./ingrediente-form.component.scss'],
+    selector: 'app-ingrediente-form',
+    imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
+    templateUrl: './ingrediente-form.component.html',
+    styleUrls: ['./ingrediente-form.component.scss']
 })
 export class IngredienteFormComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);

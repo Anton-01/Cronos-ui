@@ -1,9 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 
 @Component({
-  selector: 'app-lists-widget26',
-  templateUrl: './lists-widget26.component.html',
-  styleUrls: ['./lists-widget26.component.scss'],
+    selector: 'app-lists-widget26',
+    templateUrl: './lists-widget26.component.html',
+    styleUrls: ['./lists-widget26.component.scss'],
+    standalone: false
 })
 export class ListsWidget26Component implements OnInit {
   rows: Array<{ description: string }>;

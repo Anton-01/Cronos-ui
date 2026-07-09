@@ -12,10 +12,9 @@ import { PageInfoService } from 'src/app/_metronic/layout/core/page-info.service
 import Swal from 'sweetalert2';
 
 @Component({
-  selector: 'app-cotizaciones',
-  standalone: true,
-  imports: [CommonModule, AlertContainerComponent],
-  templateUrl: './cotizaciones.component.html',
+    selector: 'app-cotizaciones',
+    imports: [CommonModule, AlertContainerComponent],
+    templateUrl: './cotizaciones.component.html'
 })
 export class CotizacionesComponent implements OnInit, OnDestroy {
   private service = inject(QuoteService);

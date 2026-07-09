@@ -4,9 +4,10 @@ import { LayoutType } from '../../../core/configs/config';
 import { LayoutService } from '../../../core/layout.service';
 
 @Component({
-  selector: 'app-sidebar-logo',
-  templateUrl: './sidebar-logo.component.html',
-  styleUrls: ['./sidebar-logo.component.scss'],
+    selector: 'app-sidebar-logo',
+    templateUrl: './sidebar-logo.component.html',
+    styleUrls: ['./sidebar-logo.component.scss'],
+    standalone: false
 })
 export class SidebarLogoComponent implements OnInit, OnDestroy {
   private unsubscribe: Subscription[] = [];

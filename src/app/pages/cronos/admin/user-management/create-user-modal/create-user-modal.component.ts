@@ -23,10 +23,9 @@ import { UserResponse } from 'src/app/core/models/user.model';
 import { RoleResponse } from 'src/app/core/models/role.model';
 
 @Component({
-  selector: 'app-create-user-modal',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgbTooltipModule, ImageCropperComponent],
-  templateUrl: './create-user-modal.component.html',
+    selector: 'app-create-user-modal',
+    imports: [CommonModule, ReactiveFormsModule, NgbTooltipModule, ImageCropperComponent],
+    templateUrl: './create-user-modal.component.html'
 })
 export class CreateUserModalComponent implements OnInit, OnDestroy {
   private userService = inject(UserService);

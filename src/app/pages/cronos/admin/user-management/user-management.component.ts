@@ -15,10 +15,9 @@ const ROLE_BADGE: Record<string, string> = {
 };
 
 @Component({
-  selector: 'app-user-management',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, CreateUserModalComponent],
-  templateUrl: './user-management.component.html',
+    selector: 'app-user-management',
+    imports: [CommonModule, ReactiveFormsModule, FormsModule, CreateUserModalComponent],
+    templateUrl: './user-management.component.html'
 })
 export class UserManagementComponent implements OnInit {
   private userService = inject(UserService);

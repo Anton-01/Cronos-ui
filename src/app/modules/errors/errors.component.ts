@@ -12,9 +12,10 @@ import {
 const BODY_CLASSES = ['bgi-size-cover', 'bgi-position-center', 'bgi-no-repeat'];
 
 @Component({
-  selector: 'app-errors',
-  templateUrl: './errors.component.html',
-  styleUrls: ['./errors.component.scss'],
+    selector: 'app-errors',
+    templateUrl: './errors.component.html',
+    styleUrls: ['./errors.component.scss'],
+    standalone: false
 })
 export class ErrorsComponent implements OnInit, OnDestroy {
   @HostBinding('class') class = 'd-flex flex-column flex-root';

@@ -6,8 +6,9 @@ type Tabs =
   | 'kt_table_widget_8_tab_3';
 
 @Component({
-  selector: 'app-tables-widget8',
-  templateUrl: './tables-widget8.component.html',
+    selector: 'app-tables-widget8',
+    templateUrl: './tables-widget8.component.html',
+    standalone: false
 })
 export class TablesWidget8Component implements OnInit {
   constructor() {}

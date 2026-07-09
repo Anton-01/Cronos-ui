@@ -25,10 +25,9 @@ import Swal from 'sweetalert2';
 const LOCKED_STATUSES = ['ACCEPTED', 'REJECTED'] as const;
 
 @Component({
-  selector: 'app-cotizacion-edit',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
-  templateUrl: './cotizacion-edit.component.html',
+    selector: 'app-cotizacion-edit',
+    imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
+    templateUrl: './cotizacion-edit.component.html'
 })
 export class CotizacionEditComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);

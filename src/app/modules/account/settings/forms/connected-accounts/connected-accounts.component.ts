@@ -2,8 +2,9 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { BehaviorSubject, Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-connected-accounts',
-  templateUrl: './connected-accounts.component.html',
+    selector: 'app-connected-accounts',
+    templateUrl: './connected-accounts.component.html',
+    standalone: false
 })
 export class ConnectedAccountsComponent implements OnInit, OnDestroy {
   isLoading$: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);

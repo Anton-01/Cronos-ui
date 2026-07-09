@@ -11,10 +11,9 @@ import Swal from 'sweetalert2';
 import {StatusToggleComponent} from "../../../shared/components/modal-toggle-status/status-toggle.component";
 
 @Component({
-  selector: 'app-unidades-medida',
-  standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, AlertContainerComponent, StatusToggleComponent],
-  templateUrl: './unidades-medida.component.html',
+    selector: 'app-unidades-medida',
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, AlertContainerComponent, StatusToggleComponent],
+    templateUrl: './unidades-medida.component.html'
 })
 export class UnidadesMedidaComponent implements OnInit {
   private measurementUnitService = inject(MeasurementUnitService);

@@ -19,10 +19,9 @@ const PROTECTED_ROLE = 'SUPER_ADMIN';
 const MAX_BADGE_PREVIEW = 4;
 
 @Component({
-  selector: 'app-roles-management',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgbTooltipModule],
-  templateUrl: './roles-management.component.html',
+    selector: 'app-roles-management',
+    imports: [CommonModule, ReactiveFormsModule, NgbTooltipModule],
+    templateUrl: './roles-management.component.html'
 })
 export class RolesManagementComponent implements OnInit {
   private roleService = inject(RoleService);

@@ -6,11 +6,10 @@ import { PublicQuoteService } from 'src/app/core/services/domain/public-quote.se
 import { PublicQuoteResponse } from 'src/app/core/models/domain.model';
 
 @Component({
-  selector: 'app-shared-quote',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './shared-quote.component.html',
-  styles: [`
+    selector: 'app-shared-quote',
+    imports: [CommonModule],
+    templateUrl: './shared-quote.component.html',
+    styles: [`
     :host { display: block; }
 
     .quote-invoice {
@@ -52,7 +51,7 @@ import { PublicQuoteResponse } from 'src/app/core/models/domain.model';
     @media print {
       .no-print { display: none !important; }
     }
-  `],
+  `]
 })
 export class SharedQuoteComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);

@@ -6,10 +6,9 @@ import { ProfileStateService } from 'src/app/core/services/profile/ProfileStateS
 import { ToastService } from 'src/app/shared/services/toast.service';
 
 @Component({
-  selector: 'app-sign-in-method',
-  templateUrl: './sign-in-method.component.html',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+    selector: 'app-sign-in-method',
+    templateUrl: './sign-in-method.component.html',
+    imports: [CommonModule, ReactiveFormsModule]
 })
 export class SignInMethodComponent implements OnInit {
   public profileState = inject(ProfileStateService);

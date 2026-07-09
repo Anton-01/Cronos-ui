@@ -1,8 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { getCSSVariableValue } from '../../../../../kt/_utils';
 @Component({
-  selector: 'app-mixed-widget3',
-  templateUrl: './mixed-widget3.component.html',
+    selector: 'app-mixed-widget3',
+    templateUrl: './mixed-widget3.component.html',
+    standalone: false
 })
 export class MixedWidget3Component implements OnInit {
   @Input() chartColor: string = '';

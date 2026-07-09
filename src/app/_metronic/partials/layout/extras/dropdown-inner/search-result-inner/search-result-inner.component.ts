@@ -1,8 +1,9 @@
 import {ChangeDetectorRef, Component, HostBinding, OnInit} from '@angular/core';
 
 @Component({
-  selector: 'app-search-result-inner',
-  templateUrl: './search-result-inner.component.html',
+    selector: 'app-search-result-inner',
+    templateUrl: './search-result-inner.component.html',
+    standalone: false
 })
 export class SearchResultInnerComponent implements OnInit {
   @HostBinding('class') class = 'menu menu-sub menu-sub-dropdown p-7 w-325px w-md-375px';

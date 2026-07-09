@@ -1,8 +1,9 @@
 import { Component, HostBinding } from '@angular/core';
 
 @Component({
-  selector: 'app-quick-links-inner',
-  templateUrl: './quick-links-inner.component.html',
+    selector: 'app-quick-links-inner',
+    templateUrl: './quick-links-inner.component.html',
+    standalone: false
 })
 export class QuickLinksInnerComponent {
   @HostBinding('class') class =

@@ -1,8 +1,9 @@
 import { Component, HostBinding, Input } from '@angular/core';
 
 @Component({
-  selector: 'app-card3',
-  templateUrl: './card3.component.html',
+    selector: 'app-card3',
+    templateUrl: './card3.component.html',
+    standalone: false
 })
 export class Card3Component {
   @Input() color: string = '';

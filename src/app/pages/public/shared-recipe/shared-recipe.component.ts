@@ -9,11 +9,10 @@ import {
 } from 'src/app/core/models/domain.model';
 
 @Component({
-  selector: 'app-shared-recipe',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './shared-recipe.component.html',
-  styleUrls: ['./shared-recipe.component.scss'],
+    selector: 'app-shared-recipe',
+    imports: [CommonModule],
+    templateUrl: './shared-recipe.component.html',
+    styleUrls: ['./shared-recipe.component.scss']
 })
 export class SharedRecipeComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);

@@ -13,10 +13,9 @@ import { PageInfoService } from 'src/app/_metronic/layout/core/page-info.service
 import Swal from 'sweetalert2';
 
 @Component({
-  selector: 'app-recetas',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
-  templateUrl: './recetas.component.html',
+    selector: 'app-recetas',
+    imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
+    templateUrl: './recetas.component.html'
 })
 export class RecetasComponent implements OnInit, OnDestroy {
   private service = inject(RecipeService);

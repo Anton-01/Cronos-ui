@@ -1,8 +1,9 @@
 import { Component, Input } from '@angular/core';
 
 @Component({
-  selector: 'app-advance-tables-widget7',
-  templateUrl: './advance-tables-widget7.component.html',
+    selector: 'app-advance-tables-widget7',
+    templateUrl: './advance-tables-widget7.component.html',
+    standalone: false
 })
 export class AdvanceTablesWidget7Component {
   @Input() cssClass: '';

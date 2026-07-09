@@ -3,8 +3,9 @@ import { ModalConfig } from '../modal.config';
 import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 
 @Component({
-  selector: 'app-modal',
-  templateUrl: './modal.component.html',
+    selector: 'app-modal',
+    templateUrl: './modal.component.html',
+    standalone: false
 })
 export class ModalComponent {
   @Input() public modalConfig: ModalConfig;

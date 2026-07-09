@@ -4,8 +4,9 @@ import { Subscription } from 'rxjs';
 import { ICreateAccount } from '../../create-account.helper';
 
 @Component({
-  selector: 'app-step4',
-  templateUrl: './step4.component.html',
+    selector: 'app-step4',
+    templateUrl: './step4.component.html',
+    standalone: false
 })
 export class Step4Component implements OnInit, OnDestroy {
   @Input('updateParentModel') updateParentModel: (

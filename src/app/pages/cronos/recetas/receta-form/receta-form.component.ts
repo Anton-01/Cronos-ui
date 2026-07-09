@@ -11,10 +11,9 @@ import { AlertContainerComponent } from 'src/app/shared/components/alert-contain
 import { PageInfoService } from 'src/app/_metronic/layout/core/page-info.service';
 
 @Component({
-  selector: 'app-receta-form',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
-  templateUrl: './receta-form.component.html',
+    selector: 'app-receta-form',
+    imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
+    templateUrl: './receta-form.component.html'
 })
 export class RecetaFormComponent implements OnInit, OnDestroy {
   private service = inject(RecipeService);

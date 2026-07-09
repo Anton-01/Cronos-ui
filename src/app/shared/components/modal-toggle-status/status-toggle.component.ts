@@ -6,10 +6,9 @@ import Swal from 'sweetalert2';
 import {StatusEntity} from "../../../core/models/common.models";
 
 @Component({
-  selector: 'app-status-toggle',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
+    selector: 'app-status-toggle',
+    imports: [CommonModule],
+    template: `
     <div class="d-flex flex-column">
       <div class="form-check form-switch form-check-custom form-check-solid">
         <input

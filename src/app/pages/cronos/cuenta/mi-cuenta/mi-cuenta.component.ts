@@ -7,10 +7,9 @@ import { UserResponse } from 'src/app/core/models/user.model';
 import { ToastService } from 'src/app/shared/services/toast.service';
 
 @Component({
-  selector: 'app-mi-cuenta',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './mi-cuenta.component.html',
+    selector: 'app-mi-cuenta',
+    imports: [CommonModule, ReactiveFormsModule],
+    templateUrl: './mi-cuenta.component.html'
 })
 export class MiCuentaComponent implements OnInit {
   private userService = inject(UserService);

@@ -3,9 +3,10 @@ import { Subscription } from 'rxjs';
 import { LayoutService } from '../../../core/layout.service';
 
 @Component({
-  selector: 'app-classic',
-  templateUrl: './classic.component.html',
-  styleUrls: ['./classic.component.scss'],
+    selector: 'app-classic',
+    templateUrl: './classic.component.html',
+    styleUrls: ['./classic.component.scss'],
+    standalone: false
 })
 export class ClassicComponent implements OnInit, OnDestroy {
   private unsubscribe: Subscription[] = [];

@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { IconUserModel } from '../../../_metronic/partials';
 
 @Component({
-  selector: 'app-projects',
-  templateUrl: './projects.component.html',
+    selector: 'app-projects',
+    templateUrl: './projects.component.html',
+    standalone: false
 })
 export class ProjectsComponent implements OnInit {
   users1: Array<IconUserModel> = [

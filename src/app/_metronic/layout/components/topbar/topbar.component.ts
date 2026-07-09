@@ -2,9 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { LayoutService } from '../../core/layout.service';
 
 @Component({
-  selector: 'app-topbar',
-  templateUrl: './topbar.component.html',
-  styleUrls: ['./topbar.component.scss'],
+    selector: 'app-topbar',
+    templateUrl: './topbar.component.html',
+    styleUrls: ['./topbar.component.scss'],
+    standalone: false
 })
 export class TopbarComponent implements OnInit {
   toolbarButtonMarginClass = 'ms-1 ms-lg-3';

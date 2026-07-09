@@ -7,10 +7,9 @@ import { ToastService } from 'src/app/shared/services/toast.service';
 import {ProfileStateService} from "../../../../../core/services/profile/ProfileStateService";
 
 @Component({
-  selector: 'app-profile-details',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './profile-details.component.html',
+    selector: 'app-profile-details',
+    imports: [CommonModule, ReactiveFormsModule],
+    templateUrl: './profile-details.component.html'
 })
 export class ProfileDetailsComponent {
   public profileState = inject(ProfileStateService);

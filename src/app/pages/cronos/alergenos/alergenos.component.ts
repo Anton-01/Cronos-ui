@@ -11,10 +11,9 @@ import Swal from 'sweetalert2';
 import {StatusToggleComponent} from "../../../shared/components/modal-toggle-status/status-toggle.component";
 
 @Component({
-  selector: 'app-alergenos',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent, StatusToggleComponent],
-  templateUrl: './alergenos.component.html',
+    selector: 'app-alergenos',
+    imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent, StatusToggleComponent],
+    templateUrl: './alergenos.component.html'
 })
 export class AlergenosComponent implements OnInit {
   private allergenService = inject(AllergenService);

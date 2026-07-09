@@ -9,9 +9,10 @@ import { SweetAlertOptions } from 'sweetalert2';
 import { Api, Config } from 'datatables.net';
 
 @Component({
-  selector: 'app-crud',
-  templateUrl: './crud.component.html',
-  styleUrls: ['./crud.component.scss'],
+    selector: 'app-crud',
+    templateUrl: './crud.component.html',
+    styleUrls: ['./crud.component.scss'],
+    standalone: false
 })
 export class CrudComponent implements OnInit, AfterViewInit, OnDestroy {
 

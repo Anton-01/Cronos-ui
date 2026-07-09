@@ -11,10 +11,9 @@ import Swal from 'sweetalert2';
 import {StatusToggleComponent} from "../../../shared/components/modal-toggle-status/status-toggle.component";
 
 @Component({
-  selector: 'app-tipos-unidad',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent, StatusToggleComponent],
-  templateUrl: './tipos-unidad.component.html',
+    selector: 'app-tipos-unidad',
+    imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent, StatusToggleComponent],
+    templateUrl: './tipos-unidad.component.html'
 })
 export class TiposUnidadComponent implements OnInit {
   private unitTypeService = inject(UnitTypeService);

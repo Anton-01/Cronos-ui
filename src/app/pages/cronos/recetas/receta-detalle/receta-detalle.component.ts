@@ -30,10 +30,9 @@ import Swal from 'sweetalert2';
 type TabId = 'ingredients' | 'fixed-costs' | 'instructions' | 'files' | 'shares';
 
 @Component({
-  selector: 'app-receta-detalle',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, AlertContainerComponent],
-  templateUrl: './receta-detalle.component.html',
+    selector: 'app-receta-detalle',
+    imports: [CommonModule, ReactiveFormsModule, FormsModule, AlertContainerComponent],
+    templateUrl: './receta-detalle.component.html'
 })
 export class RecetaDetalleComponent implements OnInit, OnDestroy {
   private recipeService = inject(RecipeService);

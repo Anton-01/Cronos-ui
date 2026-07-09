@@ -2,8 +2,9 @@ import { Component, OnInit, Input } from '@angular/core';
 import { LayoutService } from '../../../../../layout';
 
 @Component({
-  selector: 'app-tiles-widget1',
-  templateUrl: './tiles-widget1.component.html',
+    selector: 'app-tiles-widget1',
+    templateUrl: './tiles-widget1.component.html',
+    standalone: false
 })
 export class TilesWidget1Component implements OnInit {
   @Input() cssClass = '';

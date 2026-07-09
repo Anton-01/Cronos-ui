@@ -10,9 +10,10 @@ import * as ApexCharts from 'apexcharts';
 import { getCSSVariableValue } from '../../../../../../kt/_utils';
 
 @Component({
-  selector: 'app-new-charts-widget8',
-  templateUrl: './new-charts-widget8.component.html',
-  styleUrls: ['./new-charts-widget8.component.scss'],
+    selector: 'app-new-charts-widget8',
+    templateUrl: './new-charts-widget8.component.html',
+    styleUrls: ['./new-charts-widget8.component.scss'],
+    standalone: false
 })
 export class NewChartsWidget8Component implements OnInit {
   @ViewChild('weekChart') weekChart: ElementRef<HTMLDivElement>;

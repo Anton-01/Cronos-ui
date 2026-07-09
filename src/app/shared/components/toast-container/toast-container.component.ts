@@ -3,10 +3,9 @@ import { CommonModule } from '@angular/common';
 import { ToastService } from '../../services/toast.service';
 
 @Component({
-  selector: 'app-toast-container',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
+    selector: 'app-toast-container',
+    imports: [CommonModule],
+    template: `
     <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999;">
       @for (toast of toastService.toasts(); track toast.id) {
         <div class="toast show mb-2" role="alert"
@@ -27,7 +26,7 @@ import { ToastService } from '../../services/toast.service';
         </div>
       }
     </div>
-  `,
+  `
 })
 export class ToastContainerComponent {
   toastService = inject(ToastService);

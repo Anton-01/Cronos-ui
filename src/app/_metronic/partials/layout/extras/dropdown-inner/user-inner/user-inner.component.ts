@@ -5,8 +5,9 @@ import { AuthService as CoreAuthService } from '../../../../../../core/services/
 import { TokenService } from '../../../../../../core/services/token.service';
 
 @Component({
-  selector: 'app-user-inner',
-  templateUrl: './user-inner.component.html',
+    selector: 'app-user-inner',
+    templateUrl: './user-inner.component.html',
+    standalone: false
 })
 export class UserInnerComponent implements OnInit, OnDestroy {
   @HostBinding('class')

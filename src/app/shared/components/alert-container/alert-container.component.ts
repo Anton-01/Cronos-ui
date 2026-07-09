@@ -3,10 +3,9 @@ import { CommonModule } from '@angular/common';
 import { AlertService } from '../../services/alert.service';
 
 @Component({
-  selector: 'app-alert-container',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
+    selector: 'app-alert-container',
+    imports: [CommonModule],
+    template: `
     @for (alert of alertService.alerts(); track alert.id) {
       <div class="alert d-flex align-items-center p-5 mb-5"
         [class.bg-light-success]="alert.type === 'success'"
@@ -35,7 +34,7 @@ import { AlertService } from '../../services/alert.service';
         <button type="button" class="btn-close ms-auto" (click)="alertService.remove(alert.id)"></button>
       </div>
     }
-  `,
+  `
 })
 export class AlertContainerComponent {
   alertService = inject(AlertService);

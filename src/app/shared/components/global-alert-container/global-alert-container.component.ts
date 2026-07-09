@@ -3,10 +3,9 @@ import { CommonModule } from '@angular/common';
 import { AlertService } from '../../services/alert.service';
 
 @Component({
-  selector: 'app-global-alert-container',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
+    selector: 'app-global-alert-container',
+    imports: [CommonModule],
+    template: `
     <div class="position-fixed top-0 end-0 p-5" style="z-index: 9999; max-width: 450px;">
       @for (alert of alertService.alerts(); track alert.id) {
         <div class="alert d-flex align-items-center p-5 mb-3 shadow-sm"
@@ -37,7 +36,7 @@ import { AlertService } from '../../services/alert.service';
         </div>
       }
     </div>
-  `,
+  `
 })
 export class GlobalAlertContainerComponent {
   alertService = inject(AlertService);

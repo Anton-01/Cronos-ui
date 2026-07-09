@@ -8,9 +8,10 @@ import { ToastService } from 'src/app/shared/services/toast.service';
 import { LoginRequest } from 'src/app/core/models/auth.model';
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss'],
+    selector: 'app-login',
+    templateUrl: './login.component.html',
+    styleUrls: ['./login.component.scss'],
+    standalone: false
 })
 export class LoginComponent implements OnInit, OnDestroy {
   loginForm: FormGroup;

@@ -3,8 +3,9 @@ import { Observable } from 'rxjs';
 import { ThemeModeService, ThemeModeType } from './theme-mode.service';
 
 @Component({
-  selector: 'app-theme-mode-switcher',
-  templateUrl: './theme-mode-switcher.component.html',
+    selector: 'app-theme-mode-switcher',
+    templateUrl: './theme-mode-switcher.component.html',
+    standalone: false
 })
 export class ThemeModeSwitcherComponent implements OnInit {
   @Input() toggleBtnClass: string = '';

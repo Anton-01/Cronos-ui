@@ -16,8 +16,9 @@ import {
 } from './dataExample';
 
 @Component({
-  selector: 'app-chat-inner',
-  templateUrl: './chat-inner.component.html',
+    selector: 'app-chat-inner',
+    templateUrl: './chat-inner.component.html',
+    standalone: false
 })
 export class ChatInnerComponent implements OnInit {
   @Input() isDrawer: boolean = false;

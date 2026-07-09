@@ -2,8 +2,9 @@ import {Component, OnInit} from '@angular/core';
 import {environment} from 'src/environments/environment';
 
 @Component({
-  selector: 'app-help-drawer',
-  templateUrl: './help-drawer.component.html',
+    selector: 'app-help-drawer',
+    templateUrl: './help-drawer.component.html',
+    standalone: false
 })
 export class HelpDrawerComponent implements OnInit {
   appThemeName: string = environment.appThemeName;

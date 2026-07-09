@@ -31,10 +31,9 @@ interface PhoneCountry {
 }
 
 @Component({
-  selector: 'app-cotizacion-form',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
-  templateUrl: './cotizacion-form.component.html',
+    selector: 'app-cotizacion-form',
+    imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
+    templateUrl: './cotizacion-form.component.html'
 })
 export class CotizacionFormComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);

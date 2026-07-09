@@ -11,10 +11,9 @@ import Swal from 'sweetalert2';
 import {StatusToggleComponent} from "../../../shared/components/modal-toggle-status/status-toggle.component";
 
 @Component({
-  selector: 'app-categorias',
-  standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent, StatusToggleComponent],
-  templateUrl: './categorias.component.html',
+    selector: 'app-categorias',
+    imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent, StatusToggleComponent],
+    templateUrl: './categorias.component.html'
 })
 export class CategoriasComponent implements OnInit {
   private categoryService = inject(CategoryService);

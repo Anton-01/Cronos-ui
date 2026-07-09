@@ -5,9 +5,10 @@ import { LayoutInitService } from '../../../core/layout-init.service';
 import { LayoutService } from '../../../core/layout.service';
 
 @Component({
-  selector: 'app-header-menu',
-  templateUrl: './header-menu.component.html',
-  styleUrls: ['./header-menu.component.scss'],
+    selector: 'app-header-menu',
+    templateUrl: './header-menu.component.html',
+    styleUrls: ['./header-menu.component.scss'],
+    standalone: false
 })
 export class HeaderMenuComponent implements OnInit {
   constructor(private router: Router, private layout: LayoutService, private layoutInit: LayoutInitService) {}
