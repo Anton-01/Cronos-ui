@@ -77,11 +77,11 @@ const Routing: Routes = [
   // ─── Cuenta ───
   {
     path: 'cronos/cuenta/mi-cuenta',
-    loadComponent: () => import('./cronos/cuenta/mi-cuenta/mi-cuenta.component').then(m => m.MiCuentaComponent),
+    loadComponent: () => import('./cronos/account/my-account/my-account.component').then(m => m.MyAccountComponent),
   },
   {
     path: 'cronos/cuenta/seguridad',
-    loadComponent: () => import('./cronos/cuenta/seguridad/seguridad.component').then(m => m.SeguridadComponent),
+    loadComponent: () => import('./cronos/account/security/security.component').then(m => m.SecurityComponent),
   },
   // ─── Admin (role-guarded) ───
   {
