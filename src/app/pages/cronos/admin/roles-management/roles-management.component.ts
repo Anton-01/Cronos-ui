@@ -6,27 +6,47 @@ import {
   computed,
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { CheckboxModule } from 'primeng/checkbox';
+import { InputTextModule } from 'primeng/inputtext';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+import { TextareaModule } from 'primeng/textarea';
 import { TooltipModule } from 'primeng/tooltip';
 import { map } from 'rxjs';
 import { RoleService } from 'src/app/core/services/role.service';
 import { PermissionService } from 'src/app/core/services/permission.service';
 import { RoleResponse, PermissionResponse } from 'src/app/core/models';
 import { ToastService } from 'src/app/shared/services/toast.service';
+import { PageInfoService } from 'src/app/core/services/page-info.service';
 
 const PROTECTED_ROLE = 'SUPER_ADMIN';
 const MAX_BADGE_PREVIEW = 4;
 
 @Component({
-    selector: 'app-roles-management',
-    imports: [CommonModule, ReactiveFormsModule, TooltipModule],
-    templateUrl: './roles-management.component.html'
+  selector: 'app-roles-management',
+  standalone: true,
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    ButtonModule,
+    CardModule,
+    CheckboxModule,
+    InputTextModule,
+    TableModule,
+    TagModule,
+    TextareaModule,
+    TooltipModule,
+  ],
+  templateUrl: './roles-management.component.html',
 })
 export class RolesManagementComponent implements OnInit {
   private roleService = inject(RoleService);
   private permissionService = inject(PermissionService);
   private toast = inject(ToastService);
+  private pageInfoService = inject(PageInfoService);
   private fb = inject(FormBuilder);
 
   // ─── State ───────────────────────────────────────────────────────────────────
@@ -125,6 +145,12 @@ export class RolesManagementComponent implements OnInit {
   // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
+    this.pageInfoService.updateTitle('Gestión de Roles');
+    this.pageInfoService.updateBreadcrumbs([
+      { title: 'Inicio', path: '/dashboard', isActive: false },
+      { title: 'Administración', path: '', isActive: false },
+      { title: 'Roles', path: '', isActive: true },
+    ]);
     this.loadRoles();
     this.loadPermissions();
   }
