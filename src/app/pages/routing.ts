@@ -25,15 +25,15 @@ const Routing: Routes = [
   },
   {
     path: 'cronos/ingredientes',
-    loadComponent: () => import('./cronos/ingredientes/ingredientes.component').then(m => m.IngredientesComponent),
+    loadComponent: () => import('./cronos/ingredients/ingredients.component').then(m => m.IngredientsComponent),
   },
   {
     path: 'cronos/ingredientes/nuevo',
-    loadComponent: () => import('./cronos/ingredientes/ingrediente-form/ingrediente-form.component').then(m => m.IngredienteFormComponent),
+    loadComponent: () => import('./cronos/ingredients/ingredient-form/ingredient-form.component').then(m => m.IngredientFormComponent),
   },
   {
     path: 'cronos/ingredientes/editar/:id',
-    loadComponent: () => import('./cronos/ingredientes/ingrediente-form/ingrediente-form.component').then(m => m.IngredienteFormComponent),
+    loadComponent: () => import('./cronos/ingredients/ingredient-form/ingredient-form.component').then(m => m.IngredientFormComponent),
   },
   // ─── Recetas ───
   {
