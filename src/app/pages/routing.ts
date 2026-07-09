@@ -9,7 +9,7 @@ const Routing: Routes = [
   // ─── Cronos CRUD Routes ───
   {
     path: 'cronos/tipos-unidad',
-    loadComponent: () => import('./cronos/tipos-unidad/tipos-unidad.component').then(m => m.TiposUnidadComponent),
+    loadComponent: () => import('./cronos/unit-types/unit-types.component').then(m => m.UnitTypesComponent),
   },
   {
     path: 'cronos/categorias',
@@ -17,11 +17,11 @@ const Routing: Routes = [
   },
   {
     path: 'cronos/alergenos',
-    loadComponent: () => import('./cronos/alergenos/alergenos.component').then(m => m.AlergenosComponent),
+    loadComponent: () => import('./cronos/allergens/allergens.component').then(m => m.AllergensComponent),
   },
   {
     path: 'cronos/unidades-medida',
-    loadComponent: () => import('./cronos/unidades-medida/unidades-medida.component').then(m => m.UnidadesMedidaComponent),
+    loadComponent: () => import('./cronos/measurement-units/measurement-units.component').then(m => m.MeasurementUnitsComponent),
   },
   {
     path: 'cronos/ingredientes',
