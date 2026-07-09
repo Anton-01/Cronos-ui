@@ -17,7 +17,6 @@ import {
 } from 'src/app/core/models/domain.model';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
-import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 
 interface PhoneCountry {
@@ -32,7 +31,7 @@ interface PhoneCountry {
 
 @Component({
     selector: 'app-cotizacion-form',
-    imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
+    imports: [CommonModule, ReactiveFormsModule],
     templateUrl: './cotizacion-form.component.html'
 })
 export class CotizacionFormComponent implements OnInit, OnDestroy {

@@ -7,7 +7,6 @@ import { UserFixedCostService } from 'src/app/core/services/domain/user-fixed-co
 import { UserFixedCostResponse } from 'src/app/core/models/domain.model';
 import { PageRequest } from 'src/app/core/models/pagination.model';
 import { AlertService } from 'src/app/shared/services/alert.service';
-import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import Swal from 'sweetalert2';
 
@@ -22,7 +21,7 @@ interface CalculationMethodOption extends SelectOption {
 
 @Component({
     selector: 'app-costos-fijos',
-    imports: [ReactiveFormsModule, AlertContainerComponent],
+    imports: [ReactiveFormsModule],
     templateUrl: './costos-fijos.component.html'
 })
 export class CostosFijosComponent implements OnInit, OnDestroy {

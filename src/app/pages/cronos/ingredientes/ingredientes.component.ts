@@ -5,14 +5,13 @@ import { IngredientService } from 'src/app/core/services/domain/ingredient.servi
 import { IngredientResponse } from 'src/app/core/models/domain.model';
 import { PageRequest } from 'src/app/core/models/pagination.model';
 import { AlertService } from 'src/app/shared/services/alert.service';
-import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import Swal from 'sweetalert2';
-import {StatusToggleComponent} from "../../../shared/components/modal-toggle-status/status-toggle.component";
+import { StatusToggleComponent } from 'src/app/shared/components/status-toggle/status-toggle.component';
 
 @Component({
     selector: 'app-ingredientes',
-    imports: [AlertContainerComponent, StatusToggleComponent],
+    imports: [ StatusToggleComponent],
     templateUrl: './ingredientes.component.html'
 })
 export class IngredientesComponent implements OnInit {

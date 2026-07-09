@@ -1,21 +1,21 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { MessageService } from 'primeng/api';
 
-export interface Toast {
-  id: string;
-  type: 'success' | 'error';
-  title: string;
-  message: string;
-}
-
+/**
+ * Facade over PrimeNG MessageService. Messages render in the global
+ * <p-toast> declared in the app root.
+ */
 @Injectable({ providedIn: 'root' })
 export class ToastService {
-  private _toasts = signal<Toast[]>([]);
-  readonly toasts = this._toasts.asReadonly();
+  private readonly messageService = inject(MessageService);
 
   show(type: 'success' | 'error', title: string, message = '', duration = 4500): void {
-    const id = `${Date.now()}-${Math.random()}`;
-    this._toasts.update(list => [...list, { id, type, title, message }]);
-    setTimeout(() => this.remove(id), duration);
+    this.messageService.add({
+      severity: type,
+      summary: title,
+      detail: message,
+      life: duration,
+    });
   }
 
   success(title: string, message = ''): void {
@@ -24,9 +24,5 @@ export class ToastService {
 
   error(title: string, message = ''): void {
     this.show('error', title, message);
-  }
-
-  remove(id: string): void {
-    this._toasts.update(list => list.filter(t => t.id !== id));
   }
 }

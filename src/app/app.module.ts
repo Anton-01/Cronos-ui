@@ -7,13 +7,14 @@ import {
   withInterceptorsFromDi,
   HTTP_INTERCEPTORS,
 } from '@angular/common/http';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ToastModule } from 'primeng/toast';
 import Aura from '@primeng/themes/aura';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { ToastContainerComponent } from './shared/components/toast-container/toast-container.component';
-import { GlobalAlertContainerComponent } from './shared/components/global-alert-container/global-alert-container.component';
 import { ErrorInterceptorService } from './core/interceptors/error-interceptor.service';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 
@@ -22,8 +23,8 @@ import { authInterceptor } from './core/interceptors/auth.interceptor';
   imports: [
     BrowserModule,
     AppRoutingModule,
-    ToastContainerComponent,
-    GlobalAlertContainerComponent,
+    ToastModule,
+    ConfirmDialogModule,
   ],
   providers: [
     provideAnimationsAsync(),
@@ -35,6 +36,8 @@ import { authInterceptor } from './core/interceptors/auth.interceptor';
         },
       },
     }),
+    MessageService,
+    ConfirmationService,
     provideHttpClient(
       withInterceptors([authInterceptor]),
       withInterceptorsFromDi()

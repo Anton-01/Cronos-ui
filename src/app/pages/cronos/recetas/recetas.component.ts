@@ -8,13 +8,12 @@ import { RecipeService } from 'src/app/core/services/domain/recipe.service';
 import { RecipeResponse } from 'src/app/core/models/domain.model';
 import { PageRequest } from 'src/app/core/models/pagination.model';
 import { AlertService } from 'src/app/shared/services/alert.service';
-import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import Swal from 'sweetalert2';
 
 @Component({
     selector: 'app-recetas',
-    imports: [ReactiveFormsModule, AlertContainerComponent],
+    imports: [ReactiveFormsModule],
     templateUrl: './recetas.component.html'
 })
 export class RecetasComponent implements OnInit, OnDestroy {

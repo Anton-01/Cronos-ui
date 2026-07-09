@@ -17,7 +17,6 @@ import {
   QuoteItemRequest,
 } from 'src/app/core/models/domain.model';
 import { AlertService } from 'src/app/shared/services/alert.service';
-import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import Swal from 'sweetalert2';
 
@@ -26,7 +25,7 @@ const LOCKED_STATUSES = ['ACCEPTED', 'REJECTED'] as const;
 
 @Component({
     selector: 'app-cotizacion-edit',
-    imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
+    imports: [CommonModule, ReactiveFormsModule],
     templateUrl: './cotizacion-edit.component.html'
 })
 export class CotizacionEditComponent implements OnInit, OnDestroy {

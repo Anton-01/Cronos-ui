@@ -5,14 +5,13 @@ import { UnitTypeService } from 'src/app/core/services/domain/unit-type.service'
 import { UnitTypeResponse } from 'src/app/core/models/domain.model';
 import { PageRequest } from 'src/app/core/models/pagination.model';
 import { AlertService } from 'src/app/shared/services/alert.service';
-import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import Swal from 'sweetalert2';
-import {StatusToggleComponent} from "../../../shared/components/modal-toggle-status/status-toggle.component";
+import { StatusToggleComponent } from 'src/app/shared/components/status-toggle/status-toggle.component';
 
 @Component({
     selector: 'app-tipos-unidad',
-    imports: [ReactiveFormsModule, AlertContainerComponent, StatusToggleComponent],
+    imports: [ReactiveFormsModule, StatusToggleComponent],
     templateUrl: './tipos-unidad.component.html'
 })
 export class TiposUnidadComponent implements OnInit {

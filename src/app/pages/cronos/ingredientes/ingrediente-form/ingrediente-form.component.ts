@@ -12,12 +12,11 @@ import {
   DensityConversion,
 } from 'src/app/core/models/domain.model';
 import { AlertService } from 'src/app/shared/services/alert.service';
-import { AlertContainerComponent } from 'src/app/shared/components/alert-container/alert-container.component';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 
 @Component({
     selector: 'app-ingrediente-form',
-    imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
+    imports: [CommonModule, ReactiveFormsModule],
     templateUrl: './ingrediente-form.component.html',
     styleUrls: ['./ingrediente-form.component.scss']
 })
