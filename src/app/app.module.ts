@@ -15,6 +15,8 @@ import { provideHttpClient, withInterceptors, withInterceptorsFromDi, HTTP_INTER
 import { ErrorInterceptorService } from './core/interceptors/error-interceptor.service';
 import {authInterceptor} from "./core/interceptors/auth.interceptor";
 import { lastValueFrom } from 'rxjs';
+import { providePrimeNG } from 'primeng/config';
+import Aura from '@primeng/themes/aura';
 
 function appInitializer(authService: AuthService) {
   return () => {
@@ -41,6 +43,14 @@ function appInitializer(authService: AuthService) {
     GlobalAlertContainerComponent,
   ],
   providers: [
+    providePrimeNG({
+      theme: {
+        preset: Aura,
+        options: {
+          darkModeSelector: '.app-dark',
+        },
+      },
+    }),
     {
       provide: APP_INITIALIZER,
       useFactory: appInitializer,
