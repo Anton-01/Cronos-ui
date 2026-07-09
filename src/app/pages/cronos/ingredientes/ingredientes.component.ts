@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router } from '@angular/router';
 import { IngredientService } from 'src/app/core/services/domain/ingredient.service';
 import { IngredientResponse } from 'src/app/core/models/domain.model';
@@ -12,7 +12,7 @@ import {StatusToggleComponent} from "../../../shared/components/modal-toggle-sta
 
 @Component({
     selector: 'app-ingredientes',
-    imports: [CommonModule, AlertContainerComponent, StatusToggleComponent],
+    imports: [AlertContainerComponent, StatusToggleComponent],
     templateUrl: './ingredientes.component.html'
 })
 export class IngredientesComponent implements OnInit {

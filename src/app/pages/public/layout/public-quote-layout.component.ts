@@ -1,10 +1,10 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { RouterOutlet } from '@angular/router';
 
 @Component({
     selector: 'app-public-quote-layout',
-    imports: [CommonModule, RouterOutlet],
+    imports: [RouterOutlet],
     template: `
     <!-- begin::Public Quote Layout -->
     <div class="d-flex flex-column flex-root app-root" id="kt_app_root">

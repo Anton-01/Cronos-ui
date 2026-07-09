@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
@@ -22,7 +22,7 @@ interface CalculationMethodOption extends SelectOption {
 
 @Component({
     selector: 'app-costos-fijos',
-    imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
+    imports: [ReactiveFormsModule, AlertContainerComponent],
     templateUrl: './costos-fijos.component.html'
 })
 export class CostosFijosComponent implements OnInit, OnDestroy {

@@ -1,4 +1,4 @@
-<ng-container *ngIf="appContentContiner">
+@if (appContentContiner) {
   <!--begin::Content container-->
   <div id="kt_app_content_container" class="app-container"
     [ngClass]="appContentContainerClass + ' ' + contentContainerCSSClass"
@@ -6,7 +6,7 @@
     <router-outlet></router-outlet>
   </div>
   <!--end::Content container-->
-</ng-container>
-<ng-container *ngIf="!appContentContiner">
+}
+@if (!appContentContiner) {
   <router-outlet></router-outlet>
-</ng-container>
+}

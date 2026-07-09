@@ -13,7 +13,7 @@
     </div>
     <!--end::Search toggle-->
     <app-search-result-inner data-kt-search-element="content" data-kt-menu="true"
-      class="menu menu-sub menu-sub-dropdown p-7 w-325px w-md-375px"></app-search-result-inner>
+    class="menu menu-sub menu-sub-dropdown p-7 w-325px w-md-375px"></app-search-result-inner>
   </div>
 
 </div>
@@ -82,11 +82,11 @@
 <!--end::User menu-->
 
 <!--begin::Header menu toggle-->
-<ng-container *ngIf="appHeaderDefaulMenuDisplay">
+@if (appHeaderDefaulMenuDisplay) {
   <div class="app-navbar-item d-lg-none ms-2 me-n3" title="Show header menu">
     <div class="btn btn-icon btn-active-color-primary w-35px h-35px" id="kt_app_header_menu_toggle">
       <app-keenicon name="element-4" class="fs-1" [ngClass]="btnIconClass"></app-keenicon>
     </div>
   </div>
-</ng-container>
+}
 <!--end::Header menu toggle-->

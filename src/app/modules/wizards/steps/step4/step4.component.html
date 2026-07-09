@@ -10,71 +10,73 @@
     <label class="d-flex align-items-center fs-6 fw-bold form-label mb-2"
       ><span class="required">Name On Card</span
       ><i
-        class="fas fa-exclamation-circle ms-2 fs-7"
-        ngbTooltip="Specify a card holder's name"
-      ></i></label
+      class="fas fa-exclamation-circle ms-2 fs-7"
+      ngbTooltip="Specify a card holder's name"
+    ></i></label
     ><input
-      formControlName="nameOnCard"
-      type="text"
-      class="form-control form-control-solid"
-      placeholder="Name on card"
+    formControlName="nameOnCard"
+    type="text"
+    class="form-control form-control-solid"
+    placeholder="Name on card"
     />
+  @if (
+    form.get('nameOnCard')?.hasError('required') &&
+    form.get('nameOnCard')?.touched
+    ) {
     <div
       class="fv-plugins-message-container invalid-feedback"
-      *ngIf="
-        form.get('nameOnCard')?.hasError('required') &&
-        form.get('nameOnCard')?.touched
-      "
-    >
+      >
       Name on card is required
     </div>
-  </div>
-  <div class="d-flex flex-column mb-7 fv-row">
-    <label class="required fs-6 fw-bold form-label mb-2">Card Number</label>
-    <div class="position-relative">
-      <input
-        formControlName="cardNumber"
-        type="text"
-        class="form-control form-control-solid"
-        placeholder="Enter card number"
+  }
+</div>
+<div class="d-flex flex-column mb-7 fv-row">
+  <label class="required fs-6 fw-bold form-label mb-2">Card Number</label>
+  <div class="position-relative">
+    <input
+      formControlName="cardNumber"
+      type="text"
+      class="form-control form-control-solid"
+      placeholder="Enter card number"
       />
+    @if (
+      form.get('cardNumber')?.hasError('required') &&
+      form.get('cardNumber')?.touched
+      ) {
       <div
         class="fv-plugins-message-container invalid-feedback"
-        *ngIf="
-          form.get('cardNumber')?.hasError('required') &&
-          form.get('cardNumber')?.touched
-        "
-      >
+        >
         Card number is required
       </div>
-      <div class="position-absolute translate-middle-y top-50 end-0 me-5">
-        <img
-          src="./assets/media/svg/card-logos/visa.svg"
-          alt=""
-          class="h-25px"
+    }
+    <div class="position-absolute translate-middle-y top-50 end-0 me-5">
+      <img
+        src="./assets/media/svg/card-logos/visa.svg"
+        alt=""
+        class="h-25px"
         /><img
-          src="./assets/media/svg/card-logos/mastercard.svg"
-          alt=""
-          class="h-25px"
+        src="./assets/media/svg/card-logos/mastercard.svg"
+        alt=""
+        class="h-25px"
         /><img
-          src="./assets/media/svg/card-logos/american-express.svg"
-          alt=""
-          class="h-25px"
+        src="./assets/media/svg/card-logos/american-express.svg"
+        alt=""
+        class="h-25px"
         />
-      </div>
     </div>
   </div>
-  <div class="row mb-10">
-    <div class="col-md-8 fv-row">
-      <label class="required fs-6 fw-bold form-label mb-2"
-        >Expiration Date</label
+</div>
+<div class="row mb-10">
+  <div class="col-md-8 fv-row">
+    <label class="required fs-6 fw-bold form-label mb-2"
+      >Expiration Date</label
       >
       <div class="row fv-row">
         <div class="col-6">
           <select
             formControlName="cardExpiryMonth"
             class="form-select form-select-solid"
-          >
+            >
             <option></option>
             <option value="1">1</option>
             <option value="2">2</option>
@@ -89,21 +91,22 @@
             <option value="11">11</option>
             <option value="12">12</option>
           </select>
-          <div
-            class="fv-plugins-message-container invalid-feedback"
-            *ngIf="
-              form.get('cardExpiryMonth')?.hasError('required') &&
-              form.get('cardExpiryMonth')?.touched
-            "
-          >
-            Expiration month is required
-          </div>
+          @if (
+            form.get('cardExpiryMonth')?.hasError('required') &&
+            form.get('cardExpiryMonth')?.touched
+            ) {
+            <div
+              class="fv-plugins-message-container invalid-feedback"
+              >
+              Expiration month is required
+            </div>
+          }
         </div>
         <div class="col-6">
           <select
             formControlName="cardExpiryYear"
             class="form-select form-select-solid"
-          >
+            >
             <option></option>
             <option value="2021">2021</option>
             <option value="2022">2022</option>
@@ -117,15 +120,16 @@
             <option value="2030">2030</option>
             <option value="2031">2031</option>
           </select>
-          <div
-            class="fv-plugins-message-container invalid-feedback"
-            *ngIf="
-              form.get('cardExpiryYear')?.hasError('required') &&
-              form.get('cardExpiryYear')?.touched
-            "
-          >
-            Expiration year is required
-          </div>
+          @if (
+            form.get('cardExpiryYear')?.hasError('required') &&
+            form.get('cardExpiryYear')?.touched
+            ) {
+            <div
+              class="fv-plugins-message-container invalid-feedback"
+              >
+              Expiration year is required
+            </div>
+          }
         </div>
       </div>
     </div>
@@ -133,8 +137,8 @@
       <label class="d-flex align-items-center fs-6 fw-bold form-label mb-2"
         ><span class="required">CVV</span
         ><i
-          class="fas fa-exclamation-circle ms-2 fs-7"
-          ngbTooltip="Enter a card CVV code"
+        class="fas fa-exclamation-circle ms-2 fs-7"
+        ngbTooltip="Enter a card CVV code"
         ></i
       ></label>
       <div class="position-relative">
@@ -145,16 +149,17 @@
           minlength="3"
           maxlength="4"
           placeholder="CVV"
-        />
-        <div
-          class="fv-plugins-message-container invalid-feedback"
-          *ngIf="
-            form.get('cardCvv')?.hasError('required') &&
-            form.get('cardCvv')?.touched
-          "
-        >
-          CVV is required
-        </div>
+          />
+        @if (
+          form.get('cardCvv')?.hasError('required') &&
+          form.get('cardCvv')?.touched
+          ) {
+          <div
+            class="fv-plugins-message-container invalid-feedback"
+            >
+            CVV is required
+          </div>
+        }
         <div class="position-absolute translate-middle-y top-50 end-0 me-3">
           <app-keenicon name="credit-cart" class="fs-1"></app-keenicon>
         </div>
@@ -165,20 +170,20 @@
     <div class="me-5">
       <label class="fs-6 fw-bold form-label"
         >Save Card for further billing?</label
-      >
-      <div class="fs-7 fw-bold text-gray-500">
-        If you need more info, please check budget planning
+        >
+        <div class="fs-7 fw-bold text-gray-500">
+          If you need more info, please check budget planning
+        </div>
       </div>
-    </div>
-    <label class="form-check form-switch form-check-custom form-check-solid"
-      ><input
+      <label class="form-check form-switch form-check-custom form-check-solid"
+        ><input
         formControlName="saveCard"
         class="form-check-input"
         type="checkbox"
         value="1"
-      /><span class="form-check-label fw-bold text-gray-500"
+        /><span class="form-check-label fw-bold text-gray-500"
         >Save Card</span
-      ></label
-    >
-  </div>
-</div>
+        ></label
+        >
+      </div>
+    </div>

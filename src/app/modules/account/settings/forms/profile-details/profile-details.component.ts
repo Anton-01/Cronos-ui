@@ -1,5 +1,5 @@
 import { Component, effect, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { UserService } from 'src/app/core/services/user.service';
 import { TokenService } from 'src/app/core/services/token.service';
@@ -8,7 +8,7 @@ import {ProfileStateService} from "../../../../../core/services/profile/ProfileS
 
 @Component({
     selector: 'app-profile-details',
-    imports: [CommonModule, ReactiveFormsModule],
+    imports: [ReactiveFormsModule],
     templateUrl: './profile-details.component.html'
 })
 export class ProfileDetailsComponent {

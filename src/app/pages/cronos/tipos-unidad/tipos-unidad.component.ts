@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { UnitTypeService } from 'src/app/core/services/domain/unit-type.service';
 import { UnitTypeResponse } from 'src/app/core/models/domain.model';
@@ -12,7 +12,7 @@ import {StatusToggleComponent} from "../../../shared/components/modal-toggle-sta
 
 @Component({
     selector: 'app-tipos-unidad',
-    imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent, StatusToggleComponent],
+    imports: [ReactiveFormsModule, AlertContainerComponent, StatusToggleComponent],
     templateUrl: './tipos-unidad.component.html'
 })
 export class TiposUnidadComponent implements OnInit {

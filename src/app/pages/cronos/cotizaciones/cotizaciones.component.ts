@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, signal, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { Router } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { QuoteService } from 'src/app/core/services/domain/quote.service';
@@ -13,7 +13,7 @@ import Swal from 'sweetalert2';
 
 @Component({
     selector: 'app-cotizaciones',
-    imports: [CommonModule, AlertContainerComponent],
+    imports: [AlertContainerComponent],
     templateUrl: './cotizaciones.component.html'
 })
 export class CotizacionesComponent implements OnInit, OnDestroy {

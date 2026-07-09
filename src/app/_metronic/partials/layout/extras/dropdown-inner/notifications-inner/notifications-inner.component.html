@@ -1,7 +1,7 @@
 <div
   class="d-flex flex-column bgi-no-repeat rounded-top"
   [style.background-image]="'url(./assets/media/misc/menu-header-bg.jpg)'"
->
+  >
   <h3 class="text-white fw-bold px-9 mt-10 mb-6">
     Notifications <span class="fs-8 opacity-75 ps-3">24 reports</span>
   </h3>
@@ -19,7 +19,7 @@
         data-bs-toggle="tab"
         [ngClass]="activeTabId === 'kt_topbar_notifications_1' ? 'active' : ''"
         (click)="setActiveTabId('kt_topbar_notifications_1')"
-      >
+        >
         Alerts
       </a>
     </li>
@@ -36,7 +36,7 @@
         data-bs-toggle="tab"
         [ngClass]="activeTabId === 'kt_topbar_notifications_2' ? 'active' : ''"
         (click)="setActiveTabId('kt_topbar_notifications_2')"
-      >
+        >
         Updates
       </a>
     </li>
@@ -53,7 +53,7 @@
         data-bs-toggle="tab"
         [ngClass]="activeTabId === 'kt_topbar_notifications_3' ? 'active' : ''"
         (click)="setActiveTabId('kt_topbar_notifications_3')"
-      >
+        >
         Logs
       </a>
     </li>
@@ -66,37 +66,37 @@
     id="kt_topbar_notifications_1"
     role="tabpanel"
     [ngClass]="activeTabId === 'kt_topbar_notifications_1' ? 'show active' : ''"
-  >
+    >
     <div class="scroll-y mh-325px my-5 px-8">
-      <div *ngFor="let alert of alerts" class="d-flex flex-stack py-4">
-        <div class="d-flex align-items-center">
-          <div class="symbol symbol-35px me-4">
-            <span class="symbol-label" [ngClass]="'bg-light-' + alert.state">
-              <span
-                [inlineSVG]="'./assets/media/' + alert.icon"
-                class="svg-icon fs-2"
-                [ngClass]="'svg-icon-' + alert.state"
-              ></span>
-            </span>
+      @for (alert of alerts; track alert) {
+        <div class="d-flex flex-stack py-4">
+          <div class="d-flex align-items-center">
+            <div class="symbol symbol-35px me-4">
+              <span class="symbol-label" [ngClass]="'bg-light-' + alert.state">
+                <span
+                  [inlineSVG]="'./assets/media/' + alert.icon"
+                  class="svg-icon fs-2"
+                  [ngClass]="'svg-icon-' + alert.state"
+                ></span>
+              </span>
+            </div>
+            <div class="mb-0 me-2">
+              <a href="#" class="fs-6 text-gray-800 text-hover-primary fw-bolder">
+                {{ alert.title }}
+              </a>
+              <div class="text-gray-500 fs-7">{{ alert.description }}</div>
+            </div>
           </div>
-
-          <div class="mb-0 me-2">
-            <a href="#" class="fs-6 text-gray-800 text-hover-primary fw-bolder">
-              {{ alert.title }}
-            </a>
-            <div class="text-gray-500 fs-7">{{ alert.description }}</div>
-          </div>
+          <span class="badge badge-light fs-8">{{ alert.time }}</span>
         </div>
-
-        <span class="badge badge-light fs-8">{{ alert.time }}</span>
-      </div>
+      }
     </div>
 
     <div class="py-3 text-center border-top">
       <a
         routerLink="/crafted/pages/profile"
         class="btn btn-color-gray-600 btn-active-color-primary"
-      >
+        >
         View All
         <app-keenicon name="arrow-right" class="fs-5"></app-keenicon>
       </a>
@@ -108,7 +108,7 @@
     id="kt_topbar_notifications_2"
     role="tabpanel"
     [ngClass]="activeTabId === 'kt_topbar_notifications_2' ? 'show active' : ''"
-  >
+    >
     <div class="d-flex flex-column px-9">
       <div class="pt-10 pb-0">
         <h3 class="text-gray-900 text-center fw-bolder">Get Pro Access</h3>
@@ -123,7 +123,7 @@
             class="btn btn-sm btn-primary px-6 cursor-pointer"
             data-bs-toggle="modal"
             data-bs-target="#kt_modal_upgrade_plan"
-          >
+            >
             Upgrade
           </a>
         </div>
@@ -134,7 +134,7 @@
           class="mw-100 mh-200px"
           alt="metronic"
           src="./assets/media/illustrations/sketchy-1/1.png"
-        />
+          />
       </div>
     </div>
   </div>
@@ -144,30 +144,30 @@
     id="kt_topbar_notifications_3"
     role="tabpanel"
     [ngClass]="activeTabId === 'kt_topbar_notifications_3' ? 'show active' : ''"
-  >
+    >
     <div class="scroll-y mh-325px my-5 px-8">
-      <div *ngFor="let log of logs" class="d-flex flex-stack py-4">
-        <div class="d-flex align-items-center me-2">
-          <span
-            class="w-70px badge"
-            [ngClass]="'badge-light-' + log.state + ' me-4'"
-          >
-            {{ log.code }}
-          </span>
-
-          <a class="text-gray-800 text-hover-primary fw-bold cursor-pointer">
-            {{ log.message }}
-          </a>
-
-          <span class="badge badge-light fs-8">{{ log.time }}</span>
+      @for (log of logs; track log) {
+        <div class="d-flex flex-stack py-4">
+          <div class="d-flex align-items-center me-2">
+            <span
+              class="w-70px badge"
+              [ngClass]="'badge-light-' + log.state + ' me-4'"
+              >
+              {{ log.code }}
+            </span>
+            <a class="text-gray-800 text-hover-primary fw-bold cursor-pointer">
+              {{ log.message }}
+            </a>
+            <span class="badge badge-light fs-8">{{ log.time }}</span>
+          </div>
         </div>
-      </div>
+      }
     </div>
     <div class="py-3 text-center border-top">
       <a
         routerLink="/crafted/pages/profile"
         class="btn btn-color-gray-600 btn-active-color-primary"
-      >
+        >
         View All
         <app-keenicon name="arrow-right" class="fs-5"></app-keenicon>
       </a>

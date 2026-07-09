@@ -16,8 +16,8 @@
       : '#kt_content, #kt_chat_messenger_body'
   "
   [attr.data-kt-scroll-offset]="isDrawer ? '0px' : '-2px'"
->
-  <ng-container *ngFor="let message of messagesObs | async">
+  >
+  @for (message of messagesObs | async; track message) {
     <div
       [ngClass]="{
         'd-flex': !isDrawer,
@@ -27,36 +27,36 @@
       }"
       [attr.data-kt-element]="'template-' + message.type"
       class="mb-10"
-    >
+      >
       <div
         class="d-flex flex-column align-items"
         [ngClass]="'align-items-' + (message.type === 'in' ? 'start' : 'end')"
-      >
+        >
         <div class="d-flex align-items-center mb-2">
-          <ng-container *ngIf="message.type === 'in'">
+          @if (message.type === 'in') {
             <div div class="symbol symbol-35px symbol-circle">
               <img
                 alt="Pic"
                 [src]="'./assets/media/' + getUser(message.user).avatar"
-              />
+                />
             </div>
             <div class="ms-3">
               <a
                 href="#"
                 class="fs-5 fw-bolder text-gray-900 text-hover-primary me-1"
-              >
+                >
                 {{ getUser(message.user).name }}
               </a>
               <span class="text-muted fs-7 mb-1">{{ message.time }}</span>
             </div>
-          </ng-container>
-          <ng-container *ngIf="message.type !== 'in'">
+          }
+          @if (message.type !== 'in') {
             <div class="me-3">
               <span class="text-muted fs-7 mb-1">{{ message.time }}</span>
               <a
                 href="#"
                 class="fs-5 fw-bolder text-gray-900 text-hover-primary ms-1"
-              >
+                >
                 You
               </a>
             </div>
@@ -64,11 +64,10 @@
               <img
                 alt="Pic"
                 [src]="'./assets/media/' + getUser(message.user).avatar"
-              />
+                />
             </div>
-          </ng-container>
+          }
         </div>
-
         <div
           [ngClass]="getMessageCssClass(message)"
           data-kt-element="message-text"
@@ -76,7 +75,7 @@
         ></div>
       </div>
     </div>
-  </ng-container>
+  }
 </div>
 
 <div
@@ -84,7 +83,7 @@
   [id]="
     isDrawer ? 'kt_drawer_chat_messenger_footer' : 'kt_chat_messenger_footer'
   "
->
+  >
   <textarea
     #messageInput
     class="form-control form-control-flush mb-3"
@@ -99,14 +98,14 @@
         class="btn btn-sm btn-icon btn-active-light-primary me-1"
         type="button"
         ngbTooltip="Coming soon"
-      >
+        >
         <i class="bi bi-paperclip fs-3"></i>
       </button>
       <button
         class="btn btn-sm btn-icon btn-active-light-primary me-1"
         type="button"
         ngbTooltip="Coming soon"
-      >
+        >
         <i class="bi bi-upload fs-3"></i>
       </button>
     </div>
@@ -115,7 +114,7 @@
       type="button"
       data-kt-element="send"
       (click)="submitMessage()"
-    >
+      >
       Send
     </button>
   </div>

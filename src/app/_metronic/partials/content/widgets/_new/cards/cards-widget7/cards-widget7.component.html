@@ -24,20 +24,21 @@
 
     <!--begin::Users group-->
     <div class="symbol-group symbol-hover flex-nowrap">
-      <div *ngFor="let item of items" class="symbol symbol-35px symbol-circle" data-bs-toggle="tooltip"
-        [title]="item.name">
-        <ng-container *ngIf="item.src">
-          <img alt="Pic" [src]="item.src" />
-        </ng-container>
-        <ng-container *ngIf="!item.src">
-          <span class="symbol-label fw-bold"
+      @for (item of items; track item) {
+        <div class="symbol symbol-35px symbol-circle" data-bs-toggle="tooltip"
+          [title]="item.name">
+          @if (item.src) {
+            <img alt="Pic" [src]="item.src" />
+          }
+          @if (!item.src) {
+            <span class="symbol-label fw-bold"
             [ngClass]="'bg-' + item.state + ' ' + 'text-inverse-' + item.state">{{item.initials}}</span>
-        </ng-container>
-
-      </div>
+          }
+        </div>
+      }
       <a href="#" class="symbol symbol-35px symbol-circle">
         <span class="symbol-label fs-8 fw-bold" [ngClass]="'bg-' + labelColor"
-          [ngClass]="'text-' + textColor">+42</span>
+        [ngClass]="'text-' + textColor">+42</span>
       </a>
     </div>
     <!--end::Users group-->

@@ -1,4 +1,4 @@
-<ng-container *ngIf="appToolbarFilterButton">
+@if (appToolbarFilterButton) {
   <!--begin::Filter menu-->
   <div class="m-0">
     <!--begin::Menu toggle-->
@@ -8,13 +8,12 @@
       Filter
     </a>
     <!--end::Menu toggle-->
-
     <app-dropdown-menu1></app-dropdown-menu1>
   </div>
   <!--end::Filter menu-->
-</ng-container>
+}
 
-<ng-container *ngIf="appToolbarDaterangepickerButton">
+@if (appToolbarDaterangepickerButton) {
   <div data-kt-daterangepicker="true" data-kt-daterangepicker-opens="left"
     class="btn btn-sm fw-bold  d-flex align-items-center px-4" [ngClass]="daterangepickerButtonClass">
     <!--begin::Display range-->
@@ -24,4 +23,4 @@
     <!--end::Display range-->
     <app-keenicon name="calendar-8" class="fs-1 ms-2 me-0"></app-keenicon>
   </div>
-</ng-container>
+}

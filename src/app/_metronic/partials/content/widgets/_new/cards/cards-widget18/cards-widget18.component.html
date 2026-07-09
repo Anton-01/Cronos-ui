@@ -103,7 +103,7 @@
               <div class="border border-gray-300 border-dashed rounded min-w-100px w-100 py-2 px-4 mb-3">
                 <!--begin::Number-->
                 <span class="fs-6 text-gray-700 fw-bold">$<span class="ms-n1" data-kt-countup="true"
-                    data-kt-countup-value="284,900.00">0</span></span>
+                data-kt-countup-value="284,900.00">0</span></span>
                 <!--end::Number-->
 
                 <!--begin::Label-->
@@ -120,17 +120,18 @@
           <div class="d-flex flex-stack mt-auto bd-highlight">
             <!--begin::Users group-->
             <div class="symbol-group symbol-hover flex-nowrap">
-              <div *ngFor="let card of cards" class="symbol symbol-35px symbol-circle" data-bs-toggle="tooltip"
-                [title]="card.name">
-                <ng-container *ngIf="card.src">
-                  <img alt="Pic" [src]="card.src" />
-                </ng-container>
-                <ng-container *ngIf="!card.src">
-                  <span class="symbol-label fw-bold"
+              @for (card of cards; track card) {
+                <div class="symbol symbol-35px symbol-circle" data-bs-toggle="tooltip"
+                  [title]="card.name">
+                  @if (card.src) {
+                    <img alt="Pic" [src]="card.src" />
+                  }
+                  @if (!card.src) {
+                    <span class="symbol-label fw-bold"
                     [ngClass]="'bg-' + card.state + ' ' + 'text-inverse-' + card.state">{{card.initials}}</span>
-
-                </ng-container>
-              </div>
+                  }
+                </div>
+              }
             </div>
             <!--end::Users group-->
 

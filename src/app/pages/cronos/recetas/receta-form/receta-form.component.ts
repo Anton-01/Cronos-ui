@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -12,7 +12,7 @@ import { PageInfoService } from 'src/app/_metronic/layout/core/page-info.service
 
 @Component({
     selector: 'app-receta-form',
-    imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
+    imports: [ReactiveFormsModule, AlertContainerComponent],
     templateUrl: './receta-form.component.html'
 })
 export class RecetaFormComponent implements OnInit, OnDestroy {

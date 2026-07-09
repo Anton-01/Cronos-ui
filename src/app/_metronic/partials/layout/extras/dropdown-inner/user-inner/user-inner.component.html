@@ -49,14 +49,16 @@
   </a>
 
   <div class="menu-sub menu-sub-dropdown w-175px py-4">
-    <div *ngFor="let l of langs" class="menu-item px-3 cursor-pointer" (click)="selectLanguage(l.lang)">
-      <a class="menu-link d-flex px-5" [ngClass]="l.lang === language.lang ? 'active' : ''" >
-        <span class="symbol symbol-20px me-4">
-          <img class="rounded-1" [ngSrc]="l.flag!" width="20" height="20" alt="metronic" />
-        </span>
-        {{ l.name }}
-      </a>
-    </div>
+    @for (l of langs; track l) {
+      <div class="menu-item px-3 cursor-pointer" (click)="selectLanguage(l.lang)">
+        <a class="menu-link d-flex px-5" [ngClass]="l.lang === language.lang ? 'active' : ''" >
+          <span class="symbol symbol-20px me-4">
+            <img class="rounded-1" [ngSrc]="l.flag!" width="20" height="20" alt="metronic" />
+          </span>
+          {{ l.name }}
+        </a>
+      </div>
+    }
   </div>
 </div>
 

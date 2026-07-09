@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder } from '@angular/forms';
 import { UserService } from 'src/app/core/services/user.service';
 import { TokenService } from 'src/app/core/services/token.service';
@@ -8,7 +8,7 @@ import { ToastService } from 'src/app/shared/services/toast.service';
 
 @Component({
     selector: 'app-mi-cuenta',
-    imports: [CommonModule, ReactiveFormsModule],
+    imports: [ReactiveFormsModule],
     templateUrl: './mi-cuenta.component.html'
 })
 export class MiCuentaComponent implements OnInit {

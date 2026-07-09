@@ -1,5 +1,5 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { ProfileStateService } from 'src/app/core/services/profile/ProfileStateService';
@@ -8,7 +8,7 @@ import { ToastService } from 'src/app/shared/services/toast.service';
 @Component({
     selector: 'app-sign-in-method',
     templateUrl: './sign-in-method.component.html',
-    imports: [CommonModule, ReactiveFormsModule]
+    imports: [ReactiveFormsModule]
 })
 export class SignInMethodComponent implements OnInit {
   public profileState = inject(ProfileStateService);

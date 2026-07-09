@@ -59,11 +59,11 @@
                   <div class="fs-6 fw-bold text-gray-800 fw-bold mb-0 me-1">Regular License</div>
 
                   <i class="text-gray-500 fas fa-exclamation-circle ms-1 fs-7"
-                     data-bs-toggle="popover"
-                     data-bs-custom-class="popover-dark"
-                     data-bs-trigger="hover"
-                     data-bs-placement="top"
-                     data-bs-content="Use, by you or one client in a single end product which end users are not charged for.">
+                    data-bs-toggle="popover"
+                    data-bs-custom-class="popover-dark"
+                    data-bs-trigger="hover"
+                    data-bs-placement="top"
+                    data-bs-content="Use, by you or one client in a single end product which end users are not charged for.">
                   </i>
                 </div>
                 <div class="fs-7 text-muted">For single end product used by you or one client</div>
@@ -85,11 +85,11 @@
                   <div class="fs-6 fw-bold text-gray-800 fw-bold mb-0 me-1">Extended License</div>
 
                   <i class="text-gray-500 fas fa-exclamation-circle ms-1 fs-7"
-                     data-bs-toggle="popover"
-                     data-bs-custom-class="popover-dark"
-                     data-bs-trigger="hover"
-                     data-bs-placement="top"
-                     data-bs-content="Use, by you or one client, in a single end product which end users can be charged for.">
+                    data-bs-toggle="popover"
+                    data-bs-custom-class="popover-dark"
+                    data-bs-trigger="hover"
+                    data-bs-placement="top"
+                    data-bs-content="Use, by you or one client, in a single end product which end users can be charged for.">
                   </i>
                 </div>
                 <div class="fs-7 text-muted">For single end product with paying users.</div>
@@ -133,32 +133,29 @@
             <!--begin::Row-->
             <div class="row g-5">
               <!--begin::Col-->
-              <div class="col-6" *ngFor="let demo of appDemos | keyvalue">
-                <!--begin::Demo-->
-                <div class="overlay overflow-hidden position-relative border border-4 border-gray-200 rounded">
-                  <ng-container *ngIf="demo.value.published === true; else unpublished">
-                    <div class="overlay-wrapper">
-                      <img src="{{ demo.value.thumbnail }}" alt="demo" class="w-100"/>
-                    </div>
-
-                    <div class="overlay-layer bg-dark bg-opacity-10">
-                      <a href="https://preview.keenthemes.com/metronic8/angular/{{ demo.key }}" class="btn btn-sm btn-success shadow">{{ demo.value.title }}</a>
-                    </div>
-                  </ng-container>
-
-                  <ng-template #unpublished>
-                    <div class="overlay-wrapper">
-                      <img src="{{ demo.value.thumbnail }}" alt="demo" class="w-100 opacity-25"/>
-                    </div>
-
-                    <div class="overlay-layer bg-dark bg-opacity-10">
-                      <div class="badge badge-white px-6 py-4 fw-bold fs-base shadow">Coming soon</div>
-                    </div>
-                  </ng-template>
-
+              @for (demo of appDemos | keyvalue; track demo) {
+                <div class="col-6">
+                  <!--begin::Demo-->
+                  <div class="overlay overflow-hidden position-relative border border-4 border-gray-200 rounded">
+                    @if (demo.value.published === true) {
+                      <div class="overlay-wrapper">
+                        <img src="{{ demo.value.thumbnail }}" alt="demo" class="w-100"/>
+                      </div>
+                      <div class="overlay-layer bg-dark bg-opacity-10">
+                        <a href="https://preview.keenthemes.com/metronic8/angular/{{ demo.key }}" class="btn btn-sm btn-success shadow">{{ demo.value.title }}</a>
+                      </div>
+                    } @else {
+                      <div class="overlay-wrapper">
+                        <img src="{{ demo.value.thumbnail }}" alt="demo" class="w-100 opacity-25"/>
+                      </div>
+                      <div class="overlay-layer bg-dark bg-opacity-10">
+                        <div class="badge badge-white px-6 py-4 fw-bold fs-base shadow">Coming soon</div>
+                      </div>
+                    }
+                  </div>
+                  <!--end::Demo-->
                 </div>
-                <!--end::Demo-->
-              </div>
+              }
               <!--end::Col-->
             </div>
             <!--end::Row-->

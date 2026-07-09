@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
@@ -14,7 +14,7 @@ import Swal from 'sweetalert2';
 
 @Component({
     selector: 'app-recetas',
-    imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent],
+    imports: [ReactiveFormsModule, AlertContainerComponent],
     templateUrl: './recetas.component.html'
 })
 export class RecetasComponent implements OnInit, OnDestroy {

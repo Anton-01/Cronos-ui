@@ -21,7 +21,7 @@
 
   <!--begin::Body-->
   <div class="card-body pt-5">
-    <ng-container *ngFor="let row of rows; let i = index">
+    @for (row of rows; track row; let i = $index) {
       <!--begin::Item-->
       <div class="d-flex flex-stack">
         <!--begin::Section-->
@@ -34,13 +34,12 @@
         <!--end::Action-->
       </div>
       <!--end::Item-->
-
-      <ng-container *ngIf="i < (rows.length - 1)">
+      @if (i < (rows.length - 1)) {
         <!--begin::Separator-->
         <div class="separator separator-dashed my-3"></div>
         <!--end::Separator-->
-      </ng-container>
-    </ng-container>
+      }
+    }
   </div>
   <!--end::Body-->
 </div>

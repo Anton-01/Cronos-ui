@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil, interval } from 'rxjs';
 import { PublicRecipeService } from 'src/app/core/services/domain/public-recipe.service';
@@ -10,7 +10,7 @@ import {
 
 @Component({
     selector: 'app-shared-recipe',
-    imports: [CommonModule],
+    imports: [],
     templateUrl: './shared-recipe.component.html',
     styleUrls: ['./shared-recipe.component.scss']
 })

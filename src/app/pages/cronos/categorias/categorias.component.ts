@@ -1,5 +1,5 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { CategoryService } from 'src/app/core/services/domain/category.service';
 import { CategoryResponse } from 'src/app/core/models/domain.model';
@@ -12,7 +12,7 @@ import {StatusToggleComponent} from "../../../shared/components/modal-toggle-sta
 
 @Component({
     selector: 'app-categorias',
-    imports: [CommonModule, ReactiveFormsModule, AlertContainerComponent, StatusToggleComponent],
+    imports: [ReactiveFormsModule, AlertContainerComponent, StatusToggleComponent],
     templateUrl: './categorias.component.html'
 })
 export class CategoriasComponent implements OnInit {

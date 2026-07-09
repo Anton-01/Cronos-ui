@@ -19,7 +19,7 @@
       data-kt-menu-trigger="click"
       data-kt-menu-placement="bottom-end"
       data-kt-menu-flip="top-end"
-    >
+      >
       <app-keenicon name="category" class="fs-3 text-primary"></app-keenicon>
     </button>
     <app-dropdown-menu1></app-dropdown-menu1>
@@ -30,18 +30,18 @@
   <div class="fs-2tx fw-bolder mb-3">{{ description }}</div>
 
   <div class="d-flex align-items-center flex-wrap mb-5 mt-auto fs-6">
-    <ng-container *ngIf="status === 'up'">
+    @if (status === 'up') {
       <app-keenicon name="arrow-up-right" class="fs-3 me-1 text-success"></app-keenicon>
-    </ng-container>
+    }
 
-    <ng-container *ngIf="status === 'down'">
+    @if (status === 'down') {
       <app-keenicon name="arr006.svg" class="fs-3 me-1 text-danger"></app-keenicon>
-    </ng-container>
+    }
 
     <div
       class="fw-bolder me-2"
       [ngClass]="status === 'up' ? 'text-success' : 'text-danger'"
-    >
+      >
       {{ status === "up" ? "+" : "-" }}
       {{ statusValue }}%
     </div>
@@ -52,7 +52,7 @@
   <div class="d-flex align-items-center fw-bold">
     <span class="badge bg-light text-gray-700 px-3 py-2 me-2"
       >{{ progress }}%</span
-    >
-    <span class="text-gray-500 fs-7">{{ progressType }}</span>
+      >
+      <span class="text-gray-500 fs-7">{{ progressType }}</span>
+    </div>
   </div>
-</div>

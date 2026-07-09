@@ -1,38 +1,39 @@
-<ng-container *ngIf="title$ | async as title">
-  <ng-container *ngIf="appPageTitleBreadcrumb">
-    <ng-container *ngIf="bc$ | async as _bc">
-      <ng-container *ngIf="_bc.length > 0">
+@if (title$ | async; as title) {
+  @if (appPageTitleBreadcrumb) {
+    @if (bc$ | async; as _bc) {
+      @if (_bc.length > 0) {
         <!--begin::Breadcrumb-->
         <ul class="breadcrumb breadcrumb-dot fw-semibold fs-7 my-0">
-          <ng-container *ngFor="let bc of _bc">
-            <li *ngIf="!bc.isSeparator" class="breadcrumb-item text-muted">
-              <a class="text-muted text-hover-primary" [routerLink]="bc.path">
-                {{ bc.title }}
-              </a>
-            </li>
-          </ng-container>
+          @for (bc of _bc; track bc) {
+            @if (!bc.isSeparator) {
+              <li class="breadcrumb-item text-muted">
+                <a class="text-muted text-hover-primary" [routerLink]="bc.path">
+                  {{ bc.title }}
+                </a>
+              </li>
+            }
+          }
           <li class="breadcrumb-item text-primary">{{ title }}</li>
         </ul>
         <!--end::Breadcrumb-->
-      </ng-container>
-    </ng-container>
-  </ng-container>
-
+      }
+    }
+  }
   <!-- Fallback: show title only when no breadcrumbs -->
-  <ng-container *ngIf="!appPageTitleBreadcrumb">
+  @if (!appPageTitleBreadcrumb) {
     <h1 class="page-heading d-flex text-gray-900 fw-bold fs-3 my-0"
       [ngClass]="{'flex-column justify-content-center': appPageTitleDirection, 'align-items-center': !appPageTitleDirection}">
       {{ title }}
-      <ng-container *ngIf="appPageTitleDescription">
-        <ng-container *ngIf="description$ | async as description">
+      @if (appPageTitleDescription) {
+        @if (description$ | async; as description) {
           <span class="page-desc text-muted fs-7 fw-semibold" [ngClass]="{'pt-2': appPageTitleDirection === 'column'}">
-            <ng-container *ngIf="appPageTitleDirection === 'row'">
+            @if (appPageTitleDirection === 'row') {
               <span class="h-20px border-1 border-gray-300 border-start ms-3 mx-2"></span>
-            </ng-container>
+            }
             {{description}}
           </span>
-        </ng-container>
-      </ng-container>
+        }
+      }
     </h1>
-  </ng-container>
-</ng-container>
+  }
+}

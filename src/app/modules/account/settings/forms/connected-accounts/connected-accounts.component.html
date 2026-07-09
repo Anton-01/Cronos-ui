@@ -6,7 +6,7 @@
     data-bs-target="#kt_account_connected_accounts"
     aria-expanded="true"
     aria-controls="kt_account_connected_accounts"
-  >
+    >
     <div class="card-title m-0">
       <h3 class="fw-bolder m-0">Connected Accounts</h3>
     </div>
@@ -24,7 +24,7 @@
           mb-9
           p-6
         "
-      >
+        >
         <app-keenicon name="design-frame" class="fs-2 text-primary me-4"></app-keenicon>
         <div class="d-flex flex-stack flex-grow-1">
           <div class="fw-bold">
@@ -45,7 +45,7 @@
               src="./assets/media/svg/brand-logos/google-icon.svg"
               class="w-30px me-6"
               alt=""
-            />
+              />
 
             <div class="d-flex flex-column">
               <a href="#" class="fs-5 text-gray-900 text-hover-primary fw-bolder">
@@ -63,7 +63,7 @@
                 type="checkbox"
                 id="googleswitch"
                 checked
-              />
+                />
               <label class="form-check-label" htmlFor="googleswitch"></label>
             </div>
           </div>
@@ -77,7 +77,7 @@
               src="./assets/media/svg/brand-logos/github.svg"
               class="w-30px me-6"
               alt=""
-            />
+              />
 
             <div class="d-flex flex-column">
               <a href="#" class="fs-5 text-gray-900 text-hover-primary fw-bolder">
@@ -94,7 +94,7 @@
                 class="form-check-input w-45px h-30px"
                 type="checkbox"
                 id="githubswitch"
-              />
+                />
               <label class="form-check-label" htmlFor="githubswitch"></label>
             </div>
           </div>
@@ -108,7 +108,7 @@
               src="./assets/media/svg/brand-logos/slack-icon.svg"
               class="w-30px me-6"
               alt=""
-            />
+              />
 
             <div class="d-flex flex-column">
               <a href="#" class="fs-5 text-gray-900 text-hover-primary fw-bolder">
@@ -125,7 +125,7 @@
                 class="form-check-input w-45px h-30px"
                 type="checkbox"
                 checked
-              />
+                />
               <label class="form-check-label" htmlFor="slackswitch"></label>
             </div>
           </div>
@@ -138,15 +138,17 @@
         Discard
       </button>
       <button type="button" (click)="saveSettings()" class="btn btn-primary">
-        <ng-container *ngIf="!isLoading">Save Changes</ng-container>
-        <ng-container *ngIf="isLoading">
+        @if (!isLoading) {
+          Save Changes
+        }
+        @if (isLoading) {
           <span class="indicator-progress" [style.display]="'block'">
             Please wait...{{ " " }}
             <span
               class="spinner-border spinner-border-sm align-middle ms-2"
             ></span>
           </span>
-        </ng-container>
+        }
       </button>
     </div>
   </div>

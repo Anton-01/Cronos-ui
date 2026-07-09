@@ -1,4 +1,10 @@
-<span *ngIf="type === 'duotone'" class="ki-{{ type }} ki-{{ name }}{{ class ? ' ' + class : '' }}">
-  <span *ngFor="let i of [].constructor(pathsNumber); let idx = index" class="path{{ idx + 1 }}"></span>
-</span>
-<span *ngIf="type !== 'duotone'" class="ki-{{ type }} ki-{{ name }}{{ class ? ' ' + class : '' }}"></span>
+@if (type === 'duotone') {
+  <span class="ki-{{ type }} ki-{{ name }}{{ class ? ' ' + class : '' }}">
+    @for (i of [].constructor(pathsNumber); track i; let idx = $index) {
+      <span class="path{{ idx + 1 }}"></span>
+    }
+  </span>
+}
+@if (type !== 'duotone') {
+  <span class="ki-{{ type }} ki-{{ name }}{{ class ? ' ' + class : '' }}"></span>
+}

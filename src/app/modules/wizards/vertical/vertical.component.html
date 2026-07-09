@@ -166,53 +166,53 @@
   <div class="d-flex flex-row-fluid flex-center bg-body rounded">
     <form class="py-20 w-100 w-xl-700px px-9" noValidate id="kt_create_account_form">
       <div class="current">
-        <ng-container *ngIf="currentStep$.value === 1">
+        @if (currentStep$.value === 1) {
           <app-step1 class="w-100" [updateParentModel]="updateAccount" [defaultValues]="account$.value"></app-step1>
-        </ng-container>
+        }
 
-        <ng-container *ngIf="currentStep$.value === 2">
+        @if (currentStep$.value === 2) {
           <app-step2 class="w-100" [updateParentModel]="updateAccount" [defaultValues]="account$.value"></app-step2>
-        </ng-container>
+        }
 
-        <ng-container *ngIf="currentStep$.value === 3">
+        @if (currentStep$.value === 3) {
           <app-step3 class="w-100" [updateParentModel]="updateAccount" [defaultValues]="account$.value"></app-step3>
-        </ng-container>
+        }
 
-        <ng-container *ngIf="currentStep$.value === 4">
+        @if (currentStep$.value === 4) {
           <app-step4 class="w-100" [updateParentModel]="updateAccount" [defaultValues]="account$.value"></app-step4>
-        </ng-container>
+        }
 
-        <ng-container *ngIf="currentStep$.value === 5">
+        @if (currentStep$.value === 5) {
           <app-step5 class="w-100"></app-step5>
-        </ng-container>
+        }
       </div>
 
       <div class="d-flex flex-stack pt-10">
         <div class="mr-2">
-          <ng-container *ngIf="currentStep$.value !== 1">
+          @if (currentStep$.value !== 1) {
             <button type="button" class="btn btn-lg btn-light-primary me-3" (click)="prevStep()">
               <app-keenicon name="arrow-left" class="fs-3 ms-1"></app-keenicon>
               Back
             </button>
-          </ng-container>
+          }
         </div>
 
-        <ng-container *ngIf="currentStep$.value !== formsCount">
+        @if (currentStep$.value !== formsCount) {
           <div>
             <button type="button" class="btn btn-lg btn-primary me-3" [disabled]="!isCurrentFormValid$.value"
               (click)="nextStep()">
               <span class="indicator-label">
-                <ng-container *ngIf="currentStep$.value < formsCount - 1">
+                @if (currentStep$.value < formsCount - 1) {
                   Continue {{ " " }}
                   <app-keenicon name="arrow-right" class="fs-3 ms-2 me-0"></app-keenicon>
-                </ng-container>
-                <ng-container *ngIf="currentStep$.value === formsCount - 1">
+                }
+                @if (currentStep$.value === formsCount - 1) {
                   Submit
-                </ng-container>
+                }
               </span>
             </button>
           </div>
-        </ng-container>
+        }
       </div>
     </form>
   </div>

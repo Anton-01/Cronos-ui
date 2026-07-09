@@ -1,10 +1,10 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { AlertService } from '../../services/alert.service';
 
 @Component({
     selector: 'app-alert-container',
-    imports: [CommonModule],
+    imports: [],
     template: `
     @for (alert of alertService.alerts(); track alert.id) {
       <div class="alert d-flex align-items-center p-5 mb-5"

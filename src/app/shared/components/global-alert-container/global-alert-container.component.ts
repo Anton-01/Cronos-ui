@@ -1,10 +1,10 @@
 import { Component, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { AlertService } from '../../services/alert.service';
 
 @Component({
     selector: 'app-global-alert-container',
-    imports: [CommonModule],
+    imports: [],
     template: `
     <div class="position-fixed top-0 end-0 p-5" style="z-index: 9999; max-width: 450px;">
       @for (alert of alertService.alerts(); track alert.id) {
