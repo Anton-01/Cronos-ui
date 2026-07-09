@@ -1,26 +1,38 @@
-import { Component, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  Validators,
+  AbstractControl,
+  ValidationErrors,
+} from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { MessageModule } from 'primeng/message';
+import { PasswordModule } from 'primeng/password';
+
 import { AuthService } from 'src/app/core/services/auth.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
 
 @Component({
-  selector: 'app-cronos-register',
+  selector: 'app-register',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, RouterLink, ButtonModule, InputTextModule, MessageModule, PasswordModule],
   templateUrl: './register.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CronosRegisterComponent {
-  private fb = inject(FormBuilder);
-  private authService = inject(AuthService);
-  private router = inject(Router);
-  private toast = inject(ToastService);
+export class RegisterComponent {
+  private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly toastService = inject(ToastService);
 
-  isLoading = signal(false);
-  errorMessage = signal<string | null>(null);
+  readonly isLoading = signal(false);
+  readonly errorMessage = signal<string | null>(null);
 
-  registerForm = this.fb.group(
+  readonly registerForm = this.fb.group(
     {
       username: ['', [Validators.required, Validators.minLength(3)]],
       email: ['', [Validators.required, Validators.email]],
@@ -43,12 +55,14 @@ export class CronosRegisterComponent {
   }
 
   submit(): void {
-    if (this.registerForm.invalid) return;
+    if (this.registerForm.invalid) {
+      return;
+    }
 
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    const { confirmPassword, ...formValue } = this.registerForm.value;
+    const formValue = this.registerForm.value;
 
     this.authService
       .register({
@@ -62,13 +76,13 @@ export class CronosRegisterComponent {
       .subscribe({
         next: () => {
           this.isLoading.set(false);
-          this.toast.success('Registro exitoso', 'Tu cuenta ha sido creada. Inicia sesión.');
+          this.toastService.success('Registro exitoso', 'Tu cuenta ha sido creada. Inicia sesión.');
           this.router.navigate(['/auth/login']);
         },
-        error: err => {
+        error: (err) => {
           this.isLoading.set(false);
           this.errorMessage.set(err?.message || 'Error al registrar');
-          this.toast.error('Error', err?.message || 'No se pudo completar el registro');
+          this.toastService.error('Error', err?.message || 'No se pudo completar el registro');
         },
       });
   }
