@@ -1,0 +1,101 @@
+<div class="flex flex-column gap-4">
+  <!-- Password -->
+  <div class="flex align-items-start justify-content-between flex-wrap gap-3">
+    <div>
+      <div class="font-semibold text-color">Contraseña</div>
+      <div class="text-color-secondary text-sm">Actualiza tu contraseña periódicamente para mantener tu cuenta segura.</div>
+    </div>
+    @if (!showChangePasswordForm()) {
+      <p-button label="Cambiar contraseña" severity="secondary" [outlined]="true" icon="pi pi-key" (onClick)="togglePasswordForm(true)" />
+    }
+  </div>
+
+  @if (showChangePasswordForm()) {
+    <form [formGroup]="passwordForm" (ngSubmit)="savePassword()" class="grid">
+      <div class="col-12 md:col-4 flex flex-column gap-1">
+        <label for="currentPassword" class="font-medium text-sm">Contraseña actual</label>
+        <p-password inputId="currentPassword" formControlName="currentPassword" [feedback]="false" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full" />
+      </div>
+      <div class="col-12 md:col-4 flex flex-column gap-1">
+        <label for="newPassword" class="font-medium text-sm">Nueva contraseña</label>
+        <p-password inputId="newPassword" formControlName="newPassword" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full" />
+        @if (passwordForm.controls.newPassword.hasError('minlength')) {
+          <small class="text-red-500">Mínimo 6 caracteres</small>
+        }
+      </div>
+      <div class="col-12 md:col-4 flex flex-column gap-1">
+        <label for="confirmPassword" class="font-medium text-sm">Confirmar contraseña</label>
+        <p-password inputId="confirmPassword" formControlName="confirmPassword" [feedback]="false" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full" />
+      </div>
+      <div class="col-12 flex justify-content-end gap-2">
+        <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="togglePasswordForm(false)" />
+        <p-button label="Actualizar contraseña" type="submit" [disabled]="passwordForm.invalid" [loading]="isChangingPassword()" />
+      </div>
+    </form>
+  }
+
+  <div class="border-top-1 surface-border"></div>
+
+  <!-- Two-factor authentication -->
+  <div class="flex align-items-start justify-content-between flex-wrap gap-3">
+    <div>
+      <div class="flex align-items-center gap-2">
+        <span class="font-semibold text-color">Autenticación de dos factores (2FA)</span>
+        @if (profileState.user()?.twoFactorEnabled) {
+          <p-tag value="Activado" severity="success" />
+        } @else {
+          <p-tag value="Desactivado" severity="secondary" />
+        }
+      </div>
+      <div class="text-color-secondary text-sm">Agrega una capa extra de seguridad con códigos temporales.</div>
+    </div>
+    <p-button
+      [label]="profileState.user()?.twoFactorEnabled ? 'Desactivar 2FA' : 'Activar 2FA'"
+      [severity]="profileState.user()?.twoFactorEnabled ? 'danger' : 'primary'"
+      [outlined]="true"
+      icon="pi pi-shield"
+      (onClick)="open2FAModal()"
+    />
+  </div>
+</div>
+
+<!-- 2FA dialog -->
+<p-dialog
+  [header]="profileState.user()?.twoFactorEnabled ? 'Desactivar 2FA' : 'Activar 2FA'"
+  [visible]="show2FAModal()"
+  (visibleChange)="!$event && close2FAModal()"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '28rem' }"
+>
+  <div class="flex flex-column gap-3">
+    @if (!profileState.user()?.twoFactorEnabled) {
+      @if (!twoFactorSetup()) {
+        <p-message severity="info" text="Genera un código QR para vincular tu aplicación de autenticación (Google Authenticator, Authy, etc.)." />
+        <p-button label="Generar código QR" icon="pi pi-qrcode" [loading]="isLoading2FA()" (onClick)="setup2FA()" />
+      } @else {
+        <div class="flex flex-column align-items-center gap-2">
+          <img [src]="twoFactorSetup()!.qrCodeUrl" alt="Código QR 2FA" class="w-12rem h-12rem" />
+          <small class="text-color-secondary">Clave manual: <code>{{ twoFactorSetup()!.secret }}</code></small>
+        </div>
+      }
+    } @else {
+      <p-message severity="warn" text="Ingresa un código vigente de tu aplicación para desactivar 2FA." />
+    }
+
+    @if (twoFactorSetup() || profileState.user()?.twoFactorEnabled) {
+      <form [formGroup]="twoFactorCode" class="flex flex-column gap-1">
+        <label for="twoFactorCodeInput" class="font-medium text-sm">Código de verificación</label>
+        <input pInputText id="twoFactorCodeInput" formControlName="code" placeholder="123456" maxlength="6" autocomplete="one-time-code" />
+      </form>
+    }
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="close2FAModal()" />
+    @if (profileState.user()?.twoFactorEnabled) {
+      <p-button label="Desactivar" severity="danger" [disabled]="twoFactorCode.invalid" (onClick)="disable2FA()" />
+    } @else if (twoFactorSetup()) {
+      <p-button label="Verificar y activar" [disabled]="twoFactorCode.invalid" (onClick)="verify2FA()" />
+    }
+  </ng-template>
+</p-dialog>

@@ -1,0 +1,43 @@
+// ── Container + badge helpers (previously provided by Bootstrap) ──
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  width: 100%;
+}
+
+.public-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--p-surface-100);
+  color: var(--p-text-color);
+}
+
+.public-badge-dark {
+  background: var(--p-surface-700);
+  color: #fff;
+}
+
+.public-badge-warn {
+  background: var(--p-yellow-100);
+  color: var(--p-yellow-800);
+}
+
+.public-badge-info {
+  background: var(--p-blue-100);
+  color: var(--p-blue-800);
+}
+
+.public-badge-success {
+  background: var(--p-green-100);
+  color: var(--p-green-800);
+}
+
+.public-badge-danger {
+  background: var(--p-red-100);
+  color: var(--p-red-800);
+}

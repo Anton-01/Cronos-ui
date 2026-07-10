@@ -4,120 +4,84 @@ import { roleGuard } from '../core/guards/role.guard';
 const Routing: Routes = [
   {
     path: 'dashboard',
-    loadChildren: () => import('./dashboard/dashboard.module').then((m) => m.DashboardModule),
-  },
-  {
-    path: 'builder',
-    loadChildren: () => import('./builder/builder.module').then((m) => m.BuilderModule),
-  },
-  {
-    path: 'cronos/pages/profile',
-    loadChildren: () => import('../modules/profile/profile.module').then((m) => m.ProfileModule),
-  },
-  {
-    path: 'cronos/pages/account',
-    loadChildren: () => import('../modules/account/account.module').then((m) => m.AccountModule),
-  },
-  {
-    path: 'cronos/pages/wizards',
-    loadChildren: () => import('../modules/wizards/wizards.module').then((m) => m.WizardsModule),
-  },
-  {
-    path: 'cronos/widgets',
-    loadChildren: () => import('../modules/widgets-examples/widgets-examples.module').then((m) => m.WidgetsExamplesModule),
-  },
-  {
-    path: 'apps/chat',
-    loadChildren: () => import('../modules/apps/chat/chat.module').then((m) => m.ChatModule),
-  },
-  {
-    path: 'apps/users',
-    loadChildren: () => import('./user/user.module').then((m) => m.UserModule),
-  },
-  {
-    path: 'apps/roles',
-    loadChildren: () => import('./role/role.module').then((m) => m.RoleModule),
-  },
-  {
-    path: 'apps/permissions',
-    loadChildren: () => import('./permission/permission.module').then((m) => m.PermissionModule),
+    loadComponent: () => import('./dashboard/dashboard.component').then((m) => m.DashboardComponent),
   },
   // ─── Cronos CRUD Routes ───
   {
     path: 'cronos/tipos-unidad',
-    loadComponent: () => import('./cronos/tipos-unidad/tipos-unidad.component').then(m => m.TiposUnidadComponent),
+    loadComponent: () => import('./cronos/unit-types/unit-types.component').then(m => m.UnitTypesComponent),
   },
   {
     path: 'cronos/categorias',
-    loadComponent: () => import('./cronos/categorias/categorias.component').then(m => m.CategoriasComponent),
+    loadComponent: () => import('./cronos/categories/categories.component').then(m => m.CategoriesComponent),
   },
   {
     path: 'cronos/alergenos',
-    loadComponent: () => import('./cronos/alergenos/alergenos.component').then(m => m.AlergenosComponent),
+    loadComponent: () => import('./cronos/allergens/allergens.component').then(m => m.AllergensComponent),
   },
   {
     path: 'cronos/unidades-medida',
-    loadComponent: () => import('./cronos/unidades-medida/unidades-medida.component').then(m => m.UnidadesMedidaComponent),
+    loadComponent: () => import('./cronos/measurement-units/measurement-units.component').then(m => m.MeasurementUnitsComponent),
   },
   {
     path: 'cronos/ingredientes',
-    loadComponent: () => import('./cronos/ingredientes/ingredientes.component').then(m => m.IngredientesComponent),
+    loadComponent: () => import('./cronos/ingredients/ingredients.component').then(m => m.IngredientsComponent),
   },
   {
     path: 'cronos/ingredientes/nuevo',
-    loadComponent: () => import('./cronos/ingredientes/ingrediente-form/ingrediente-form.component').then(m => m.IngredienteFormComponent),
+    loadComponent: () => import('./cronos/ingredients/ingredient-form/ingredient-form.component').then(m => m.IngredientFormComponent),
   },
   {
     path: 'cronos/ingredientes/editar/:id',
-    loadComponent: () => import('./cronos/ingredientes/ingrediente-form/ingrediente-form.component').then(m => m.IngredienteFormComponent),
+    loadComponent: () => import('./cronos/ingredients/ingredient-form/ingredient-form.component').then(m => m.IngredientFormComponent),
   },
   // ─── Recetas ───
   {
     path: 'cronos/recetas',
-    loadComponent: () => import('./cronos/recetas/recetas.component').then(m => m.RecetasComponent),
+    loadComponent: () => import('./cronos/recipes/recipes.component').then(m => m.RecipesComponent),
   },
   {
     path: 'cronos/recetas/nueva',
-    loadComponent: () => import('./cronos/recetas/receta-form/receta-form.component').then(m => m.RecetaFormComponent),
+    loadComponent: () => import('./cronos/recipes/recipe-form/recipe-form.component').then(m => m.RecipeFormComponent),
   },
   {
     path: 'cronos/recetas/editar/:id',
-    loadComponent: () => import('./cronos/recetas/receta-form/receta-form.component').then(m => m.RecetaFormComponent),
+    loadComponent: () => import('./cronos/recipes/recipe-form/recipe-form.component').then(m => m.RecipeFormComponent),
   },
   {
     path: 'cronos/recetas/:id',
-    loadComponent: () => import('./cronos/recetas/receta-detalle/receta-detalle.component').then(m => m.RecetaDetalleComponent),
+    loadComponent: () => import('./cronos/recipes/recipe-detail/recipe-detail.component').then(m => m.RecipeDetailComponent),
   },
   // ─── Cotizaciones ───
   {
     path: 'cronos/cotizaciones',
-    loadComponent: () => import('./cronos/cotizaciones/cotizaciones.component').then(m => m.CotizacionesComponent),
+    loadComponent: () => import('./cronos/quotes/quotes.component').then(m => m.QuotesComponent),
   },
   {
     path: 'cronos/cotizaciones/nueva',
-    loadComponent: () => import('./cronos/cotizaciones/cotizacion-form/cotizacion-form.component').then(m => m.CotizacionFormComponent),
+    loadComponent: () => import('./cronos/quotes/quote-form/quote-form.component').then(m => m.QuoteFormComponent),
   },
   {
     path: 'cronos/cotizaciones/editar/:id',
-    loadComponent: () => import('./cronos/cotizaciones/cotizacion-edit/cotizacion-edit.component').then(m => m.CotizacionEditComponent),
+    loadComponent: () => import('./cronos/quotes/quote-edit/quote-edit.component').then(m => m.QuoteEditComponent),
   },
   {
     path: 'cronos/cotizaciones/detalles/:id',
-    loadComponent: () => import('./cronos/cotizaciones/cotizacion-detalle/cotizacion-detalle.component').then(m => m.CotizacionDetalleComponent),
+    loadComponent: () => import('./cronos/quotes/quote-detail/quote-detail.component').then(m => m.QuoteDetailComponent),
   },
   // ─── Costos ───
   {
     path: 'cronos/costos-fijos',
-    loadComponent: () => import('./cronos/costos-fijos/costos-fijos.component').then(m => m.CostosFijosComponent),
+    loadComponent: () => import('./cronos/fixed-costs/fixed-costs.component').then(m => m.FixedCostsComponent),
   },
   // ─── Cuenta ───
   {
     path: 'cronos/cuenta/mi-cuenta',
-    loadComponent: () => import('./cronos/cuenta/mi-cuenta/mi-cuenta.component').then(m => m.MiCuentaComponent),
+    loadComponent: () => import('./cronos/account/my-account/my-account.component').then(m => m.MyAccountComponent),
   },
   {
     path: 'cronos/cuenta/seguridad',
-    loadComponent: () => import('./cronos/cuenta/seguridad/seguridad.component').then(m => m.SeguridadComponent),
+    loadComponent: () => import('./cronos/account/security/security.component').then(m => m.SecurityComponent),
   },
   // ─── Admin (role-guarded) ───
   {

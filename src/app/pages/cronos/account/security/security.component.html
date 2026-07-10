@@ -1,0 +1,125 @@
+<div class="flex flex-column gap-3">
+  <!-- Sign-in method (password + 2FA) -->
+  <p-card>
+    <ng-template pTemplate="title">
+      <div class="flex align-items-center gap-2">
+        <i class="pi pi-lock text-primary"></i>
+        <span>Método de Inicio de Sesión</span>
+      </div>
+    </ng-template>
+    <app-sign-in-method />
+  </p-card>
+
+  <!-- Active sessions -->
+  <p-card>
+    <ng-template pTemplate="title">
+      <div class="flex align-items-center justify-content-between">
+        <div class="flex align-items-center gap-2">
+          <i class="pi pi-desktop text-primary"></i>
+          <span>Sesiones Activas</span>
+        </div>
+        <p-button icon="pi pi-refresh" [text]="true" [rounded]="true" pTooltip="Actualizar" (onClick)="loadSessions()" />
+      </div>
+    </ng-template>
+    <p-table [value]="sessions()" [loading]="isLoadingSessions()" [rowHover]="true">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Dispositivo</th>
+          <th>IP</th>
+          <th>Última actividad</th>
+          <th style="width: 9rem" class="text-right">Acciones</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-session>
+        <tr>
+          <td>
+            <div class="flex align-items-center gap-2">
+              <i class="pi" [class.pi-mobile]="session.device === 'Mobile'" [class.pi-desktop]="session.device !== 'Mobile'"></i>
+              <div class="flex flex-column">
+                <span class="font-medium">{{ session.browser }} · {{ session.os }}</span>
+                @if (session.isCurrentSession) {
+                  <p-tag value="Sesión actual" severity="success" styleClass="align-self-start mt-1" />
+                }
+              </div>
+            </div>
+          </td>
+          <td>{{ session.ipAddress }}</td>
+          <td class="text-color-secondary text-sm">{{ formatDate(session.lastActivityAt) }}</td>
+          <td class="text-right">
+            <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true" pTooltip="Detalle" (onClick)="showSessionDetail(session)" />
+            @if (!session.isCurrentSession) {
+              <p-button icon="pi pi-sign-out" severity="danger" [text]="true" [rounded]="true" pTooltip="Revocar" (onClick)="confirmRevokeSession(session)" />
+            }
+          </td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4" class="text-center text-color-secondary py-4">Sin sesiones activas</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+
+  <!-- Login history -->
+  <p-card>
+    <ng-template pTemplate="title">
+      <div class="flex align-items-center gap-2">
+        <i class="pi pi-history text-primary"></i>
+        <span>Historial de Inicios de Sesión</span>
+      </div>
+    </ng-template>
+    <p-table [value]="loginHistory()" [loading]="isLoadingHistory()" [rowHover]="true" [paginator]="true" [rows]="10">
+      <ng-template pTemplate="header">
+        <tr>
+          <th>Fecha</th>
+          <th>IP</th>
+          <th>Estado</th>
+          <th>Motivo de falla</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-entry>
+        <tr>
+          <td class="text-sm">{{ formatDate(entry.createdAt) }}</td>
+          <td>{{ entry.ipAddress }}</td>
+          <td>
+            <p-tag
+              [value]="entry.status === 'SUCCESS' ? 'Exitoso' : 'Fallido'"
+              [severity]="entry.status === 'SUCCESS' ? 'success' : 'danger'"
+            />
+          </td>
+          <td class="text-color-secondary text-sm">{{ entry.failureReason || '-' }}</td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4" class="text-center text-color-secondary py-4">Sin registros</td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </p-card>
+</div>
+
+<!-- Session detail dialog -->
+<p-dialog
+  header="Detalle de sesión"
+  [visible]="!!selectedSession()"
+  (visibleChange)="!$event && closeSessionDetail()"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '26rem' }"
+>
+  @if (selectedSession(); as session) {
+    <div class="flex flex-column gap-2">
+      <div class="flex justify-content-between"><span class="text-color-secondary">Navegador</span><span class="font-medium">{{ session.browser }}</span></div>
+      <div class="flex justify-content-between"><span class="text-color-secondary">Sistema</span><span class="font-medium">{{ session.os }}</span></div>
+      <div class="flex justify-content-between"><span class="text-color-secondary">Dispositivo</span><span class="font-medium">{{ session.device }}</span></div>
+      <div class="flex justify-content-between"><span class="text-color-secondary">IP</span><span class="font-medium">{{ session.ipAddress }}</span></div>
+      <div class="flex justify-content-between"><span class="text-color-secondary">Ubicación</span><span class="font-medium">{{ session.location || '-' }}</span></div>
+      <div class="flex justify-content-between"><span class="text-color-secondary">Última actividad</span><span class="font-medium">{{ formatDate(session.lastActivityAt) }}</span></div>
+    </div>
+  }
+  <ng-template pTemplate="footer">
+    <p-button label="Cerrar" severity="secondary" [outlined]="true" (onClick)="closeSessionDetail()" />
+  </ng-template>
+</p-dialog>

@@ -1,0 +1,177 @@
+@if (isLoading()) {
+  <div class="flex justify-content-center py-8">
+    <i class="pi pi-spinner pi-spin text-4xl text-primary"></i>
+  </div>
+} @else if (loadError()) {
+  <p-message severity="error" [text]="loadError()!" styleClass="w-full" />
+} @else if (quote(); as currentQuote) {
+  <!-- Header -->
+  <div class="flex align-items-start justify-content-between flex-wrap gap-3 mb-4">
+    <div>
+      <div class="flex align-items-center gap-2 flex-wrap">
+        <h2 class="m-0 text-xl font-semibold text-color">Cotización {{ currentQuote.quoteNumber }}</h2>
+        <p-tag [value]="getStatusLabel(currentQuote.status)" [severity]="getStatusSeverity(currentQuote.status)" />
+        @if (currentQuote.isRevoked) {
+          <p-tag value="Enlace revocado" severity="danger" />
+        }
+      </div>
+      <div class="flex align-items-center gap-3 mt-2 text-sm text-color-secondary flex-wrap">
+        <span><i class="pi pi-calendar mr-1"></i>Creada: {{ formatDate(currentQuote.createdAt) }}</span>
+        <span><i class="pi pi-clock mr-1"></i>Válida hasta: {{ formatDate(currentQuote.validUntil) }}</span>
+        <span><i class="pi pi-eye mr-1"></i>{{ currentQuote.viewsCount }} vistas</span>
+      </div>
+    </div>
+    <div class="flex align-items-center gap-2 flex-wrap">
+      <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="goBack()" />
+      <p-button
+        label="Compartir"
+        icon="pi pi-share-alt"
+        severity="info"
+        [outlined]="true"
+        [loading]="sendingEmail()"
+        (onClick)="shareMenu.toggle($event)"
+      />
+      <p-menu #shareMenu [model]="shareMenuItems" [popup]="true" appendTo="body" />
+      <p-button label="Editar" icon="pi pi-pencil" (onClick)="editQuote()" />
+    </div>
+  </div>
+
+  <div class="grid">
+    <div class="col-12 xl:col-8 flex flex-column gap-3">
+      <!-- Client -->
+      <p-card>
+        <ng-template pTemplate="title">
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-user text-primary"></i>
+            <span>Cliente</span>
+          </div>
+        </ng-template>
+        <div class="grid mt-1">
+          <div class="col-12 md:col-4">
+            <div class="text-color-secondary text-sm">Nombre</div>
+            <div class="font-medium text-color">{{ currentQuote.clientName }}</div>
+          </div>
+          <div class="col-12 md:col-4">
+            <div class="text-color-secondary text-sm">Correo</div>
+            <div class="font-medium text-color">{{ currentQuote.clientEmail || '-' }}</div>
+          </div>
+          <div class="col-12 md:col-4">
+            <div class="text-color-secondary text-sm">Teléfono</div>
+            <div class="font-medium text-color">{{ currentQuote.clientPhone || '-' }}</div>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- Items -->
+      <p-card>
+        <ng-template pTemplate="title">
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-shopping-cart text-primary"></i>
+            <span>Productos</span>
+          </div>
+        </ng-template>
+        <p-table [value]="currentQuote.items" dataKey="id" [rowHover]="true">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Producto</th>
+              <th style="width: 7rem" class="text-center">Cantidad</th>
+              <th style="width: 9rem" class="text-right">Precio Unit.</th>
+              <th style="width: 9rem" class="text-right">Subtotal</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-item>
+            <tr>
+              <td>
+                <div class="flex flex-column">
+                  <span class="font-medium">{{ item.productName }}</span>
+                  @if (item.productDescription) {
+                    <span class="text-color-secondary text-sm">{{ item.productDescription }}</span>
+                  }
+                  @if (item.productSize) {
+                    <span class="text-color-secondary text-xs">Tamaño: {{ item.productSize }}</span>
+                  }
+                </div>
+              </td>
+              <td class="text-center">{{ item.quantity }}</td>
+              <td class="text-right">{{ formatCurrency(item.unitPrice) }}</td>
+              <td class="text-right font-semibold">{{ formatCurrency(getItemSubtotal(item)) }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+
+      <!-- Access log -->
+      <p-card>
+        <ng-template pTemplate="title">
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-history text-primary"></i>
+            <span>Historial de Accesos</span>
+          </div>
+        </ng-template>
+        <p-table [value]="currentQuote.accessLogs ?? []" [rowHover]="true">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>Fecha</th>
+              <th>IP</th>
+              <th>Navegador</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-log>
+            <tr>
+              <td>{{ formatAccessDate(log.accessedAt) }}</td>
+              <td>{{ log.ipAddress }}</td>
+              <td>{{ parseBrowser(log.browserInfo || log.userAgent) }}</td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="3" class="text-center text-color-secondary py-4">El cliente aún no ha abierto la cotización</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </div>
+
+    <!-- Financial summary -->
+    <div class="col-12 xl:col-4">
+      <p-card>
+        <ng-template pTemplate="title">
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-calculator text-primary"></i>
+            <span>Resumen Financiero</span>
+          </div>
+        </ng-template>
+        <div class="flex flex-column gap-2 mt-2">
+          <div class="flex justify-content-between">
+            <span class="text-color-secondary">Subtotal</span>
+            <span class="font-medium">{{ formatCurrency(currentQuote.subtotal) }}</span>
+          </div>
+          <div class="flex justify-content-between">
+            <span class="text-color-secondary">Impuestos</span>
+            <span class="font-medium">{{ formatCurrency(currentQuote.taxAmount) }}</span>
+          </div>
+          <div class="flex justify-content-between">
+            <span class="text-color-secondary">Envío</span>
+            <span class="font-medium">{{ formatCurrency(currentQuote.deliveryFee) }}</span>
+          </div>
+          <div class="flex justify-content-between">
+            <span class="text-color-secondary">Extras</span>
+            <span class="font-medium">{{ formatCurrency(currentQuote.extraFee) }}</span>
+          </div>
+          <div class="border-top-1 surface-border pt-2 flex justify-content-between">
+            <span class="font-bold text-color">Total al Cliente</span>
+            <span class="font-bold text-color text-xl">{{ formatCurrency(currentQuote.totalRevenue) }}</span>
+          </div>
+          <div class="flex justify-content-between">
+            <span class="text-color-secondary">Costo de producción</span>
+            <span class="font-medium">{{ formatCurrency(currentQuote.totalProductCost) }}</span>
+          </div>
+          <div class="flex justify-content-between align-items-center profit-highlight">
+            <span class="font-bold">Ganancia estimada</span>
+            <span class="text-2xl font-bold">{{ formatCurrency(currentQuote.estimatedProfit) }}</span>
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+}

@@ -1,5 +1,5 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed, HostListener } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil, interval } from 'rxjs';
 import { PublicRecipeService } from 'src/app/core/services/domain/public-recipe.service';
@@ -9,11 +9,10 @@ import {
 } from 'src/app/core/models/domain.model';
 
 @Component({
-  selector: 'app-shared-recipe',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './shared-recipe.component.html',
-  styleUrls: ['./shared-recipe.component.scss'],
+    selector: 'app-shared-recipe',
+    imports: [],
+    templateUrl: './shared-recipe.component.html',
+    styleUrls: ['./shared-recipe.component.scss']
 })
 export class SharedRecipeComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);

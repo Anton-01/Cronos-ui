@@ -1,69 +1,73 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { TagModule } from 'primeng/tag';
 
 @Component({
   selector: 'app-public-quote-layout',
   standalone: true,
-  imports: [CommonModule, RouterOutlet],
+  imports: [RouterOutlet, TagModule],
   template: `
-    <!-- begin::Public Quote Layout -->
-    <div class="d-flex flex-column flex-root app-root" id="kt_app_root">
-      <!-- begin::Header -->
-      <header class="py-4 py-lg-6 border-bottom bg-white shadow-sm">
-        <div class="container">
-          <div class="d-flex align-items-center justify-content-between">
-            <a href="/" class="d-flex align-items-center text-decoration-none">
-              <img
-                alt="Cronos Bakery"
-                src="./assets/media/logos/cronos-logo-light.svg"
-                class="h-30px h-lg-40px theme-light-show"
-              />
-              <img
-                alt="Cronos Bakery"
-                src="./assets/media/logos/cronos-logo-light.svg"
-                class="h-30px h-lg-40px theme-dark-show"
-              />
-            </a>
-            <span class="badge badge-light-success fs-7 fw-semibold px-4 py-2">
-              <i class="ki-duotone ki-document fs-6 me-1">
-                <span class="path1"></span>
-                <span class="path2"></span>
-              </i>
-              Cotización
-            </span>
-          </div>
+    <div class="public-root">
+      <header class="public-header">
+        <div class="public-container flex align-items-center justify-content-between">
+          <a href="/" class="flex align-items-center no-underline">
+            <img alt="Cronos Bakery" src="./assets/media/logos/cronos-logo-light.svg" class="public-logo" />
+          </a>
+          <p-tag icon="pi pi-file" value="Cotización" severity="success" />
         </div>
       </header>
-      <!-- end::Header -->
 
-      <!-- begin::Content -->
-      <div class="flex-grow-1 bg-gray-100">
-        <router-outlet></router-outlet>
+      <div class="flex-grow-1">
+        <router-outlet />
       </div>
-      <!-- end::Content -->
 
-      <!-- begin::Footer -->
-      <footer class="py-6 bg-light border-top mt-auto">
-        <div class="container text-center">
-          <span class="text-gray-500 fs-7">
-            Potenciado por <strong class="text-gray-700">Cronos</strong> &mdash; Gestión de repostería profesional
+      <footer class="public-footer">
+        <div class="public-container text-center">
+          <span class="text-color-secondary text-sm">
+            Potenciado por <strong class="text-color">Cronos</strong> — Gestión de repostería profesional
           </span>
         </div>
       </footer>
-      <!-- end::Footer -->
     </div>
-    <!-- end::Public Quote Layout -->
   `,
-  styles: [`
+  styles: `
     :host {
       display: flex;
       flex-direction: column;
       min-height: 100vh;
     }
-    .app-root {
+
+    .public-root {
+      display: flex;
+      flex-direction: column;
       min-height: 100vh;
+      background: var(--p-surface-50);
     }
-  `],
+
+    .public-container {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      width: 100%;
+    }
+
+    .public-header {
+      padding: 1rem 0;
+      background: var(--p-content-background);
+      border-bottom: 1px solid var(--p-content-border-color);
+    }
+
+    .public-logo {
+      height: 2.25rem;
+    }
+
+    .public-footer {
+      margin-top: auto;
+      padding: 1.5rem 0;
+      background: var(--p-content-background);
+      border-top: 1px solid var(--p-content-border-color);
+    }
+  `,
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PublicQuoteLayoutComponent {}

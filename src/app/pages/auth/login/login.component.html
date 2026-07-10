@@ -1,0 +1,55 @@
+<h3 class="m-0 mb-3 text-center text-lg font-semibold text-color">Iniciar Sesión</h3>
+
+<div class="flex gap-2 mb-3">
+  <p-button label="Google" icon="pi pi-google" severity="secondary" [outlined]="true" styleClass="w-full" class="flex-1" (onClick)="loginWithGoogle()" />
+  <p-button label="Facebook" icon="pi pi-facebook" severity="secondary" [outlined]="true" styleClass="w-full" class="flex-1" (onClick)="loginWithFacebook()" />
+</div>
+
+<p-divider align="center"><span class="text-color-secondary text-sm">O con credenciales</span></p-divider>
+
+@if (errorMessage()) {
+  <p-message severity="error" [text]="errorMessage()!" styleClass="w-full mb-3" />
+}
+
+<form [formGroup]="loginForm" (ngSubmit)="submit()" class="flex flex-column gap-3">
+  <div class="flex flex-column gap-1">
+    <label for="loginUsername" class="font-medium">Usuario</label>
+    <input pInputText id="loginUsername" formControlName="username" placeholder="Tu usuario" autocomplete="username" />
+    @if (loginForm.controls.username.invalid && loginForm.controls.username.touched) {
+      <small class="text-red-500">El usuario es requerido</small>
+    }
+  </div>
+  <div class="flex flex-column gap-1">
+    <label for="loginPassword" class="font-medium">Contraseña</label>
+    <p-password
+      inputId="loginPassword"
+      formControlName="password"
+      [feedback]="false"
+      [toggleMask]="true"
+      placeholder="Tu contraseña"
+      styleClass="w-full"
+      inputStyleClass="w-full"
+    />
+    @if (loginForm.controls.password.invalid && loginForm.controls.password.touched) {
+      <small class="text-red-500">La contraseña es requerida</small>
+    }
+  </div>
+
+  @if (showTwoFactor()) {
+    <div class="flex flex-column gap-1">
+      <label for="loginTwoFactor" class="font-medium">Código 2FA</label>
+      <input pInputText id="loginTwoFactor" formControlName="twoFactorCode" placeholder="123456" maxlength="6" autocomplete="one-time-code" />
+    </div>
+  }
+
+  <div class="flex justify-content-end">
+    <a routerLink="/auth/forgot-password" class="text-primary text-sm no-underline">¿Olvidaste tu contraseña?</a>
+  </div>
+
+  <p-button label="Iniciar Sesión" type="submit" styleClass="w-full" [disabled]="loginForm.invalid" [loading]="isLoading()" />
+
+  <div class="text-center text-color-secondary text-sm">
+    ¿No tienes cuenta?
+    <a routerLink="/auth/register" class="text-primary no-underline">Regístrate</a>
+  </div>
+</form>

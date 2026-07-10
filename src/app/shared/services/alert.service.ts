@@ -1,30 +1,30 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { MessageService } from 'primeng/api';
 
-export interface AppAlert {
-  id: string;
-  type: 'success' | 'danger' | 'warning' | 'info';
-  title: string;
-  message: string;
-  icon: string;
-}
+type AlertType = 'success' | 'danger' | 'warning' | 'info';
 
-const ICON_MAP: Record<string, string> = {
-  success: 'ki-check-circle',
-  danger: 'ki-information-5',
-  warning: 'ki-information-2',
-  info: 'ki-notification-bing',
+const SEVERITY_MAP: Record<AlertType, 'success' | 'error' | 'warn' | 'info'> = {
+  success: 'success',
+  danger: 'error',
+  warning: 'warn',
+  info: 'info',
 };
 
+/**
+ * Facade over PrimeNG MessageService. Messages render in the global
+ * <p-toast> declared in the app root.
+ */
 @Injectable({ providedIn: 'root' })
 export class AlertService {
-  private _alerts = signal<AppAlert[]>([]);
-  readonly alerts = this._alerts.asReadonly();
+  private readonly messageService = inject(MessageService);
 
-  private show(type: AppAlert['type'], title: string, message = '', duration = 5000): void {
-    const id = `${Date.now()}-${Math.random()}`;
-    const icon = ICON_MAP[type];
-    this._alerts.update(list => [...list, { id, type, title, message, icon }]);
-    setTimeout(() => this.remove(id), duration);
+  private show(type: AlertType, title: string, message = '', duration = 5000): void {
+    this.messageService.add({
+      severity: SEVERITY_MAP[type],
+      summary: title,
+      detail: message,
+      life: duration,
+    });
   }
 
   success(message: string, title = 'Éxito'): void {
@@ -41,9 +41,5 @@ export class AlertService {
 
   info(message: string, title = 'Información'): void {
     this.show('info', title, message);
-  }
-
-  remove(id: string): void {
-    this._alerts.update(list => list.filter(a => a.id !== id));
   }
 }

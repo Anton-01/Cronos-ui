@@ -1,0 +1,58 @@
+<p-card>
+  <ng-template pTemplate="title">
+    <div class="flex align-items-center gap-2">
+      <i class="pi pi-user text-primary"></i>
+      <span>Mi Cuenta</span>
+    </div>
+  </ng-template>
+
+  @if (isLoading()) {
+    <div class="flex justify-content-center py-6">
+      <i class="pi pi-spinner pi-spin text-3xl text-primary"></i>
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-column gap-3 mt-2" style="max-width: 40rem;">
+      <div class="grid align-items-center">
+        <label for="accountUsername" class="col-12 md:col-4 font-medium">Username</label>
+        <div class="col-12 md:col-8">
+          <input pInputText id="accountUsername" formControlName="username" class="w-full" />
+        </div>
+      </div>
+      <div class="grid align-items-center">
+        <label for="accountEmail" class="col-12 md:col-4 font-medium">Email</label>
+        <div class="col-12 md:col-8">
+          <input pInputText id="accountEmail" [value]="user()?.email" disabled class="w-full" />
+        </div>
+      </div>
+      <div class="grid align-items-center">
+        <label for="accountFirstName" class="col-12 md:col-4 font-medium">Nombre</label>
+        <div class="col-12 md:col-8">
+          <input pInputText id="accountFirstName" formControlName="firstName" class="w-full" />
+        </div>
+      </div>
+      <div class="grid align-items-center">
+        <label for="accountLastName" class="col-12 md:col-4 font-medium">Apellido</label>
+        <div class="col-12 md:col-8">
+          <input pInputText id="accountLastName" formControlName="lastName" class="w-full" />
+        </div>
+      </div>
+      <div class="grid align-items-center">
+        <label for="accountPhone" class="col-12 md:col-4 font-medium">Teléfono</label>
+        <div class="col-12 md:col-8">
+          <input pInputText id="accountPhone" formControlName="phoneNumber" class="w-full" />
+        </div>
+      </div>
+      <div class="grid align-items-center">
+        <span class="col-12 md:col-4 font-medium">Roles</span>
+        <div class="col-12 md:col-8 flex flex-wrap gap-2">
+          @for (role of user()?.roles || []; track role) {
+            <p-tag [value]="role" severity="info" />
+          }
+        </div>
+      </div>
+      <div class="flex justify-content-end">
+        <p-button label="Guardar cambios" type="submit" icon="pi pi-check" [loading]="isSaving()" />
+      </div>
+    </form>
+  }
+</p-card>

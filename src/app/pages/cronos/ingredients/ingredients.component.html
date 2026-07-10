@@ -1,0 +1,141 @@
+<div class="flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+  <div>
+    <h2 class="m-0 text-xl font-semibold text-color">Ingredientes</h2>
+    <p class="mt-1 mb-0 text-color-secondary">Gestión del catálogo de ingredientes y sus costos</p>
+  </div>
+  <p-button label="Nuevo Ingrediente" icon="pi pi-plus" (onClick)="openCreate()" />
+</div>
+
+<p-card>
+  <p-table
+    #table
+    [value]="items()"
+    dataKey="id"
+    [loading]="isLoading()"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    [globalFilterFields]="['name', 'categoryName', 'purchaseUnitCode']"
+    sortField="name"
+    [sortOrder]="1"
+    [rowHover]="true"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} - {last} de {totalRecords} registros"
+  >
+    <ng-template pTemplate="caption">
+      <div class="flex align-items-center justify-content-between flex-wrap gap-2">
+        <p-iconfield iconPosition="left">
+          <p-inputicon styleClass="pi pi-search" />
+          <input
+            pInputText
+            type="text"
+            placeholder="Buscar ingrediente..."
+            (input)="table.filterGlobal($any($event.target).value, 'contains')"
+          />
+        </p-iconfield>
+        <span class="text-color-secondary text-sm">{{ items().length }} registros</span>
+      </div>
+    </ng-template>
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 4rem">#</th>
+        <th pSortableColumn="name" style="min-width: 11rem">
+          Nombre
+          <p-sortIcon field="name" />
+          <p-columnFilter type="text" field="name" display="menu" placeholder="Filtrar por nombre" />
+        </th>
+        <th pSortableColumn="categoryName" style="min-width: 9rem">
+          Categoría
+          <p-sortIcon field="categoryName" />
+          <p-columnFilter type="text" field="categoryName" display="menu" placeholder="Filtrar por categoría" />
+        </th>
+        <th style="min-width: 8rem">Unid. Compra</th>
+        <th pSortableColumn="purchaseQuantity" style="min-width: 8rem">
+          Cant. Compra
+          <p-sortIcon field="purchaseQuantity" />
+        </th>
+        <th pSortableColumn="unitCost" style="min-width: 8rem">
+          Costo Unitario
+          <p-sortIcon field="unitCost" />
+        </th>
+        <th pSortableColumn="yieldPercentage" style="min-width: 8rem">
+          Rendimiento
+          <p-sortIcon field="yieldPercentage" />
+        </th>
+        <th pSortableColumn="baseUnitCost" style="min-width: 8rem">
+          Costo Base
+          <p-sortIcon field="baseUnitCost" />
+        </th>
+        <th style="width: 10rem">
+          Estado
+          <p-columnFilter field="status" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
+            <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+              <p-select
+                [ngModel]="value"
+                [options]="statusFilterOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Todos"
+                [showClear]="true"
+                (onChange)="filter($event.value)"
+              />
+            </ng-template>
+          </p-columnFilter>
+        </th>
+        <th style="width: 8rem" class="text-right">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
+      <tr>
+        <td>{{ rowIndex + 1 }}</td>
+        <td class="font-semibold">{{ item.name }}</td>
+        <td>{{ item.categoryName || '-' }}</td>
+        <td>
+          @if (item.purchaseUnitCode) {
+            <p-tag [value]="item.purchaseUnitCode" severity="info" />
+          } @else {
+            -
+          }
+        </td>
+        <td>{{ formatQuantity(item.purchaseQuantity) }}</td>
+        <td>{{ formatCurrency(item.unitCost) }}</td>
+        <td>{{ formatPercentage(item.yieldPercentage) }}</td>
+        <td>{{ formatCurrency(item.baseUnitCost) }}</td>
+        <td>
+          <app-status-toggle
+            [item]="item"
+            endpoint="raw-material"
+            [nameEntity]="item.name"
+            (statusChanged)="updateItemStatus(item.id, $event)"
+          />
+        </td>
+        <td class="text-right">
+          <p-button
+            icon="pi pi-pencil"
+            severity="info"
+            [text]="true"
+            [rounded]="true"
+            pTooltip="Editar"
+            (onClick)="openEdit(item)"
+          />
+          <p-button
+            icon="pi pi-trash"
+            severity="danger"
+            [text]="true"
+            [rounded]="true"
+            pTooltip="Eliminar"
+            (onClick)="confirmDelete(item)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="10" class="text-center text-color-secondary py-5">No hay ingredientes registrados</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>

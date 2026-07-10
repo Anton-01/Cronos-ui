@@ -1,0 +1,222 @@
+<div class="flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+  <div>
+    <h2 class="m-0 text-xl font-semibold text-color">Nueva Cotización</h2>
+    <p class="mt-1 mb-0 text-color-secondary">Captura los datos del cliente y los productos a cotizar</p>
+  </div>
+  <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="cancel()" />
+</div>
+
+<form [formGroup]="form" (ngSubmit)="save()">
+  <div class="grid">
+    <div class="col-12 xl:col-8 flex flex-column gap-3">
+      <!-- Client data -->
+      <p-card>
+        <ng-template pTemplate="title">
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-user text-primary"></i>
+            <span>Datos del Cliente</span>
+          </div>
+        </ng-template>
+        <div class="grid mt-1">
+          <div class="col-12 md:col-6 flex flex-column gap-1">
+            <label for="quoteClientName" class="font-medium">Nombre <span class="text-red-500">*</span></label>
+            <input pInputText id="quoteClientName" formControlName="clientName" placeholder="Nombre del cliente" />
+            @if (isFieldInvalid('clientName')) {
+              <small class="text-red-500">El nombre del cliente es requerido</small>
+            }
+          </div>
+          <div class="col-12 md:col-6 flex flex-column gap-1">
+            <label for="quoteClientEmail" class="font-medium">Correo electrónico</label>
+            <input pInputText id="quoteClientEmail" formControlName="clientEmail" placeholder="correo@ejemplo.com" />
+            @if (isFieldInvalid('clientEmail')) {
+              <small class="text-red-500">Ingresa un correo válido</small>
+            }
+          </div>
+          <div class="col-12 md:col-6 flex flex-column gap-1">
+            <label for="quoteClientPhone" class="font-medium">Teléfono</label>
+            <div class="flex gap-2">
+              <p-select
+                [options]="phoneCountries"
+                [ngModel]="selectedCountry()"
+                [ngModelOptions]="{ standalone: true }"
+                (onChange)="onCountryChange($event.value)"
+                optionLabel="dialCode"
+                styleClass="w-8rem"
+              >
+                <ng-template pTemplate="selectedItem" let-country>
+                  @if (country) { {{ country.flag }} {{ country.dialCode }} }
+                </ng-template>
+                <ng-template pTemplate="item" let-country>{{ country.flag }} {{ country.name }} ({{ country.dialCode }})</ng-template>
+              </p-select>
+              <input
+                pInputText
+                id="quoteClientPhone"
+                formControlName="clientPhone"
+                class="flex-1"
+                [placeholder]="selectedCountry().placeholder"
+                (input)="onPhoneInput($event)"
+              />
+            </div>
+          </div>
+          <div class="col-12 md:col-6 flex flex-column gap-1">
+            <label for="quoteClientAddress" class="font-medium">Dirección</label>
+            <input pInputText id="quoteClientAddress" formControlName="clientAddress" placeholder="Dirección de entrega" />
+          </div>
+          <div class="col-12 flex flex-column gap-1">
+            <label for="quoteNotes" class="font-medium">Notas</label>
+            <textarea pTextarea id="quoteNotes" formControlName="notes" rows="2" placeholder="Notas para el cliente (opcional)"></textarea>
+          </div>
+        </div>
+      </p-card>
+
+      <!-- Items -->
+      <p-card>
+        <ng-template pTemplate="title">
+          <div class="flex align-items-center justify-content-between">
+            <div class="flex align-items-center gap-2">
+              <i class="pi pi-shopping-cart text-primary"></i>
+              <span>Productos</span>
+            </div>
+            <p-button label="Agregar producto" icon="pi pi-plus" size="small" [outlined]="true" (onClick)="addItem()" />
+          </div>
+        </ng-template>
+
+        <div formArrayName="items" class="flex flex-column gap-3 mt-2">
+          @for (item of items.controls; track item; let i = $index) {
+            <div [formGroupName]="i" class="quote-item-row">
+              <div class="flex align-items-center justify-content-between mb-2">
+                <span class="font-semibold text-color">Producto {{ i + 1 }}</span>
+                @if (items.length > 1) {
+                  <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" pTooltip="Quitar producto" (onClick)="removeItem(i)" />
+                }
+              </div>
+              <div class="grid">
+                <div class="col-12 md:col-6 flex flex-column gap-1">
+                  <label class="font-medium text-sm">Buscar receta (opcional)</label>
+                  <p-autocomplete
+                    formControlName="recipeSearch"
+                    [suggestions]="recipeSuggestions()"
+                    optionLabel="name"
+                    placeholder="Escribe para buscar una receta..."
+                    [delay]="300"
+                    [minLength]="2"
+                    (completeMethod)="searchRecipes($event)"
+                    (onSelect)="onRecipeSelected($event.value, i)"
+                    appendTo="body"
+                  />
+                </div>
+                <div class="col-12 md:col-6 flex flex-column gap-1">
+                  <label class="font-medium text-sm">Nombre del producto <span class="text-red-500">*</span></label>
+                  <input pInputText formControlName="productName" placeholder="Ej. Pastel de 3 leches" />
+                  @if (isItemFieldInvalid(i, 'productName')) {
+                    <small class="text-red-500">El nombre es requerido</small>
+                  }
+                </div>
+                <div class="col-12 md:col-6 flex flex-column gap-1">
+                  <label class="font-medium text-sm">Descripción</label>
+                  <input pInputText formControlName="productDescription" placeholder="Descripción opcional" />
+                </div>
+                <div class="col-6 md:col-3 flex flex-column gap-1">
+                  <label class="font-medium text-sm">Tamaño</label>
+                  <input pInputText formControlName="productSize" placeholder="Ej. 20 cm" />
+                </div>
+                <div class="col-6 md:col-3 flex flex-column gap-1">
+                  <label class="font-medium text-sm">Cantidad <span class="text-red-500">*</span></label>
+                  <p-inputnumber formControlName="quantity" [min]="1" [showButtons]="true" />
+                </div>
+                <div class="col-6 md:col-3 flex flex-column gap-1">
+                  <label class="font-medium text-sm">Costo unitario</label>
+                  <p-inputnumber formControlName="unitCost" [min]="0" mode="decimal" [maxFractionDigits]="2" prefix="$ " (onInput)="onCostOrProfitChange(i)" />
+                </div>
+                <div class="col-6 md:col-3 flex flex-column gap-1">
+                  <label class="font-medium text-sm">Ganancia (%)</label>
+                  <p-inputnumber formControlName="profitPercentage" [min]="0" [max]="1000" suffix=" %" (onInput)="onCostOrProfitChange(i)" />
+                </div>
+                <div class="col-6 md:col-3 flex flex-column gap-1">
+                  <label class="font-medium text-sm">Precio unitario <span class="text-red-500">*</span></label>
+                  <p-inputnumber formControlName="unitPrice" [min]="0" mode="decimal" [maxFractionDigits]="2" prefix="$ " (onInput)="onUnitPriceChange(i)" />
+                </div>
+                <div class="col-6 md:col-3 flex flex-column gap-1 justify-content-end">
+                  <label class="font-medium text-sm">Subtotal</label>
+                  <span class="text-lg font-bold text-color py-2">$ {{ getItemSubtotal(i).toFixed(2) }}</span>
+                </div>
+                <div class="col-12 flex flex-column gap-1">
+                  <label class="font-medium text-sm">Notas del producto</label>
+                  <input pInputText formControlName="notes" placeholder="Notas opcionales" />
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </p-card>
+    </div>
+
+    <!-- Summary -->
+    <div class="col-12 xl:col-4">
+      <p-card>
+        <ng-template pTemplate="title">
+          <div class="flex align-items-center gap-2">
+            <i class="pi pi-calculator text-primary"></i>
+            <span>Resumen</span>
+          </div>
+        </ng-template>
+        <div class="flex flex-column gap-3 mt-2">
+          <div class="grid">
+            <div class="col-6 flex flex-column gap-1">
+              <label for="quoteTaxRate" class="font-medium text-sm">IVA (%)</label>
+              <p-inputnumber inputId="quoteTaxRate" formControlName="taxRate" [min]="0" [max]="100" suffix=" %" />
+            </div>
+            <div class="col-6 flex flex-column gap-1">
+              <label for="quoteCurrency" class="font-medium text-sm">Moneda</label>
+              <p-select inputId="quoteCurrency" formControlName="currency" [options]="currencies" />
+            </div>
+            <div class="col-6 flex flex-column gap-1">
+              <label for="quoteValidDays" class="font-medium text-sm">Vigencia (días)</label>
+              <p-inputnumber inputId="quoteValidDays" formControlName="validDays" [min]="1" [max]="365" />
+            </div>
+            <div class="col-6 flex flex-column gap-1">
+              <label for="quoteDeliveryFee" class="font-medium text-sm">Costo de envío</label>
+              <p-inputnumber inputId="quoteDeliveryFee" formControlName="deliveryFee" [min]="0" mode="decimal" [maxFractionDigits]="2" prefix="$ " />
+            </div>
+            <div class="col-6 flex flex-column gap-1">
+              <label for="quoteExtraFee" class="font-medium text-sm">Cargo extra</label>
+              <p-inputnumber inputId="quoteExtraFee" formControlName="extraFee" [min]="0" mode="decimal" [maxFractionDigits]="2" prefix="$ " />
+            </div>
+            <div class="col-6 flex flex-column gap-1">
+              <label for="quoteExtraFeeDescription" class="font-medium text-sm">Concepto del cargo</label>
+              <input pInputText id="quoteExtraFeeDescription" formControlName="extraFeeDescription" placeholder="Opcional" />
+            </div>
+          </div>
+
+          <div class="border-top-1 surface-border pt-3 flex flex-column gap-2">
+            <div class="flex justify-content-between">
+              <span class="text-color-secondary">Subtotal</span>
+              <span class="font-medium">$ {{ subtotal().toFixed(2) }}</span>
+            </div>
+            <div class="flex justify-content-between">
+              <span class="text-color-secondary">IVA</span>
+              <span class="font-medium">$ {{ taxAmount().toFixed(2) }}</span>
+            </div>
+            <div class="flex justify-content-between">
+              <span class="text-color-secondary">Envío</span>
+              <span class="font-medium">$ {{ deliveryFeeValue().toFixed(2) }}</span>
+            </div>
+            <div class="flex justify-content-between">
+              <span class="text-color-secondary">Extras</span>
+              <span class="font-medium">$ {{ extraFeeValue().toFixed(2) }}</span>
+            </div>
+            <div class="flex justify-content-between align-items-center summary-highlight">
+              <span class="font-bold">Total</span>
+              <span class="text-2xl font-bold">$ {{ total().toFixed(2) }}</span>
+            </div>
+          </div>
+
+          <div class="flex justify-content-end gap-2">
+            <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancel()" />
+            <p-button label="Crear Cotización" type="submit" icon="pi pi-check" [loading]="isSaving()" />
+          </div>
+        </div>
+      </p-card>
+    </div>
+  </div>
+</form>

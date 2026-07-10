@@ -1,97 +1,127 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
-import { FormsModule } from '@angular/forms';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { MenuItem } from 'primeng/api';
+
+import { AvatarModule } from 'primeng/avatar';
+import { ButtonModule } from 'primeng/button';
+import { CardModule } from 'primeng/card';
+import { CheckboxModule } from 'primeng/checkbox';
+import { DialogModule } from 'primeng/dialog';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { InputTextModule } from 'primeng/inputtext';
+import { MenuModule } from 'primeng/menu';
+import { SelectModule } from 'primeng/select';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+
 import { UserService, UserFilterRequest } from 'src/app/core/services/user.service';
 import { UserResponse } from 'src/app/core/models/user.model';
+import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
 import { CreateUserModalComponent } from './create-user-modal/create-user-modal.component';
 
-const ROLE_BADGE: Record<string, string> = {
-  SUPER_ADMIN: 'badge-primary',
-  ADMIN: 'badge-danger',
-  MANAGER: 'badge-info',
-  USER: 'badge-success',
+type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast';
+
+const ROLE_SEVERITY: Record<string, TagSeverity> = {
+  SUPER_ADMIN: 'contrast',
+  ADMIN: 'danger',
+  MANAGER: 'info',
+  USER: 'success',
 };
 
 @Component({
   selector: 'app-user-management',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormsModule, CreateUserModalComponent],
+  imports: [
+    FormsModule,
+    ReactiveFormsModule,
+    AvatarModule,
+    ButtonModule,
+    CardModule,
+    CheckboxModule,
+    DialogModule,
+    IconFieldModule,
+    InputIconModule,
+    InputTextModule,
+    MenuModule,
+    SelectModule,
+    TableModule,
+    TagModule,
+    TooltipModule,
+    CreateUserModalComponent,
+  ],
   templateUrl: './user-management.component.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserManagementComponent implements OnInit {
-  private userService = inject(UserService);
-  private toast = inject(ToastService);
-  private fb = inject(FormBuilder);
+  private readonly userService = inject(UserService);
+  private readonly toastService = inject(ToastService);
+  private readonly pageInfoService = inject(PageInfoService);
+  private readonly fb = inject(FormBuilder);
 
-  users = signal<UserResponse[]>([]);
-  totalElements = signal(0);
-  totalPages = signal(0);
-  isLoading = signal(false);
-  errorMessage = signal<string | null>(null);
+  readonly users = signal<UserResponse[]>([]);
+  readonly isLoading = signal(false);
 
-  selectedUser = signal<UserResponse | null>(null);
-  activePanel = signal<'none' | 'details' | 'roles'>('none');
-  openDropdownId = signal<string | null>(null);
-  showCreateModal = signal(false);
+  readonly selectedUser = signal<UserResponse | null>(null);
+  readonly activePanel = signal<'none' | 'details' | 'roles'>('none');
+  readonly showCreateModal = signal(false);
+  readonly actionMenuItems = signal<MenuItem[]>([]);
 
-  roleFilter = signal<string>('');
-  statusFilter = signal<string>('');
+  readonly roleFilter = signal<string>('');
+  readonly statusFilter = signal<string>('');
 
-  // Dropdown state — stored with fixed coordinates to escape table overflow
-  dropdownTop = signal(0);
-  dropdownLeft = signal(0);
-
-  pageRequest: UserFilterRequest = { page: 0, size: 10, sort: 'createdAt,desc' };
-
-  rolesForm = this.fb.group({
+  readonly rolesForm = this.fb.group({
     selectedRoles: [[] as string[], [Validators.required]],
   });
 
-  allRoles = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'USER'];
+  readonly allRoles = ['SUPER_ADMIN', 'ADMIN', 'MANAGER', 'USER'];
+
+  readonly roleFilterOptions = this.allRoles.map((role) => ({ label: role, value: role }));
+  readonly statusFilterOptions = [
+    { label: 'Activos', value: 'active' },
+    { label: 'Inactivos', value: 'inactive' },
+  ];
 
   ngOnInit(): void {
+    this.pageInfoService.updateTitle('Gestión de Usuarios');
+    this.pageInfoService.updateBreadcrumbs([
+      { title: 'Inicio', path: '/dashboard', isActive: false },
+      { title: 'Administración', path: '', isActive: false },
+      { title: 'Usuarios', path: '', isActive: true },
+    ]);
     this.load();
   }
 
   load(): void {
     this.isLoading.set(true);
-    const params: UserFilterRequest = { ...this.pageRequest };
-    if (this.roleFilter()) params.role = this.roleFilter();
-    if (this.statusFilter()) params.enabled = this.statusFilter() === 'active';
+    const params: UserFilterRequest = { page: 0, size: 1000, sort: 'createdAt,desc' };
+    if (this.roleFilter()) {
+      params.role = this.roleFilter();
+    }
+    if (this.statusFilter()) {
+      params.enabled = this.statusFilter() === 'active';
+    }
 
     this.userService.getAllUsers(params).subscribe({
-      next: res => {
+      next: (res) => {
         this.users.set(res.data.content);
-        this.totalElements.set(res.data.totalElements);
-        this.totalPages.set(res.data.totalPages);
         this.isLoading.set(false);
       },
-      error: err => {
-        this.errorMessage.set(err?.message || 'Error al cargar usuarios');
+      error: (err) => {
         this.isLoading.set(false);
+        this.toastService.error('Error', err?.message || 'Error al cargar usuarios');
       },
     });
   }
 
-  goToPage(page: number): void {
-    this.pageRequest = { ...this.pageRequest, page };
-    this.load();
-  }
-
-  get pages(): number[] {
-    return Array.from({ length: this.totalPages() }, (_, i) => i);
-  }
-
   applyFilters(): void {
-    this.pageRequest.page = 0;
     this.load();
   }
 
-  getRoleBadgeClass(role: string): string {
-    const normalized = role.replace(/^ROLE_/, '');
-    return ROLE_BADGE[normalized] || 'badge-secondary';
+  getRoleSeverity(role: string): TagSeverity {
+    return ROLE_SEVERITY[this.normalizeRole(role)] ?? 'secondary';
   }
 
   normalizeRole(role: string): string {
@@ -113,51 +143,29 @@ export class UserManagementComponent implements OnInit {
     this.load();
   }
 
-  // ─── Dropdown handling (fixed positioning) ───
-  toggleDropdown(id: string, event: MouseEvent): void {
-    // Stop the click from bubbling to document:click, which would
-    // immediately close the dropdown we're about to open.
-    event.stopPropagation();
-    event.preventDefault();
-
-    if (this.openDropdownId() === id) {
-      this.closeDropdown();
-      return;
-    }
-    const btn = event.currentTarget as HTMLElement;
-    const rect = btn.getBoundingClientRect();
-    const menuWidth = 250;
-    let top = rect.bottom + 5;
-    let left = rect.right - menuWidth;
-
-    if (left < 10) left = 10;
-
-    const menuHeight = 150;
-    if (top + menuHeight > window.innerHeight) {
-      top = rect.top - menuHeight - 5;
-    }
-
-    this.dropdownTop.set(top);
-    this.dropdownLeft.set(left);
-    this.openDropdownId.set(id);
-  }
-
-  closeDropdown(): void {
-    this.openDropdownId.set(null);
+  buildActionMenu(user: UserResponse): void {
+    this.actionMenuItems.set([
+      { label: 'Ver detalles', icon: 'pi pi-eye', command: () => this.viewDetails(user) },
+      { label: 'Asignar roles', icon: 'pi pi-shield', command: () => this.openAssignRoles(user) },
+      { separator: true },
+      {
+        label: user.accountNonLocked ? 'Bloquear usuario' : 'Desbloquear usuario',
+        icon: user.accountNonLocked ? 'pi pi-lock' : 'pi pi-lock-open',
+        command: () => this.toggleBlock(user),
+      },
+    ]);
   }
 
   viewDetails(user: UserResponse): void {
     this.selectedUser.set(user);
     this.activePanel.set('details');
-    this.openDropdownId.set(null);
   }
 
   openAssignRoles(user: UserResponse): void {
     this.selectedUser.set(user);
-    const currentRoles = user.roles.map(r => r.replace(/^ROLE_/, ''));
+    const currentRoles = user.roles.map((role) => this.normalizeRole(role));
     this.rolesForm.patchValue({ selectedRoles: currentRoles });
     this.activePanel.set('roles');
-    this.openDropdownId.set(null);
   }
 
   closePanel(): void {
@@ -168,7 +176,7 @@ export class UserManagementComponent implements OnInit {
   toggleRole(role: string): void {
     const current = this.rolesForm.value.selectedRoles || [];
     if (current.includes(role)) {
-      this.rolesForm.patchValue({ selectedRoles: current.filter(r => r !== role) });
+      this.rolesForm.patchValue({ selectedRoles: current.filter((r) => r !== role) });
     } else {
       this.rolesForm.patchValue({ selectedRoles: [...current, role] });
     }
@@ -180,30 +188,44 @@ export class UserManagementComponent implements OnInit {
 
   saveRoles(): void {
     const user = this.selectedUser();
-    if (!user) return;
+    if (!user) {
+      return;
+    }
     const roles = this.rolesForm.value.selectedRoles || [];
     this.userService.assignRoles(user.id, { roles }).subscribe({
-      next: res => {
-        this.users.update(list => list.map(u => u.id === res.data.id ? res.data : u));
-        this.toast.success('Roles actualizados');
+      next: (res) => {
+        this.users.update((list) => list.map((u) => (u.id === res.data.id ? res.data : u)));
+        this.toastService.success('Roles actualizados');
         this.closePanel();
       },
-      error: err => this.toast.error('Error', err?.message),
+      error: (err) => this.toastService.error('Error', err?.message),
     });
   }
 
   toggleBlock(user: UserResponse): void {
-    this.openDropdownId.set(null);
-    const obs = user.accountNonLocked
+    const request$ = user.accountNonLocked
       ? this.userService.blockUser(user.id)
       : this.userService.unblockUser(user.id);
 
-    obs.subscribe({
-      next: res => {
-        this.users.update(list => list.map(u => u.id === res.data.id ? res.data : u));
-        this.toast.success(res.data.accountNonLocked ? 'Usuario desbloqueado' : 'Usuario bloqueado');
+    request$.subscribe({
+      next: (res) => {
+        this.users.update((list) => list.map((u) => (u.id === res.data.id ? res.data : u)));
+        this.toastService.success(res.data.accountNonLocked ? 'Usuario desbloqueado' : 'Usuario bloqueado');
       },
-      error: err => this.toast.error('Error', err?.message),
+      error: (err) => this.toastService.error('Error', err?.message),
+    });
+  }
+
+  formatDate(date: string | null): string {
+    if (!date) {
+      return '-';
+    }
+    return new Date(date).toLocaleDateString('es-MX', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
     });
   }
 }

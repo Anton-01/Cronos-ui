@@ -1,195 +1,192 @@
-<div class="d-flex flex-row">
-  <!--begin::Table Section-->
-  <div class="flex-grow-1" [class.me-5]="activePanel() !== 'none'">
-    <div class="card">
-      <div class="card-header border-0 pt-6">
-        <div class="card-title"><h2>Gestión de Usuarios</h2></div>
-        <div class="card-toolbar gap-3">
-          <button class="btn btn-primary" (click)="openCreateModal()">
-            <i class="ki-duotone ki-plus fs-2 me-1"></i>
-            Nuevo Usuario
-          </button>
-          <!--begin::Filters-->
-          <select class="form-select form-select-sm w-150px" [(ngModel)]="roleFilter" (ngModelChange)="applyFilters()" [ngModelOptions]="{standalone: true}">
-            <option value="">Todos los roles</option>
-            <option value="SUPER_ADMIN">Super Admin</option>
-            <option value="ADMIN">Admin</option>
-            <option value="MANAGER">Manager</option>
-            <option value="USER">Usuario</option>
-          </select>
-          <select class="form-select form-select-sm w-150px" [(ngModel)]="statusFilter" (ngModelChange)="applyFilters()" [ngModelOptions]="{standalone: true}">
-            <option value="">Todos los estados</option>
-            <option value="active">Activo</option>
-            <option value="inactive">Inactivo</option>
-          </select>
-          <!--end::Filters-->
-        </div>
-      </div>
-      <div class="card-body py-4">
-        @if (isLoading()) {
-          <div class="d-flex justify-content-center py-10"><span class="spinner-border text-primary"></span></div>
-        } @else if (errorMessage()) {
-          <div class="alert alert-danger">{{ errorMessage() }}</div>
-        } @else {
-          <div class="table-responsive">
-            <table class="table align-middle table-row-dashed fs-6 gy-5">
-              <thead><tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
-                <th class="min-w-50px">Avatar</th>
-                <th class="min-w-125px">Username</th>
-                <th class="min-w-150px">Email</th>
-                <th class="min-w-100px">Roles</th>
-                <th class="min-w-80px">Estado</th>
-                <th class="min-w-100px">Último acceso</th>
-                <th class="text-end min-w-80px">Acciones</th>
-              </tr></thead>
-              <tbody class="text-gray-600 fw-semibold">
-                @for (user of users(); track user.id) {
-                  <tr>
-                    <td>
-                      <div class="symbol symbol-circle symbol-35px">
-                        <span class="symbol-label bg-light-primary text-primary fw-bold">{{ getInitials(user) }}</span>
-                      </div>
-                    </td>
-                    <td>{{ user.username }}</td>
-                    <td>{{ user.email }}</td>
-                    <td>
-                      @for (role of user.roles; track role) {
-                        <span class="badge me-1" [ngClass]="getRoleBadgeClass(role)">{{ normalizeRole(role) }}</span>
-                      }
-                    </td>
-                    <td>
-                      @if (user.enabled && user.accountNonLocked) {
-                        <span class="badge badge-light-success">Activo</span>
-                      } @else if (!user.accountNonLocked) {
-                        <span class="badge badge-light-danger">Bloqueado</span>
-                      } @else {
-                        <span class="badge badge-light-warning">Inactivo</span>
-                      }
-                    </td>
-                    <td>{{ user.lastLoginAt ? (user.lastLoginAt | date:'dd/MM/yyyy HH:mm') : 'Nunca' }}</td>
-                    <td class="text-end">
-                      <div class="position-relative">
-                        <button class="btn btn-sm btn-light btn-flex btn-center btn-active-light-primary" (click)="toggleDropdown(user.id, $event)">
-                          Acciones
-                          <i class="ki-duotone ki-down fs-5 ms-1"><span class="path1"></span><span class="path2"></span></i>
-                        </button>
-                        <div data-dropdown-menu class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-250px py-4 show shadow-lg bg-white border"
-                             [style.position]="'fixed'"
-                             [style.top.px]="dropdownTop()"
-                             [style.left.px]="dropdownLeft()"
-                             [style.z-index]="1060"
-                             style="display: block;"
-                          [class.d-none]="openDropdownId() !== user.id"
-                          [class.show]="openDropdownId() === user.id">
-
-                          <!-- Ver detalles -->
-                          <div class="menu-item px-3">
-                            <a class="menu-link px-3 cursor-pointer" (click)="viewDetails(user)">
-                            <span class="menu-icon">
-                              <i class="ki-duotone ki-eye fs-4 text-primary"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
-                            </span>
-                              <span class="menu-title">Ver detalles</span>
-                            </a>
-                          </div>
-
-                          <!-- Asignar roles -->
-                          <div class="menu-item px-3">
-                            <a class="menu-link px-3 cursor-pointer" (click)="openAssignRoles(user)">
-                            <span class="menu-icon">
-                              <i class="ki-duotone ki-security-user text-primary"><span class="path1"></span><span class="path2"></span></i>
-                            </span>
-                              <span class="menu-title">Asignar roles</span>
-                            </a>
-                          </div>
-
-                          <!-- Block / Unblock -->
-                          <div class="menu-item px-3">
-                            <a class="menu-link px-3 cursor-pointer" (click)="toggleBlock(user)">
-                            <span class="menu-icon">
-                              <i class="ki-duotone ki-lock {{ user.accountNonLocked ? 'text-blackr' : 'text-info' }}"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
-                            </span>
-                              <span class="menu-title">{{ user.accountNonLocked ? 'Bloquear' : 'Desbloquear' }}</span>
-                            </a>
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                } @empty {
-                  <tr><td colspan="7" class="text-center text-muted py-10">No hay usuarios</td></tr>
-                }
-              </tbody>
-            </table>
-          </div>
-          @if (totalPages() > 1) {
-            <div class="d-flex justify-content-between align-items-center mt-5">
-              <span class="text-muted">Total: {{ totalElements() }} usuarios</span>
-              <ul class="pagination">
-                @for (p of pages; track p) {
-                  <li class="page-item" [class.active]="p === pageRequest.page"><a class="page-link cursor-pointer" (click)="goToPage(p)">{{ p + 1 }}</a></li>
-                }
-              </ul>
-            </div>
-          }
-        }
-      </div>
-    </div>
+<div class="flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+  <div>
+    <h2 class="m-0 text-xl font-semibold text-color">Gestión de Usuarios</h2>
+    <p class="mt-1 mb-0 text-color-secondary">Administra los usuarios del sistema, sus roles y accesos</p>
   </div>
-  <!--end::Table Section-->
-
-  <!--begin::Side Panel-->
-  @if (activePanel() !== 'none' && selectedUser()) {
-    <div class="card w-400px flex-shrink-0">
-      <div class="card-header">
-        <h3 class="card-title">
-          {{ activePanel() === 'details' ? 'Detalles del Usuario' : 'Asignar Roles' }}
-        </h3>
-        <div class="card-toolbar">
-          <button class="btn btn-icon btn-sm btn-light" (click)="closePanel()">
-            <i class="ki-duotone ki-cross fs-1"></i>
-          </button>
-        </div>
-      </div>
-      <div class="card-body">
-        @if (activePanel() === 'details') {
-          <div class="d-flex flex-column gap-4">
-            <div><label class="text-muted fs-7">ID</label><div class="fw-bold text-break">{{ selectedUser()!.id }}</div></div>
-            <div><label class="text-muted fs-7">Nombre completo</label><div class="fw-bold">{{ (selectedUser()!.firstName || '') + ' ' + (selectedUser()!.lastName || '') || '-' }}</div></div>
-            <div><label class="text-muted fs-7">Email</label><div class="fw-bold">{{ selectedUser()!.email }}</div></div>
-            <div><label class="text-muted fs-7">Teléfono</label><div class="fw-bold">{{ selectedUser()!.phoneNumber || '-' }}</div></div>
-            <div><label class="text-muted fs-7">2FA</label><div class="fw-bold">{{ selectedUser()!.twoFactorEnabled ? 'Activado' : 'Desactivado' }}</div></div>
-            <div><label class="text-muted fs-7">Intentos fallidos</label><div class="fw-bold">{{ selectedUser()!.failedLoginAttempts }}</div></div>
-            <div><label class="text-muted fs-7">Último acceso</label><div class="fw-bold">{{ selectedUser()!.lastLoginAt ? (selectedUser()!.lastLoginAt | date:'dd/MM/yyyy HH:mm') : 'Nunca' }}</div></div>
-            <div><label class="text-muted fs-7">Contraseña cambiada</label><div class="fw-bold">{{ selectedUser()!.passwordChangedAt ? (selectedUser()!.passwordChangedAt | date:'dd/MM/yyyy') : 'Nunca' }}</div></div>
-            <div><label class="text-muted fs-7">Miembro desde</label><div class="fw-bold">{{ selectedUser()!.createdAt | date:'dd/MM/yyyy' }}</div></div>
-          </div>
-        }
-        @if (activePanel() === 'roles') {
-          <form [formGroup]="rolesForm" (ngSubmit)="saveRoles()">
-            <div class="d-flex flex-column gap-3 mb-5">
-              @for (role of allRoles; track role) {
-                <label class="form-check form-check-custom form-check-sm">
-                  <input class="form-check-input" type="checkbox" [checked]="isRoleSelected(role)" (change)="toggleRole(role)" />
-                  <span class="form-check-label fw-semibold">
-                    <span class="badge me-2" [ngClass]="getRoleBadgeClass(role)">{{ role }}</span>
-                  </span>
-                </label>
-              }
-            </div>
-            <button type="submit" class="btn btn-primary w-100" [disabled]="!rolesForm.value.selectedRoles?.length">Guardar Roles</button>
-          </form>
-        }
-      </div>
-    </div>
-  }
-  <!--end::Side Panel-->
+  <p-button label="Nuevo Usuario" icon="pi pi-plus" (onClick)="openCreateModal()" />
 </div>
 
-<!--begin::Create User Modal-->
+<div class="grid">
+  <div [class]="activePanel() !== 'none' ? 'col-12 xl:col-8' : 'col-12'">
+    <p-card>
+      <p-table
+        #table
+        [value]="users()"
+        dataKey="id"
+        [loading]="isLoading()"
+        [paginator]="true"
+        [rows]="10"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        [globalFilterFields]="['username', 'email']"
+        sortField="username"
+        [sortOrder]="1"
+        [rowHover]="true"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} - {last} de {totalRecords} registros"
+      >
+        <ng-template pTemplate="caption">
+          <div class="flex align-items-center justify-content-between flex-wrap gap-2">
+            <p-iconfield iconPosition="left">
+              <p-inputicon styleClass="pi pi-search" />
+              <input
+                pInputText
+                type="text"
+                placeholder="Buscar usuario..."
+                (input)="table.filterGlobal($any($event.target).value, 'contains')"
+              />
+            </p-iconfield>
+            <div class="flex align-items-center gap-2">
+              <p-select
+                [options]="roleFilterOptions"
+                [ngModel]="roleFilter()"
+                (ngModelChange)="roleFilter.set($event ?? ''); applyFilters()"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Todos los roles"
+                [showClear]="true"
+                styleClass="w-11rem"
+              />
+              <p-select
+                [options]="statusFilterOptions"
+                [ngModel]="statusFilter()"
+                (ngModelChange)="statusFilter.set($event ?? ''); applyFilters()"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Todos los estados"
+                [showClear]="true"
+                styleClass="w-11rem"
+              />
+            </div>
+          </div>
+        </ng-template>
+
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 4rem"></th>
+            <th pSortableColumn="username" style="min-width: 9rem">
+              Username
+              <p-sortIcon field="username" />
+            </th>
+            <th pSortableColumn="email" style="min-width: 12rem">
+              Email
+              <p-sortIcon field="email" />
+            </th>
+            <th style="min-width: 10rem">Roles</th>
+            <th style="width: 7rem">Estado</th>
+            <th style="min-width: 9rem">Último acceso</th>
+            <th style="width: 6rem" class="text-right">Acciones</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-user>
+          <tr>
+            <td>
+              <p-avatar [label]="getInitials(user)" shape="circle" />
+            </td>
+            <td class="font-medium">{{ user.username }}</td>
+            <td>{{ user.email }}</td>
+            <td>
+              <div class="flex flex-wrap gap-1">
+                @for (role of user.roles; track role) {
+                  <p-tag [value]="normalizeRole(role)" [severity]="getRoleSeverity(role)" />
+                }
+              </div>
+            </td>
+            <td>
+              @if (!user.accountNonLocked) {
+                <p-tag value="Bloqueado" severity="danger" />
+              } @else if (user.enabled) {
+                <p-tag value="Activo" severity="success" />
+              } @else {
+                <p-tag value="Inactivo" severity="warn" />
+              }
+            </td>
+            <td class="text-color-secondary text-sm">{{ formatDate(user.lastLoginAt) }}</td>
+            <td class="text-right">
+              <p-button
+                icon="pi pi-ellipsis-v"
+                severity="secondary"
+                [text]="true"
+                [rounded]="true"
+                (onClick)="buildActionMenu(user); userActionsMenu.toggle($event)"
+              />
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" class="text-center text-color-secondary py-5">No hay usuarios registrados</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  </div>
+
+  <!-- Side panel: details / roles -->
+  @if (activePanel() !== 'none' && selectedUser(); as user) {
+    <div class="col-12 xl:col-4">
+      <p-card>
+        <ng-template pTemplate="title">
+          <div class="flex align-items-center justify-content-between">
+            <div class="flex align-items-center gap-2">
+              <i class="pi text-primary" [class.pi-id-card]="activePanel() === 'details'" [class.pi-shield]="activePanel() === 'roles'"></i>
+              <span>{{ activePanel() === 'details' ? 'Detalles del Usuario' : 'Asignar Roles' }}</span>
+            </div>
+            <p-button icon="pi pi-times" [text]="true" [rounded]="true" (onClick)="closePanel()" />
+          </div>
+        </ng-template>
+
+        <div class="flex align-items-center gap-3 mb-3">
+          <p-avatar [label]="getInitials(user)" shape="circle" size="large" />
+          <div class="flex flex-column">
+            <span class="font-semibold text-color">{{ user.firstName }} {{ user.lastName }}</span>
+            <span class="text-color-secondary text-sm">{{ user.email }}</span>
+          </div>
+        </div>
+
+        @if (activePanel() === 'details') {
+          <div class="flex flex-column gap-2">
+            <div class="flex justify-content-between"><span class="text-color-secondary">Username</span><span class="font-medium">{{ user.username }}</span></div>
+            <div class="flex justify-content-between"><span class="text-color-secondary">Teléfono</span><span class="font-medium">{{ user.phoneNumber || '-' }}</span></div>
+            <div class="flex justify-content-between"><span class="text-color-secondary">2FA</span>
+              <p-tag [value]="user.twoFactorEnabled ? 'Activado' : 'Desactivado'" [severity]="user.twoFactorEnabled ? 'success' : 'secondary'" />
+            </div>
+            <div class="flex justify-content-between"><span class="text-color-secondary">Intentos fallidos</span><span class="font-medium">{{ user.failedLoginAttempts }}</span></div>
+            <div class="flex justify-content-between"><span class="text-color-secondary">Creado</span><span class="font-medium">{{ formatDate(user.createdAt) }}</span></div>
+            <div class="flex justify-content-between"><span class="text-color-secondary">Último acceso</span><span class="font-medium">{{ formatDate(user.lastLoginAt) }}</span></div>
+          </div>
+        } @else {
+          <form [formGroup]="rolesForm" class="flex flex-column gap-3">
+            <div class="flex flex-column gap-2">
+              @for (role of allRoles; track role) {
+                <div class="flex align-items-center gap-2">
+                  <p-checkbox
+                    [binary]="true"
+                    [inputId]="'role-' + role"
+                    [ngModel]="isRoleSelected(role)"
+                    [ngModelOptions]="{ standalone: true }"
+                    (onChange)="toggleRole(role)"
+                  />
+                  <label [for]="'role-' + role">
+                    <p-tag [value]="role" [severity]="getRoleSeverity(role)" />
+                  </label>
+                </div>
+              }
+            </div>
+            <div class="flex justify-content-end gap-2">
+              <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="closePanel()" />
+              <p-button label="Guardar Roles" icon="pi pi-check" (onClick)="saveRoles()" />
+            </div>
+          </form>
+        }
+      </p-card>
+    </div>
+  }
+</div>
+
+<p-menu #userActionsMenu [model]="actionMenuItems()" [popup]="true" appendTo="body" />
+
 @if (showCreateModal()) {
-  <app-create-user-modal
-    (closed)="showCreateModal.set(false)"
-    (userCreated)="onUserCreated()">
-  </app-create-user-modal>
+  <app-create-user-modal (closed)="showCreateModal.set(false)" (userCreated)="onUserCreated()" />
 }
-<!--end::Create User Modal-->

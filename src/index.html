@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
   <meta charset="utf-8" />
@@ -7,35 +7,22 @@
   <base href="/" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="shortcut icon" href="./assets/media/logos/favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700">
-  <!-- SPLASH SCREEN-->
-  <link rel="stylesheet" id="layout-styles-anchor" href="./assets/splash-screen.css" />
   <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,400,500,600,700">
+  <link rel="stylesheet" id="layout-styles-anchor" href="./assets/splash-screen.css" />
 </head>
 
-<body root id="kt_body" class="mat-typography">
-  <!-- <body root id="kt_body" class="mat-typography" direction="rtl" dir="rtl" style="direction: rtl"></body> -->
-  <!--begin::Theme mode setup on page load-->
+<body root>
   <script>
-    if (document.documentElement) {
-      let defaultThemeMode = "system";
-
-      let hasKTName = document.body.hasAttribute("data-kt-name");
-      let lsKey = "kt_" + (hasKTName ? name + "_" : "") + "theme_mode_value"
-      let themeMode = localStorage.getItem(lsKey);
-      if (!themeMode) {
-        if (defaultThemeMode === "system") {
-          themeMode =
-            window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-        } else {
-          themeMode = defaultThemeMode;
-        }
+    // Apply the persisted (or system-preferred) theme before Angular boots to avoid a flash
+    (function () {
+      var mode = localStorage.getItem('cronos_theme_mode');
+      if (!mode) {
+        mode = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
-
-      document.documentElement.setAttribute("data-bs-theme", themeMode);
-    }
+      document.documentElement.classList.toggle('app-dark', mode === 'dark');
+    })();
   </script>
-  <!--end::Theme mode setup on page load-->
   <div id="splash-screen" class="splash-screen">
     <img src="./assets/media/logos/favicon.svg" alt="Cronos logo" />
     <span>Cargando ...</span>

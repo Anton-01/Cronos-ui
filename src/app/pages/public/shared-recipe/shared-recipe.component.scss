@@ -516,3 +516,24 @@ $font-serif: 'Georgia', 'Times New Roman', serif;
 .cursor-pointer {
   cursor: pointer;
 }
+
+// ── Container + helpers (previously provided by Bootstrap) ──
+.container {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  width: 100%;
+}
+
+.mw-500 {
+  max-width: 500px;
+}
+
+.public-link-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--p-primary-color);
+  font-weight: 600;
+  text-decoration: none;
+}

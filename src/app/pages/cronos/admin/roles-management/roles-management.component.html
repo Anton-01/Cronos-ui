@@ -1,338 +1,149 @@
-<!-- ═══════════════════════════════════════════════════════════════════════════
-     Gestión de Roles y Permisos — Super Admin
-     Layout: flex-row → grid cards (left) + sliding side panel (right)
-════════════════════════════════════════════════════════════════════════════ -->
-<div class="d-flex flex-row gap-5 align-items-start">
-
-  <!-- ╔══════════════════════════════════════════════╗ -->
-  <!-- ║            ROLES GRID (Main View)            ║ -->
-  <!-- ╚══════════════════════════════════════════════╝ -->
-  <div class="flex-grow-1 min-w-0">
-
-    <!-- Page header card -->
-    <div class="card mb-6">
-      <div class="card-header border-0 pt-6 pb-4">
-        <div class="card-title flex-column">
-          <h2 class="fw-bold mb-1">Gestión de Roles y Permisos</h2>
-          <span class="text-muted fs-7">Administra los roles del sistema y sus permisos asociados</span>
-        </div>
-        <div class="card-toolbar">
-          <button
-            class="btn btn-primary"
-            (click)="openCreate()"
-            [disabled]="isLoadingPermissions()">
-            <i class="ki-duotone ki-plus fs-2 me-1"></i>
-            Añadir Nuevo Rol
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Loading skeleton -->
-    @if (isLoadingRoles()) {
-      <div class="d-flex justify-content-center py-15">
-        <span class="spinner-border spinner-border-lg text-primary"></span>
-      </div>
-    }
-
-    <!-- Empty state -->
-    @if (!isLoadingRoles() && roles().length === 0) {
-      <div class="card">
-        <div class="card-body d-flex flex-column align-items-center py-15">
-          <i class="ki-duotone ki-shield-cross fs-5x text-gray-300 mb-5">
-            <span class="path1"></span><span class="path2"></span><span class="path3"></span>
-          </i>
-          <h4 class="text-muted">No hay roles configurados</h4>
-          <p class="text-muted fs-7 mb-5">Crea el primer rol para comenzar</p>
-          <button class="btn btn-primary" (click)="openCreate()">
-            <i class="ki-duotone ki-plus fs-2 me-1"></i>
-            Crear primer rol
-          </button>
-        </div>
-      </div>
-    }
-
-    <!-- Roles grid -->
-    @if (!isLoadingRoles() && roles().length > 0) {
-      <div class="row g-4">
-        @for (role of roles(); track role.id) {
-          <div
-            class="col-12 col-md-6"
-            [class.col-xl-4]="panelMode() === 'none'"
-            [class.col-xl-6]="panelMode() !== 'none'">
-
-            <!-- Role Card -->
-            <div
-              class="card h-100 border border-gray-200 hover-elevate-up transition-all"
-              [class.border-primary]="editingRole()?.id === role.id && panelMode() === 'edit'"
-              [class.shadow-sm]="editingRole()?.id === role.id && panelMode() === 'edit'">
-
-              <!-- Card Header -->
-              <div class="card-header border-0 pt-5 pb-1">
-                <div class="card-title d-flex align-items-center gap-3">
-                  <!-- Role icon -->
-                  <div class="symbol symbol-40px">
-                    <div class="symbol-label"
-                      [ngClass]="role.name === 'SUPER_ADMIN'
-                        ? 'bg-light-danger'
-                        : role.name === 'ADMIN'
-                        ? 'bg-light-warning'
-                        : 'bg-light-primary'">
-                      <i class="ki-duotone ki-shield-tick fs-2"
-                        [ngClass]="role.name === 'SUPER_ADMIN'
-                          ? 'text-danger'
-                          : role.name === 'ADMIN'
-                          ? 'text-warning'
-                          : 'text-primary'">
-                        <span class="path1"></span><span class="path2"></span>
-                      </i>
-                    </div>
-                  </div>
-                  <div class="d-flex flex-column">
-                    <!-- Role name badge -->
-                    <span class="fw-bold fs-5 text-gray-900">{{ role.name }}</span>
-                    @if (role.name === 'SUPER_ADMIN') {
-                      <span class="badge badge-light-danger fs-8 mt-1 w-fit-content">Rol del sistema</span>
-                    }
-                  </div>
-                </div>
-
-                <!-- Edit button -->
-                <div class="card-toolbar">
-                  <button
-                    class="btn btn-icon btn-light-primary btn-sm"
-                    (click)="openEdit(role)"
-                    title="Editar rol"
-                    ngbTooltip="Editar rol"
-                    placement="left">
-                    <i class="ki-duotone ki-pencil fs-4">
-                      <span class="path1"></span><span class="path2"></span>
-                    </i>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Card Body -->
-              <div class="card-body pt-3">
-
-                <!-- Description -->
-                <p class="text-muted fs-7 mb-4 min-h-35px">
-                  {{ role.description || 'Sin descripción' }}
-                </p>
-
-                <!-- Permissions preview -->
-                <div class="d-flex flex-column gap-2">
-                  <span class="text-gray-500 fs-8 fw-semibold text-uppercase ls-1">
-                    Permisos ({{ role.permissions.length }})
-                  </span>
-
-                  @if (role.permissions.length === 0) {
-                    <span class="text-muted fs-7 fst-italic">Sin permisos asignados</span>
-                  } @else {
-                    <div class="d-flex flex-wrap gap-1">
-                      @for (perm of previewPermissions(role); track perm.id) {
-                        <span
-                          class="badge badge-light-primary fs-8"
-                          [title]="perm.description">
-                          {{ perm.action }}
-                        </span>
-                      }
-                      @if (extraCount(role) > 0) {
-                        <span class="badge badge-light-secondary fs-8">
-                          +{{ extraCount(role) }} más
-                        </span>
-                      }
-                    </div>
-                  }
-                </div>
-              </div>
-
-            </div>
-            <!-- /Role Card -->
-
-          </div>
-        }
-      </div>
-    }
-    <!-- /Roles grid -->
-
+<div class="flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
+  <div>
+    <h2 class="m-0 text-xl font-semibold text-color">Gestión de Roles</h2>
+    <p class="mt-1 mb-0 text-color-secondary">Define los roles del sistema y sus permisos</p>
   </div>
-  <!-- /Main View -->
+  <p-button label="Nuevo Rol" icon="pi pi-plus" (onClick)="openCreate()" />
+</div>
 
+<div class="grid">
+  <div [class]="panelMode() !== 'none' ? 'col-12 xl:col-7' : 'col-12'">
+    <p-card>
+      <p-table [value]="roles()" dataKey="id" [loading]="isLoadingRoles()" [rowHover]="true">
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="min-width: 9rem">Rol</th>
+            <th style="min-width: 12rem">Descripción</th>
+            <th style="min-width: 14rem">Permisos</th>
+            <th style="width: 6rem" class="text-right">Acciones</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-role>
+          <tr>
+            <td>
+              <p-tag [value]="role.name" [severity]="role.name === 'SUPER_ADMIN' ? 'contrast' : 'info'" />
+            </td>
+            <td class="text-color-secondary">{{ role.description || '-' }}</td>
+            <td>
+              <div class="flex flex-wrap gap-1 align-items-center">
+                @for (permission of previewPermissions(role); track permission.id) {
+                  <p-tag [value]="permission.name" severity="secondary" />
+                }
+                @if (extraCount(role) > 0) {
+                  <span class="text-color-secondary text-sm" [pTooltip]="role.permissions.length + ' permisos en total'">
+                    +{{ extraCount(role) }} más
+                  </span>
+                }
+              </div>
+            </td>
+            <td class="text-right">
+              <p-button
+                icon="pi pi-pencil"
+                severity="info"
+                [text]="true"
+                [rounded]="true"
+                [pTooltip]="role.name === 'SUPER_ADMIN' ? 'El nombre del rol principal del sistema no puede modificarse' : 'Editar rol'"
+                (onClick)="openEdit(role)"
+              />
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="4" class="text-center text-color-secondary py-5">No hay roles registrados</td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  </div>
 
-  <!-- ╔══════════════════════════════════════════════╗ -->
-  <!-- ║         SIDE PANEL — Create / Edit           ║ -->
-  <!-- ╚══════════════════════════════════════════════╝ -->
+  <!-- Create / edit panel -->
   @if (panelMode() !== 'none') {
-    <div class="w-425px flex-shrink-0">
-      <div class="card sticky-top" style="top: 80px; max-height: calc(100vh - 100px); overflow-y: auto;">
+    <div class="col-12 xl:col-5">
+      <p-card>
+        <ng-template pTemplate="title">
+          <div class="flex align-items-center justify-content-between">
+            <div class="flex align-items-center gap-2">
+              <i class="pi pi-shield text-primary"></i>
+              <span>{{ panelMode() === 'create' ? 'Nuevo Rol' : 'Editar Rol' }}</span>
+            </div>
+            <p-button icon="pi pi-times" [text]="true" [rounded]="true" (onClick)="closePanel()" />
+          </div>
+        </ng-template>
 
-        <!-- Panel Header -->
-        <div class="card-header border-bottom border-gray-200 py-4">
-          <div class="card-title flex-column">
-            <h3 class="fw-bold mb-0">
-              {{ panelMode() === 'create' ? 'Nuevo Rol' : 'Editar Rol' }}
-            </h3>
-            @if (panelMode() === 'edit' && editingRole()) {
-              <span class="text-muted fs-7">{{ editingRole()!.name }}</span>
+        <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-column gap-3 mt-2">
+          <div class="flex flex-column gap-1">
+            <label for="roleName" class="font-medium">Nombre <span class="text-red-500">*</span></label>
+            <input
+              pInputText
+              id="roleName"
+              formControlName="name"
+              placeholder="Ej. MANAGER"
+              [pTooltip]="isNameLocked() ? 'El nombre del rol principal del sistema no puede modificarse' : ''"
+            />
+            @if (form.controls.name.hasError('required') && form.controls.name.touched) {
+              <small class="text-red-500">El nombre es requerido</small>
             }
           </div>
-          <div class="card-toolbar">
-            <button class="btn btn-icon btn-sm btn-light" (click)="closePanel()" title="Cerrar">
-              <i class="ki-duotone ki-cross fs-2">
-                <span class="path1"></span><span class="path2"></span>
-              </i>
-            </button>
+          <div class="flex flex-column gap-1">
+            <label for="roleDescription" class="font-medium">Descripción</label>
+            <textarea pTextarea id="roleDescription" formControlName="description" rows="2" placeholder="Descripción del rol"></textarea>
           </div>
-        </div>
 
-        <!-- Panel Body -->
-        <div class="card-body">
-          <form [formGroup]="form" (ngSubmit)="onSubmit()" autocomplete="off">
-
-            <!-- ── Name field ──────────────────────────────────── -->
-            <div class="mb-5">
-              <label class="form-label required fw-semibold">Nombre del Rol</label>
-
-              @if (isNameLocked()) {
-                <!-- Locked input for SUPER_ADMIN -->
-                <div
-                  class="form-control form-control-solid bg-light-danger text-danger fw-bold"
-                  style="text-transform: uppercase; cursor: not-allowed;"
-                  ngbTooltip="El nombre del rol principal del sistema no puede modificarse"
-                  placement="top">
-                  {{ editingRole()!.name }}
-                </div>
-                <div class="form-text text-danger d-flex align-items-center gap-1 mt-1">
-                  <i class="ki-duotone ki-information-5 fs-6">
-                    <span class="path1"></span><span class="path2"></span><span class="path3"></span>
-                  </i>
-                  El nombre del rol principal del sistema no puede modificarse.
-                </div>
-              } @else {
-                <!-- Editable name input -->
-                <input
-                  type="text"
-                  formControlName="name"
-                  class="form-control form-control-solid"
-                  style="text-transform: uppercase;"
-                  placeholder="Ej: MANAGER, CHEF, VIEWER..."
-                  [class.is-invalid]="form.get('name')!.invalid && form.get('name')!.touched" />
-                @if (form.get('name')!.invalid && form.get('name')!.touched) {
-                  <div class="invalid-feedback">El nombre del rol es obligatorio.</div>
-                }
-                <div class="form-text text-muted">El nombre se guardará en mayúsculas automáticamente.</div>
-              }
-            </div>
-
-            <!-- ── Description field ───────────────────────────── -->
-            <div class="mb-6">
-              <label class="form-label fw-semibold">Descripción</label>
-              <textarea
-                formControlName="description"
-                class="form-control form-control-solid"
-                rows="2"
-                placeholder="Descripción opcional del rol...">
-              </textarea>
-            </div>
-
-            <!-- ── Permissions matrix ──────────────────────────── -->
-            <div class="mb-6">
-              <label class="form-label fw-semibold d-flex align-items-center gap-2">
-                Permisos
-                <span class="badge badge-light-primary fs-8">
-                  {{ selectedPermissionIds().size }} seleccionados
-                </span>
-              </label>
-
-              @if (isLoadingPermissions()) {
-                <div class="d-flex justify-content-center py-6">
-                  <span class="spinner-border spinner-border-sm text-primary"></span>
-                </div>
-              } @else if (resourceKeys().length === 0) {
-                <div class="text-muted fs-7 fst-italic">No hay permisos disponibles</div>
-              } @else {
-                <!-- Permission groups by resource -->
-                <div class="d-flex flex-column gap-4">
-                  @for (resource of resourceKeys(); track resource) {
-                    <div class="rounded border border-gray-200 overflow-hidden">
-
-                      <!-- Resource group header (select-all checkbox) -->
-                      <div class="d-flex align-items-center px-4 py-3 bg-light-primary bg-opacity-50 border-bottom border-gray-200">
-                        <label class="form-check form-check-custom form-check-sm mb-0 w-100">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            [checked]="isGroupFullySelected(resource)"
-                            [indeterminate]="isGroupPartiallySelected(resource)"
-                            (change)="toggleResourceGroup(resource, !isGroupFullySelected(resource))" />
-                          <span class="form-check-label fw-bold text-primary text-uppercase ms-2 fs-7">
-                            {{ resource }}
-                          </span>
-                          <span class="ms-auto badge badge-light-primary fs-9">
-                            {{ permissionGroups()[resource].length }} permisos
-                          </span>
-                        </label>
-                      </div>
-
-                      <!-- Individual permissions in this group -->
-                      <div class="px-4 py-2 d-flex flex-column gap-1">
-                        @for (perm of permissionGroups()[resource]; track perm.id) {
-                          <label
-                            class="form-check form-check-custom form-check-sm py-1 rounded hover-bg-light cursor-pointer"
-                            style="padding-left: 0.5rem; padding-right: 0.5rem;">
-                            <input
-                              class="form-check-input"
-                              type="checkbox"
-                              [checked]="isPermissionSelected(perm.id)"
-                              (change)="togglePermission(perm.id)" />
-                            <span class="form-check-label d-flex align-items-center gap-2 ms-2">
-                              <span class="badge badge-light-secondary fs-9 fw-semibold">
-                                {{ perm.action }}
-                              </span>
-                              <span class="text-muted fs-8">
-                                {{ perm.description || perm.name }}
-                              </span>
-                            </span>
-                          </label>
-                        }
-                      </div>
-
+          <!-- Permissions matrix -->
+          <div class="flex flex-column gap-2">
+            <label class="font-medium">Permisos</label>
+            @if (isLoadingPermissions()) {
+              <i class="pi pi-spinner pi-spin text-primary"></i>
+            } @else {
+              <div class="flex flex-column gap-3">
+                @for (resource of resourceKeys(); track resource) {
+                  <div>
+                    <div class="flex align-items-center gap-2 mb-2">
+                      <p-checkbox
+                        [binary]="true"
+                        [inputId]="'group-' + resource"
+                        [ngModel]="isGroupFullySelected(resource)"
+                        [ngModelOptions]="{ standalone: true }"
+                        [indeterminate]="isGroupPartiallySelected(resource)"
+                        (onChange)="toggleResourceGroup(resource, $event.checked)"
+                      />
+                      <label [for]="'group-' + resource" class="font-semibold text-color uppercase text-sm">{{ resource }}</label>
                     </div>
-                  }
-                </div>
-                <!-- /Permission groups -->
-              }
-            </div>
-
-            <!-- ── Submit ──────────────────────────────────────── -->
-            <div class="d-flex gap-3">
-              <button
-                type="submit"
-                class="btn btn-primary flex-grow-1"
-                [disabled]="!canSave()">
-                @if (isSaving()) {
-                  <span class="spinner-border spinner-border-sm me-2"></span>
-                  Guardando...
-                } @else {
-                  <i class="ki-duotone ki-check fs-3 me-1">
-                    <span class="path1"></span><span class="path2"></span>
-                  </i>
-                  {{ panelMode() === 'create' ? 'Crear Rol' : 'Guardar Cambios' }}
+                    <div class="flex flex-wrap gap-3 pl-4">
+                      @for (permission of permissionGroups()[resource]; track permission.id) {
+                        <div class="flex align-items-center gap-2">
+                          <p-checkbox
+                            [binary]="true"
+                            [inputId]="'perm-' + permission.id"
+                            [ngModel]="isPermissionSelected(permission.id)"
+                            [ngModelOptions]="{ standalone: true }"
+                            (onChange)="togglePermission(permission.id)"
+                          />
+                          <label [for]="'perm-' + permission.id" class="text-sm cursor-pointer" [pTooltip]="permission.description || ''">
+                            {{ permission.name }}
+                          </label>
+                        </div>
+                      }
+                    </div>
+                  </div>
                 }
-              </button>
-              <button type="button" class="btn btn-light" (click)="closePanel()">
-                Cancelar
-              </button>
-            </div>
+              </div>
+            }
+          </div>
 
-          </form>
-        </div>
-        <!-- /Panel Body -->
-
-      </div>
+          <div class="flex justify-content-end gap-2">
+            <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="closePanel()" />
+            <p-button
+              [label]="panelMode() === 'create' ? 'Crear Rol' : 'Guardar Cambios'"
+              type="submit"
+              icon="pi pi-check"
+              [disabled]="!canSave()"
+              [loading]="isSaving()"
+            />
+          </div>
+        </form>
+      </p-card>
     </div>
   }
-  <!-- /Side Panel -->
-
 </div>
