@@ -1,15 +1,25 @@
-/* You can add global styles to this file, and also import other style files */
-@import "./assets/sass/style.scss";
-// Replace above style with this css file to enable RTL styles
-// @import "./assets/css/style.rtl";
-@import './assets/sass/plugins.scss';
-// @import "./assets/css/style.rtl.css";
-@import "./assets/sass/style.angular.scss";
+// ── Global styles ──────────────────────────────────────────────────────
+// The PrimeNG theme (Aura preset) is injected at runtime via providePrimeNG
+// in app.module.ts. PrimeIcons and PrimeFlex are loaded from angular.json.
 
-// Keenicons - High quality and pixel perfect font icons available in 3 styles, duotone, outline and solid for Metronic elements
-@import "./assets/plugins/keenicons/duotone/style.css";
-@import "./assets/plugins/keenicons/outline/style.css";
-@import "./assets/plugins/keenicons/solid/style.css";
+html {
+  font-size: 14px;
+}
+
+body {
+  margin: 0;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: var(--p-surface-50);
+  color: var(--p-text-color);
+}
+
+.app-dark body {
+  background: var(--p-surface-950);
+}
+
+a {
+  color: var(--p-primary-color);
+}
 
 // ── PrimeFlex token bridge ─────────────────────────────────────────────
 // PrimeFlex utility classes (text-color, text-color-secondary, surface-*)

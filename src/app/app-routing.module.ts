@@ -25,7 +25,7 @@ export const routes: Routes = [
         canActivate: [guestGuard],
         loadComponent: () => import('./pages/auth/register/register.component').then((m) => m.RegisterComponent),
       },
-      // Kept for backwards compatibility with the old Metronic route name
+      // Kept for backwards compatibility with the previous route name
       { path: 'registration', redirectTo: 'register', pathMatch: 'full' },
       {
         path: 'forgot-password',

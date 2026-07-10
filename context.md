@@ -1,9 +1,9 @@
 # Cronos UI — Migration Context
 
 > **Purpose of this file:** Single source of truth for the Metronic → PrimeNG migration.
-> It records the strict rules, the technology stack (current and target), the codebase
-> inventory, the phase plan, and the progress log. Update it at the end of every work
-> session so any future conversation (human or LLM) can resume with full context.
+> It records the strict rules, the technology stack, the architecture, key decisions, and
+> the progress log. Update it at the end of every work session so any future conversation
+> (human or LLM) can resume with full context.
 
 ---
 
@@ -12,152 +12,129 @@
 - **Product:** Cronos — management system for a specialized bakery business
   (quotes, recipes, ingredients, fixed costs, measurement units, allergens, users/roles/permissions).
 - **Repository:** `Anton-01/cronos-ui`
-- **Working branch for the migration:** `claude/metronic-primeng-migration-7hnxoz`
-- **Origin:** The app was bootstrapped from the **Metronic 8 "demo1" Angular starter kit**,
-  which locked the project to Angular 18 and dragged in a large amount of template code,
-  styles, and dependencies that are not needed.
+- **Migration branch:** `claude/metronic-primeng-migration-7hnxoz`
+- **Status:** ✅ **MIGRATION COMPLETE** (all 4 phases executed and validated on 2026-07-09/10).
+  The app is 100% PrimeNG; zero Metronic traces remain in source, styles, assets, or dependencies.
 
-## 2. Migration Goal
+## 2. Strict Rules (all enforced)
 
-Total and radical migration: **eradicate every trace of Metronic** (SCSS, CSS classes,
-scripts, assets, template components, dependencies) and rebuild the visual/component
-architecture **strictly on PrimeNG**.
+1. **Zero Metronic:** ✅ No Metronic CSS classes, SCSS, JS plugins, assets, or dependencies remain.
+   Verified by grep audit (`metronic|keenicon|keenthemes|kt_|data-kt|sweetalert|ng-bootstrap|apexcharts|datatables` → 0 hits in `src/`).
+2. **PrimeNG purism:** ✅ All UI is native PrimeNG (see §4). The only non-Prime UI library kept is
+   `ngx-image-cropper` (create-user avatar crop — PrimeNG has no equivalent; documented exception).
+3. **Advanced DataTables:** ✅ Every list view uses native `p-table` with sortable columns,
+   per-column filter menus (`p-columnFilter display="menu"`), dropdown filters for enum columns,
+   global search, paginator with page-size options, and loading state.
+4. **English-only source code:** ✅ All components, classes, folders, variables, and comments are
+   English. UI strings remain Spanish (content, not code). Route URLs keep their original Spanish
+   paths (`/cronos/recetas`, …) on purpose: they are user-facing/bookmarkable and referenced by
+   shared public links.
+5. **Latest stable versions:** ✅ Angular 21.2 + PrimeNG 21.1 (see §5).
+6. **Global styles:** ✅ `styles.scss` contains only base typography, PrimeNG token bridge for
+   PrimeFlex, and dark-mode helpers. `angular.json` loads only `styles.scss`, PrimeIcons, PrimeFlex.
 
-## 3. Strict Rules (non-negotiable)
-
-1. **Zero Metronic:** No Metronic CSS classes, SCSS files, JS plugins, assets, or
-   `package.json` dependencies may remain at the end of the migration.
-2. **PrimeNG purism:** Third-party UI libraries are removed and replaced strictly by
-   native PrimeNG modules (dialogs → `p-dialog`/DialogService, toasts/alerts →
-   `p-toast`/ConfirmationService, icons → PrimeIcons, etc.).
-3. **Advanced DataTables:** Every table migrates to native `p-table` with **advanced
-   filters, pagination, and sorting** using PrimeNG's built-in capabilities
-   (no jQuery DataTables, no angular-datatables).
-4. **English-only source code:** Spanish is forbidden in source code. All component,
-   variable, interface, class, method names **and comments** must be 100% English.
-   (User-facing UI text may remain Spanish — it is content, not code.)
-5. **Latest stable versions:** Target the latest stable Angular supported by the stable
-   PrimeNG release (see §5 "Version decision").
-6. **Global styles:** `angular.json` / `styles.scss` must end up containing only the
-   PrimeNG theme (via `@primeng/themes` preset), PrimeFlex utilities, and PrimeIcons.
-
-## 4. Technology Stack
-
-### Current (as of 2026-07-09, after Phase 1)
+## 3. Technology Stack (final)
 
 | Item | Value |
 |---|---|
-| Angular | **21.2.x** (upgraded 18→19→20→21 via `ng update`; TypeScript 5.9, zone.js 0.15) |
-| UI (new) | **PrimeNG 21.1.9** + `@primeng/themes` 21 (Aura preset, `darkModeSelector: '.app-dark'`) + PrimeIcons 7 + PrimeFlex 4 — configured in `app.module.ts` (`providePrimeNG`) and `angular.json` styles |
-| UI (legacy, dies in Phase 2) | Metronic 8 shell (Bootstrap 5.3, ng-bootstrap **20**, KeenIcons, Metronic Sass, ~74 MB `src/assets`) |
-| Removed in Phase 1 | jQuery/datatables.net/angular-datatables (+ legacy `pages/{user,role,permission}` listings), apexcharts/ng-apexcharts (+ Metronic chart widgets + `modules/widgets-examples`), `@angular/material`, `angular-in-memory-web-api` (+ `src/app/_fake`) |
-| Transitional bumps | ngx-sweetalert2 → 15 (removed in Phase 3), ng-bootstrap → 20 (removed in Phase 2) |
-| Build | `@angular-devkit/build-angular:browser` builder, Karma tests, ESLint 9. Font inlining disabled (sandbox proxy blocks Google Fonts at build time). Budgets: initial warn 2 MB / error 5 MB; component styles warn 8 kB / error 16 kB |
+| Angular | 21.2.x (NgModule root `app.module.ts` + 100% standalone feature components, signals, OnPush) |
+| UI | PrimeNG 21.1.x, `@primeng/themes` (Aura preset, dark mode via `.app-dark` selector), PrimeIcons 7, PrimeFlex 4 |
+| State | Angular signals (`signal`/`computed`/`toSignal`); `ProfileStateService` for current user |
+| Toasts | Global `<p-toast>` in app root; `ToastService`/`AlertService` are facades over `MessageService` (public APIs unchanged for consumers) |
+| Confirmations | Global `<p-confirmdialog>`; `ConfirmService` = promise-based facade over `ConfirmationService` |
+| Dates/Currency | Native `Intl` (`toLocaleDateString('es-MX')`, `Intl.NumberFormat`) |
+| Exception | `ngx-image-cropper` (avatar cropping) |
+| Bundle | Initial 1.18 MB raw / ~210 KB gzip (was 2.62 MB at Metronic baseline). `src/assets` 48 KB (was 74 MB) |
+| Build | `browser` builder, ESLint 9, Karma configured (no spec files exist — starter shipped none) |
 
-### Target (after migration)
+## 4. Architecture Map
 
-| Item | Value |
+- `src/app/layout/` — `MainLayoutComponent`: fixed topbar (logo, dark-mode toggle, user `p-menu`),
+  `p-panelmenu` sidebar (menu model in `layout/app-menu.ts`, admin items filtered by
+  `TokenService.hasRole`), `p-drawer` mobile nav, `p-breadcrumb` + page title fed by `PageInfoService`.
+- `src/app/core/` — real services (auth, token, user, role, permission, profile signal store,
+  domain services), functional guards (`authGuard`, `guestGuard`, `roleGuard`), interceptors,
+  `PageInfoService` (signal-based; `updateTitle`/`updateBreadcrumbs`), `ThemeService`
+  (`.app-dark` class + `cronos_theme_mode` localStorage; pre-boot script in `index.html`).
+- `src/app/shared/` — `ToastService`, `AlertService`, `ConfirmService`, `StatusToggleComponent`
+  (`p-toggleswitch` + confirm + PATCH `/api/v1/{endpoint}/{id}/status`).
+- `src/app/pages/auth/` — `AuthLayoutComponent` (centered card), login (2FA + Google/Facebook OAuth),
+  register, forgot-password (informational — the old flow used the deleted fake demo backend),
+  logout (`performLogout`), oauth2-callback.
+- `src/app/pages/dashboard/` — welcome + quick-link cards.
+- `src/app/pages/errors/` — `ErrorPageComponent` at `error/:code` (404/500).
+- `src/app/pages/public/` — shared-recipe & shared-quote public pages + their layouts (self-contained
+  custom SCSS; badges/containers replaced with PrimeNG-token equivalents).
+- `src/app/pages/cronos/` — feature views (all standalone, English names):
+  `categories`, `allergens`, `unit-types`, `measurement-units`, `ingredients` (+ `ingredient-form`),
+  `fixed-costs`, `recipes` (+ `recipe-form`, `recipe-detail` with p-tabs: ingredients/fixed-costs/
+  instructions/files/shares + financial panel with cost breakdown & yield simulation),
+  `quotes` (+ `quote-form`, `quote-edit` with terminal-status read-only lock, `quote-detail`),
+  `account` (`my-account`, `security` with sessions/login-history/2FA), `admin`
+  (`user-management` + `create-user-modal`, `roles-management` with permission matrix).
+
+## 5. Key Decisions Log
+
+| Date | Decision |
 |---|---|
-| Angular | **21.x** (latest stable supported by stable PrimeNG — see §5) |
-| UI | **PrimeNG 21.x** + `@primeng/themes` (Aura preset) + PrimeIcons + PrimeFlex 4 |
-| Tables | Native `p-table` with column filters, paginator, sortable columns, global search |
-| Dialogs / alerts | `p-dialog`, `DynamicDialog`, `p-toast` (MessageService), `p-confirmdialog` (ConfirmationService) |
-| Dates | Native `Intl` / Angular `DatePipe` (moment removed) |
-| HTTP mocks | Removed (`_fake/`, angular-in-memory-web-api) |
+| 2026-07-09 | **Angular 21 + PrimeNG 21** (not Angular 22): PrimeNG stable 21.1.9 pins `@angular/core ^21.0.7`; PrimeNG 22 still RC. Bump both majors together when PrimeNG 22 ships stable. |
+| 2026-07-09 | Route URLs stay Spanish (user-facing, bookmarkable, used in shared public links). Code identifiers are English. |
+| 2026-07-09 | Catalog tables load up to 1000 rows and use client-side p-table filtering/sorting/pagination (full native filter capabilities; datasets are small per-user catalogs). |
+| 2026-07-09 | `ToastService`/`AlertService` keep their public APIs as facades over `MessageService`, so ~40 consumer call sites needed no changes. |
+| 2026-07-09 | `ngx-image-cropper` kept as the single documented non-Prime UI exception. |
+| 2026-07-10 | Metronic forgot-password flow (fake backend demo) replaced by an informational page; backend has no reset endpoint yet. |
+| 2026-07-10 | Project renamed `demo1` → `cronos-ui` (package.json, angular.json, dist path). Environments reduced to `{ production, apiUrl }`. |
+| — | Build quirks: font inlining disabled (sandbox proxy blocks Google Fonts at build time); budgets initial warn 2 MB / error 5 MB, component styles warn 8 kB / error 16 kB. |
 
-## 5. Version Decision (recorded 2026-07-09)
+## 6. Dependency State (final)
 
-- Latest stable Angular on npm: **22.0.6**. Latest stable PrimeNG: **21.1.9**, whose
-  peer dependency is `@angular/core ^21.0.7`. PrimeNG 22 is still **RC**.
-- **Decision:** migrate to **Angular 21 + PrimeNG 21** (both stable, mutually supported).
-  Bump to Angular 22 + PrimeNG 22 later as a routine minor task once PrimeNG 22 is stable.
+**dependencies:** `@angular/*` 21, `@primeng/themes`, `primeng`, `primeicons`, `primeflex`,
+`ngx-image-cropper`, `rxjs`, `tslib`, `zone.js`.
 
-## 6. Codebase Inventory
+**Removed during migration:** Metronic template code (`_metronic/`, demo modules, demo pages),
+bootstrap, @ng-bootstrap/ng-bootstrap, @popperjs/core, jquery, datatables.net(-bs5),
+angular-datatables, @angular/material, @angular/localize, angular-in-memory-web-api (+`_fake/`),
+apexcharts, ng-apexcharts, sweetalert2, @sweetalert2/ngx-sweetalert2, ngx-translate (core+loader),
+ng-inline-svg-2, ngx-clipboard, clipboard, moment, object-path, prismjs, prism-themes, nouislider,
+animate.css, line-awesome, socicon, bootstrap-icons, @fortawesome/fontawesome-free, KeenIcons,
+webpack RTL toolchain (+`rtl.config.js`, `ngcc.config.js`), ~74 MB of Metronic assets.
 
-### Business code (KEEP — refactor to PrimeNG + English)
-
-- `src/app/pages/cronos/**` — real app: `auth` (login/register/oauth2-callback),
-  `cotizaciones` (quotes), `recetas` (recipes), `ingredientes`, `categorias`,
-  `alergenos`, `costos-fijos`, `tipos-unidad`, `unidades-medida`, `cuenta`,
-  `admin/user-management`, `admin/roles-management`.
-  ⚠ Folder/component names are in Spanish → must be renamed to English (Rule 4).
-- `src/app/pages/dashboard`, `src/app/pages/public` — review, keep what is real.
-- `src/app/core/**` — services/guards/interceptors (real).
-- `src/app/shared/**` — shared utilities (review for Metronic coupling).
-- `src/app/modules/auth`, `src/app/modules/errors` — routed and real (Metronic-derived;
-  refactor in Phase 2/3).
-
-### Legacy / template code (DELETE during migration)
-
-- `src/app/_metronic/**` (~2.5 MB) — layout, partials, kt directives, shared module.
-- `src/app/_fake/**` + `angular-in-memory-web-api` — fake backend.
-- `src/app/modules/{apps,crud,account,profile,widgets-examples,wizards,i18n}` — demo modules.
-- `src/app/pages/{builder,user,role,permission}` — Metronic demo pages; `user`/`role`/
-  `permission` listings use jQuery DataTables and are superseded by `pages/cronos/admin/**`.
-- `src/assets/{sass,css,plugins,media}` (~74 MB) — Metronic styles/plugins/media
-  (keep only real brand assets, e.g. Cronos logos).
-
-### Known Metronic coupling points in business code (to break in Phase 2)
-
-- `PageInfoService` (`_metronic/layout/core/page-info.service`) — imported by ~14 files.
-- `SharedModule` (`_metronic/shared/shared.module`) — 4 imports.
-- `_metronic/partials` (`ModalComponent`, `ModalConfig`, Widgets/Modals modules) — 2 imports.
-- `LayoutService` (`_metronic/layout`) — 1 import.
-- Metronic CSS utility classes (`kt_*`, `btn btn-*`, `card`, `d-flex`, `fv-row`, …)
-  spread across all templates → replaced in Phases 2–3.
-
-## 7. Dependency Disposition
-
-| Package | Verdict | Replacement / Note | Removal phase |
-|---|---|---|---|
-| `@angular/*` 18 | **Upgrade** | Angular 21 (`ng update`, one major at a time) | 1 |
-| `@angular/material` | Remove | Unused (only a stray `mat-typography` class in `index.html`) | 1 |
-| `angular-in-memory-web-api` + `src/app/_fake` | Remove | Real API already in use | 1 |
-| `prismjs`, `prism-themes`, `@types/prismjs` | Remove | Unused outside Metronic demo | 1 |
-| `nouislider` | Remove | Unused; if ever needed → `p-slider` | 1 |
-| `primeng`, `@primeng/themes`, `primeicons`, `primeflex` | **Add** | Core of the new UI | 1 |
-| `bootstrap`, `@ng-bootstrap/ng-bootstrap`, `@popperjs/core` | Remove | PrimeNG components + PrimeFlex | 2 |
-| `object-path` | Remove | Used by Metronic `LayoutService` only | 2 |
-| `@ngx-translate/*` | Remove | App UI is Spanish-only content; Metronic i18n demo goes away | 2 |
-| `ng-inline-svg-2` | Remove | PrimeIcons / plain `<img>` for logos | 2 |
-| `apexcharts`, `ng-apexcharts` | Remove | Metronic widgets only; real charts (if any) → `p-chart` | 2 |
-| `animate.css`, `line-awesome`, `socicon`, `bootstrap-icons`, `@fortawesome/fontawesome-free` | Remove | PrimeIcons | 2 |
-| `jquery`, `datatables.net*`, `angular-datatables`, `@types/jquery`, `@types/datatables.net` | Remove | Native `p-table` | 3 |
-| `sweetalert2`, `@sweetalert2/ngx-sweetalert2` | Remove | `p-toast` + `p-confirmdialog` (Message/Confirmation services) | 3 |
-| `ngx-clipboard`, `clipboard` | Remove | Native `navigator.clipboard` (used in 2 cronos views) | 3 |
-| `moment` | Remove | Angular `DatePipe` / native `Intl` | 3 |
-| `ngx-image-cropper` | **Keep (exception)** | No PrimeNG equivalent; used by create-user modal. Revisit at the end | — |
-| `rtl.config.js`, `ngcc.config.js`, webpack RTL toolchain | Remove | Metronic RTL build leftovers | 1 |
-
-> Rule for removals: a dependency is uninstalled **in the same commit** that deletes its
-> last consumer, so the build stays green at every step.
-
-## 8. Migration Phases
+## 7. Phase Summary
 
 | Phase | Scope | Status |
 |---|---|---|
-| **0** | Create this `context.md` | ✅ Done (2026-07-09) |
-| **1** | Angular 18 → 21 upgrade chain; install PrimeNG 21 base (theme preset, PrimeIcons, PrimeFlex); remove safe unused deps; keep build green | ✅ Done (2026-07-09) — validated with `ng build` + headless-browser smoke test (app boots, redirects to `/auth/login`, renders) |
-| **2** | Rebuild core layout with PrimeNG; delete `_metronic/**` and demo modules | ✅ Done (2026-07-09) — new `src/app/layout/MainLayoutComponent` (topbar + p-panelmenu sidebar + p-drawer mobile + p-breadcrumb + user p-menu + dark-mode toggle). `_metronic/**` fully deleted. Validated in headless browser: navigation, titles/breadcrumbs, dark mode, user menu, 404 page. **Deviation:** Metronic compiled Sass + KeenIcons font stay in `styles.scss` until Phase 3 finishes (business views still use Bootstrap/`ki-*` classes); they are removed with the last migrated view |
-| **3** | View-by-view refactor: all tables → advanced `p-table` (column filters, paginator, sorting, global search); forms → PrimeNG form components; sweetalert2 → toast/confirm services; rename Spanish identifiers/folders to English | ⬜ Pending |
-| **4** | Final sweep: grep-verify zero Metronic traces (`kt_`, `keenicons`, `metronic`, Bootstrap classes), dependency audit, bundle-size check, README update | ⬜ Pending |
+| 0 | `context.md` created | ✅ 2026-07-09 |
+| 1 | Angular 18→19→20→21 (`ng update` per major, build verified each step); PrimeNG 21 base installed (`providePrimeNG` + Aura); safe dep purge | ✅ 2026-07-09 |
+| 2 | PrimeNG shell (`MainLayoutComponent`), `_metronic/**` and demo modules deleted, theme/dark mode, error pages, PrimeNG dashboard | ✅ 2026-07-09 |
+| 3 | Every view migrated to PrimeNG + renamed to English; toasts/confirms centralized; auth rebuilt; public pages converted | ✅ 2026-07-10 |
+| 4 | Final sweep: Metronic Sass/assets deleted, `styles.scss` PrimeNG-only, last deps removed, project renamed, grep audit = zero traces, full headless-browser validation | ✅ 2026-07-10 |
 
-## 9. Coding Conventions (apply to all new/refactored code)
+**Validation gates used throughout:** `ng build` green after every step + headless Chromium smoke
+tests with mocked API (login redirect, shell navigation, tables with filters/paginator, dialogs,
+dark mode, user menu, 404, all feature routes render without page errors).
 
-- English-only identifiers and comments (Rule 4). UI strings may be Spanish.
-- Standalone components; `inject()` over constructor injection; signals
-  (`signal`/`computed`/`toSignal`) for component state — matches the newest code already
-  in the repo (e.g. roles-management).
-- PrimeNG imports per-component (standalone imports array), no monolithic shared UI module.
-- Styling: PrimeNG theme tokens + PrimeFlex utilities; component SCSS only when strictly
-  necessary (respect the 4 kB per-component style budget).
-- Naming: `feature-name.component.ts`, English folder names (`quotes`, `recipes`,
-  `ingredients`, `fixed-costs`, `measurement-units`, `unit-types`, `allergens`, `account`).
+## 8. Coding Conventions
+
+- English-only identifiers and comments. UI strings in Spanish.
+- Standalone components, `inject()`, signals, `ChangeDetectionStrategy.OnPush`.
+- PrimeNG modules imported per component; no shared UI mega-module.
+- Styling: PrimeNG theme tokens (`--p-*`) + PrimeFlex utilities; component SCSS only when needed.
+- Tables: the `categories.component` is the reference pattern for advanced p-table CRUD views.
+- New shared behavior goes through the facades (`ToastService`, `AlertService`, `ConfirmService`).
+
+## 9. Pending / Future Work
+
+- Bump to Angular 22 + PrimeNG 22 when PrimeNG 22 leaves RC (single `ng update` + npm install).
+- Real password-reset flow when the backend exposes an endpoint (replace informational page).
+- Unit tests: Karma is configured but the project has no spec files (inherited from the starter).
+- Optional: self-host the Inter font (currently Google Fonts `<link>`; build-time inlining disabled).
 
 ## 10. Progress Log
 
 | Date | Session summary |
 |---|---|
-| 2026-07-09 | Repo audited. Version decision recorded (Angular 21 + PrimeNG 21). `context.md` created (Phase 0). Phase 1 execution plan delivered. |
-| 2026-07-09 | **Phase 2 executed and validated.** New PrimeNG shell: `layout/main-layout.component` (fixed topbar, p-panelmenu sidebar — General/Catálogos/Operación/Cuenta/Administración with role-filtered admin items, p-drawer for mobile, p-breadcrumb + page title fed by new signal-based `core/services/page-info.service` — same `updateTitle`/`updateBreadcrumbs` API, so the 14 business consumers only changed the import path). New `core/services/theme.service` (`.app-dark` class + `cronos_theme_mode` localStorage; pre-boot script in `index.html`). New standalone PrimeNG `pages/dashboard` (welcome + quick links) and `pages/errors/error-page.component` (`error/:code`). Deleted: `_metronic/**`, `modules/{apps,crud,account,profile,wizards,i18n,errors}`, `pages/builder`, RTL/webpack toolchain. Rescued: real `sign-in-method` component (password change + 2FA) moved from demo `modules/account` into `pages/cronos/cuenta/seguridad/`. Removed deps: ng-bootstrap (+popperjs), ngx-translate ×2, ng-inline-svg-2, ngx-clipboard, clipboard, @sweetalert2/ngx-sweetalert2 (wrapper only; sweetalert2 core stays until Phase 3), object-path, socicon, line-awesome, bootstrap-icons, animate.css, prismjs/prism-themes, nouislider, webpack toolchain. NgbTooltip→pTooltip in 2 admin components. Bug fixed: toast/alert fixed containers intercepted topbar clicks (pointer-events). Styles order: `styles.scss` before PrimeFlex so Bootstrap can't override the PrimeFlex grid. Layout uses theme-flipping tokens (`--p-content-background`, `--p-surface-50/950`). Validation: build green; headless Chromium — sidebar nav, breadcrumbs, dark/light toggle, user menu, 404, business views render inside new shell. Bundle: 2.59 MB. FontAwesome kept temporarily (2 cotizaciones templates). |
-| 2026-07-09 | **Phase 1 executed and validated.** Angular upgraded 18→19→20→21 (one `ng update` per major, build verified at each step). Removed: jQuery/DataTables stack + legacy `pages/{user,role,permission}` (superseded by `pages/cronos/admin`), apexcharts + all Metronic chart/mixed/tiles widgets that used it + `modules/widgets-examples`, fake in-memory backend (`_fake/`, `angular-in-memory-web-api`), unused `@angular/material`. Transitional bumps: ng-bootstrap→20, ngx-sweetalert2→15. Installed PrimeNG 21 + Aura theme preset + PrimeIcons + PrimeFlex; wired via `providePrimeNG` in `app.module.ts` and `angular.json` styles. Build fixes: relaxed style budgets, disabled build-time font inlining. Validation: `ng build` green; headless Chromium smoke test — app bootstraps, splash clears, login page renders (only console error is sandbox-blocked Google Fonts). Note: initial bundle temporarily 3.0 MB (PrimeNG coexists with Metronic Sass until Phase 2). |
+| 2026-07-09 | Repo audited. Version decision recorded. `context.md` created (Phase 0). |
+| 2026-07-09 | **Phase 1:** Angular 18→21 chain (blockers removed step by step: legacy jQuery DataTables pages deleted, fake in-memory backend removed, apexcharts widgets + widgets-examples demo module deleted, @angular/material removed, ng-bootstrap/ngx-sweetalert2 bumped transitionally). PrimeNG 21 + Aura installed and wired. Validated: build + headless browser boot. |
+| 2026-07-09 | **Phase 2:** New PrimeNG shell (topbar/sidebar/breadcrumbs/dark mode), signal `PageInfoService`, `ThemeService`, PrimeNG dashboard + error pages. Deleted `_metronic/**`, demo modules, RTL toolchain. Rescued real `sign-in-method` component from demo module. Fixed toast/alert overlays intercepting topbar clicks; styles order so Bootstrap couldn't override PrimeFlex. Validated in browser (nav, dark mode, menus, 404). |
+| 2026-07-09/10 | **Phase 3:** Shared infra (Toast/Alert facades over MessageService, ConfirmService over ConfirmationService, StatusToggle on p-toggleswitch). All views migrated + renamed to English: categories, allergens, unit-types, measurement-units, ingredients(+form), fixed-costs, recipes(+form+detail with tabs/financial panel), quotes(+form+edit+detail), account (my-account, security+2FA), admin (user-management+create modal, roles-management). Auth rebuilt as standalone PrimeNG pages (`pages/auth`), `modules/` deleted entirely; guards moved to core. Public shared pages converted to PrimeNG tokens. |
+| 2026-07-10 | **Phase 4:** sweetalert2/moment/fontawesome/localize/bootstrap uninstalled; `styles.scss` PrimeNG-only; `src/assets` reduced 74 MB → 48 KB (Cronos logos + splash only); environments minimized; project renamed to `cronos-ui`; grep audit → zero Metronic traces; bundle 2.62 MB → 1.18 MB. Full app smoke test: 13 routes validated headless, no page errors. **Migration complete.** |

@@ -1,8 +1,8 @@
 <!-- Loading state -->
 @if (loading()) {
-  <div class="d-flex flex-column align-items-center justify-content-center py-20">
-    <span class="spinner-border spinner-border-lg text-primary mb-4"></span>
-    <span class="text-muted fs-6">Cargando cotización...</span>
+  <div class="flex flex-column align-items-center justify-content-center py-8">
+    <i class="pi pi-spinner pi-spin text-4xl text-primary mb-4"></i>
+    <span class="text-color-secondary text-base">Cargando cotización...</span>
   </div>
 }
 
@@ -11,13 +11,11 @@
   <div class="container py-15">
     <div class="text-center">
       <div class="mb-8">
-        <i class="ki-duotone ki-information-5 fs-5x text-gray-300">
-          <span class="path1"></span><span class="path2"></span><span class="path3"></span>
-        </i>
+        <i class="pi pi-info-circle text-6xl text-color-secondary"></i>
       </div>
-      <h2 class="fw-bold text-gray-800 mb-3">Cotización no disponible</h2>
-      <p class="text-gray-500 fs-5 mb-8">{{ error() }}</p>
-      <a href="/" class="btn btn-sm btn-light-primary">Ir al inicio</a>
+      <h2 class="font-bold text-color mb-3">Cotización no disponible</h2>
+      <p class="text-color-secondary text-lg mb-8">{{ error() }}</p>
+      <a href="/" class="public-link-button">Ir al inicio</a>
     </div>
   </div>
 }
@@ -31,19 +29,17 @@
       <div class="card shadow-sm mb-8">
         <div class="card-body text-center py-15">
           <div class="mb-6">
-            <i class="ki-duotone ki-lock-3 fs-5x text-gray-300">
-              <span class="path1"></span><span class="path2"></span><span class="path3"></span>
-            </i>
+            <i class="pi pi-circle text-6xl text-color-secondary"></i>
           </div>
-          <h2 class="fw-bold text-gray-800 mb-3">Cotización no disponible</h2>
-          <p class="text-gray-500 fs-5 mb-3">{{ blockedReason() }}</p>
+          <h2 class="font-bold text-color mb-3">Cotización no disponible</h2>
+          <p class="text-color-secondary text-lg mb-3">{{ blockedReason() }}</p>
           @if (quote()!.status === 'REVOKED') {
-            <span class="badge badge-light-dark fs-7 px-4 py-2">Revocada</span>
+            <span class="public-badge public-badge-dark">Revocada</span>
           } @else {
-            <span class="badge badge-light-warning fs-7 px-4 py-2">Expirada</span>
+            <span class="public-badge public-badge-warn">Expirada</span>
           }
           <div class="mt-8">
-            <p class="text-muted fs-7">Contacta al vendedor para solicitar una nueva cotización.</p>
+            <p class="text-color-secondary text-sm">Contacta al vendedor para solicitar una nueva cotización.</p>
           </div>
         </div>
       </div>
@@ -52,9 +48,9 @@
     <!-- ═══ VISIBLE QUOTE ═══ -->
     @if (!isBlocked()) {
       <!-- Print button -->
-      <div class="d-flex justify-content-end mb-4 no-print">
-        <button class="btn btn-sm btn-light-primary" (click)="print()">
-          <i class="ki-duotone ki-printer fs-5 me-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span><span class="path4"></span><span class="path5"></span></i>
+      <div class="flex justify-content-end mb-4 no-print">
+        <button class="public-link-button" (click)="print()">
+          <i class="pi pi-circle text-lg mr-1"></i>
           Imprimir
         </button>
       </div>
@@ -64,46 +60,46 @@
         <div class="card-body p-8 p-lg-12">
 
           <!-- Header -->
-          <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start mb-10">
+          <div class="flex flex-column md:flex-grid justify-content-between align-items-start mb-10">
             <div>
-              <h1 class="fw-bolder text-gray-900 fs-2x mb-2">COTIZACIÓN</h1>
-              <div class="d-flex flex-column gap-1">
-                <span class="text-gray-700 fs-5 fw-semibold">{{ quote()!.quoteNumber }}</span>
+              <h1 class="font-bold text-color text-4xl mb-2">COTIZACIÓN</h1>
+              <div class="flex flex-column gap-1">
+                <span class="text-color text-lg font-semibold">{{ quote()!.quoteNumber }}</span>
                 <span [class]="getStatusBadge().class + ' align-self-start mt-1'">{{ getStatusBadge().label }}</span>
               </div>
             </div>
             <div class="text-sm-end mt-5 mt-sm-0">
-              <h3 class="fw-bold text-gray-800 mb-1">{{ quote()!.bakerName }}</h3>
-              <p class="text-muted fs-7 mb-0">Cotización generada con Cronos</p>
+              <h3 class="font-bold text-color mb-1">{{ quote()!.bakerName }}</h3>
+              <p class="text-color-secondary text-sm mb-0">Cotización generada con Cronos</p>
             </div>
           </div>
 
           <div class="separator separator-dashed mb-8"></div>
 
           <!-- Client info & Dates -->
-          <div class="row mb-10">
+          <div class="grid mb-10">
             <div class="col-sm-6 mb-5 mb-sm-0">
-              <span class="text-muted fs-7 d-block mb-2 text-uppercase fw-bold">Cotizado para</span>
-              <h4 class="fw-bold text-gray-800 mb-1">{{ quote()!.clientName }}</h4>
+              <span class="text-color-secondary text-sm block mb-2 text-uppercase font-bold">Cotizado para</span>
+              <h4 class="font-bold text-color mb-1">{{ quote()!.clientName }}</h4>
             </div>
             <div class="col-sm-3">
-              <span class="text-muted fs-7 d-block mb-2 text-uppercase fw-bold">Fecha</span>
-              <span class="fw-semibold text-gray-700">{{ formatDate(quote()!.quoteDate) }}</span>
+              <span class="text-color-secondary text-sm block mb-2 text-uppercase font-bold">Fecha</span>
+              <span class="font-semibold text-color">{{ formatDate(quote()!.quoteDate) }}</span>
             </div>
             <div class="col-sm-3">
-              <span class="text-muted fs-7 d-block mb-2 text-uppercase fw-bold">Válida hasta</span>
-              <span class="fw-semibold text-gray-700">{{ formatDate(quote()!.validUntil) }}</span>
+              <span class="text-color-secondary text-sm block mb-2 text-uppercase font-bold">Válida hasta</span>
+              <span class="font-semibold text-color">{{ formatDate(quote()!.validUntil) }}</span>
             </div>
           </div>
 
           <!-- Notes -->
           @if (quote()!.notes) {
             <div class="bg-light-info rounded p-5 mb-8">
-              <div class="d-flex align-items-start">
-                <i class="ki-duotone ki-message-text-2 fs-3 text-info me-3 mt-1"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+              <div class="flex align-items-start">
+                <i class="pi pi-circle text-lg text-info mr-3 mt-1"></i>
                 <div>
-                  <span class="fw-semibold text-gray-700 fs-7">Notas del vendedor</span>
-                  <p class="text-gray-600 fs-6 mb-0 mt-1">{{ quote()!.notes }}</p>
+                  <span class="font-semibold text-color text-sm">Notas del vendedor</span>
+                  <p class="text-color-secondary text-base mb-0 mt-1">{{ quote()!.notes }}</p>
                 </div>
               </div>
             </div>
@@ -111,39 +107,39 @@
 
           <!-- Items -->
           <div class="mb-10">
-            <h5 class="fw-bold text-gray-800 mb-5">Detalle de Productos</h5>
+            <h5 class="font-bold text-color mb-5">Detalle de Productos</h5>
             @for (item of quote()!.items; track $index; let last = $last) {
-              <div class="d-flex align-items-start p-4 rounded"
+              <div class="flex align-items-start p-4 rounded"
                 [class.border-bottom]="!last"
                 [class.border-bottom-dashed]="!last"
                 [class.mb-4]="!last">
 
                 <!-- Image -->
-                <div class="me-5 flex-shrink-0">
+                <div class="mr-5 flex-shrink-0">
                   @if (item.mainImageUrl) {
                     <img [src]="item.mainImageUrl" [alt]="item.productName" class="item-image" />
                   } @else {
                     <div class="item-image-placeholder">
-                      <i class="ki-duotone ki-picture fs-2x text-gray-300"><span class="path1"></span><span class="path2"></span></i>
+                      <i class="pi pi-circle text-4xl text-color-secondary"></i>
                     </div>
                   }
                 </div>
 
                 <!-- Product info -->
                 <div class="flex-grow-1">
-                  <div class="d-flex justify-content-between align-items-start">
+                  <div class="flex justify-content-between align-items-start">
                     <div>
-                      <h6 class="fw-bold text-gray-800 mb-1 fs-5">{{ item.productName }}</h6>
+                      <h6 class="font-bold text-color mb-1 text-lg">{{ item.productName }}</h6>
                       @if (item.productDescription) {
-                        <p class="text-muted fs-7 mb-1">{{ item.productDescription }}</p>
+                        <p class="text-color-secondary text-sm mb-1">{{ item.productDescription }}</p>
                       }
                       @if (item.productSize) {
-                        <span class="badge badge-light fs-8">{{ item.productSize }}</span>
+                        <span class="public-badge">{{ item.productSize }}</span>
                       }
                     </div>
-                    <div class="text-end ms-4">
-                      <div class="fw-bolder text-gray-800 fs-5">{{ formatCurrency(item.subtotal) }}</div>
-                      <div class="text-muted fs-7">
+                    <div class="text-end ml-4">
+                      <div class="font-bold text-color text-lg">{{ formatCurrency(item.subtotal) }}</div>
+                      <div class="text-color-secondary text-sm">
                         {{ item.quantity }} x {{ formatCurrency(item.unitPrice) }}
                       </div>
                     </div>
@@ -154,25 +150,25 @@
           </div>
 
           <!-- ═══ Totals — Invoice Breakdown ═══ -->
-          <div class="d-flex justify-content-end mt-8">
+          <div class="flex justify-content-end mt-8">
             <div class="w-100 w-sm-420px">
 
               <!-- Subtotal -->
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <span class="text-gray-600 fs-6">Subtotal</span>
-                <span class="fw-semibold text-gray-800 fs-6">
+              <div class="flex justify-content-between align-items-center mb-3">
+                <span class="text-color-secondary text-base">Subtotal</span>
+                <span class="font-semibold text-color text-base">
                   {{ quote()!.subtotal | currency: quote()!.currency }}
                 </span>
               </div>
 
               <!-- Impuestos -->
               @if (quote()!.taxRate > 0) {
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <span class="text-gray-600 fs-6">
+                <div class="flex justify-content-between align-items-center mb-3">
+                  <span class="text-color-secondary text-base">
                     Impuestos
-                    <span class="badge badge-light fs-8 ms-1">{{ quote()!.taxRate }}%</span>
+                    <span class="public-badge ml-1">{{ quote()!.taxRate }}%</span>
                   </span>
-                  <span class="fw-semibold text-gray-800 fs-6">
+                  <span class="font-semibold text-color text-base">
                     {{ quote()!.taxAmount | currency: quote()!.currency }}
                   </span>
                 </div>
@@ -180,15 +176,12 @@
 
               <!-- Envío a Domicilio (condicional) -->
               @if (quote()!.deliveryFee > 0) {
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <span class="text-gray-600 fs-6">
-                    <i class="ki-duotone ki-truck fs-6 me-1 text-gray-500">
-                      <span class="path1"></span><span class="path2"></span>
-                      <span class="path3"></span><span class="path4"></span><span class="path5"></span>
-                    </i>
+                <div class="flex justify-content-between align-items-center mb-3">
+                  <span class="text-color-secondary text-base">
+                    <i class="pi pi-circle text-base mr-1 text-color-secondary"></i>
                     Envío a Domicilio
                   </span>
-                  <span class="fw-semibold text-gray-800 fs-6">
+                  <span class="font-semibold text-color text-base">
                     {{ quote()!.deliveryFee | currency: quote()!.currency }}
                   </span>
                 </div>
@@ -197,20 +190,18 @@
               <!-- Cargos Adicionales (condicional) -->
               @if (quote()!.extraFee > 0) {
                 <div class="mb-3">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <span class="text-gray-600 fs-6">
-                      <i class="ki-duotone ki-rocket fs-6 me-1 text-gray-500">
-                        <span class="path1"></span><span class="path2"></span>
-                      </i>
+                  <div class="flex justify-content-between align-items-center">
+                    <span class="text-color-secondary text-base">
+                      <i class="pi pi-circle text-base mr-1 text-color-secondary"></i>
                       Cargos Adicionales
                     </span>
-                    <span class="fw-semibold text-gray-800 fs-6">
+                    <span class="font-semibold text-color text-base">
                       {{ quote()!.extraFee | currency: quote()!.currency }}
                     </span>
                   </div>
                   <!-- Razón del cargo extra -->
                   @if (quote()!.extraFeeDescription) {
-                    <p class="mb-0 mt-1 ms-5 fs-7 text-muted fst-italic">
+                    <p class="mb-0 mt-1 ml-5 text-sm text-color-secondary fst-italic">
                       {{ quote()!.extraFeeDescription }}
                     </p>
                   }
@@ -220,13 +211,13 @@
               <hr class="my-4" style="border-color: #e4e6ef;" />
 
               <!-- TOTAL -->
-              <div class="d-flex justify-content-between align-items-center">
-                <span class="fw-bolder text-gray-900 fs-4">TOTAL</span>
+              <div class="flex justify-content-between align-items-center">
+                <span class="font-bold text-color text-lg">TOTAL</span>
                 <div class="text-end">
-                  <span class="fw-bolder text-primary fs-1 lh-1">
+                  <span class="font-bold text-primary text-2xl lh-1">
                     {{ quote()!.total | currency: quote()!.currency }}
                   </span>
-                  <div class="text-muted fs-7 fw-semibold mt-1">{{ quote()!.currency }}</div>
+                  <div class="text-color-secondary text-sm font-semibold mt-1">{{ quote()!.currency }}</div>
                 </div>
               </div>
 
@@ -236,7 +227,7 @@
       </div>
 
       <!-- Footer text -->
-      <div class="text-center mt-8 text-muted fs-7 no-print">
+      <div class="text-center mt-8 text-color-secondary text-sm no-print">
         <p class="mb-1">Esta cotización es válida hasta el <strong>{{ formatDate(quote()!.validUntil) }}</strong>.</p>
         <p class="mb-0">Contacta al vendedor para confirmar tu pedido.</p>
       </div>

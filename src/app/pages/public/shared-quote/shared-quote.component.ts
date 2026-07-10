@@ -9,6 +9,7 @@ import { PublicQuoteResponse } from 'src/app/core/models/domain.model';
     selector: 'app-shared-quote',
     imports: [CommonModule],
     templateUrl: './shared-quote.component.html',
+    styleUrl: './shared-quote.component.scss',
     styles: [`
     :host { display: block; }
 
@@ -122,14 +123,14 @@ export class SharedQuoteComponent implements OnInit, OnDestroy {
 
   getStatusBadge(): { class: string; label: string } {
     const q = this.quote();
-    if (!q) return { class: 'badge badge-light', label: '' };
+    if (!q) return { class: 'public-badge', label: '' };
     switch (q.status) {
-      case 'SENT': return { class: 'badge badge-light-info', label: 'Pendiente' };
-      case 'ACCEPTED': return { class: 'badge badge-light-success', label: 'Aceptada' };
-      case 'REJECTED': return { class: 'badge badge-light-danger', label: 'Rechazada' };
-      case 'REVOKED': return { class: 'badge badge-light-dark', label: 'Revocada' };
-      case 'EXPIRED': return { class: 'badge badge-light-secondary', label: 'Expirada' };
-      default: return { class: 'badge badge-light-primary', label: 'Cotización' };
+      case 'SENT': return { class: 'public-badge public-badge-info', label: 'Pendiente' };
+      case 'ACCEPTED': return { class: 'public-badge public-badge-success', label: 'Aceptada' };
+      case 'REJECTED': return { class: 'public-badge public-badge-danger', label: 'Rechazada' };
+      case 'REVOKED': return { class: 'public-badge public-badge-dark', label: 'Revocada' };
+      case 'EXPIRED': return { class: 'public-badge public-badge-warn', label: 'Expirada' };
+      default: return { class: 'public-badge public-badge-info', label: 'Cotización' };
     }
   }
 

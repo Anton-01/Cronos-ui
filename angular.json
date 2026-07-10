@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "demo1": {
+    "cronos-ui": {
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -20,15 +20,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
-            "outputPath": "dist/demo1",
-            "allowedCommonJsDependencies": [
-              "object-path",
-              "apexcharts",
-              "clipboard.js",
-              "prismjs",
-              "sweetalert2",
-              "moment"
-            ],
+            "outputPath": "dist/cronos-ui",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
@@ -87,10 +79,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "demo1:build:production"
+              "buildTarget": "cronos-ui:build:production"
             },
             "development": {
-              "buildTarget": "demo1:build:development"
+              "buildTarget": "cronos-ui:build:development"
             }
           },
           "defaultConfiguration": "development",
@@ -101,7 +93,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "buildTarget": "demo1:build"
+            "buildTarget": "cronos-ui:build"
           }
         },
         "test": {

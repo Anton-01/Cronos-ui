@@ -11,7 +11,7 @@ export interface ConfirmOptions {
 }
 
 /**
- * Promise-based facade over PrimeNG ConfirmationService (replaces sweetalert2).
+ * Promise-based facade over PrimeNG ConfirmationService.
  * Dialogs render in the global <p-confirmdialog> declared in the app root.
  */
 @Injectable({ providedIn: 'root' })
