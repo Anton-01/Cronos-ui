@@ -46,7 +46,7 @@ export class DashboardComponent implements OnInit {
     {
       label: 'Ingredientes',
       description: 'Administra tu catálogo de ingredientes y precios.',
-      icon: 'pi pi-shopping-basket',
+      icon: 'pi pi-shopping-bag',
       route: '/cronos/ingredientes',
     },
     {

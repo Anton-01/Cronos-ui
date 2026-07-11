@@ -9,9 +9,36 @@ import {
 } from '@angular/common/http';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { providePrimeNG } from 'primeng/config';
+import { definePreset } from '@primeng/themes';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import Aura from '@primeng/themes/aura';
+
+// Aura tuned for the Cronos look: hairline borders and softer radii everywhere
+const CronosPreset = definePreset(Aura, {
+  semantic: {
+    colorScheme: {
+      light: {
+        content: {
+          borderColor: '{surface.100}',
+        },
+        formField: {
+          borderColor: '{surface.200}',
+          hoverBorderColor: '{surface.300}',
+        },
+      },
+      dark: {
+        content: {
+          borderColor: '{surface.800}',
+        },
+        formField: {
+          borderColor: '{surface.700}',
+          hoverBorderColor: '{surface.600}',
+        },
+      },
+    },
+  },
+});
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -30,7 +57,7 @@ import { authInterceptor } from './core/interceptors/auth.interceptor';
     provideAnimationsAsync(),
     providePrimeNG({
       theme: {
-        preset: Aura,
+        preset: CronosPreset,
         options: {
           darkModeSelector: '.app-dark',
         },

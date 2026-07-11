@@ -50,11 +50,13 @@ export class RecipesComponent implements OnInit {
 
   readonly items = signal<RecipeResponse[]>([]);
   readonly isLoading = signal(false);
+  selectedItems: RecipeResponse[] = [];
 
   readonly statusFilterOptions = STATUS_FILTER_OPTIONS;
 
   ngOnInit(): void {
     this.pageInfoService.updateTitle('Recetas');
+    this.pageInfoService.updateDescription('Gestión de tus recetas con costos calculados');
     this.pageInfoService.updateBreadcrumbs([
       { title: 'Inicio', path: '/dashboard', isActive: false },
       { title: 'Recetas', path: '', isActive: true },

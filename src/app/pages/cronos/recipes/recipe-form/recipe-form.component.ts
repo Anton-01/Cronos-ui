@@ -78,6 +78,7 @@ export class RecipeFormComponent implements OnInit, OnDestroy {
     }
 
     this.pageInfoService.updateTitle(id ? 'Editar Receta' : 'Nueva Receta');
+    this.pageInfoService.updateDescription('Datos generales y rendimiento de la receta');
     this.pageInfoService.updateBreadcrumbs([
       { title: 'Inicio', path: '/dashboard', isActive: false },
       { title: 'Recetas', path: '/cronos/recetas', isActive: false },

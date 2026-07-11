@@ -124,6 +124,7 @@ export class QuoteFormComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.pageInfoService.updateTitle('Nueva Cotización');
+    this.pageInfoService.updateDescription('Captura los datos del cliente y los productos a cotizar');
     this.pageInfoService.updateBreadcrumbs([
       { title: 'Inicio', path: '/dashboard', isActive: false },
       { title: 'Cotizaciones', path: '/cronos/cotizaciones', isActive: false },

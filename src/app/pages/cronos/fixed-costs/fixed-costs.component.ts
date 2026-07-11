@@ -101,6 +101,7 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
 
   readonly items = signal<UserFixedCostResponse[]>([]);
   readonly isLoading = signal(false);
+  selectedItems: UserFixedCostResponse[] = [];
   readonly showForm = signal(false);
   readonly selectedItem = signal<UserFixedCostResponse | null>(null);
   readonly isSaving = signal(false);
@@ -125,6 +126,7 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.pageInfoService.updateTitle('Costos Fijos');
+    this.pageInfoService.updateDescription('Gestión de los costos fijos de tu operación');
     this.pageInfoService.updateBreadcrumbs([
       { title: 'Inicio', path: '/dashboard', isActive: false },
       { title: 'Operación', path: '', isActive: false },

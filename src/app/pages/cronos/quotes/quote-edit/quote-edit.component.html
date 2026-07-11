@@ -1,7 +1,6 @@
 <div class="flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
   <div>
     <div class="flex align-items-center gap-2 flex-wrap">
-      <h2 class="m-0 text-xl font-semibold text-color">Editar Cotización</h2>
       @if (quoteNumber()) {
         <p-tag [value]="quoteNumber()" severity="secondary" />
       }
@@ -9,7 +8,6 @@
         <p-tag [value]="statusLabel()" [severity]="statusSeverity()" />
       }
     </div>
-    <p class="mt-1 mb-0 text-color-secondary">Modifica los datos del cliente y los productos cotizados</p>
   </div>
   <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="cancel()" />
 </div>

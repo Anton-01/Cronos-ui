@@ -15,6 +15,8 @@ export class PageInfoService {
 
   setTitle(title: string): void {
     this.title.set(title);
+    // Each page owns its description; reset so stale text never leaks between views
+    this.description.set('');
   }
 
   updateTitle(title: string): void {

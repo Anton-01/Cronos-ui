@@ -37,3 +37,153 @@ a {
 .app-dark {
   --surface-ground: var(--p-surface-950);
 }
+
+// ═══════════════════════════════════════════════════════════════════════
+// Cronos visual language — hairline borders, soft cards, quiet chrome
+// ═══════════════════════════════════════════════════════════════════════
+
+// The main layout content acts as THE big white card; inner p-cards flatten
+// to hairline-bordered sections so we never stack heavy shadows.
+.layout-content .p-card {
+  border: 1px solid var(--p-content-border-color);
+  box-shadow: none;
+  border-radius: 12px;
+}
+
+// ── Tables: hairline grid, quiet header ────────────────────────────────
+.p-datatable {
+  .p-datatable-thead > tr > th {
+    background: transparent;
+    border-bottom: 1px solid var(--p-content-border-color);
+    color: var(--p-text-muted-color);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.65rem 0.75rem;
+  }
+
+  .p-datatable-tbody > tr > td {
+    border-bottom: 1px solid var(--p-content-border-color);
+    padding: 0.7rem 0.75rem;
+  }
+
+  .p-datatable-tbody > tr:last-child > td {
+    border-bottom: 0;
+  }
+
+  // Caption row hosts search + consolidated actions: no box, no border
+  .p-datatable-header {
+    background: transparent;
+    border: 0;
+    padding: 0 0 0.75rem 0;
+  }
+
+  // Monochrome, thin action icons; severity color only reveals on hover
+  .p-button.p-button-text:not(:hover):not(:disabled) {
+    color: var(--p-surface-400);
+  }
+  .p-button.p-button-text .p-button-icon {
+    font-size: 0.95rem;
+  }
+}
+
+// ── Paginator pinned to the top-right action block ─────────────────────
+// paginatorPosition="top" is used on every list table; PrimeNG v21 renders
+// it as a bare p-paginator right after the caption, so style it directly.
+.p-datatable .p-paginator {
+  background: transparent;
+  border: 0;
+  justify-content: flex-end;
+  gap: 0.25rem;
+  padding: 0 0 0.6rem;
+  border-bottom: 1px solid var(--p-content-border-color);
+  margin-bottom: 0.25rem;
+
+  .p-paginator-pages .p-paginator-page,
+  .p-paginator-first,
+  .p-paginator-prev,
+  .p-paginator-next,
+  .p-paginator-last {
+    min-width: 1.9rem;
+    height: 1.9rem;
+    font-size: 0.82rem;
+  }
+
+  .p-paginator-current {
+    font-size: 0.82rem;
+    color: var(--p-text-muted-color);
+  }
+
+  .p-select {
+    height: 1.9rem;
+    align-items: center;
+    font-size: 0.82rem;
+  }
+}
+
+// ── Search field: pill shape, hairline border ──────────────────────────
+.p-datatable .p-iconfield .p-inputtext,
+.table-search .p-inputtext {
+  border-radius: 999px;
+  padding-left: 2.4rem;
+  min-width: 16rem;
+  background: var(--p-surface-50);
+  border-color: var(--p-surface-200);
+
+  &:enabled:focus {
+    background: var(--p-content-background);
+  }
+}
+
+.app-dark .p-datatable .p-iconfield .p-inputtext {
+  background: var(--p-surface-900);
+  border-color: var(--p-surface-700);
+}
+
+// ── Status pills (soft background + dark text, like "Active" chips) ────
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.status-pill::before {
+  content: '';
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.status-pill-active {
+  background: var(--p-green-100);
+  color: var(--p-green-700);
+}
+
+.status-pill-inactive {
+  background: var(--p-surface-100);
+  color: var(--p-surface-600);
+}
+
+.app-dark .status-pill-active {
+  background: color-mix(in srgb, var(--p-green-500) 18%, transparent);
+  color: var(--p-green-300);
+}
+
+.app-dark .status-pill-inactive {
+  background: var(--p-surface-800);
+  color: var(--p-surface-400);
+}
+
+// PrimeNG tags rendered as pills to match
+.p-tag {
+  border-radius: 999px;
+  font-weight: 600;
+  padding: 0.2rem 0.65rem;
+}

@@ -54,6 +54,7 @@ export class UnitTypesComponent implements OnInit {
 
   readonly items = signal<UnitTypeResponse[]>([]);
   readonly isLoading = signal(false);
+  selectedItems: UnitTypeResponse[] = [];
   readonly showForm = signal(false);
   readonly selectedItem = signal<UnitTypeResponse | null>(null);
   readonly isSaving = signal(false);
@@ -68,6 +69,7 @@ export class UnitTypesComponent implements OnInit {
 
   ngOnInit(): void {
     this.pageInfoService.updateTitle('Tipos de Unidad');
+    this.pageInfoService.updateDescription('Gestión del catálogo de tipos de unidad del sistema');
     this.pageInfoService.updateBreadcrumbs([
       { title: 'Inicio', path: '/dashboard', isActive: false },
       { title: 'Catálogos', path: '', isActive: false },
