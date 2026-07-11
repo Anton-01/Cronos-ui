@@ -1,11 +1,3 @@
-<div class="flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
-  <div>
-    <h2 class="m-0 text-xl font-semibold text-color">Gestión de Usuarios</h2>
-    <p class="mt-1 mb-0 text-color-secondary">Administra los usuarios del sistema, sus roles y accesos</p>
-  </div>
-  <p-button label="Nuevo Usuario" icon="pi pi-plus" (onClick)="openCreateModal()" />
-</div>
-
 <div class="grid">
   <div [class]="activePanel() !== 'none' ? 'col-12 xl:col-8' : 'col-12'">
     <p-card>
@@ -13,6 +5,7 @@
         #table
         [value]="users()"
         dataKey="id"
+        paginatorPosition="top"
         [loading]="isLoading()"
         [paginator]="true"
         [rows]="10"
@@ -22,7 +15,7 @@
         [sortOrder]="1"
         [rowHover]="true"
         [showCurrentPageReport]="true"
-        currentPageReportTemplate="Mostrando {first} - {last} de {totalRecords} registros"
+        currentPageReportTemplate="{currentPage} de {totalPages}"
       >
         <ng-template pTemplate="caption">
           <div class="flex align-items-center justify-content-between flex-wrap gap-2">
@@ -56,6 +49,7 @@
                 [showClear]="true"
                 styleClass="w-11rem"
               />
+              <p-button label="Nuevo Usuario" icon="pi pi-plus" size="small" (onClick)="openCreateModal()" />
             </div>
           </div>
         </ng-template>

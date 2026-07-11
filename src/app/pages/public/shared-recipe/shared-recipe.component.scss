@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 // ============================================
 // Cookbook / Traditional Recipe Styling
 // ============================================
@@ -305,7 +307,7 @@ $font-serif: 'Georgia', 'Times New Roman', serif;
   font-size: 1rem;
   line-height: 1.8;
   color: $color-ink-light;
-  border-bottom: 1px solid lighten($color-rule, 5%);
+  border-bottom: 1px solid color.adjust($color-rule, $lightness: 5%);
   counter-increment: step;
 
   &:last-child {

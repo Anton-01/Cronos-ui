@@ -39,6 +39,7 @@ export class MyAccountComponent implements OnInit {
 
   ngOnInit(): void {
     this.pageInfoService.updateTitle('Mi Cuenta');
+    this.pageInfoService.updateDescription('Datos de tu perfil');
     this.pageInfoService.updateBreadcrumbs([
       { title: 'Inicio', path: '/dashboard', isActive: false },
       { title: 'Cuenta', path: '', isActive: false },

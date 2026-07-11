@@ -1,15 +1,13 @@
-<div class="flex align-items-center justify-content-between flex-wrap gap-3 mb-4">
-  <div>
-    <h2 class="m-0 text-xl font-semibold text-color">Gestión de Roles</h2>
-    <p class="mt-1 mb-0 text-color-secondary">Define los roles del sistema y sus permisos</p>
-  </div>
-  <p-button label="Nuevo Rol" icon="pi pi-plus" (onClick)="openCreate()" />
-</div>
-
 <div class="grid">
   <div [class]="panelMode() !== 'none' ? 'col-12 xl:col-7' : 'col-12'">
     <p-card>
       <p-table [value]="roles()" dataKey="id" [loading]="isLoadingRoles()" [rowHover]="true">
+        <ng-template pTemplate="caption">
+          <div class="flex align-items-center justify-content-between flex-wrap gap-2">
+            <span class="text-color-secondary text-sm">{{ roles().length }} roles</span>
+            <p-button label="Nuevo Rol" icon="pi pi-plus" size="small" (onClick)="openCreate()" />
+          </div>
+        </ng-template>
         <ng-template pTemplate="header">
           <tr>
             <th style="min-width: 9rem">Rol</th>

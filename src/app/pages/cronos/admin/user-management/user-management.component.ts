@@ -86,6 +86,7 @@ export class UserManagementComponent implements OnInit {
 
   ngOnInit(): void {
     this.pageInfoService.updateTitle('Gestión de Usuarios');
+    this.pageInfoService.updateDescription('Administra los usuarios del sistema, sus roles y accesos');
     this.pageInfoService.updateBreadcrumbs([
       { title: 'Inicio', path: '/dashboard', isActive: false },
       { title: 'Administración', path: '', isActive: false },

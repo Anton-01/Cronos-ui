@@ -52,11 +52,13 @@ export class IngredientsComponent implements OnInit {
 
   readonly items = signal<IngredientResponse[]>([]);
   readonly isLoading = signal(false);
+  selectedItems: IngredientResponse[] = [];
 
   readonly statusFilterOptions = STATUS_FILTER_OPTIONS;
 
   ngOnInit(): void {
     this.pageInfoService.updateTitle('Ingredientes');
+    this.pageInfoService.updateDescription('Gestión del catálogo de ingredientes y sus costos');
     this.pageInfoService.updateBreadcrumbs([
       { title: 'Inicio', path: '/dashboard', isActive: false },
       { title: 'Catálogos', path: '', isActive: false },

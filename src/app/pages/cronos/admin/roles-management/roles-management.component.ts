@@ -146,6 +146,7 @@ export class RolesManagementComponent implements OnInit {
 
   ngOnInit(): void {
     this.pageInfoService.updateTitle('Gestión de Roles');
+    this.pageInfoService.updateDescription('Define los roles del sistema y sus permisos');
     this.pageInfoService.updateBreadcrumbs([
       { title: 'Inicio', path: '/dashboard', isActive: false },
       { title: 'Administración', path: '', isActive: false },

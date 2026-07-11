@@ -56,6 +56,7 @@ export class CategoriesComponent implements OnInit {
 
   readonly items = signal<CategoryResponse[]>([]);
   readonly isLoading = signal(false);
+  selectedItems: CategoryResponse[] = [];
   readonly showForm = signal(false);
   readonly selectedItem = signal<CategoryResponse | null>(null);
   readonly isSaving = signal(false);
@@ -69,6 +70,7 @@ export class CategoriesComponent implements OnInit {
 
   ngOnInit(): void {
     this.pageInfoService.updateTitle('Categorías');
+    this.pageInfoService.updateDescription('Gestión del catálogo de categorías base del sistema');
     this.pageInfoService.updateBreadcrumbs([
       { title: 'Inicio', path: '/dashboard', isActive: false },
       { title: 'Catálogos', path: '', isActive: false },

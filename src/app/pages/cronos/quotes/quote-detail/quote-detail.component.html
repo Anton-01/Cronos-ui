@@ -9,7 +9,6 @@
   <div class="flex align-items-start justify-content-between flex-wrap gap-3 mb-4">
     <div>
       <div class="flex align-items-center gap-2 flex-wrap">
-        <h2 class="m-0 text-xl font-semibold text-color">Cotización {{ currentQuote.quoteNumber }}</h2>
         <p-tag [value]="getStatusLabel(currentQuote.status)" [severity]="getStatusSeverity(currentQuote.status)" />
         @if (currentQuote.isRevoked) {
           <p-tag value="Enlace revocado" severity="danger" />
@@ -108,7 +107,7 @@
             <span>Historial de Accesos</span>
           </div>
         </ng-template>
-        <p-table [value]="currentQuote.accessLogs ?? []" [rowHover]="true">
+        <p-table [value]="currentQuote.accessLogs" [rowHover]="true">
           <ng-template pTemplate="header">
             <tr>
               <th>Fecha</th>

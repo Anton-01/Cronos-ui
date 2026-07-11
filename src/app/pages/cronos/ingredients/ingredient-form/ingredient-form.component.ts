@@ -131,6 +131,7 @@ export class IngredientFormComponent implements OnInit, OnDestroy {
     this.isEdit = !!this.ingredientId;
 
     this.pageInfoService.updateTitle(this.isEdit ? 'Editar Ingrediente' : 'Nuevo Ingrediente');
+    this.pageInfoService.updateDescription('Registra la información de compra y costeo del ingrediente');
     this.pageInfoService.updateBreadcrumbs([
       { title: 'Inicio', path: '/dashboard', isActive: false },
       { title: 'Ingredientes', path: '/cronos/ingredientes', isActive: false },

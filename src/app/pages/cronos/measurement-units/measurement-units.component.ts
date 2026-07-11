@@ -60,6 +60,7 @@ export class MeasurementUnitsComponent implements OnInit {
 
   readonly items = signal<MeasurementUnitResponse[]>([]);
   readonly isLoading = signal(false);
+  selectedItems: MeasurementUnitResponse[] = [];
   readonly showForm = signal(false);
   readonly selectedItem = signal<MeasurementUnitResponse | null>(null);
   readonly isSaving = signal(false);
@@ -77,6 +78,7 @@ export class MeasurementUnitsComponent implements OnInit {
 
   ngOnInit(): void {
     this.pageInfoService.updateTitle('Unidades de Medida');
+    this.pageInfoService.updateDescription('Gestión del catálogo de unidades de medida del sistema');
     this.pageInfoService.updateBreadcrumbs([
       { title: 'Inicio', path: '/dashboard', isActive: false },
       { title: 'Catálogos', path: '', isActive: false },

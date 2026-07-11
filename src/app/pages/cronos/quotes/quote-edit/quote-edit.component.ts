@@ -109,6 +109,7 @@ export class QuoteEditComponent implements OnInit, OnDestroy {
     this.quoteId.set(id);
 
     this.pageInfoService.updateTitle('Editar Cotización');
+    this.pageInfoService.updateDescription('Modifica los datos del cliente y los productos cotizados');
     this.pageInfoService.updateBreadcrumbs([
       { title: 'Inicio', path: '/dashboard', isActive: false },
       { title: 'Cotizaciones', path: '/cronos/cotizaciones', isActive: false },

@@ -14,19 +14,26 @@ type EntityStatus = 'ACTIVE' | 'INACTIVE';
   standalone: true,
   imports: [FormsModule, ToggleSwitchModule],
   template: `
-    <div class="flex flex-column align-items-start gap-1">
+    <div class="flex align-items-center gap-2">
       <p-toggleswitch
         [ngModel]="item.status === 'ACTIVE'"
         (onChange)="onToggle()"
         [disabled]="loading()"
+        styleClass="status-toggle-switch"
       />
       <span
-        class="text-xs font-bold"
-        [style.color]="item.status === 'ACTIVE' ? 'var(--p-green-500)' : 'var(--p-red-500)'"
+        class="status-pill"
+        [class.status-pill-active]="item.status === 'ACTIVE'"
+        [class.status-pill-inactive]="item.status !== 'ACTIVE'"
       >
         {{ item.status === 'ACTIVE' ? 'Activo' : 'Inactivo' }}
       </span>
     </div>
+  `,
+  styles: `
+    :host ::ng-deep .status-toggle-switch {
+      transform: scale(0.8);
+    }
   `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -35,10 +35,26 @@
     </div>
   </header>
 
-  <!-- Static sidebar (desktop) -->
-  <aside class="layout-sidebar hidden lg:block">
-    <p-panelmenu [model]="menuModel" [multiple]="true" styleClass="layout-panelmenu" />
-  </aside>
+  <!-- Icon rail (desktop) -->
+  <nav class="layout-rail hidden lg:flex">
+    @for (item of railItems; track item.label) {
+      <button
+        type="button"
+        class="rail-item"
+        [class.rail-item-active]="isRailItemActive(item)"
+        [pTooltip]="item.label"
+        tooltipPosition="right"
+        [attr.aria-label]="item.label"
+        (click)="onRailItemClick(item, $event, flyoutMenu)"
+      >
+        <i [class]="item.icon"></i>
+        @if (item.children?.length) {
+          <span class="rail-item-caret"></span>
+        }
+      </button>
+    }
+  </nav>
+  <p-menu #flyoutMenu [model]="flyoutItems()" [popup]="true" appendTo="body" styleClass="rail-flyout" />
 
   <!-- Drawer sidebar (mobile) -->
   <p-drawer
@@ -47,18 +63,23 @@
     header="Cronos"
     styleClass="layout-drawer"
   >
-    <p-panelmenu [model]="menuModel" [multiple]="true" styleClass="layout-panelmenu" />
+    <p-panelmenu [model]="drawerMenuModel" [multiple]="true" styleClass="layout-panelmenu" />
   </p-drawer>
 
-  <!-- Main content -->
+  <!-- Main content: THE big white card -->
   <main class="layout-main">
-    <div class="layout-page-header">
-      <h1 class="layout-page-title">{{ pageInfo.title() }}</h1>
-      @if (breadcrumbItems().length > 0) {
-        <p-breadcrumb [model]="breadcrumbItems()" [home]="breadcrumbHome" styleClass="layout-breadcrumb" />
-      }
-    </div>
     <div class="layout-content">
+      <div class="layout-content-header">
+        <div class="layout-content-heading">
+          <h1 class="layout-page-title">{{ pageInfo.title() }}</h1>
+          @if (pageInfo.description()) {
+            <p class="layout-page-description">{{ pageInfo.description() }}</p>
+          }
+        </div>
+        @if (breadcrumbItems().length > 0) {
+          <p-breadcrumb [model]="breadcrumbItems()" [home]="breadcrumbHome" styleClass="layout-breadcrumb" />
+        }
+      </div>
       <router-outlet />
     </div>
     <footer class="layout-footer">

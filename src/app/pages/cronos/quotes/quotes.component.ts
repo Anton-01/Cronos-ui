@@ -70,6 +70,7 @@ export class QuotesComponent implements OnInit {
 
   readonly items = signal<InternalQuoteResponse[]>([]);
   readonly isLoading = signal(false);
+  selectedItems: InternalQuoteResponse[] = [];
   readonly sendingEmailId = signal<string | null>(null);
   readonly actionMenuItems = signal<MenuItem[]>([]);
 
@@ -77,6 +78,7 @@ export class QuotesComponent implements OnInit {
 
   ngOnInit(): void {
     this.pageInfoService.updateTitle('Cotizaciones');
+    this.pageInfoService.updateDescription('Genera y comparte cotizaciones con tus clientes');
     this.pageInfoService.updateBreadcrumbs([
       { title: 'Inicio', path: '/dashboard', isActive: false },
       { title: 'Cotizaciones', path: '', isActive: true },

@@ -56,6 +56,7 @@ export class AllergensComponent implements OnInit {
 
   readonly items = signal<AllergenResponse[]>([]);
   readonly isLoading = signal(false);
+  selectedItems: AllergenResponse[] = [];
   readonly showForm = signal(false);
   readonly selectedItem = signal<AllergenResponse | null>(null);
   readonly isSaving = signal(false);
@@ -70,6 +71,7 @@ export class AllergensComponent implements OnInit {
 
   ngOnInit(): void {
     this.pageInfoService.updateTitle('Alérgenos');
+    this.pageInfoService.updateDescription('Gestión del catálogo de alérgenos del sistema');
     this.pageInfoService.updateBreadcrumbs([
       { title: 'Inicio', path: '/dashboard', isActive: false },
       { title: 'Catálogos', path: '', isActive: false },
