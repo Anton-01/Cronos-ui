@@ -161,6 +161,16 @@
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-bottom: 1.25rem;
+  // Discreet heading band: a soft surface tint lifts the title/breadcrumb off
+  // the card so it reads as a distinct, corporate page header.
+  padding: 1rem 1.25rem;
+  background: var(--p-surface-50);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 12px;
+}
+
+:host-context(.app-dark) .layout-content-header {
+  background: var(--p-surface-900);
 }
 
 .layout-page-title {
