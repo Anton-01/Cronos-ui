@@ -5,7 +5,8 @@
         #table
         [value]="users()"
         dataKey="id"
-        paginatorPosition="top"
+        paginatorPosition="bottom"
+        [stripedRows]="true"
         [loading]="isLoading()"
         [paginator]="true"
         [rows]="10"
@@ -15,7 +16,7 @@
         [sortOrder]="1"
         [rowHover]="true"
         [showCurrentPageReport]="true"
-        currentPageReportTemplate="{currentPage} de {totalPages}"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
       >
         <ng-template pTemplate="caption">
           <div class="flex align-items-center justify-content-between flex-wrap gap-2">
@@ -49,7 +50,7 @@
                 [showClear]="true"
                 styleClass="w-11rem"
               />
-              <p-button label="Nuevo Usuario" icon="pi pi-plus" size="small" (onClick)="openCreateModal()" />
+              <p-button label="Nuevo Usuario" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreateModal()" />
             </div>
           </div>
         </ng-template>

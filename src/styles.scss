@@ -50,8 +50,18 @@ a {
   border-radius: 12px;
 }
 
-// ── Tables: hairline grid, quiet header ────────────────────────────────
+// Pin card padding to a known value so the paginator footer band can bleed
+// to the card edges with matching negative margins (see .p-paginator below).
+.layout-content .p-card .p-card-body {
+  padding: 1.25rem;
+}
+
+// ── Tables: ultra-thin grid, quiet header, striped rows ────────────────
+// Separators use a fraction of the content border token so they read as
+// almost-imperceptible hairlines; only the header underline stays crisp.
 .p-datatable {
+  border: 0;
+
   .p-datatable-thead > tr > th {
     background: transparent;
     border-bottom: 1px solid var(--p-content-border-color);
@@ -64,12 +74,18 @@ a {
   }
 
   .p-datatable-tbody > tr > td {
-    border-bottom: 1px solid var(--p-content-border-color);
+    border-bottom: 1px solid color-mix(in srgb, var(--p-content-border-color) 60%, transparent);
     padding: 0.7rem 0.75rem;
   }
 
   .p-datatable-tbody > tr:last-child > td {
     border-bottom: 0;
+  }
+
+  // Striped rows: white on odd, a barely-there tint on even. Pair with the
+  // stripedRows input on <p-table> (see the standard template mold).
+  &.p-datatable-striped .p-datatable-tbody > tr:nth-child(even) > td {
+    background: color-mix(in srgb, var(--p-surface-100) 45%, transparent);
   }
 
   // Caption row hosts search + consolidated actions: no box, no border
@@ -88,17 +104,31 @@ a {
   }
 }
 
-// ── Paginator pinned to the top-right action block ─────────────────────
-// paginatorPosition="top" is used on every list table; PrimeNG v21 renders
-// it as a bare p-paginator right after the caption, so style it directly.
+// ── Paginator as a discreet footer band, bottom-left ───────────────────
+// Every list table uses paginatorPosition="bottom"; PrimeNG v21 renders the
+// paginator as the last child of .p-datatable. We turn it into a full-bleed
+// footer strip flush against the card bottom; the negative margins pin it to
+// the card edges and its own bottom corners echo the card's radius.
+//   Layout: [ Mostrando 1 a 10 de 17 registros ][ « ‹ 1 2 › » ] ....... [ 10 ▾ ]
+// The record legend (currentPageReport) is forced first, the page controls
+// sit immediately to its right, and the rows-per-page select is pushed right.
 .p-datatable .p-paginator {
-  background: transparent;
+  margin: 1rem -1.25rem -1.25rem;
+  padding: 0.55rem 1.25rem;
+  background: var(--p-surface-50);
   border: 0;
-  justify-content: flex-end;
+  border-top: 1px solid var(--p-content-border-color);
+  border-radius: 0 0 12px 12px;
+  justify-content: flex-start;
   gap: 0.25rem;
-  padding: 0 0 0.6rem;
-  border-bottom: 1px solid var(--p-content-border-color);
-  margin-bottom: 0.25rem;
+
+  // Total-records legend: hard left, ahead of the controls.
+  .p-paginator-current {
+    order: -1;
+    margin-right: 0.85rem;
+    font-size: 0.82rem;
+    color: var(--p-text-muted-color);
+  }
 
   .p-paginator-pages .p-paginator-page,
   .p-paginator-first,
@@ -110,16 +140,31 @@ a {
     font-size: 0.82rem;
   }
 
-  .p-paginator-current {
-    font-size: 0.82rem;
-    color: var(--p-text-muted-color);
-  }
-
+  // Rows-per-page select drifts to the far right of the band.
   .p-select {
+    margin-left: auto;
     height: 1.9rem;
     align-items: center;
     font-size: 0.82rem;
   }
+}
+
+.app-dark .p-datatable .p-paginator {
+  background: var(--p-surface-900);
+}
+
+.app-dark .p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(even) > td {
+  background: color-mix(in srgb, var(--p-surface-800) 40%, transparent);
+}
+
+// ── Primary page-action button: solid dark, extended width ─────────────
+// severity="contrast" is PrimeNG's native dark/black button (black in light
+// mode, white in dark mode). This class gives it the robust width that marks
+// it as the primary action in the top-right of every view.
+.p-button-page-action {
+  min-width: 11rem;
+  font-weight: 600;
+  padding-inline: 1.5rem;
 }
 
 // ── Search field: pill shape, hairline border ──────────────────────────
@@ -186,4 +231,39 @@ a {
   border-radius: 999px;
   font-weight: 600;
   padding: 0.2rem 0.65rem;
+}
+
+// ── Global page header container ───────────────────────────────────────
+// Standard heading band for any view that renders its own header (the shared
+// layout already applies the same treatment to .layout-content-header). It
+// sits on a discreet surface tint so the title reads clearly against the
+// page. Structure: <div class="page-header"> title/description | breadcrumb.
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.25rem;
+  background: var(--p-surface-50);
+  border: 1px solid var(--p-content-border-color);
+  border-radius: 12px;
+
+  .page-header-title {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--p-text-color);
+  }
+
+  .page-header-description {
+    margin: 0.2rem 0 0;
+    font-size: 0.88rem;
+    color: var(--p-text-muted-color);
+  }
+}
+
+.app-dark .page-header {
+  background: var(--p-surface-900);
 }

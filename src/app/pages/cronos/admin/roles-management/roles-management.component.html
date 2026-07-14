@@ -5,7 +5,7 @@
         <ng-template pTemplate="caption">
           <div class="flex align-items-center justify-content-between flex-wrap gap-2">
             <span class="text-color-secondary text-sm">{{ roles().length }} roles</span>
-            <p-button label="Nuevo Rol" icon="pi pi-plus" size="small" (onClick)="openCreate()" />
+            <p-button label="Nuevo Rol" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
           </div>
         </ng-template>
         <ng-template pTemplate="header">
