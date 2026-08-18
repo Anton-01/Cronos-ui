@@ -3,6 +3,7 @@ import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
+import { DividerModule } from 'primeng/divider';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { PasswordModule } from 'primeng/password';
@@ -15,7 +16,16 @@ import { ToastService } from 'src/app/shared/services/toast.service';
 @Component({
   selector: 'app-sign-in-method',
   standalone: true,
-  imports: [ReactiveFormsModule, ButtonModule, DialogModule, InputTextModule, MessageModule, PasswordModule, TagModule],
+  imports: [
+    ReactiveFormsModule,
+    ButtonModule,
+    DialogModule,
+    DividerModule,
+    InputTextModule,
+    MessageModule,
+    PasswordModule,
+    TagModule,
+  ],
   templateUrl: './sign-in-method.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -14,11 +14,21 @@ import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
 import { SignInMethodComponent } from './sign-in-method/sign-in-method.component';
+import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skeleton-row/table-skeleton-row.component';
 
 @Component({
   selector: 'app-security',
   standalone: true,
-  imports: [ButtonModule, CardModule, DialogModule, TableModule, TagModule, TooltipModule, SignInMethodComponent],
+  imports: [
+    ButtonModule,
+    CardModule,
+    DialogModule,
+    TableModule,
+    TagModule,
+    TooltipModule,
+    SignInMethodComponent,
+    TableSkeletonRowComponent,
+  ],
   templateUrl: './security.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -35,6 +45,7 @@ export class SecurityComponent implements OnInit {
 
   // Sessions
   readonly isLoadingSessions = signal(false);
+  protected readonly skeletonRows = Array.from({ length: 4 });
   readonly sessions = signal<ActiveSession[]>([]);
   readonly selectedSession = signal<ActiveSession | null>(null);
 

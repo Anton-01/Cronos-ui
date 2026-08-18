@@ -1,7 +1,5 @@
 @if (isLoading()) {
-  <div class="flex justify-content-center py-8">
-    <i class="pi pi-spinner pi-spin text-4xl text-primary"></i>
-  </div>
+  <app-detail-skeleton [fields]="8" />
 } @else if (recipe(); as currentRecipe) {
   <!-- Header -->
   <div class="flex align-items-start justify-content-between flex-wrap gap-3 mb-4">

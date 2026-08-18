@@ -6,6 +6,7 @@
     paginatorPosition="bottom"
     [stripedRows]="true"
     [loading]="isLoading()"
+    [showLoader]="false"
     [paginator]="true"
     [rows]="10"
     [rowsPerPageOptions]="[10, 25, 50]"
@@ -104,6 +105,12 @@
       </tr>
     </ng-template>
 
+    <ng-template pTemplate="loadingbody">
+      @for (row of skeletonRows; track $index) {
+        <tr appTableSkeletonRow [columns]="5"></tr>
+      }
+    </ng-template>
+
     <ng-template pTemplate="emptymessage">
       <tr>
         <td colspan="5" class="text-center text-color-secondary py-5">No hay tipos de unidad registrados</td>
@@ -121,9 +128,6 @@
   [style]="{ width: '30rem' }"
 >
   <form [formGroup]="form" (ngSubmit)="saveForm()" id="unitTypeForm" class="flex flex-column gap-3">
-    @if (!selectedItem()) {
-      <p-message severity="info" text="El registro se dará de alta con el estatus de Activo por defecto." />
-    }
     <div class="flex flex-column gap-1">
       <label for="unitTypeCode" class="font-medium">Código <span class="text-red-500">*</span></label>
       <input pInputText id="unitTypeCode" formControlName="codeIdentity" placeholder="Código identificador" />

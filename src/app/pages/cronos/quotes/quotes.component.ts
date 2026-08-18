@@ -20,6 +20,7 @@ import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
+import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skeleton-row/table-skeleton-row.component';
 
 type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast';
 
@@ -56,6 +57,7 @@ const STATUS_SEVERITIES: Record<string, TagSeverity> = {
     TableModule,
     TagModule,
     TooltipModule,
+    TableSkeletonRowComponent,
   ],
   templateUrl: './quotes.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -70,6 +72,7 @@ export class QuotesComponent implements OnInit {
 
   readonly items = signal<InternalQuoteResponse[]>([]);
   readonly isLoading = signal(false);
+  protected readonly skeletonRows = Array.from({ length: 6 });
   selectedItems: InternalQuoteResponse[] = [];
   readonly sendingEmailId = signal<string | null>(null);
   readonly actionMenuItems = signal<MenuItem[]>([]);

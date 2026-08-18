@@ -17,6 +17,7 @@ import { RecipeResponse } from 'src/app/core/models/domain.model';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
+import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skeleton-row/table-skeleton-row.component';
 
 const STATUS_FILTER_OPTIONS = [
   { label: 'Activa', value: 'ACTIVE' },
@@ -37,6 +38,7 @@ const STATUS_FILTER_OPTIONS = [
     TableModule,
     TagModule,
     TooltipModule,
+    TableSkeletonRowComponent,
   ],
   templateUrl: './recipes.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -50,6 +52,7 @@ export class RecipesComponent implements OnInit {
 
   readonly items = signal<RecipeResponse[]>([]);
   readonly isLoading = signal(false);
+  protected readonly skeletonRows = Array.from({ length: 6 });
   selectedItems: RecipeResponse[] = [];
 
   readonly statusFilterOptions = STATUS_FILTER_OPTIONS;

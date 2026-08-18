@@ -1,141 +1,246 @@
-# Cronos UI — Migration Context
+# Cronos UI — Design & Engineering Context
 
-> **Purpose of this file:** Single source of truth for the Metronic → PrimeNG migration.
-> It records the strict rules, the technology stack, the architecture, key decisions, and
-> the progress log. Update it at the end of every work session so any future conversation
-> (human or LLM) can resume with full context.
+This file is the source of truth for all future UI/UX and code-quality work on
+this project. It reflects the **actual current state** of the codebase (verified
+2026-08-17), not assumptions. Read it before touching any component.
 
 ---
 
-## 1. Project Overview
+## 1. Stack Snapshot (verified, not aspirational)
 
-- **Product:** Cronos — management system for a specialized bakery business
-  (quotes, recipes, ingredients, fixed costs, measurement units, allergens, users/roles/permissions).
-- **Repository:** `Anton-01/cronos-ui`
-- **Migration branch:** `claude/metronic-primeng-migration-7hnxoz`
-- **Status:** ✅ **MIGRATION COMPLETE** (all 4 phases executed and validated on 2026-07-09/10).
-  The app is 100% PrimeNG; zero Metronic traces remain in source, styles, assets, or dependencies.
-
-## 2. Strict Rules (all enforced)
-
-1. **Zero Metronic:** ✅ No Metronic CSS classes, SCSS, JS plugins, assets, or dependencies remain.
-   Verified by grep audit (`metronic|keenicon|keenthemes|kt_|data-kt|sweetalert|ng-bootstrap|apexcharts|datatables` → 0 hits in `src/`).
-2. **PrimeNG purism:** ✅ All UI is native PrimeNG (see §4). The only non-Prime UI library kept is
-   `ngx-image-cropper` (create-user avatar crop — PrimeNG has no equivalent; documented exception).
-3. **Advanced DataTables:** ✅ Every list view uses native `p-table` with sortable columns,
-   per-column filter menus (`p-columnFilter display="menu"`), dropdown filters for enum columns,
-   global search, paginator with page-size options, and loading state.
-4. **English-only source code:** ✅ All components, classes, folders, variables, and comments are
-   English. UI strings remain Spanish (content, not code). Route URLs keep their original Spanish
-   paths (`/cronos/recetas`, …) on purpose: they are user-facing/bookmarkable and referenced by
-   shared public links.
-5. **Latest stable versions:** ✅ Angular 21.2 + PrimeNG 21.1 (see §5).
-6. **Global styles:** ✅ `styles.scss` contains only base typography, PrimeNG token bridge for
-   PrimeFlex, and dark-mode helpers. `angular.json` loads only `styles.scss`, PrimeIcons, PrimeFlex.
-
-## 3. Technology Stack (final)
-
-| Item | Value |
+| Layer | Reality |
 |---|---|
-| Angular | 21.2.x (NgModule root `app.module.ts` + 100% standalone feature components, signals, OnPush) |
-| UI | PrimeNG 21.1.x, `@primeng/themes` (Aura preset, dark mode via `.app-dark` selector), PrimeIcons 7, PrimeFlex 4 |
-| State | Angular signals (`signal`/`computed`/`toSignal`); `ProfileStateService` for current user |
-| Toasts | Global `<p-toast>` in app root; `ToastService`/`AlertService` are facades over `MessageService` (public APIs unchanged for consumers) |
-| Confirmations | Global `<p-confirmdialog>`; `ConfirmService` = promise-based facade over `ConfirmationService` |
-| Dates/Currency | Native `Intl` (`toLocaleDateString('es-MX')`, `Intl.NumberFormat`) |
-| Exception | `ngx-image-cropper` (avatar cropping) |
-| Bundle | Initial 1.18 MB raw / ~210 KB gzip (was 2.62 MB at Metronic baseline). `src/assets` 48 KB (was 74 MB) |
-| Build | `browser` builder, ESLint 9, Karma configured (no spec files exist — starter shipped none) |
+| Angular | `21.2.18`, **NgModule-based** bootstrap (`app.module.ts`), not standalone |
+| PrimeNG | `21.1.9` — new design-token theming engine (`@primeng/themes`), **not** the legacy CSS-theme era |
+| PrimeFlex | `^4.0.0`, already wired in `angular.json` (`styles` array) |
+| PrimeIcons | `^7.0.0` |
+| Tailwind CSS | **not installed** — to be added (v4, zero-config `@import "tailwindcss"` + PostCSS plugin) |
+| Theme preset | Custom `CronosPreset` in `app.module.ts` = `definePreset(Aura, {...})`, dark mode via `.app-dark` selector |
+| Component selectors | Modern only: `p-select`, `p-multiselect` (the app has zero usages of the deprecated `p-dropdown` / `p-multiSelect` tags — keep it that way) |
 
-## 4. Architecture Map
+---
 
-- `src/app/layout/` — `MainLayoutComponent`: fixed topbar (logo, dark-mode toggle, user `p-menu`),
-  `p-panelmenu` sidebar (menu model in `layout/app-menu.ts`, admin items filtered by
-  `TokenService.hasRole`), `p-drawer` mobile nav, `p-breadcrumb` + page title fed by `PageInfoService`.
-- `src/app/core/` — real services (auth, token, user, role, permission, profile signal store,
-  domain services), functional guards (`authGuard`, `guestGuard`, `roleGuard`), interceptors,
-  `PageInfoService` (signal-based; `updateTitle`/`updateBreadcrumbs`), `ThemeService`
-  (`.app-dark` class + `cronos_theme_mode` localStorage; pre-boot script in `index.html`).
-- `src/app/shared/` — `ToastService`, `AlertService`, `ConfirmService`, `StatusToggleComponent`
-  (`p-toggleswitch` + confirm + PATCH `/api/v1/{endpoint}/{id}/status`).
-- `src/app/pages/auth/` — `AuthLayoutComponent` (centered card), login (2FA + Google/Facebook OAuth),
-  register, forgot-password (informational — the old flow used the deleted fake demo backend),
-  logout (`performLogout`), oauth2-callback.
-- `src/app/pages/dashboard/` — welcome + quick-link cards.
-- `src/app/pages/errors/` — `ErrorPageComponent` at `error/:code` (404/500).
-- `src/app/pages/public/` — shared-recipe & shared-quote public pages + their layouts (self-contained
-  custom SCSS; badges/containers replaced with PrimeNG-token equivalents).
-- `src/app/pages/cronos/` — feature views (all standalone, English names):
-  `categories`, `allergens`, `unit-types`, `measurement-units`, `ingredients` (+ `ingredient-form`),
-  `fixed-costs`, `recipes` (+ `recipe-form`, `recipe-detail` with p-tabs: ingredients/fixed-costs/
-  instructions/files/shares + financial panel with cost breakdown & yield simulation),
-  `quotes` (+ `quote-form`, `quote-edit` with terminal-status read-only lock, `quote-detail`),
-  `account` (`my-account`, `security` with sessions/login-history/2FA), `admin`
-  (`user-management` + `create-user-modal`, `roles-management` with permission matrix).
+## 2. Theming Rule — Aura, not Lara
 
-## 5. Key Decisions Log
+PrimeNG dropped the old CSS-file theme catalog (Saga, Vela, Arya, **Lara**) at v18.
+Theming is now token-based via `definePreset()` + `providePrimeNG()`. There is no
+"Lara" stylesheet to import anymore — asking for it would be asking for a
+component that no longer exists in this PrimeNG version.
 
-| Date | Decision |
-|---|---|
-| 2026-07-09 | **Angular 21 + PrimeNG 21** (not Angular 22): PrimeNG stable 21.1.9 pins `@angular/core ^21.0.7`; PrimeNG 22 still RC. Bump both majors together when PrimeNG 22 ships stable. |
-| 2026-07-09 | Route URLs stay Spanish (user-facing, bookmarkable, used in shared public links). Code identifiers are English. |
-| 2026-07-09 | Catalog tables load up to 1000 rows and use client-side p-table filtering/sorting/pagination (full native filter capabilities; datasets are small per-user catalogs). |
-| 2026-07-09 | `ToastService`/`AlertService` keep their public APIs as facades over `MessageService`, so ~40 consumer call sites needed no changes. |
-| 2026-07-09 | `ngx-image-cropper` kept as the single documented non-Prime UI exception. |
-| 2026-07-10 | Metronic forgot-password flow (fake backend demo) replaced by an informational page; backend has no reset endpoint yet. |
-| 2026-07-10 | Project renamed `demo1` → `cronos-ui` (package.json, angular.json, dist path). Environments reduced to `{ production, apiUrl }`. |
-| — | Build quirks: font inlining disabled (sandbox proxy blocks Google Fonts at build time); budgets initial warn 2 MB / error 5 MB, component styles warn 8 kB / error 16 kB. |
+**Decision:** the app already runs on `Aura`, extended into `CronosPreset`
+(`src/app/app.module.ts`). Aura is also what the real primeng.org homepage runs
+on. **Do not replace it with a `lara` preset.** Instead, deepen `CronosPreset`'s
+dark-mode branch to hit the "deep blacks, sophisticated grays" target:
 
-## 6. Dependency State (final)
+- Extend `semantic.colorScheme.dark` in `CronosPreset` — do not hand-roll a
+  parallel dark palette in `styles.scss`.
+- Keep the existing `.app-dark` selector as the single dark-mode toggle
+  (`darkModeSelector: '.app-dark'` in `providePrimeNG`). Never introduce a second
+  dark-mode mechanism (no `prefers-color-scheme` media query overrides, no
+  duplicate `:root[data-theme]` scheme).
+- Background depth for dark mode should route through `--p-surface-950` /
+  `--p-surface-900` tokens (already bridged to `--surface-ground` /
+  `--surface-card` in `styles.scss`), not literal hex/`#000` values.
+- Never leave a view relying on default `--p-surface-0` (pure white) as its main
+  background. Large surfaces use `--p-surface-50` (light) / `--p-surface-950`
+  (dark); cards flatten to hairline borders instead of stacking shadows on white
+  (see existing `.layout-content .p-card` rule in `styles.scss` — follow that
+  pattern, don't fight it).
 
-**dependencies:** `@angular/*` 21, `@primeng/themes`, `primeng`, `primeicons`, `primeflex`,
-`ngx-image-cropper`, `rxjs`, `tslib`, `zone.js`.
+---
 
-**Removed during migration:** Metronic template code (`_metronic/`, demo modules, demo pages),
-bootstrap, @ng-bootstrap/ng-bootstrap, @popperjs/core, jquery, datatables.net(-bs5),
-angular-datatables, @angular/material, @angular/localize, angular-in-memory-web-api (+`_fake/`),
-apexcharts, ng-apexcharts, sweetalert2, @sweetalert2/ngx-sweetalert2, ngx-translate (core+loader),
-ng-inline-svg-2, ngx-clipboard, clipboard, moment, object-path, prismjs, prism-themes, nouislider,
-animate.css, line-awesome, socicon, bootstrap-icons, @fortawesome/fontawesome-free, KeenIcons,
-webpack RTL toolchain (+`rtl.config.js`, `ngcc.config.js`), ~74 MB of Metronic assets.
+## 3. Styling Rules — PrimeFlex vs. Tailwind, division of labor
 
-## 7. Phase Summary
+Both stay. They are not redundant if scoped correctly:
 
-| Phase | Scope | Status |
-|---|---|---|
-| 0 | `context.md` created | ✅ 2026-07-09 |
-| 1 | Angular 18→19→20→21 (`ng update` per major, build verified each step); PrimeNG 21 base installed (`providePrimeNG` + Aura); safe dep purge | ✅ 2026-07-09 |
-| 2 | PrimeNG shell (`MainLayoutComponent`), `_metronic/**` and demo modules deleted, theme/dark mode, error pages, PrimeNG dashboard | ✅ 2026-07-09 |
-| 3 | Every view migrated to PrimeNG + renamed to English; toasts/confirms centralized; auth rebuilt; public pages converted | ✅ 2026-07-10 |
-| 4 | Final sweep: Metronic Sass/assets deleted, `styles.scss` PrimeNG-only, last deps removed, project renamed, grep audit = zero traces, full headless-browser validation | ✅ 2026-07-10 |
+- **PrimeFlex** → structural layout only: `p-grid`/`flex`, `col-*`, `gap-*`,
+  `align-items-*`, `justify-content-*`. Anything that mirrors how PrimeNG's own
+  component internals expect spacing.
+- **Tailwind** → everything else: one-off spacing/sizing not covered by
+  PrimeFlex tokens, typography utilities, dark-mode fine-tuning (`dark:` variant
+  reads off `.app-dark`, configure `darkMode: 'selector'` pointed at
+  `.app-dark` — not the default `media` strategy, or Tailwind's dark mode and
+  PrimeNG's dark mode will drift out of sync), and interaction-state utilities
+  PrimeFlex doesn't provide (`hover:`, `focus-visible:`, `active:`).
+- Never use Tailwind's `bg-white` / `bg-black` literals — use the `p-` CSS
+  variable tokens (`var(--p-surface-*)`) via Tailwind's `theme()` / arbitrary
+  value syntax (`bg-[var(--p-surface-950)]`) so colors stay theme-reactive.
+- No component may ship with an unbroken large white/pure-surface-0 background
+  in dark mode. If a PrimeNG component defaults to `--p-surface-0`, override
+  it through the preset (section 2), not with ad-hoc component CSS.
 
-**Validation gates used throughout:** `ng build` green after every step + headless Chromium smoke
-tests with mocked API (login redirect, shell navigation, tables with filters/paginator, dialogs,
-dark mode, user menu, 404, all feature routes render without page errors).
+---
 
-## 8. Coding Conventions
+## 4. Loading States — `p-skeleton` — IMPLEMENTED (see below)
 
-- English-only identifiers and comments. UI strings in Spanish.
-- Standalone components, `inject()`, signals, `ChangeDetectionStrategy.OnPush`.
-- PrimeNG modules imported per component; no shared UI mega-module.
-- Styling: PrimeNG theme tokens (`--p-*`) + PrimeFlex utilities; component SCSS only when needed.
-- Tables: the `categories.component` is the reference pattern for advanced p-table CRUD views.
-- New shared behavior goes through the facades (`ToastService`, `AlertService`, `ConfirmService`).
+Two shared, reusable components carry every skeleton in the app — no page
+inlines its own `p-skeleton` markup:
 
-## 9. Pending / Future Work
+- **`tr[appTableSkeletonRow]`**
+  (`src/app/shared/components/table-skeleton-row/table-skeleton-row.component.ts`) —
+  attribute-selector on `tr` (decorates a real `<tr>`, doesn't wrap it, so
+  table structure stays valid inside `<tbody>`). Takes `[columns]` and renders
+  that many `<td><p-skeleton></td>` cells with varied widths. Wired into every
+  `<p-table>` via PrimeNG's built-in `pTemplate="loadingbody"` template
+  (context: renders while `[loading]="true"`). Each table also sets
+  `[showLoader]="false"` so PrimeNG's default spinner-overlay mask doesn't
+  stack on top of the skeleton rows. Applied to all 11 list pages: unit-types,
+  quotes, user-management, allergens, measurement-units, recipes, ingredients,
+  fixed-costs, categories, roles-management, account/security (both tables).
 
-- Bump to Angular 22 + PrimeNG 22 when PrimeNG 22 leaves RC (single `ng update` + npm install).
-- Real password-reset flow when the backend exposes an endpoint (replace informational page).
-- Unit tests: Karma is configured but the project has no spec files (inherited from the starter).
-- Optional: self-host the Inter font (currently Google Fonts `<link>`; build-time inlining disabled).
+- **`app-detail-skeleton`**
+  (`src/app/shared/components/detail-skeleton/detail-skeleton.component.ts`) —
+  `[fields]` (count) + `[showTitle]` (bool) inputs, renders a responsive
+  label/value grid shaped like a Cronos detail/form page. Used behind
+  `@if (isLoading()) { <app-detail-skeleton /> } @else { ... }` in the 6
+  pages that fetch on init: quote-detail, recipe-detail, quote-edit,
+  recipe-form (edit mode), ingredient-form (edit mode), my-account. Two of
+  these (recipe-form, ingredient-form) previously rendered the form
+  immediately with no loading gate at all — the skeleton gate was added
+  net-new, not swapped in from an existing spinner. The other four already
+  had a correctly-toggled `isLoading` signal gating a bare spinner icon; only
+  the spinner markup was replaced.
 
-## 10. Progress Log
+- Skeleton visibility in all cases is driven by the component's existing
+  `isLoading` signal, already toggled at HTTP start/complete — none of that
+  loading-state logic needed to change, only what renders while it's `true`.
+- Dashboard has no init data fetch (static quick-links, profile state loaded
+  elsewhere) — intentionally has no skeleton.
 
-| Date | Session summary |
-|---|---|
-| 2026-07-11 | **Visual redesign (reference-driven).** New design language: light-gray canvas (`--p-surface-50`, #f8fafc) with the layout content as ONE big white card (rounded 16px, soft shadow); hairline borders everywhere via `definePreset(Aura)` (`content.borderColor: surface.100`, `formField.borderColor: surface.200`) + table cell rules. Sidebar replaced by an icon-only rail (`layout/app-menu.ts` → `buildRailMenu`: direct items + flyout `p-menu` for grouped routes: Catálogos/Cuenta/Administración); mobile keeps the full drawer menu. **Title duplication fixed**: views no longer render their own h2 — the layout header band shows `PageInfoService.title/description` top-left and minimal breadcrumbs top-right (`setTitle` now resets description). List views: "Nuevo X" button (small) consolidated with record count in the caption top-right; paginator moved on top (`paginatorPosition="top"`, report "{currentPage} de {totalPages}", right-aligned via CSS); row-selection checkboxes added (`[(selection)]`, `p-tableHeaderCheckbox`/`p-tableCheckbox` replacing the # column); pill search input; monochrome thin action icons (severity color only on hover). Status = pill badge (soft green bg/dark green text) + compact toggle in `StatusToggleComponent`; `p-tag` restyled as pills. Fixed build warnings: sass `lighten()` → `color.adjust` (shared-recipe scss), NG8102 `?? []` removed (quote-detail). Icon fix: `pi-shopping-basket` (nonexistent) → `pi-shopping-bag`. Validated headless: single title, rail + flyouts, checkboxes, pills, breadcrumbs, zero page errors; build green with 0 warnings. |
-| 2026-07-09 | Repo audited. Version decision recorded. `context.md` created (Phase 0). |
-| 2026-07-09 | **Phase 1:** Angular 18→21 chain (blockers removed step by step: legacy jQuery DataTables pages deleted, fake in-memory backend removed, apexcharts widgets + widgets-examples demo module deleted, @angular/material removed, ng-bootstrap/ngx-sweetalert2 bumped transitionally). PrimeNG 21 + Aura installed and wired. Validated: build + headless browser boot. |
-| 2026-07-09 | **Phase 2:** New PrimeNG shell (topbar/sidebar/breadcrumbs/dark mode), signal `PageInfoService`, `ThemeService`, PrimeNG dashboard + error pages. Deleted `_metronic/**`, demo modules, RTL toolchain. Rescued real `sign-in-method` component from demo module. Fixed toast/alert overlays intercepting topbar clicks; styles order so Bootstrap couldn't override PrimeFlex. Validated in browser (nav, dark mode, menus, 404). |
-| 2026-07-09/10 | **Phase 3:** Shared infra (Toast/Alert facades over MessageService, ConfirmService over ConfirmationService, StatusToggle on p-toggleswitch). All views migrated + renamed to English: categories, allergens, unit-types, measurement-units, ingredients(+form), fixed-costs, recipes(+form+detail with tabs/financial panel), quotes(+form+edit+detail), account (my-account, security+2FA), admin (user-management+create modal, roles-management). Auth rebuilt as standalone PrimeNG pages (`pages/auth`), `modules/` deleted entirely; guards moved to core. Public shared pages converted to PrimeNG tokens. |
-| 2026-07-10 | **Phase 4:** sweetalert2/moment/fontawesome/localize/bootstrap uninstalled; `styles.scss` PrimeNG-only; `src/assets` reduced 74 MB → 48 KB (Cronos logos + splash only); environments minimized; project renamed to `cronos-ui`; grep audit → zero Metronic traces; bundle 2.62 MB → 1.18 MB. Full app smoke test: 13 routes validated headless, no page errors. **Migration complete.** |
+---
+
+## 5. Modals (`p-dialog`) — Styling & Content
+
+10 `p-dialog` usages currently in the app.
+
+**Styling:**
+- Round corners via the preset's dialog design tokens (`--p-dialog-border-radius`
+  or the equivalent `dialog.borderRadius` key in `CronosPreset`), not per-component
+  inline `border-radius` overrides.
+- Soft elevation only — no heavy/aggressive borders. Rely on PrimeNG's dialog
+  shadow token, tuned once in the preset, not per-dialog.
+- `p-button` inside dialogs uses the theme's `primary`/`secondary`/`text`
+  severities as configured in `CronosPreset` — never a hardcoded hex color on a
+  button.
+
+**Content — remove the placeholder legend:**
+- Delete the Spanish string `"El registro se dará de alta con el estatus de
+  Activo por defecto"` everywhere it appears. Confirmed locations as of this
+  audit:
+  - `src/app/pages/cronos/unit-types/unit-types.component.html`
+  - `src/app/pages/cronos/allergens/allergens.component.html`
+  - `src/app/pages/cronos/measurement-units/measurement-units.component.html`
+  - `src/app/pages/cronos/categories/categories.component.html`
+- Re-check for this string (and paraphrases of it) on every new create/edit
+  modal going forward — it should never reappear.
+
+---
+
+## 6. Select / Dropdown Overlap Fix — RESOLVED (see §10 deviation note)
+
+Implemented via `providePrimeNG({ overlayAppendTo: 'body', ... })` in
+`app.module.ts`, **not** per-component `appendTo="body"` as originally
+specified in this section. Every PrimeNG overlay (`p-select`, `p-multiselect`,
+`p-autocomplete`, `p-cascadeselect`, `p-datepicker`, `p-popover`, `p-menu`,
+etc.) reads `this.appendTo() || this.config.overlayAppendTo()` internally, so
+the global config option is a strict superset of setting `appendTo="body"` on
+every template — one line covers all current and future overlay usages
+instead of relying on each new template to remember it.
+
+- Default going forward: **do not** add `[appendTo]="'body'"` per component —
+  it's redundant with the global config. Only set a component-local
+  `appendTo` when a specific instance genuinely needs a different target
+  (e.g. an overlay that must stay inside a specific scrollable container).
+- Do not solve overlap by inflating a global `z-index` value in `styles.scss`;
+  `overlayAppendTo` already removes the stacking-context problem at its root.
+  Only touch a panel's `z-index` token in `CronosPreset` if two `body`-appended
+  overlays still collide with each other (e.g. dialog + multiselect open at
+  once).
+- Option/list touch targets: `list.option.padding` in `CronosPreset` is set to
+  `0.75rem 1rem` (~44px row height with default font size) — applies to every
+  select/list-style overlay at once. Don't override `.p-select-option` padding
+  per component.
+
+---
+
+## 7. Full-Screen Forms — AUDITED, narrower fix than expected
+
+Before touching anything, every full-screen form route was read in full.
+Most were already exactly what this section asks for:
+`recipe-form`, `ingredient-form`, `quote-form`, and `quote-edit` already
+group fields into titled `p-card` sections (`ingredient-form` even uses the
+card `subtitle` template) with a PrimeFlex `grid`/`col-*` responsive layout —
+not a flat wall of inputs. **Don't restructure these further** — the
+`p-card`-per-section pattern already in `ingredient-form` is the reference to
+copy for any *new* full-screen form, not something to redo.
+
+What was actually wrong, and fixed:
+
+- `quote-form` and `quote-edit`'s Summary card separated the input fields
+  from the computed totals with a hand-rolled
+  `<div class="border-top-1 surface-border pt-3">` instead of the PrimeNG
+  component this section calls for. Replaced with `<p-divider styleClass="my-0" />`
+  in both.
+- `sign-in-method` (embedded in the Security page) had the same hand-rolled
+  `border-top-1 surface-border` div separating the Password and 2FA sections.
+  Same fix: `<p-divider styleClass="my-0" />`.
+- `my-account` was the one genuine flat-wall case — a single `p-card` with no
+  internal grouping at all, editable identity fields and the read-only Roles
+  display run together with just a `gap-3`. Added a `<p-divider>` before the
+  Roles row. Didn't split it into multiple `p-card`s — six fields in one
+  short settings form doesn't warrant `p-panel`-level ceremony; a single
+  divider between "editable" and "read-only, system-assigned" is
+  proportionate.
+
+Rule going forward, now that the codebase has a working example: group
+fields into titled `p-card` sections for any form with more than ~2 logical
+groups of fields (see `ingredient-form`); use a single `p-divider` inside one
+card for a two-part form too small to justify separate cards (see
+`my-account`). Never hand-roll a `border-top-*` div as a section separator —
+use `p-divider`.
+
+---
+
+## 8. Code Quality Rules
+
+- **SOLID**: one responsibility per component/service; extract form-building,
+  validation, and data-fetching into dedicated services rather than growing
+  component classes.
+- **Change detection**: every new/touched component sets
+  `changeDetection: ChangeDetectionStrategy.OnPush`. Mutate state through
+  signals or new object/array references — never mutate in place under OnPush.
+- **Lazy loading**: feature routes stay lazy-loaded (`loadChildren` /
+  `loadComponent`); do not add new feature modules/components to eager
+  `imports` in `app.module.ts`.
+- **Notifications**: all success/error feedback goes through the existing
+  `MessageService` (Toast) injected via DI — no `alert()`, no ad-hoc inline
+  banner components, no duplicate toast implementations.
+
+---
+
+## 9. Language Rule — English only
+
+- All new/touched code — variables, methods, classes, comments, commit-facing
+  strings — must be English. No exceptions, no partial migrations left mid-file.
+- When refactoring a file that contains Spanish (identifiers, comments, or UI
+  copy), migrate the whole file's Spanish to English as part of that pass —
+  don't leave a mixed-language file behind.
+- Scope reality check: Spanish UI copy is **not** confined to the modal legend
+  in section 5 — it's present across roughly 20 files including auth
+  (`login`, `register`), `dashboard`, `layout/main-layout`, `quotes` (list,
+  form, edit, detail), `recipes` (list, detail, form), `admin` (user
+  management, roles management, create-user modal), and `index.html`. Treat
+  the full-English rule as an incremental migration applied file-by-file as
+  each view is touched for the redesign — not a single mass find/replace pass
+  — so every string is verified in context rather than blindly translated.
+
+---
+
+## 10. Working Agreement
+
+Component-by-component execution proceeds only after this file is approved.
+Each future change should cite which section of this file it satisfies (e.g.
+"per §5, dialog border-radius now reads from CronosPreset"). If a change
+requires deviating from a rule here, that deviation is called out explicitly
+and this file is updated in the same PR — it never drifts silently out of
+sync with the code.

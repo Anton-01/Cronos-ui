@@ -11,6 +11,7 @@ import { Subject, takeUntil } from 'rxjs';
 
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { DividerModule } from 'primeng/divider';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
@@ -28,6 +29,7 @@ import {
 } from 'src/app/core/models/domain.model';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
+import { DetailSkeletonComponent } from 'src/app/shared/components/detail-skeleton/detail-skeleton.component';
 
 // Terminal statuses lock editing for audit purposes
 const LOCKED_STATUSES = ['ACCEPTED', 'REJECTED'] as const;
@@ -41,6 +43,7 @@ type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary';
     ReactiveFormsModule,
     ButtonModule,
     CardModule,
+    DividerModule,
     InputNumberModule,
     InputTextModule,
     MessageModule,
@@ -48,6 +51,7 @@ type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary';
     TagModule,
     TextareaModule,
     TooltipModule,
+    DetailSkeletonComponent,
   ],
   templateUrl: './quote-edit.component.html',
   styleUrl: '../quote-form/quote-form.component.scss',

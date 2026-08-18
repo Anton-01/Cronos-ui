@@ -21,6 +21,7 @@ import { UserResponse } from 'src/app/core/models/user.model';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
 import { CreateUserModalComponent } from './create-user-modal/create-user-modal.component';
+import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skeleton-row/table-skeleton-row.component';
 
 type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast';
 
@@ -51,6 +52,7 @@ const ROLE_SEVERITY: Record<string, TagSeverity> = {
     TagModule,
     TooltipModule,
     CreateUserModalComponent,
+    TableSkeletonRowComponent,
   ],
   templateUrl: './user-management.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -63,6 +65,7 @@ export class UserManagementComponent implements OnInit {
 
   readonly users = signal<UserResponse[]>([]);
   readonly isLoading = signal(false);
+  protected readonly skeletonRows = Array.from({ length: 6 });
 
   readonly selectedUser = signal<UserResponse | null>(null);
   readonly activePanel = signal<'none' | 'details' | 'roles'>('none');

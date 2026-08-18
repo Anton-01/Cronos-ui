@@ -6,6 +6,7 @@
     paginatorPosition="bottom"
     [stripedRows]="true"
     [loading]="isLoading()"
+    [showLoader]="false"
     [paginator]="true"
     [rows]="10"
     [rowsPerPageOptions]="[10, 25, 50]"
@@ -124,6 +125,12 @@
           />
         </td>
       </tr>
+    </ng-template>
+
+    <ng-template pTemplate="loadingbody">
+      @for (row of skeletonRows; track $index) {
+        <tr appTableSkeletonRow [columns]="9"></tr>
+      }
     </ng-template>
 
     <ng-template pTemplate="emptymessage">

@@ -6,6 +6,7 @@
     paginatorPosition="bottom"
     [stripedRows]="true"
     [loading]="isLoading()"
+    [showLoader]="false"
     [paginator]="true"
     [rows]="10"
     [rowsPerPageOptions]="[10, 25, 50]"
@@ -123,6 +124,12 @@
       </tr>
     </ng-template>
 
+    <ng-template pTemplate="loadingbody">
+      @for (row of skeletonRows; track $index) {
+        <tr appTableSkeletonRow [columns]="8"></tr>
+      }
+    </ng-template>
+
     <ng-template pTemplate="emptymessage">
       <tr>
         <td colspan="8" class="text-center text-color-secondary py-5">No hay unidades de medida registradas</td>
@@ -140,9 +147,6 @@
   [style]="{ width: '34rem' }"
 >
   <form [formGroup]="form" (ngSubmit)="saveForm()" id="measurementUnitForm" class="flex flex-column gap-3">
-    @if (!selectedItem()) {
-      <p-message severity="info" text="El registro se dará de alta con el estatus de Activo por defecto." />
-    }
     <div class="grid">
       <div class="col-12 md:col-4 flex flex-column gap-1">
         <label for="unitCode" class="font-medium">Código <span class="text-red-500">*</span></label>

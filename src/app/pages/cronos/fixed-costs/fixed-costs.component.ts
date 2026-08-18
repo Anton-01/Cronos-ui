@@ -22,6 +22,7 @@ import { UserFixedCostResponse } from 'src/app/core/models/domain.model';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
+import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skeleton-row/table-skeleton-row.component';
 
 interface SelectOption {
   value: string;
@@ -87,6 +88,7 @@ const TYPE_TAG_SEVERITY: Record<string, TagSeverity> = {
     TagModule,
     TextareaModule,
     TooltipModule,
+    TableSkeletonRowComponent,
   ],
   templateUrl: './fixed-costs.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -101,6 +103,7 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
 
   readonly items = signal<UserFixedCostResponse[]>([]);
   readonly isLoading = signal(false);
+  protected readonly skeletonRows = Array.from({ length: 6 });
   selectedItems: UserFixedCostResponse[] = [];
   readonly showForm = signal(false);
   readonly selectedItem = signal<UserFixedCostResponse | null>(null);

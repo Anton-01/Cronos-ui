@@ -21,6 +21,7 @@ import { PermissionService } from 'src/app/core/services/permission.service';
 import { RoleResponse, PermissionResponse } from 'src/app/core/models';
 import { ToastService } from 'src/app/shared/services/toast.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
+import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skeleton-row/table-skeleton-row.component';
 
 const PROTECTED_ROLE = 'SUPER_ADMIN';
 const MAX_BADGE_PREVIEW = 4;
@@ -39,6 +40,7 @@ const MAX_BADGE_PREVIEW = 4;
     TagModule,
     TextareaModule,
     TooltipModule,
+    TableSkeletonRowComponent,
   ],
   templateUrl: './roles-management.component.html',
 })
@@ -53,6 +55,7 @@ export class RolesManagementComponent implements OnInit {
   roles = signal<RoleResponse[]>([]);
   allPermissions = signal<PermissionResponse[]>([]);
   isLoadingRoles = signal(false);
+  protected readonly skeletonRows = Array.from({ length: 6 });
   isLoadingPermissions = signal(false);
   isSaving = signal(false);
 

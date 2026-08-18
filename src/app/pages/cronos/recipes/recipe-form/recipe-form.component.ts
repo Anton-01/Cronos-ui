@@ -15,6 +15,7 @@ import { RecipeService } from 'src/app/core/services/domain/recipe.service';
 import { CreateRecipeRequest } from 'src/app/core/models/domain.model';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
+import { DetailSkeletonComponent } from 'src/app/shared/components/detail-skeleton/detail-skeleton.component';
 
 const COMMON_YIELD_UNITS = [
   'Pasteles',
@@ -39,6 +40,7 @@ const COMMON_YIELD_UNITS = [
     InputNumberModule,
     InputTextModule,
     TextareaModule,
+    DetailSkeletonComponent,
   ],
   templateUrl: './recipe-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

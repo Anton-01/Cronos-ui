@@ -6,6 +6,7 @@
     paginatorPosition="bottom"
     [stripedRows]="true"
     [loading]="isLoading()"
+    [showLoader]="false"
     [paginator]="true"
     [rows]="10"
     [rowsPerPageOptions]="[10, 25, 50]"
@@ -98,6 +99,12 @@
       </tr>
     </ng-template>
 
+    <ng-template pTemplate="loadingbody">
+      @for (row of skeletonRows; track $index) {
+        <tr appTableSkeletonRow [columns]="4"></tr>
+      }
+    </ng-template>
+
     <ng-template pTemplate="emptymessage">
       <tr>
         <td colspan="4" class="text-center text-color-secondary py-5">No hay categorías registradas</td>
@@ -115,9 +122,6 @@
   [style]="{ width: '30rem' }"
 >
   <form [formGroup]="form" (ngSubmit)="saveForm()" id="categoryForm" class="flex flex-column gap-3">
-    @if (!selectedItem()) {
-      <p-message severity="info" text="El registro se dará de alta con el estatus de Activo por defecto." />
-    }
     <div class="flex flex-column gap-1">
       <label for="categoryName" class="font-medium">Nombre <span class="text-red-500">*</span></label>
       <input

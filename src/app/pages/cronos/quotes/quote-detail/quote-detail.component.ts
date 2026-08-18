@@ -16,6 +16,7 @@ import { BakerQuoteDetailResponse, InternalQuoteItemResponse } from 'src/app/cor
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
+import { DetailSkeletonComponent } from 'src/app/shared/components/detail-skeleton/detail-skeleton.component';
 
 type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast';
 
@@ -40,7 +41,16 @@ const STATUS_SEVERITIES: Record<string, TagSeverity> = {
 @Component({
   selector: 'app-quote-detail',
   standalone: true,
-  imports: [ButtonModule, CardModule, MenuModule, MessageModule, TableModule, TagModule, TooltipModule],
+  imports: [
+    ButtonModule,
+    CardModule,
+    MenuModule,
+    MessageModule,
+    TableModule,
+    TagModule,
+    TooltipModule,
+    DetailSkeletonComponent,
+  ],
   templateUrl: './quote-detail.component.html',
   styleUrl: './quote-detail.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

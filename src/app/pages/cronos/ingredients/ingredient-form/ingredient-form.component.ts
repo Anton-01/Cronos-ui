@@ -25,6 +25,7 @@ import {
 } from 'src/app/core/models/domain.model';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
+import { DetailSkeletonComponent } from 'src/app/shared/components/detail-skeleton/detail-skeleton.component';
 
 type YieldLevel = 'excellent' | 'good' | 'warning' | 'none';
 
@@ -55,6 +56,7 @@ const DENSITY_DIMENSIONS = new Set([
     TagModule,
     TextareaModule,
     ToggleSwitchModule,
+    DetailSkeletonComponent,
   ],
   templateUrl: './ingredient-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

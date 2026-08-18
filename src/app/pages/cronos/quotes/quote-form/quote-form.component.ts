@@ -13,6 +13,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { AutoCompleteCompleteEvent, AutoCompleteModule } from 'primeng/autocomplete';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
+import { DividerModule } from 'primeng/divider';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
@@ -69,6 +70,7 @@ export const PHONE_COUNTRIES: PhoneCountry[] = [
     AutoCompleteModule,
     ButtonModule,
     CardModule,
+    DividerModule,
     InputNumberModule,
     InputTextModule,
     SelectModule,

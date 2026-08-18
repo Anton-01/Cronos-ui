@@ -39,6 +39,7 @@ import { PageRequest } from 'src/app/core/models/pagination.model';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
+import { DetailSkeletonComponent } from 'src/app/shared/components/detail-skeleton/detail-skeleton.component';
 
 type TabId = 'ingredients' | 'fixed-costs' | 'instructions' | 'files' | 'shares';
 
@@ -61,6 +62,7 @@ type TabId = 'ingredients' | 'fixed-costs' | 'instructions' | 'files' | 'shares'
     TagModule,
     TextareaModule,
     TooltipModule,
+    DetailSkeletonComponent,
   ],
   templateUrl: './recipe-detail.component.html',
   styleUrl: './recipe-detail.component.scss',

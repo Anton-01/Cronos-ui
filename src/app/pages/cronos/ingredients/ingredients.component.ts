@@ -18,6 +18,7 @@ import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
 import { StatusToggleComponent } from 'src/app/shared/components/status-toggle/status-toggle.component';
+import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skeleton-row/table-skeleton-row.component';
 
 const STATUS_FILTER_OPTIONS = [
   { label: 'Activo', value: 'ACTIVE' },
@@ -38,6 +39,7 @@ const STATUS_FILTER_OPTIONS = [
     TableModule,
     TagModule,
     TooltipModule,
+    TableSkeletonRowComponent,
     StatusToggleComponent,
   ],
   templateUrl: './ingredients.component.html',
@@ -52,6 +54,7 @@ export class IngredientsComponent implements OnInit {
 
   readonly items = signal<IngredientResponse[]>([]);
   readonly isLoading = signal(false);
+  protected readonly skeletonRows = Array.from({ length: 6 });
   selectedItems: IngredientResponse[] = [];
 
   readonly statusFilterOptions = STATUS_FILTER_OPTIONS;

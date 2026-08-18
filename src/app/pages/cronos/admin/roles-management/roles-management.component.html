@@ -1,7 +1,7 @@
 <div class="grid">
   <div [class]="panelMode() !== 'none' ? 'col-12 xl:col-7' : 'col-12'">
     <p-card>
-      <p-table [value]="roles()" dataKey="id" [loading]="isLoadingRoles()" [rowHover]="true">
+      <p-table [value]="roles()" dataKey="id" [loading]="isLoadingRoles()" [showLoader]="false" [rowHover]="true">
         <ng-template pTemplate="caption">
           <div class="flex align-items-center justify-content-between flex-wrap gap-2">
             <span class="text-color-secondary text-sm">{{ roles().length }} roles</span>
@@ -46,6 +46,12 @@
             </td>
           </tr>
         </ng-template>
+        <ng-template pTemplate="loadingbody">
+          @for (row of skeletonRows; track $index) {
+            <tr appTableSkeletonRow [columns]="4"></tr>
+          }
+        </ng-template>
+
         <ng-template pTemplate="emptymessage">
           <tr>
             <td colspan="4" class="text-center text-color-secondary py-5">No hay roles registrados</td>

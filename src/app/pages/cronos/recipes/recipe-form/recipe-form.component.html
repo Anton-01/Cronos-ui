@@ -2,6 +2,9 @@
   <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="cancel()" />
 </div>
 
+@if (isLoading()) {
+  <app-detail-skeleton [fields]="6" [showTitle]="false" />
+} @else {
 <form [formGroup]="form" (ngSubmit)="save()">
   <div class="grid">
     <div class="col-12 lg:col-8">
@@ -90,3 +93,4 @@
     </div>
   </div>
 </form>
+}

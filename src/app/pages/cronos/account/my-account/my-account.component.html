@@ -1,8 +1,6 @@
 <p-card>
   @if (isLoading()) {
-    <div class="flex justify-content-center py-6">
-      <i class="pi pi-spinner pi-spin text-3xl text-primary"></i>
-    </div>
+    <app-detail-skeleton [fields]="4" [showTitle]="false" />
   } @else {
     <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-column gap-3 mt-2" style="max-width: 40rem;">
       <div class="grid align-items-center">
@@ -35,6 +33,7 @@
           <input pInputText id="accountPhone" formControlName="phoneNumber" class="w-full" />
         </div>
       </div>
+      <p-divider styleClass="my-0" />
       <div class="grid align-items-center">
         <span class="col-12 md:col-4 font-medium">Roles</span>
         <div class="col-12 md:col-8 flex flex-wrap gap-2">

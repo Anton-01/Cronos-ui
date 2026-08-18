@@ -21,7 +21,7 @@
         <p-button icon="pi pi-refresh" [text]="true" [rounded]="true" pTooltip="Actualizar" (onClick)="loadSessions()" />
       </div>
     </ng-template>
-    <p-table [value]="sessions()" [loading]="isLoadingSessions()" [rowHover]="true">
+    <p-table [value]="sessions()" [loading]="isLoadingSessions()" [showLoader]="false" [rowHover]="true">
       <ng-template pTemplate="header">
         <tr>
           <th>Dispositivo</th>
@@ -53,6 +53,11 @@
           </td>
         </tr>
       </ng-template>
+      <ng-template pTemplate="loadingbody">
+        @for (row of skeletonRows; track $index) {
+          <tr appTableSkeletonRow [columns]="4"></tr>
+        }
+      </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
           <td colspan="4" class="text-center text-color-secondary py-4">Sin sesiones activas</td>
@@ -69,7 +74,7 @@
         <span>Historial de Inicios de Sesión</span>
       </div>
     </ng-template>
-    <p-table [value]="loginHistory()" [loading]="isLoadingHistory()" [rowHover]="true" [paginator]="true" [rows]="10">
+    <p-table [value]="loginHistory()" [loading]="isLoadingHistory()" [showLoader]="false" [rowHover]="true" [paginator]="true" [rows]="10">
       <ng-template pTemplate="header">
         <tr>
           <th>Fecha</th>
@@ -90,6 +95,11 @@
           </td>
           <td class="text-color-secondary text-sm">{{ entry.failureReason || '-' }}</td>
         </tr>
+      </ng-template>
+      <ng-template pTemplate="loadingbody">
+        @for (row of skeletonRows; track $index) {
+          <tr appTableSkeletonRow [columns]="4"></tr>
+        }
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>

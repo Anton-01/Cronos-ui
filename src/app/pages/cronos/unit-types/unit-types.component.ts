@@ -7,7 +7,6 @@ import { DialogModule } from 'primeng/dialog';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
-import { MessageModule } from 'primeng/message';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
@@ -18,6 +17,7 @@ import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
 import { StatusToggleComponent } from 'src/app/shared/components/status-toggle/status-toggle.component';
+import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skeleton-row/table-skeleton-row.component';
 
 const STATUS_FILTER_OPTIONS = [
   { label: 'Activo', value: 'ACTIVE' },
@@ -36,11 +36,11 @@ const STATUS_FILTER_OPTIONS = [
     IconFieldModule,
     InputIconModule,
     InputTextModule,
-    MessageModule,
     SelectModule,
     TableModule,
     TooltipModule,
     StatusToggleComponent,
+    TableSkeletonRowComponent,
   ],
   templateUrl: './unit-types.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,6 +54,7 @@ export class UnitTypesComponent implements OnInit {
 
   readonly items = signal<UnitTypeResponse[]>([]);
   readonly isLoading = signal(false);
+  protected readonly skeletonRows = Array.from({ length: 6 });
   selectedItems: UnitTypeResponse[] = [];
   readonly showForm = signal(false);
   readonly selectedItem = signal<UnitTypeResponse | null>(null);
