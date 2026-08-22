@@ -119,6 +119,22 @@
           />
         </p-iconfield>
 
+        <!-- Language switcher — sits immediately left of the theme toggle -->
+        <button
+          type="button"
+          class="layout-lang-button flex align-items-center gap-2 border-round-xl"
+          (click)="languageMenu.toggle($event)"
+          aria-haspopup="true"
+          [attr.aria-label]="'Change language, current: ' + language.currentOption().label"
+          pTooltip="Change language"
+          tooltipPosition="bottom"
+        >
+          <span class="layout-lang-flag" aria-hidden="true">{{ language.currentOption().flag }}</span>
+          <span class="layout-lang-code">{{ language.currentOption().shortLabel }}</span>
+          <i class="pi pi-angle-down text-xs"></i>
+        </button>
+        <p-menu #languageMenu [model]="languageMenuItems()" [popup]="true" styleClass="layout-lang-menu" />
+
         <p-button
           [icon]="theme.mode() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
           severity="secondary"

@@ -72,6 +72,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ErrorInterceptorService } from './core/interceptors/error-interceptor.service';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { languageInterceptor } from './core/interceptors/language.interceptor';
 
 @NgModule({
   declarations: [AppComponent],
@@ -100,7 +101,9 @@ import { authInterceptor } from './core/interceptors/auth.interceptor';
     MessageService,
     ConfirmationService,
     provideHttpClient(
-      withInterceptors([authInterceptor]),
+      // Order is the execution order on the way out: auth stamps identity,
+      // language stamps the locale the backend answers in.
+      withInterceptors([authInterceptor, languageInterceptor]),
       withInterceptorsFromDi()
     ),
     {

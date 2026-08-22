@@ -189,6 +189,51 @@
   background: var(--surface-ground);
 }
 
+// ── Language switcher ───────────────────────────────────────────────────
+// Same quiet chrome as the account button so the topbar right cluster reads
+// as one row of controls rather than three competing widgets (§11.4).
+.layout-lang-button {
+  height: 2.5rem;
+  padding: 0 0.65rem;
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: var(--surface-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+}
+
+// Emoji flags render from the system font; the explicit stack keeps Linux
+// and Windows from falling back to the two-letter box glyph.
+.layout-lang-flag {
+  font-size: 1.05rem;
+  line-height: 1;
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+}
+
+.layout-lang-code {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+:host ::ng-deep .layout-lang-menu {
+  min-width: 14rem;
+
+  .layout-lang-item-active .p-menu-item-link {
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+}
+
 .layout-user-button {
   padding: 0.25rem 0.5rem 0.25rem 0.25rem;
   border: none;
