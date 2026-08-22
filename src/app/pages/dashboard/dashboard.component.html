@@ -1,20 +1,21 @@
 <div class="mb-4">
-  <h2 class="m-0 text-2xl font-semibold dashboard-greeting">{{ greeting() }}</h2>
-  <p class="mt-1 mb-0 text-color-secondary">¿Qué quieres hacer hoy?</p>
+  <h2 class="dashboard-greeting m-0">{{ greeting() }}</h2>
+  <p class="mt-1 mb-0 text-color-secondary">What would you like to do today?</p>
 </div>
 
+<!-- Metric row — the four accents of Context.md §12.2, in fixed order. -->
 <div class="grid">
-  @for (link of quickLinks; track link.route) {
+  @for (metric of metrics; track metric.key) {
     <div class="col-12 md:col-6 xl:col-3">
-      <a [routerLink]="link.route" class="quick-link-card">
-        <p-card>
-          <div class="flex flex-column gap-2">
-            <i class="quick-link-icon" [class]="link.icon"></i>
-            <span class="text-lg font-semibold">{{ link.label }}</span>
-            <span class="text-color-secondary text-sm">{{ link.description }}</span>
-          </div>
-        </p-card>
-      </a>
+      <app-stat-card
+        [label]="metric.label"
+        [value]="countOf(metric.key)"
+        [caption]="metric.caption"
+        [icon]="metric.icon"
+        [accent]="metric.accent"
+        [link]="metric.route"
+        [loading]="isLoading()"
+      />
     </div>
   }
 </div>

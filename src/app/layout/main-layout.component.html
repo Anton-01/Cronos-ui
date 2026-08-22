@@ -1,89 +1,128 @@
-<div class="layout-wrapper">
-  <!-- Topbar -->
-  <header class="layout-topbar">
-    <div class="flex align-items-center gap-2">
-      <p-button
-        icon="pi pi-bars"
-        severity="secondary"
-        [text]="true"
-        styleClass="lg:hidden"
-        (onClick)="toggleSidebar()"
-        ariaLabel="Abrir menú"
-      />
-      <a class="layout-logo cursor-pointer" (click)="navigateHome()">
-        <img src="./assets/media/logos/favicon.svg" alt="Cronos" class="layout-logo-img" />
+<div
+  class="layout-wrapper"
+  [class.layout-slim]="slim()"
+  [class.layout-mobile-active]="mobileMenuOpen()"
+>
+  <!-- ── Sidebar: owns the logo, the sections and every nav item (§11.2) ── -->
+  <aside class="layout-sidebar">
+    <div class="layout-sidebar-logo flex align-items-center gap-2 px-3">
+      <a class="flex align-items-center gap-2 no-underline" routerLink="/dashboard">
+        <img src="./assets/media/logos/favicon.svg" alt="" class="layout-logo-img" />
         <span class="layout-logo-text">Cronos</span>
       </a>
     </div>
 
-    <div class="flex align-items-center gap-2">
-      <p-button
-        [icon]="theme.mode() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
-        severity="secondary"
-        [text]="true"
-        (onClick)="theme.toggle()"
-        pTooltip="Cambiar tema"
-        tooltipPosition="bottom"
-        ariaLabel="Cambiar tema"
-      />
-      <button type="button" class="layout-user-button" (click)="userMenu.toggle($event)">
-        <p-avatar [label]="userInitials()" shape="circle" styleClass="layout-user-avatar" />
-        <span class="layout-user-name hidden md:inline">{{ userFullName() }}</span>
-        <i class="pi pi-angle-down text-sm"></i>
-      </button>
-      <p-menu #userMenu [model]="userMenuItems" [popup]="true" appendTo="body" />
+    <nav class="layout-menu" aria-label="Main navigation">
+      @for (section of navSections; track section.label) {
+        <div class="layout-menu-section">
+          <span class="layout-menu-section-title">{{ section.label }}</span>
+          <ul class="list-none p-0 m-0">
+            @for (item of section.items; track item.route) {
+              <li>
+                <a
+                  class="layout-menu-item flex align-items-center gap-2 border-round-md"
+                  [class.layout-menu-item-active]="isActive(item)"
+                  [routerLink]="item.route"
+                  [attr.aria-current]="isActive(item) ? 'page' : null"
+                  [pTooltip]="slim() ? item.label : ''"
+                  tooltipPosition="right"
+                  pRipple
+                >
+                  <i class="layout-menu-item-icon" [class]="item.icon"></i>
+                  <span class="layout-menu-item-label">{{ item.label }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    </nav>
+
+    <div class="layout-sidebar-footer">
+      <span class="layout-sidebar-version">Cronos v1.0</span>
     </div>
-  </header>
+  </aside>
 
-  <!-- Icon rail (desktop) -->
-  <nav class="layout-rail hidden lg:flex">
-    @for (item of railItems; track item.label) {
-      <button
-        type="button"
-        class="rail-item"
-        [class.rail-item-active]="isRailItemActive(item)"
-        [pTooltip]="item.label"
-        tooltipPosition="right"
-        [attr.aria-label]="item.label"
-        (click)="onRailItemClick(item, $event, flyoutMenu)"
-      >
-        <i [class]="item.icon"></i>
-        @if (item.children?.length) {
-          <span class="rail-item-caret"></span>
-        }
-      </button>
-    }
-  </nav>
-  <p-menu #flyoutMenu [model]="flyoutItems()" [popup]="true" appendTo="body" styleClass="rail-flyout" />
+  <!-- Dimming mask behind the off-canvas sidebar (mobile only) -->
+  <div class="layout-mask" (click)="closeMobileMenu()"></div>
 
-  <!-- Drawer sidebar (mobile) -->
-  <p-drawer
-    [visible]="sidebarVisible()"
-    (visibleChange)="sidebarVisible.set($event)"
-    header="Cronos"
-    styleClass="layout-drawer"
-  >
-    <p-panelmenu [model]="drawerMenuModel" [multiple]="true" styleClass="layout-panelmenu" />
-  </p-drawer>
+  <div class="layout-main-container">
+    <!-- ── Topbar: no logo, no border, dissolves into the ground (§11.4) ── -->
+    <header class="layout-topbar flex align-items-center justify-content-between gap-3">
+      <div class="flex align-items-center gap-2">
+        <p-button
+          icon="pi pi-bars"
+          severity="secondary"
+          [text]="true"
+          [rounded]="true"
+          (onClick)="toggleSidebar()"
+          ariaLabel="Toggle navigation"
+        />
+      </div>
 
-  <!-- Main content: THE big white card -->
-  <main class="layout-main">
-    <div class="layout-content">
-      <div class="layout-content-header">
-        <div class="layout-content-heading">
-          <h1 class="layout-page-title">{{ pageInfo.title() }}</h1>
+      <div class="flex align-items-center gap-2">
+        <p-iconfield class="hidden md:block layout-search">
+          <p-inputicon class="pi pi-search" />
+          <input
+            pInputText
+            type="search"
+            placeholder="Search"
+            aria-label="Search"
+            [ngModel]="searchTerm()"
+            (ngModelChange)="searchTerm.set($event)"
+          />
+        </p-iconfield>
+
+        <p-button
+          [icon]="theme.mode() === 'dark' ? 'pi pi-sun' : 'pi pi-moon'"
+          severity="secondary"
+          [text]="true"
+          [rounded]="true"
+          (onClick)="theme.toggle()"
+          pTooltip="Toggle theme"
+          tooltipPosition="bottom"
+          ariaLabel="Toggle theme"
+        />
+
+        <button
+          type="button"
+          class="layout-user-button flex align-items-center gap-2 border-round-xl"
+          (click)="userMenu.toggle($event)"
+          aria-haspopup="true"
+        >
+          <p-avatar [label]="userInitials()" shape="circle" styleClass="layout-user-avatar" />
+          <span class="layout-user-name hidden lg:inline">{{ userFullName() }}</span>
+          <i class="pi pi-angle-down text-xs"></i>
+        </button>
+        <p-menu #userMenu [model]="userMenuItems" [popup]="true" />
+      </div>
+    </header>
+
+    <!-- ── Content ground: gray canvas, cards supply the white (§11.5) ── -->
+    <main class="layout-main">
+      <div class="layout-content-header flex align-items-start justify-content-between flex-wrap gap-2 mb-4">
+        <div>
+          <h1 class="layout-page-title m-0">{{ pageInfo.title() }}</h1>
           @if (pageInfo.description()) {
-            <p class="layout-page-description">{{ pageInfo.description() }}</p>
+            <p class="layout-page-description mt-1 mb-0">{{ pageInfo.description() }}</p>
           }
         </div>
         @if (breadcrumbItems().length > 0) {
-          <p-breadcrumb [model]="breadcrumbItems()" [home]="breadcrumbHome" styleClass="layout-breadcrumb" />
+          <p-breadcrumb
+            [model]="breadcrumbItems()"
+            [home]="breadcrumbHome"
+            styleClass="layout-breadcrumb"
+          />
         }
       </div>
-      <router-outlet />
-    </div>
-    <footer class="layout-footer">
-      <span>Cronos — Sistema de Gestión para Repostería Especializada</span>
-    </footer>
-  </main>
+
+      <div class="layout-content">
+        <router-outlet />
+      </div>
+
+      <footer class="layout-footer">
+        <span>Cronos — Specialty Bakery Management System</span>
+      </footer>
+    </main>
+  </div>
 </div>

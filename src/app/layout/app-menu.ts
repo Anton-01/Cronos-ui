@@ -1,144 +1,100 @@
 import { MenuItem } from 'primeng/api';
 
-/** Item of the icon-only navigation rail: navigates directly or opens a flyout. */
-export interface RailItem {
-  icon: string;
+/**
+ * A single navigable destination in the sidebar.
+ *
+ * Per Context.md §11.3 there is exactly one nav model: the expanded sidebar,
+ * the slim (icon-only) sidebar and the mobile off-canvas sidebar all render
+ * from this same structure. Slim mode hides `label` and shows it as a
+ * tooltip — it never swaps in a different template or a different model.
+ */
+export interface NavItem {
   label: string;
-  route?: string;
-  /** Routes prefix used to highlight the icon when a child route is active */
-  activePrefixes: string[];
-  /** Flyout entries for grouped destinations */
-  children?: MenuItem[];
+  icon: string;
+  route: string;
+  /**
+   * URL prefixes that mark this item active. Defaults to `[route]`; declare
+   * extra prefixes when child routes live under a different path (e.g. a
+   * detail view outside the list route).
+   */
+  activePrefixes?: string[];
 }
 
 /**
- * Icon rail model. Groups are logical: catalogs collapse into one icon with
- * a flyout; frequent destinations stay one click away. Admin items are
- * filtered by role at runtime (routes are also protected by roleGuard).
+ * A titled group of items. `label` renders as the small uppercase muted
+ * section header ("DASHBOARDS", "APPS") that gives Freya its scannable
+ * sidebar rhythm; it is hidden in slim mode.
  */
-export function buildRailMenu(hasAdminRole: boolean, hasSuperAdminRole: boolean): RailItem[] {
-  const rail: RailItem[] = [
-    {
-      icon: 'pi pi-home',
-      label: 'Dashboard',
-      route: '/dashboard',
-      activePrefixes: ['/dashboard'],
-    },
-    {
-      icon: 'pi pi-database',
-      label: 'Catálogos',
-      activePrefixes: [
-        '/cronos/tipos-unidad',
-        '/cronos/unidades-medida',
-        '/cronos/categorias',
-        '/cronos/alergenos',
-      ],
-      children: [
-        { label: 'Tipos de Unidad', icon: 'pi pi-sitemap', routerLink: '/cronos/tipos-unidad' },
-        { label: 'Unidades de Medida', icon: 'pi pi-calculator', routerLink: '/cronos/unidades-medida' },
-        { label: 'Categorías', icon: 'pi pi-tags', routerLink: '/cronos/categorias' },
-        { label: 'Alérgenos', icon: 'pi pi-exclamation-triangle', routerLink: '/cronos/alergenos' },
-      ],
-    },
-    {
-      icon: 'pi pi-shopping-bag',
-      label: 'Ingredientes',
-      route: '/cronos/ingredientes',
-      activePrefixes: ['/cronos/ingredientes'],
-    },
-    {
-      icon: 'pi pi-book',
-      label: 'Mis Recetas',
-      route: '/cronos/recetas',
-      activePrefixes: ['/cronos/recetas'],
-    },
-    {
-      icon: 'pi pi-file-edit',
-      label: 'Mis Cotizaciones',
-      route: '/cronos/cotizaciones',
-      activePrefixes: ['/cronos/cotizaciones'],
-    },
-    {
-      icon: 'pi pi-wallet',
-      label: 'Costos Fijos',
-      route: '/cronos/costos-fijos',
-      activePrefixes: ['/cronos/costos-fijos'],
-    },
-    {
-      icon: 'pi pi-user',
-      label: 'Cuenta',
-      activePrefixes: ['/cronos/cuenta'],
-      children: [
-        { label: 'Mi Cuenta', icon: 'pi pi-user', routerLink: '/cronos/cuenta/mi-cuenta' },
-        { label: 'Seguridad', icon: 'pi pi-lock', routerLink: '/cronos/cuenta/seguridad' },
-      ],
-    },
-  ];
-
-  const adminChildren: MenuItem[] = [];
-  if (hasAdminRole) {
-    adminChildren.push({ label: 'Gestión de Usuarios', icon: 'pi pi-users', routerLink: '/cronos/admin/usuarios' });
-  }
-  if (hasSuperAdminRole) {
-    adminChildren.push({ label: 'Gestión de Roles', icon: 'pi pi-shield', routerLink: '/cronos/admin/roles' });
-  }
-  if (adminChildren.length > 0) {
-    rail.push({
-      icon: 'pi pi-shield',
-      label: 'Administración',
-      activePrefixes: ['/cronos/admin'],
-      children: adminChildren,
-    });
-  }
-
-  return rail;
+export interface NavSection {
+  label: string;
+  items: NavItem[];
 }
 
-/** Grouped model reused by the mobile drawer (full-text panel menu). */
-export function buildAppMenu(hasAdminRole: boolean, hasSuperAdminRole: boolean): MenuItem[] {
-  const adminItems: MenuItem[] = [];
-  if (hasAdminRole) {
-    adminItems.push({ label: 'Gestión de Usuarios', icon: 'pi pi-users', routerLink: '/cronos/admin/usuarios' });
-  }
-  if (hasSuperAdminRole) {
-    adminItems.push({ label: 'Gestión de Roles', icon: 'pi pi-shield', routerLink: '/cronos/admin/roles' });
-  }
-
-  const menu: MenuItem[] = [
+/**
+ * The sidebar navigation model.
+ *
+ * Admin sections are filtered by role here for a clean menu; the routes
+ * themselves stay protected by `roleGuard` — this is presentation, not
+ * authorization.
+ */
+export function buildNavSections(hasAdminRole: boolean, hasSuperAdminRole: boolean): NavSection[] {
+  const sections: NavSection[] = [
     {
-      label: 'General',
-      items: [{ label: 'Dashboard', icon: 'pi pi-home', routerLink: '/dashboard' }],
+      label: 'Dashboards',
+      items: [{ label: 'Dashboard', icon: 'pi pi-home', route: '/dashboard' }],
     },
     {
-      label: 'Catálogos',
+      label: 'Operations',
       items: [
-        { label: 'Tipos de Unidad', icon: 'pi pi-sitemap', routerLink: '/cronos/tipos-unidad' },
-        { label: 'Unidades de Medida', icon: 'pi pi-calculator', routerLink: '/cronos/unidades-medida' },
-        { label: 'Categorías', icon: 'pi pi-tags', routerLink: '/cronos/categorias' },
-        { label: 'Alérgenos', icon: 'pi pi-exclamation-triangle', routerLink: '/cronos/alergenos' },
-        { label: 'Ingredientes', icon: 'pi pi-shopping-bag', routerLink: '/cronos/ingredientes' },
+        { label: 'My Recipes', icon: 'pi pi-book', route: '/cronos/recetas' },
+        { label: 'My Quotes', icon: 'pi pi-file-edit', route: '/cronos/cotizaciones' },
+        { label: 'Ingredients', icon: 'pi pi-shopping-bag', route: '/cronos/ingredientes' },
+        { label: 'Fixed Costs', icon: 'pi pi-wallet', route: '/cronos/costos-fijos' },
       ],
     },
     {
-      label: 'Operación',
+      label: 'Catalogs',
       items: [
-        { label: 'Costos Fijos', icon: 'pi pi-wallet', routerLink: '/cronos/costos-fijos' },
-        { label: 'Mis Recetas', icon: 'pi pi-book', routerLink: '/cronos/recetas' },
-        { label: 'Mis Cotizaciones', icon: 'pi pi-file-edit', routerLink: '/cronos/cotizaciones' },
+        { label: 'Unit Types', icon: 'pi pi-sitemap', route: '/cronos/tipos-unidad' },
+        { label: 'Measurement Units', icon: 'pi pi-calculator', route: '/cronos/unidades-medida' },
+        { label: 'Categories', icon: 'pi pi-tags', route: '/cronos/categorias' },
+        { label: 'Allergens', icon: 'pi pi-exclamation-triangle', route: '/cronos/alergenos' },
       ],
     },
     {
-      label: 'Cuenta',
+      label: 'Account',
       items: [
-        { label: 'Mi Cuenta', icon: 'pi pi-user', routerLink: '/cronos/cuenta/mi-cuenta' },
-        { label: 'Seguridad', icon: 'pi pi-lock', routerLink: '/cronos/cuenta/seguridad' },
+        { label: 'My Account', icon: 'pi pi-user', route: '/cronos/cuenta/mi-cuenta' },
+        { label: 'Security', icon: 'pi pi-lock', route: '/cronos/cuenta/seguridad' },
       ],
     },
   ];
 
+  const adminItems: NavItem[] = [];
+  if (hasAdminRole) {
+    adminItems.push({ label: 'User Management', icon: 'pi pi-users', route: '/cronos/admin/usuarios' });
+  }
+  if (hasSuperAdminRole) {
+    adminItems.push({ label: 'Role Management', icon: 'pi pi-shield', route: '/cronos/admin/roles' });
+  }
   if (adminItems.length > 0) {
-    menu.push({ label: 'Administración', items: adminItems });
+    sections.push({ label: 'Administration', items: adminItems });
   }
 
-  return menu;
+  return sections;
+}
+
+/** URL prefixes that light up a nav item, defaulting to its own route. */
+export function activePrefixesOf(item: NavItem): string[] {
+  return item.activePrefixes ?? [item.route];
+}
+
+/** Account dropdown in the topbar. Kept next to the nav model so every label lives in one file. */
+export function buildUserMenu(onLogout: () => void): MenuItem[] {
+  return [
+    { label: 'My Account', icon: 'pi pi-user', routerLink: '/cronos/cuenta/mi-cuenta' },
+    { label: 'Security', icon: 'pi pi-lock', routerLink: '/cronos/cuenta/seguridad' },
+    { separator: true },
+    { label: 'Sign Out', icon: 'pi pi-sign-out', command: onLogout },
+  ];
 }

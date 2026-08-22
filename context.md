@@ -244,3 +244,306 @@ Each future change should cite which section of this file it satisfies (e.g.
 requires deviating from a rule here, that deviation is called out explicitly
 and this file is updated in the same PR — it never drifts silently out of
 sync with the code.
+---
+
+# PART II — Freya Design Baseline (Visual Source of Truth)
+
+> Added 2026-08-22. Part I above governs **architecture and code quality**.
+> Part II governs **visual language**. Both are binding. Where a rule here
+> conflicts with an older Part I styling note, Part II wins and the Part I
+> note is annotated as superseded.
+>
+> Reference: the PrimeNG **Freya** premium template. The goal is not a
+> pixel-clone of Freya's demo content, but the same *system*: an expanded
+> light sidebar, a quiet topbar, a soft gray content ground, and white cards
+> with generous radii and near-invisible shadows.
+
+---
+
+## 11. Layout Structure Guidelines
+
+The shell is `MainLayoutComponent` (`src/app/layout/`). Three fixed regions,
+one scrolling region. Nothing else may position itself `fixed` at the app
+level.
+
+### 11.1 Region map
+
+```
+┌──────────────┬───────────────────────────────────────────────┐
+│              │  .layout-topbar        (sticky, 4.5rem)       │
+│ .layout-     ├───────────────────────────────────────────────┤
+│  sidebar     │  .layout-main          (scrolls)              │
+│  (fixed,     │    .layout-content-header   (title + crumbs)  │
+│   16rem)     │    .layout-content          (router-outlet)   │
+│              │    .layout-footer                             │
+└──────────────┴───────────────────────────────────────────────┘
+```
+
+### 11.2 Sidebar — `.layout-sidebar`
+
+| Property | Value | Token |
+|---|---|---|
+| Width (expanded) | `16rem` | `--layout-sidebar-width` |
+| Width (slim) | `5rem` | `--layout-sidebar-width-slim` |
+| Position | `fixed`, `inset-block: 0`, `left: 0` | — |
+| Background | white / `surface-900` in dark | `--surface-card` |
+| Right edge | 1px hairline, **never** a shadow | `--surface-border` |
+| z-index | `1100` (above topbar) | `--layout-z-sidebar` |
+| Internal scroll | `.layout-menu` only; logo block stays pinned | — |
+
+Rules:
+- The sidebar owns the logo. The topbar **never** renders a logo — that is the
+  single most visible difference between the old shell and Freya.
+- Three vertical zones, in order: `.layout-sidebar-logo` (fixed height
+  `4.5rem`, matching the topbar so the two align on the same baseline),
+  `.layout-menu` (`flex: 1`, `overflow-y: auto`), `.layout-sidebar-footer`.
+- **Slim mode** (`.layout-slim` on the wrapper) hides labels and section
+  headers, centers icons, and hands the label to a `pTooltip` on the right.
+  It is a class toggle only — never a second template.
+- **Mobile** (`< 992px`): the sidebar translates off-canvas
+  (`translateX(-100%)`) and is revealed by `.layout-mobile-active` on the
+  wrapper, backed by `.layout-mask`. Do not swap in `p-drawer`; one sidebar
+  implementation, three states.
+
+### 11.3 Menu typography inside the sidebar
+
+| Element | Size | Weight | Case | Color |
+|---|---|---|---|---|
+| Section header (`DASHBOARDS`, `APPS`) | `0.72rem` | `700` | `uppercase`, `letter-spacing: .06em` | `--text-color-secondary` |
+| Menu item label | `0.9rem` | `500` | sentence | `--text-color` |
+| Menu item, active | `0.9rem` | `600` | sentence | `--primary-color` |
+| Menu item icon | `1.1rem` | — | — | inherits item color |
+
+- Item height `2.6rem`, radius `--radius-md`, icon gap `0.75rem`, icons
+  **left-aligned** in a fixed `1.5rem` box so labels align regardless of glyph
+  width.
+- Active state = tinted background at 12% primary + primary text. No left
+  accent bar, no bold underline, no filled pill.
+- Hover state = `--surface-hover`, no transform, no shadow.
+
+### 11.4 Topbar — `.layout-topbar`
+
+| Property | Value |
+|---|---|
+| Height | `4.5rem` (`--layout-topbar-height`) |
+| Position | `sticky; top: 0` inside the main column (not `fixed`) |
+| Background | `--surface-ground` — it dissolves into the page, it is not a bar |
+| Border | none, ever |
+| Layout | `flex; align-items: center; justify-content: space-between` |
+| Padding | `0 1.5rem` |
+
+- Left cluster: sidebar toggle only. On `lg+` the toggle switches
+  expanded ↔ slim; below `lg` it opens the off-canvas sidebar.
+- Right cluster: search → theme toggle → user button, `gap-2`.
+- Search uses `p-iconfield` + `p-inputicon` + `input pInputText`, pill radius
+  (`--radius-pill`), `--surface-card` background, hairline border. Hidden
+  below `md` — replaced by nothing, not by a cramped input.
+
+### 11.5 Main content wrapper
+
+| Element | Rule |
+|---|---|
+| `.layout-main` | `background: var(--surface-ground)`; `padding: 0 1.5rem 1.5rem` (top padding is the topbar's job) |
+| `.layout-content` | **transparent** — it is a grid ground, not a card |
+| Cards inside | white `--surface-card`, `--radius-lg`, `--shadow-card`, no border |
+| Footer | centered, `--text-color-secondary`, `0.8rem`, `padding-top: 2rem` |
+
+> **Supersedes §2/§3 of Part I.** The old shell wrapped the whole route in one
+> big white card (`.layout-content` had a background, border and shadow) and
+> flattened every inner `p-card` to a borderless hairline box so shadows would
+> not stack. Freya inverts that: the content ground is gray, and each `p-card`
+> is the white elevated surface. The "flatten inner cards" rule in
+> `styles.scss` is therefore replaced by the elevated-card rule in §14.
+
+---
+
+## 12. Color Palette (Design Tokens)
+
+All tokens are declared once in `src/styles.scss` under `:root`, remapped
+under `.app-dark`, and **always** derive from PrimeNG v21 `--p-*` theme tokens
+rather than literal hex — except the four dashboard accents, which are brand
+constants and are declared as literals.
+
+### 12.1 Surface & text
+
+| Token | Light | Dark | Use |
+|---|---|---|---|
+| `--surface-ground` | `--p-surface-100` | `--p-surface-950` | App canvas behind everything |
+| `--surface-card` | `--p-content-background` | `--p-surface-900` | Cards, sidebar, overlays |
+| `--surface-overlay` | `--p-content-background` | `--p-surface-800` | Menus, dialogs |
+| `--surface-border` | `--p-content-border-color` | `--p-surface-800` | Hairlines only |
+| `--surface-hover` | `--p-surface-100` | `--p-surface-800` | Menu/row hover |
+| `--text-color` | `--p-text-color` | idem | Primary copy |
+| `--text-color-secondary` | `--p-text-muted-color` | idem | Labels, captions, section headers |
+| `--primary-color` | `--p-primary-color` | idem | Active nav, links, focus |
+
+The single most important change from the pre-Freya look: **`--surface-ground`
+moved from `surface-50` to `surface-100`**. `surface-50` is too close to white
+to separate the ground from the cards, which is why the old shell needed a
+border on every card to be legible.
+
+### 12.2 Dashboard accent cards
+
+Four accents, in fixed order. Each has a base, a gradient end (used as a
+`135deg` linear gradient for depth), and a matching tinted shadow.
+
+| Accent | Base | Gradient end | Token prefix | Semantic slot |
+|---|---|---|---|---|
+| **Green** (emerald) | `#10b981` | `#059669` | `--accent-green-*` | Primary / positive volume |
+| **Slate** (muted gray) | `#94a3b8` | `#7c8da3` | `--accent-slate-*` | Neutral / informational |
+| **Navy** (dark blue) | `#3f4b5f` | `#2c3543` | `--accent-navy-*` | Dense / analytical |
+| **Orange** (amber) | `#f9a94c` | `#f08c25` | `--accent-amber-*` | Attention / warning |
+
+Rules:
+- Foreground on all four is `#fff`. Never dark text on an accent card, not
+  even on Slate/Amber — consistency beats per-card contrast tuning here.
+- The accent set is **closed**. A fifth metric reuses an existing accent; it
+  does not introduce a fifth color.
+- Accents are for dashboard metric cards only. They are not button colors, not
+  tag colors, not chart colors. Buttons keep PrimeNG severities (§8 Part I).
+
+---
+
+## 13. Typography, Radius, Elevation & Spacing
+
+### 13.1 Type scale
+
+Root is `14px` (`html { font-size: 14px }` — set in `styles.scss`), so `1rem`
+= 14px. Every rem value below is written for that root; do not change it.
+
+| Role | Class / size | Weight |
+|---|---|---|
+| Page title | `1.5rem` (`.layout-page-title`) | `700` |
+| Page description | `0.875rem`, muted | `400` |
+| Card title | `1.125rem` / `text-lg` | `600` |
+| Metric card label | `0.875rem`, `#fff` @ 90% | `600` |
+| Metric card value | `2rem` (`clamp` to `1.75rem` on small) | `700`, `letter-spacing: -.02em` |
+| Body | `0.9375rem` | `400` |
+| Caption / meta | `0.8rem`, muted | `400` |
+
+Font stack stays `Inter, -apple-system, …` (already set on `body`). Do not
+introduce a second family.
+
+### 13.2 Radius scale
+
+| Token | Value | PrimeFlex equivalent | Use |
+|---|---|---|---|
+| `--radius-sm` | `6px` | `border-round-md` | Inputs, small buttons |
+| `--radius-md` | `10px` | — | Menu items, chips |
+| `--radius-lg` | `14px` | `border-round-xl` | **Cards — the default** |
+| `--radius-xl` | `20px` | `border-round-2xl` | Hero / banner blocks |
+| `--radius-pill` | `999px` | `border-round-3xl` | Search field, status pills, tags |
+
+Prefer the PrimeFlex class in templates when it maps cleanly
+(`border-round-xl`); use the CSS variable in SCSS. Never hardcode a px radius
+in a component stylesheet.
+
+### 13.3 Elevation
+
+Three shadows exist. There is no fourth.
+
+```scss
+--shadow-card:  0 1px 2px rgba(15,23,42,.04), 0 4px 12px -4px rgba(15,23,42,.06);
+--shadow-hover: 0 2px 4px rgba(15,23,42,.05), 0 12px 24px -8px rgba(15,23,42,.10);
+--shadow-overlay: 0 24px 48px -12px rgba(0,0,0,.18), 0 8px 16px -8px rgba(0,0,0,.12);
+```
+
+- Cards ship at `--shadow-card`. `--shadow-hover` is applied only on
+  interactive cards, paired with `translateY(-2px)` and a `.2s ease`
+  transition.
+- Accent cards use their own tinted shadow
+  (`0 8px 20px -8px <accent>66`) instead of `--shadow-card` — a neutral gray
+  shadow under a saturated card reads as dirt.
+- In dark mode every shadow is reduced, not recolored: the `.app-dark` block
+  overrides the same three tokens with lower alpha.
+
+### 13.4 Spacing — PrimeFlex is the vocabulary
+
+Templates express spacing with PrimeFlex utilities; SCSS only handles what
+utilities cannot.
+
+| Context | Classes |
+|---|---|
+| Card inner padding | `p-4` (PrimeNG's `p-card-body` is retuned to `1.5rem` globally — do not add padding on top of it) |
+| Gap between cards in a grid row | `grid` + `col-12 md:col-6 xl:col-3` (the `grid` gutter *is* the gap) |
+| Vertical rhythm between page sections | `mb-4` |
+| Icon ↔ label | `gap-2` |
+| Toolbar clusters | `gap-2`, `align-items-center` |
+| Card internals | `flex flex-column justify-content-between gap-3` |
+
+Canonical metric-card internal layout, verbatim:
+
+```html
+<div class="flex align-items-start justify-content-between gap-3">…</div>
+```
+
+Never reach for a custom flex rule when `flex`, `align-items-center`,
+`justify-content-between`, `flex-column`, `gap-*` or `col-*` already say it.
+
+---
+
+## 14. PrimeNG Global Overrides
+
+Live in `src/styles.scss` under the "Freya component overrides" banner. Keep
+them there — component stylesheets must not re-override PrimeNG internals.
+
+**Card** — the one override that carries the whole aesthetic:
+```scss
+.p-card {
+  background: var(--surface-card);
+  border: none;              // Freya cards are borderless…
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);   // …and separated by shadow instead
+}
+.p-card .p-card-body { padding: 1.5rem; }
+.p-card .p-card-title { font-size: 1.125rem; font-weight: 600; }
+```
+
+**Panel / Fieldset / Accordion** — strip the chrome: transparent headers, no
+outer border, header font `600` at `0.95rem`. Freya's grouping reads through
+spacing and weight, not boxes.
+
+**DataTable** — keep the Part I §"tables" treatment (uppercase muted headers,
+hairline row separators, striped even rows) but drop the outer border and let
+the wrapping `p-card` provide the surface. The paginator stays a full-bleed
+footer band; its negative margins are pinned to the `1.5rem` card padding
+above — **if you change card padding, change the paginator margins in the same
+commit.**
+
+**Inputs** — `--radius-sm`, hairline border from `--p-formField-borderColor`,
+no inner shadow. Search-style inputs get `--radius-pill` via `.p-input-pill`.
+
+**Buttons** — untouched. PrimeNG severities already match Freya. The only
+addition is `.p-button-page-action` from Part I.
+
+**Menu / Overlay** — `--radius-lg` and `--shadow-overlay`, already routed
+through `CronosPreset` in `app.module.ts`. Overlay radius belongs in the
+preset, not here.
+
+**Dark mode** — never write a `.app-dark .p-<component>` rule that changes
+*layout*. Dark mode only ever swaps the token values in §12.
+
+---
+
+## 15. Component Inventory (Freya-era)
+
+| Component | Path | Purpose |
+|---|---|---|
+| `MainLayoutComponent` | `src/app/layout/` | The shell: sidebar + topbar + content ground |
+| `buildNavSections()` | `src/app/layout/app-menu.ts` | Single nav model driving expanded, slim and mobile states |
+| `StatCardComponent` (`app-stat-card`) | `src/app/shared/components/stat-card/` | The four-accent metric card. **All metric tiles use it — no page hand-rolls a colored card.** |
+
+`app-stat-card` contract:
+
+| Input | Type | Notes |
+|---|---|---|
+| `label` | `string` | Small uppercase-ish title, top-left |
+| `value` | `string \| number` | Large figure, bottom-left |
+| `icon` | `string` | PrimeIcons class, top-right |
+| `accent` | `'green' \| 'slate' \| 'navy' \| 'amber'` | §12.2 |
+| `caption` | `string?` | Optional sub-line under the value |
+| `link` | `string?` | When set the card becomes an `<a routerLink>` and gains hover lift |
+| `loading` | `boolean` | Renders a `p-skeleton` in the value slot (per Part I §4) |
+
+Per Part I §10, cite the section you are satisfying: e.g. "per §13.3, the
+interactive card uses `--shadow-hover` with a 2px lift".

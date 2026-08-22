@@ -1,200 +1,326 @@
+// ═══════════════════════════════════════════════════════════════════════
+// Application shell — Freya layout. See Context.md §11.
+//
+// Every dimension here reads from a token declared in styles.scss so the
+// sidebar width, topbar height and radii stay in sync with the rest of the
+// app. Nothing in this file hardcodes a color.
+// ═══════════════════════════════════════════════════════════════════════
+
 :host {
   display: block;
-  min-height: 100vh;
-  // Reference look: very light gray canvas behind the big white card
-  background: var(--p-surface-50); // #f8fafc in the Aura slate scale
-}
-
-:host-context(.app-dark) {
-  background: var(--p-surface-950);
+  background: var(--surface-ground);
 }
 
 .layout-wrapper {
   min-height: 100vh;
+  background: var(--surface-ground);
 }
 
-// ── Topbar ──────────────────────────────────────────────────────────────
-.layout-topbar {
+// ── Sidebar ─────────────────────────────────────────────────────────────
+.layout-sidebar {
   position: fixed;
   top: 0;
+  bottom: 0;
   left: 0;
-  right: 0;
-  z-index: 1000;
-  height: 3.75rem;
+  z-index: var(--layout-z-sidebar);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1rem;
-  background: var(--p-content-background);
-  border-bottom: 1px solid var(--p-content-border-color);
+  flex-direction: column;
+  width: var(--layout-sidebar-width);
+  background: var(--surface-card);
+  border-right: 1px solid var(--surface-border);
+  // Width animates; the mobile transform is layered on in the media query.
+  transition: width 0.2s ease, transform 0.2s ease;
 }
 
-.layout-logo {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
+// Logo block: exactly as tall as the topbar so the two align on one baseline.
+.layout-sidebar-logo {
+  flex: 0 0 auto;
+  height: var(--layout-topbar-height);
+  overflow: hidden;
+
+  a {
+    color: inherit;
+  }
 }
 
 .layout-logo-img {
-  height: 1.9rem;
+  flex: 0 0 auto;
+  width: 2rem;
+  height: 2rem;
 }
 
 .layout-logo-text {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 700;
-  color: var(--p-text-color);
+  letter-spacing: -0.02em;
+  color: var(--text-color);
+  white-space: nowrap;
+}
+
+.layout-menu {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.5rem 0.75rem 1rem;
+
+  // Quiet scrollbar — the menu should never look like a scroll region at rest.
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-border) transparent;
+}
+
+.layout-menu-section + .layout-menu-section {
+  margin-top: 1.25rem;
+}
+
+.layout-menu-section-title {
+  display: block;
+  padding: 0 0.75rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-color-secondary);
+  white-space: nowrap;
+}
+
+.layout-menu-item {
+  height: 2.6rem;
+  padding: 0 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-color);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+
+  &:hover {
+    background: var(--surface-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: -2px;
+  }
+}
+
+// Fixed icon box so labels align regardless of glyph width (§11.3).
+.layout-menu-item-icon {
+  flex: 0 0 1.5rem;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.layout-menu-item-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+// Active = 12% primary tint + primary text. No accent bar, no filled pill.
+.layout-menu-item-active {
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+  color: var(--primary-color);
+  font-weight: 600;
+
+  &:hover {
+    background: color-mix(in srgb, var(--primary-color) 18%, transparent);
+  }
+}
+
+.layout-sidebar-footer {
+  flex: 0 0 auto;
+  padding: 0.75rem 1.5rem 1rem;
+  border-top: 1px solid var(--surface-border);
+}
+
+.layout-sidebar-version {
+  font-size: 0.75rem;
+  color: var(--text-color-secondary);
+  white-space: nowrap;
+}
+
+// ── Main column ─────────────────────────────────────────────────────────
+.layout-main-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin-left: var(--layout-sidebar-width);
+  transition: margin-left 0.2s ease;
+}
+
+.layout-topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--layout-z-topbar);
+  flex: 0 0 auto;
+  height: var(--layout-topbar-height);
+  padding: 0 1.5rem;
+  // No border, no shadow: the topbar is part of the ground, not a bar.
+  background: var(--surface-ground);
 }
 
 .layout-user-button {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.25rem 0.5rem;
+  padding: 0.25rem 0.5rem 0.25rem 0.25rem;
   border: none;
-  border-radius: var(--p-border-radius-md, 6px);
   background: transparent;
-  color: var(--p-text-color);
+  color: var(--text-color);
   cursor: pointer;
+  transition: background-color 0.15s ease;
 
   &:hover {
-    background: var(--p-content-hover-background, rgba(0, 0, 0, 0.04));
+    background: var(--surface-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
   }
 }
 
 .layout-user-name {
-  font-weight: 500;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
-// ── Icon rail: narrow, light, dark thin icons ───────────────────────────
-.layout-rail {
-  position: fixed;
-  top: 3.75rem;
-  bottom: 0;
-  left: 0;
-  width: 4.25rem;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.9rem 0;
-  background: var(--p-content-background);
-  border-right: 1px solid var(--p-content-border-color);
-  z-index: 900;
-}
-
-.rail-item {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.6rem;
-  height: 2.6rem;
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  color: var(--p-surface-500);
-  cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
-
-  i {
-    font-size: 1.15rem;
-  }
-
-  &:hover {
-    background: var(--p-surface-100);
-    color: var(--p-text-color);
-  }
-
-  &.rail-item-active {
-    background: color-mix(in srgb, var(--p-primary-color) 12%, transparent);
-    color: var(--p-primary-color);
-  }
-}
-
-:host-context(.app-dark) .rail-item:hover {
-  background: var(--p-surface-800);
-}
-
-.rail-item-caret {
-  position: absolute;
-  right: 0.3rem;
-  bottom: 0.3rem;
-  width: 0;
-  height: 0;
-  border-left: 4px solid transparent;
-  border-top: 4px solid transparent;
-  border-right: 4px solid currentColor;
-  border-bottom: 4px solid currentColor;
-  border-radius: 1px;
-  opacity: 0.45;
-}
-
-// ── Main area: canvas + the big white card ──────────────────────────────
 .layout-main {
-  padding: 5rem 1.75rem 1rem;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  // Top padding is the topbar's job — see .layout-topbar height.
+  padding: 0 1.5rem 1.5rem;
 }
 
-@media (min-width: 992px) {
-  .layout-main {
-    margin-left: 4.25rem;
-  }
-}
-
+// The content ground is transparent: page-level p-cards are the white
+// surfaces (§11.5). Do not give this element a background or a border.
 .layout-content {
-  flex: 1;
-  background: var(--p-content-background);
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 16px;
-  box-shadow:
-    0 1px 2px rgba(15, 23, 42, 0.04),
-    0 12px 32px -16px rgba(15, 23, 42, 0.1);
-  padding: 1.5rem 1.75rem;
-}
-
-.layout-content-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  margin-bottom: 1.25rem;
-  // Discreet heading band: a soft surface tint lifts the title/breadcrumb off
-  // the card so it reads as a distinct, corporate page header.
-  padding: 1rem 1.25rem;
-  background: var(--p-surface-50);
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 12px;
-}
-
-:host-context(.app-dark) .layout-content-header {
-  background: var(--p-surface-900);
+  flex: 1 1 auto;
 }
 
 .layout-page-title {
-  margin: 0;
-  font-size: 1.35rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: var(--p-text-color);
+  letter-spacing: -0.02em;
+  color: var(--text-color);
 }
 
 .layout-page-description {
-  margin: 0.2rem 0 0;
-  font-size: 0.88rem;
-  color: var(--p-text-muted-color);
+  font-size: 0.875rem;
+  color: var(--text-color-secondary);
 }
 
 .layout-footer {
-  padding: 1rem 0 0.25rem;
-  color: var(--p-text-muted-color);
-  font-size: 0.82rem;
+  flex: 0 0 auto;
+  padding-top: 2rem;
+  font-size: 0.8rem;
   text-align: center;
+  color: var(--text-color-secondary);
 }
 
+// Mask only ever materialises on mobile (see media query below).
+.layout-mask {
+  display: none;
+}
+
+// ── Slim mode (desktop, persisted) ──────────────────────────────────────
+// A class toggle over the same markup: labels and section headers collapse,
+// icons center, and the label is handed to a tooltip.
+@media (min-width: 992px) {
+  .layout-wrapper.layout-slim {
+    .layout-sidebar {
+      width: var(--layout-sidebar-width-slim);
+    }
+
+    .layout-main-container {
+      margin-left: var(--layout-sidebar-width-slim);
+    }
+
+    .layout-sidebar-logo {
+      justify-content: center;
+      padding: 0 !important;
+    }
+
+    .layout-logo-text,
+    .layout-menu-item-label,
+    .layout-sidebar-version {
+      display: none;
+    }
+
+    // Header collapses to a hairline rule so sections stay legible as groups.
+    .layout-menu-section-title {
+      height: 1px;
+      margin: 0 0.5rem 0.6rem;
+      padding: 0;
+      overflow: hidden;
+      color: transparent;
+      background: var(--surface-border);
+    }
+
+    .layout-menu-item {
+      justify-content: center;
+      padding: 0;
+    }
+  }
+}
+
+// ── Mobile: off-canvas sidebar over a dimming mask ──────────────────────
+@media (max-width: 991px) {
+  .layout-sidebar {
+    transform: translateX(-100%);
+    box-shadow: var(--shadow-overlay);
+  }
+
+  .layout-main-container {
+    margin-left: 0;
+  }
+
+  .layout-wrapper.layout-mobile-active {
+    .layout-sidebar {
+      transform: translateX(0);
+    }
+
+    .layout-mask {
+      display: block;
+      position: fixed;
+      inset: 0;
+      z-index: var(--layout-z-mask);
+      background: rgba(15, 23, 42, 0.4);
+    }
+  }
+
+  .layout-topbar,
+  .layout-main {
+    padding-inline: 1rem;
+  }
+}
+
+// ── Scoped PrimeNG adjustments ──────────────────────────────────────────
 :host ::ng-deep {
-  // Minimal breadcrumbs, top-right of the card
+  // Pill search field (§11.4). Sized here rather than globally so a pill
+  // input elsewhere opts in via .p-input-pill instead of inheriting this.
+  .layout-search .p-inputtext {
+    width: 16rem;
+    height: 2.5rem;
+    padding-left: 2.5rem;
+    border-radius: var(--radius-pill);
+    background: var(--surface-card);
+    border-color: var(--surface-border);
+
+    &::placeholder {
+      color: var(--text-color-secondary);
+    }
+  }
+
+  .layout-user-avatar {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    background: color-mix(in srgb, var(--primary-color) 15%, transparent);
+    color: var(--primary-color);
+  }
+
+  // Breadcrumb reads as metadata next to the page title: no chrome at all.
   .layout-breadcrumb {
     background: transparent;
     border: 0;
@@ -203,27 +329,13 @@
     .p-breadcrumb-item-link,
     .p-breadcrumb-item-label,
     .p-breadcrumb-separator {
-      font-size: 0.82rem;
-      color: var(--p-text-muted-color);
+      font-size: 0.8rem;
+      color: var(--text-color-secondary);
     }
 
     .p-breadcrumb-item:last-child .p-breadcrumb-item-label {
-      color: var(--p-text-color);
+      color: var(--text-color);
       font-weight: 600;
-    }
-  }
-
-  .layout-panelmenu {
-    .p-panelmenu-panel {
-      border: none;
-      box-shadow: none;
-      background: transparent;
-      margin-bottom: 0.25rem;
-    }
-
-    .p-panelmenu-header-content {
-      border: none;
-      background: transparent;
     }
   }
 }

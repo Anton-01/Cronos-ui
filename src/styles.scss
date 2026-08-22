@@ -1,7 +1,20 @@
-// ── Global styles ──────────────────────────────────────────────────────
-// The PrimeNG theme (Aura preset) is injected at runtime via providePrimeNG
-// in app.module.ts. PrimeIcons and PrimeFlex are loaded from angular.json.
+// ═══════════════════════════════════════════════════════════════════════
+// Cronos global styles — Freya design system.
+//
+// Read Context.md Part II before editing. Order matters:
+//   1. Base            — root font size, body, links
+//   2. Design tokens   — §12 palette, §13 radius/elevation, layout metrics
+//   3. Freya overrides — §14 PrimeNG component adjustments
+//
+// The PrimeNG theme (CronosPreset over Aura) is injected at runtime via
+// providePrimeNG in app.module.ts. PrimeIcons and PrimeFlex load from
+// angular.json. Nothing here may hardcode a color that is not one of the
+// four §12.2 brand accents.
+// ═══════════════════════════════════════════════════════════════════════
 
+// ── 1. Base ────────────────────────────────────────────────────────────
+// Root is 14px — every rem value across the app is written for this root
+// (Context.md §13.1). Changing it rescales the entire design system.
 html {
   font-size: 14px;
 }
@@ -9,63 +22,160 @@ html {
 body {
   margin: 0;
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: var(--p-surface-50);
-  color: var(--p-text-color);
-}
-
-.app-dark body {
-  background: var(--p-surface-950);
+  background: var(--surface-ground);
+  color: var(--text-color);
+  -webkit-font-smoothing: antialiased;
 }
 
 a {
-  color: var(--p-primary-color);
+  color: var(--primary-color);
 }
 
-// ── PrimeFlex token bridge ─────────────────────────────────────────────
-// PrimeFlex utility classes (text-color, text-color-secondary, surface-*)
-// consume the legacy --text-color/--surface-* variables; map them to the
-// PrimeNG v21 theme tokens so they follow light/dark mode.
+// ═══════════════════════════════════════════════════════════════════════
+// 2. Design tokens (Context.md §12–§13)
+//
+// Semantic aliases over PrimeNG v21's --p-* theme tokens. Components read
+// these, never --p-* directly, so a preset change propagates in one place.
+// They double as the bridge for PrimeFlex utility classes (text-color,
+// text-color-secondary, surface-*), which consume these legacy names.
+// ═══════════════════════════════════════════════════════════════════════
 :root {
+  // Surfaces & text
+  // surface-100, not surface-50: surface-50 sits too close to white for the
+  // ground to separate from the cards, which is what forced the old shell to
+  // border every card just to make it legible (§12.1).
+  --surface-ground: var(--p-surface-100);
+  --surface-card: var(--p-content-background);
+  --surface-overlay: var(--p-content-background);
+  --surface-border: var(--p-content-border-color);
+  --surface-hover: var(--p-surface-100);
   --text-color: var(--p-text-color);
   --text-color-secondary: var(--p-text-muted-color);
-  --surface-ground: var(--p-surface-50);
-  --surface-card: var(--p-content-background);
-  --surface-border: var(--p-content-border-color);
   --primary-color: var(--p-primary-color);
+
+  // Radius scale (§13.2)
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-pill: 999px;
+
+  // Elevation (§13.3) — three shadows, no fourth
+  --shadow-card: 0 1px 2px rgba(15, 23, 42, 0.04), 0 4px 12px -4px rgba(15, 23, 42, 0.06);
+  --shadow-hover: 0 2px 4px rgba(15, 23, 42, 0.05), 0 12px 24px -8px rgba(15, 23, 42, 0.1);
+  --shadow-overlay: 0 24px 48px -12px rgba(0, 0, 0, 0.18), 0 8px 16px -8px rgba(0, 0, 0, 0.12);
+
+  // Layout metrics (§11) — consumed by MainLayoutComponent
+  --layout-sidebar-width: 16rem;
+  --layout-sidebar-width-slim: 5rem;
+  --layout-topbar-height: 4.5rem;
+  --layout-z-sidebar: 1100;
+  --layout-z-mask: 1050;
+  --layout-z-topbar: 1000;
+
+  // Card padding is a shared contract: the DataTable paginator band bleeds to
+  // the card edges with matching negative margins (§14). Change both together.
+  --card-padding: 1.5rem;
 }
 
+// Dark mode only ever swaps token values — never layout (§14).
 .app-dark {
   --surface-ground: var(--p-surface-950);
+  --surface-card: var(--p-surface-900);
+  --surface-overlay: var(--p-surface-800);
+  --surface-border: var(--p-surface-800);
+  --surface-hover: var(--p-surface-800);
+
+  // Same three shadows, lower alpha — reduced, not recolored.
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.2), 0 4px 12px -4px rgba(0, 0, 0, 0.28);
+  --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.24), 0 12px 24px -8px rgba(0, 0, 0, 0.36);
+  --shadow-overlay: 0 24px 48px -12px rgba(0, 0, 0, 0.5), 0 8px 16px -8px rgba(0, 0, 0, 0.4);
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-// Cronos visual language — hairline borders, soft cards, quiet chrome
+// 3. Freya component overrides (Context.md §14)
+//
+// PrimeNG internals are overridden here and nowhere else. Component
+// stylesheets style their own markup; they do not reach into .p-* classes.
 // ═══════════════════════════════════════════════════════════════════════
 
-// The main layout content acts as THE big white card; inner p-cards flatten
-// to hairline-bordered sections so we never stack heavy shadows.
-.layout-content .p-card {
-  border: 1px solid var(--p-content-border-color);
+// ── Card: the override that carries the whole aesthetic ────────────────
+// Freya cards are borderless and separated by shadow, floating on the gray
+// content ground. This replaces the pre-Freya rule that flattened cards to
+// hairline boxes inside one big white content card (§11.5 supersedes).
+.p-card {
+  background: var(--surface-card);
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.p-card .p-card-body {
+  padding: var(--card-padding);
+}
+
+.p-card .p-card-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.p-card .p-card-subtitle {
+  font-size: 0.85rem;
+  color: var(--text-color-secondary);
+}
+
+// ── Panel / Fieldset / Accordion: strip the chrome ─────────────────────
+// Freya groups content through spacing and weight, not boxes.
+.p-panel,
+.p-fieldset,
+.p-accordion .p-accordionpanel {
+  border: none;
+  border-radius: var(--radius-lg);
+  background: transparent;
+}
+
+.p-panel .p-panel-header,
+.p-fieldset .p-fieldset-legend,
+.p-accordion .p-accordionheader {
+  background: transparent;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.p-panel .p-panel-content,
+.p-accordion .p-accordioncontent-content {
+  background: transparent;
+  border: none;
+}
+
+// ── Inputs ─────────────────────────────────────────────────────────────
+.p-inputtext,
+.p-select,
+.p-multiselect,
+.p-textarea {
+  border-radius: var(--radius-sm);
   box-shadow: none;
-  border-radius: 12px;
 }
 
-// Pin card padding to a known value so the paginator footer band can bleed
-// to the card edges with matching negative margins (see .p-paginator below).
-.layout-content .p-card .p-card-body {
-  padding: 1.25rem;
+// Opt-in pill treatment for search-style fields (§14).
+.p-input-pill .p-inputtext,
+.p-input-pill.p-inputtext {
+  border-radius: var(--radius-pill);
 }
 
 // ── Tables: ultra-thin grid, quiet header, striped rows ────────────────
-// Separators use a fraction of the content border token so they read as
-// almost-imperceptible hairlines; only the header underline stays crisp.
+// The wrapping p-card provides the surface, so the table has no border of
+// its own; separators are a fraction of the border token so they read as
+// almost-imperceptible hairlines.
 .p-datatable {
   border: 0;
 
   .p-datatable-thead > tr > th {
     background: transparent;
-    border-bottom: 1px solid var(--p-content-border-color);
-    color: var(--p-text-muted-color);
+    border-bottom: 1px solid var(--surface-border);
+    color: var(--text-color-secondary);
     font-size: 0.78rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -74,7 +184,7 @@ a {
   }
 
   .p-datatable-tbody > tr > td {
-    border-bottom: 1px solid color-mix(in srgb, var(--p-content-border-color) 60%, transparent);
+    border-bottom: 1px solid color-mix(in srgb, var(--surface-border) 60%, transparent);
     padding: 0.7rem 0.75rem;
   }
 
@@ -82,8 +192,8 @@ a {
     border-bottom: 0;
   }
 
-  // Striped rows: white on odd, a barely-there tint on even. Pair with the
-  // stripedRows input on <p-table> (see the standard template mold).
+  // Striped rows: card surface on odd, a barely-there tint on even. Pair with
+  // the stripedRows input on <p-table>.
   &.p-datatable-striped .p-datatable-tbody > tr:nth-child(even) > td {
     background: color-mix(in srgb, var(--p-surface-100) 45%, transparent);
   }
@@ -106,19 +216,17 @@ a {
 
 // ── Paginator as a discreet footer band, bottom-left ───────────────────
 // Every list table uses paginatorPosition="bottom"; PrimeNG v21 renders the
-// paginator as the last child of .p-datatable. We turn it into a full-bleed
-// footer strip flush against the card bottom; the negative margins pin it to
-// the card edges and its own bottom corners echo the card's radius.
-//   Layout: [ Mostrando 1 a 10 de 17 registros ][ « ‹ 1 2 › » ] ....... [ 10 ▾ ]
-// The record legend (currentPageReport) is forced first, the page controls
-// sit immediately to its right, and the rows-per-page select is pushed right.
+// paginator as the last child of .p-datatable. The negative margins pin it to
+// the card edges and are therefore tied to --card-padding — change both in the
+// same commit (§14).
+//   Layout: [ Showing 1 to 10 of 17 ][ « ‹ 1 2 › » ] .............. [ 10 ▾ ]
 .p-datatable .p-paginator {
-  margin: 1rem -1.25rem -1.25rem;
-  padding: 0.55rem 1.25rem;
+  margin: 1rem calc(-1 * var(--card-padding)) calc(-1 * var(--card-padding));
+  padding: 0.55rem var(--card-padding);
   background: var(--p-surface-50);
   border: 0;
-  border-top: 1px solid var(--p-content-border-color);
-  border-radius: 0 0 12px 12px;
+  border-top: 1px solid var(--surface-border);
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
   justify-content: flex-start;
   gap: 0.25rem;
 
@@ -127,7 +235,7 @@ a {
     order: -1;
     margin-right: 0.85rem;
     font-size: 0.82rem;
-    color: var(--p-text-muted-color);
+    color: var(--text-color-secondary);
   }
 
   .p-paginator-pages .p-paginator-page,
@@ -150,7 +258,7 @@ a {
 }
 
 .app-dark .p-datatable .p-paginator {
-  background: var(--p-surface-900);
+  background: var(--p-surface-950);
 }
 
 .app-dark .p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(even) > td {
@@ -170,29 +278,24 @@ a {
 // ── Search field: pill shape, hairline border ──────────────────────────
 .p-datatable .p-iconfield .p-inputtext,
 .table-search .p-inputtext {
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   padding-left: 2.4rem;
   min-width: 16rem;
-  background: var(--p-surface-50);
-  border-color: var(--p-surface-200);
+  background: var(--surface-ground);
+  border-color: var(--surface-border);
 
   &:enabled:focus {
-    background: var(--p-content-background);
+    background: var(--surface-card);
   }
 }
 
-.app-dark .p-datatable .p-iconfield .p-inputtext {
-  background: var(--p-surface-900);
-  border-color: var(--p-surface-700);
-}
-
-// ── Status pills (soft background + dark text, like "Active" chips) ────
+// ── Status pills (soft background + dark text) ─────────────────────────
 .status-pill {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   padding: 0.2rem 0.65rem;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-size: 0.78rem;
   font-weight: 600;
   line-height: 1.4;
@@ -228,42 +331,34 @@ a {
 
 // PrimeNG tags rendered as pills to match
 .p-tag {
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   font-weight: 600;
   padding: 0.2rem 0.65rem;
 }
 
-// ── Global page header container ───────────────────────────────────────
-// Standard heading band for any view that renders its own header (the shared
-// layout already applies the same treatment to .layout-content-header). It
-// sits on a discreet surface tint so the title reads clearly against the
-// page. Structure: <div class="page-header"> title/description | breadcrumb.
+// ── Page header for views that render their own ────────────────────────
+// Mirrors .layout-content-header in MainLayoutComponent: no tinted band, no
+// border — the title sits directly on the content ground (§11.5).
+// Structure: <div class="page-header"> title/description | actions.
 .page-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.75rem;
-  margin-bottom: 1.25rem;
-  padding: 1rem 1.25rem;
-  background: var(--p-surface-50);
-  border: 1px solid var(--p-content-border-color);
-  border-radius: 12px;
+  margin-bottom: 1.5rem;
 
   .page-header-title {
     margin: 0;
-    font-size: 1.35rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    color: var(--p-text-color);
+    letter-spacing: -0.02em;
+    color: var(--text-color);
   }
 
   .page-header-description {
     margin: 0.2rem 0 0;
-    font-size: 0.88rem;
-    color: var(--p-text-muted-color);
+    font-size: 0.875rem;
+    color: var(--text-color-secondary);
   }
-}
-
-.app-dark .page-header {
-  background: var(--p-surface-900);
 }
