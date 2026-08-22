@@ -19,18 +19,64 @@
           <ul class="list-none p-0 m-0">
             @for (item of section.items; track item.route) {
               <li>
-                <a
-                  class="layout-menu-item flex align-items-center gap-2 border-round-md"
-                  [class.layout-menu-item-active]="isActive(item)"
-                  [routerLink]="item.route"
-                  [attr.aria-current]="isActive(item) ? 'page' : null"
-                  [pTooltip]="slim() ? item.label : ''"
-                  tooltipPosition="right"
-                  pRipple
-                >
-                  <i class="layout-menu-item-icon" [class]="item.icon"></i>
-                  <span class="layout-menu-item-label">{{ item.label }}</span>
-                </a>
+                @if (item.children; as children) {
+                  <!-- Group parent: a disclosure button, not a link. In slim
+                       mode the group is always open — labels are hidden, so
+                       the children read as a short icon run under the
+                       parent instead of hiding behind a closed toggle. -->
+                  <button
+                    type="button"
+                    class="layout-menu-item layout-menu-toggle flex align-items-center gap-2 border-round-md w-full"
+                    [class.layout-menu-item-active]="isActive(item)"
+                    [attr.aria-expanded]="isGroupOpen(item)"
+                    [pTooltip]="slim() ? item.label : ''"
+                    tooltipPosition="right"
+                    (click)="toggleGroup(item)"
+                    pRipple
+                  >
+                    <i class="layout-menu-item-icon" [class]="item.icon"></i>
+                    <span class="layout-menu-item-label">{{ item.label }}</span>
+                    <i
+                      class="layout-menu-toggle-icon pi"
+                      [class.pi-chevron-down]="isGroupOpen(item)"
+                      [class.pi-chevron-right]="!isGroupOpen(item)"
+                      aria-hidden="true"
+                    ></i>
+                  </button>
+                  @if (isGroupOpen(item)) {
+                    <ul class="layout-submenu list-none p-0 m-0">
+                      @for (child of children; track child.route) {
+                        <li>
+                          <a
+                            class="layout-menu-item flex align-items-center gap-2 border-round-md"
+                            [class.layout-menu-item-active]="isActive(child)"
+                            [routerLink]="child.route"
+                            [attr.aria-current]="isActive(child) ? 'page' : null"
+                            [pTooltip]="slim() ? child.label : ''"
+                            tooltipPosition="right"
+                            pRipple
+                          >
+                            <i class="layout-menu-item-icon" [class]="child.icon"></i>
+                            <span class="layout-menu-item-label">{{ child.label }}</span>
+                          </a>
+                        </li>
+                      }
+                    </ul>
+                  }
+                } @else {
+                  <a
+                    class="layout-menu-item flex align-items-center gap-2 border-round-md"
+                    [class.layout-menu-item-active]="isActive(item)"
+                    [routerLink]="item.route"
+                    [attr.aria-current]="isActive(item) ? 'page' : null"
+                    [pTooltip]="slim() ? item.label : ''"
+                    tooltipPosition="right"
+                    pRipple
+                  >
+                    <i class="layout-menu-item-icon" [class]="item.icon"></i>
+                    <span class="layout-menu-item-label">{{ item.label }}</span>
+                  </a>
+                }
               </li>
             }
           </ul>

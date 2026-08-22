@@ -18,6 +18,15 @@ export interface NavItem {
    * detail view outside the list route).
    */
   activePrefixes?: string[];
+  /**
+   * Sub-destinations rendered in a collapsible group under this item.
+   *
+   * A parent still carries a `route` — the group root — for two reasons: it
+   * is what `activePrefixes` matches so the parent lights up whenever any
+   * child is open, and it stays a real navigable URL that redirects to the
+   * first child. Children never nest further; one level is the whole model.
+   */
+  children?: NavItem[];
 }
 
 /**
@@ -57,7 +66,15 @@ export function buildNavSections(hasAdminRole: boolean, hasSuperAdminRole: boole
       items: [
         { label: 'Unit Types', icon: 'pi pi-sitemap', route: '/cronos/tipos-unidad' },
         { label: 'Measurement Units', icon: 'pi pi-calculator', route: '/cronos/unidades-medida' },
-        { label: 'Categories', icon: 'pi pi-tags', route: '/cronos/categorias' },
+        {
+          label: 'Categories',
+          icon: 'pi pi-tags',
+          route: '/cronos/categorias',
+          children: [
+            { label: 'Product Categories', icon: 'pi pi-shopping-cart', route: '/cronos/categorias/productos' },
+            { label: 'Ingredient Categories', icon: 'pi pi-inbox', route: '/cronos/categorias/ingredientes' },
+          ],
+        },
         { label: 'Allergens', icon: 'pi pi-exclamation-triangle', route: '/cronos/alergenos' },
       ],
     },

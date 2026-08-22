@@ -152,7 +152,9 @@ export class IngredientFormComponent implements OnInit, OnDestroy {
   }
 
   private loadCategories(): void {
-    this.categoryService.getAll({ page: 0, size: 200, sort: 'name,asc' }).subscribe({
+    // Only INGREDIENT categories can classify an ingredient; PRODUCT ones
+    // belong to recipes and must never reach this selector.
+    this.categoryService.getAll({ type: 'INGREDIENT', page: 0, size: 200, sort: 'name,asc' }).subscribe({
       next: (res) => this.categories.set(res.data.content),
     });
   }

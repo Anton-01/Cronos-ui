@@ -95,6 +95,12 @@ export class MainLayoutComponent implements OnInit {
 
   readonly userMenuItems: MenuItem[] = buildUserMenu(() => this.logout());
 
+  /**
+   * Per-group open/closed state, keyed by label, holding only the groups the
+   * user has clicked. Absent means "follow the active route".
+   */
+  private readonly groupOverrides = signal<Readonly<Record<string, boolean>>>({});
+
   private readonly currentUrl = toSignal(
     this.router.events.pipe(
       filter((event) => event instanceof NavigationEnd),
@@ -148,6 +154,27 @@ export class MainLayoutComponent implements OnInit {
   isActive(item: NavItem): boolean {
     const url = this.currentUrl();
     return activePrefixesOf(item).some((prefix) => url === prefix || url.startsWith(`${prefix}/`));
+  }
+
+  /**
+   * Whether a group's children are visible.
+   *
+   * A group opens by itself when the current URL is inside it, and the user's
+   * click is recorded as an override so an explicitly collapsed group stays
+   * collapsed while they are still on one of its pages. Slim mode ignores
+   * both: labels are hidden there, so a closed group would leave its routes
+   * unreachable behind an icon with no flyout.
+   */
+  isGroupOpen(item: NavItem): boolean {
+    if (this.slim()) {
+      return true;
+    }
+    return this.groupOverrides()[item.label] ?? this.isActive(item);
+  }
+
+  toggleGroup(item: NavItem): void {
+    const open = this.isGroupOpen(item);
+    this.groupOverrides.update((current) => ({ ...current, [item.label]: !open }));
   }
 
   /** Below `lg` the button opens the off-canvas sidebar; above it toggles slim mode. */
