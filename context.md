@@ -591,9 +591,11 @@ Accept-Language: es-MX
 
 | Concern | Owner |
 |---|---|
-| Active locale, persistence, `<html lang>` | `core/services/language.service.ts` |
+| Active locale, persistence, `<html lang>`, `<title>` | `core/services/language.service.ts` |
 | Stamping the header | `core/interceptors/language.interceptor.ts` |
-| Locale catalog (`code`, labels, flag) | `core/models/language.model.ts` |
+| Locale catalog (`code`, labels, flag, document title) | `core/models/language.model.ts` |
+| `LOCALE_ID` + `registerLocaleData` | `app.module.ts` |
+| Static default (`<html lang>`, first-paint `<title>`) | `src/index.html` |
 | Switcher UI | `layout/main-layout.component.*` |
 
 `LanguageService` is the deliberate twin of `ThemeService`: a signal for
@@ -609,7 +611,34 @@ request. Note `p-dropdown` no longer exists in PrimeNG 19+ (it is `p-select`);
 `p-menu` is the native fit for a topbar popup and is already the pattern the
 account menu uses.
 
-### 16.4 Not yet done — UI string translation
+### 16.4 Enterprise compliance — pipes, titles and the static shell
+
+Three rules beyond the header, all of them a11y/SEO obligations rather than
+polish:
+
+- **`LOCALE_ID` is `es-MX`.** `registerLocaleData(localeEsMX, 'es-MX')` runs at
+  module load in `app.module.ts` — Angular bundles only `en` data, and an
+  unregistered locale makes `date`/`number`/`currency` throw at runtime, not
+  fall back. Cronos prices ingredients and issues quotes in Mexico, so the
+  native pipes are built around `es-MX`. The provider reads the persisted
+  choice via `resolveStoredLanguage()` and returns `es-MX` when nothing is
+  stored: `LOCALE_ID` is resolved once at bootstrap and **cannot change
+  without a reload**, so an in-session switch moves the header, the
+  `<html lang>` and the `<title>` immediately while the pipes follow on the
+  next load. Never try to "fix" that by re-providing `LOCALE_ID` at runtime —
+  reload, or format through an explicit locale argument.
+- **The `<title>` is dynamic, and `Title` is the only way it is written.**
+  `LanguageService` injects `@angular/platform-browser`'s `Title` and sets it
+  from `LanguageOption.documentTitle` inside `apply()`. No component writes
+  `document.title`; `PageInfoService` drives the in-page heading only, which
+  is a different surface with a different lifetime.
+- **`index.html` carries the real default, not a generic one.**
+  `<html lang="es-MX">` and the Spanish `<title>` are hardcoded, so a screen
+  reader or a pre-hydration crawler reads the intended locale from the first
+  byte instead of a generic `es` for the few milliseconds before Angular
+  boots. That file and `LANGUAGE_OPTIONS` must be changed together.
+
+### 16.5 Not yet done — UI string translation
 
 The header contract above makes the **backend** speak the user's language.
 Cronos' own UI copy is still hardcoded Spanish (§9 tracks that migration).

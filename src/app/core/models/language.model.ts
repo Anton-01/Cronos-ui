@@ -18,4 +18,13 @@ export interface LanguageOption {
   label: string;
   /** Regional-indicator emoji — no image asset, no icon font, no request. */
   flag: string;
+  /**
+   * The document `<title>`. Owned here rather than in a component so the tab,
+   * the browser history entry and the crawler snippet all read from the same
+   * catalog as the header and the `<html lang>`.
+   *
+   * The `es-MX` entry must match the hardcoded `<title>` in `index.html` — it
+   * is what a crawler sees before Angular boots.
+   */
+  documentTitle: string;
 }
