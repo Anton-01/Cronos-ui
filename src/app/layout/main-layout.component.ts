@@ -1,22 +1,26 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  HostListener,
   OnInit,
   computed,
+  effect,
   inject,
   signal,
 } from '@angular/core';
-import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
+import { FormsModule } from '@angular/forms';
 import { MenuItem } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
 import { ButtonModule } from 'primeng/button';
-import { DrawerModule } from 'primeng/drawer';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { InputTextModule } from 'primeng/inputtext';
 import { MenuModule } from 'primeng/menu';
-import { Menu } from 'primeng/menu';
-import { PanelMenuModule } from 'primeng/panelmenu';
+import { RippleModule } from 'primeng/ripple';
 import { TooltipModule } from 'primeng/tooltip';
 
 import { AuthService } from 'src/app/core/services/auth.service';
@@ -24,19 +28,38 @@ import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { ProfileStateService } from 'src/app/core/services/profile/ProfileStateService';
 import { ThemeService } from 'src/app/core/services/theme.service';
 import { TokenService } from 'src/app/core/services/token.service';
-import { RailItem, buildAppMenu, buildRailMenu } from './app-menu';
+import { NavItem, NavSection, activePrefixesOf, buildNavSections, buildUserMenu } from './app-menu';
 
+const SLIM_STORAGE_KEY = 'cronos_sidebar_slim';
+const DESKTOP_BREAKPOINT = 992;
+
+/**
+ * Application shell — Freya layout (see Context.md §11).
+ *
+ * Three regions: a fixed expanded sidebar that owns the logo and the whole
+ * navigation model, a sticky transparent topbar carrying search and account
+ * controls, and a gray content ground on which each page's `p-card`s sit as
+ * the white elevated surfaces.
+ *
+ * The sidebar has three states driven purely by classes on `.layout-wrapper`:
+ * expanded (default), slim (`.layout-slim`, desktop, persisted) and
+ * off-canvas (`.layout-mobile-active`, below 992px).
+ */
 @Component({
   selector: 'app-main-layout',
   standalone: true,
   imports: [
     RouterOutlet,
+    RouterLink,
+    FormsModule,
     AvatarModule,
     BreadcrumbModule,
     ButtonModule,
-    DrawerModule,
+    IconFieldModule,
+    InputIconModule,
+    InputTextModule,
     MenuModule,
-    PanelMenuModule,
+    RippleModule,
     TooltipModule,
   ],
   templateUrl: './main-layout.component.html',
@@ -52,20 +75,25 @@ export class MainLayoutComponent implements OnInit {
   readonly pageInfo = inject(PageInfoService);
   readonly theme = inject(ThemeService);
 
-  readonly sidebarVisible = signal(false);
+  /** Desktop: sidebar collapsed to icons only. Persisted across sessions. */
+  readonly slim = signal(localStorage.getItem(SLIM_STORAGE_KEY) === 'true');
 
-  readonly railItems: RailItem[] = buildRailMenu(
+  /** Mobile (<992px): sidebar revealed off-canvas over a dimming mask. */
+  readonly mobileMenuOpen = signal(false);
+
+  /**
+   * Topbar search field state. There is no global search endpoint yet, so the
+   * field holds its term locally; wire it to a service when one exists rather
+   * than faking a result set here.
+   */
+  readonly searchTerm = signal('');
+
+  readonly navSections: NavSection[] = buildNavSections(
     this.tokenService.hasRole('ADMIN'),
     this.tokenService.hasRole('SUPER_ADMIN'),
   );
 
-  readonly drawerMenuModel: MenuItem[] = buildAppMenu(
-    this.tokenService.hasRole('ADMIN'),
-    this.tokenService.hasRole('SUPER_ADMIN'),
-  );
-
-  /** Flyout content for grouped rail items (single shared popup menu) */
-  readonly flyoutItems = signal<MenuItem[]>([]);
+  readonly userMenuItems: MenuItem[] = buildUserMenu(() => this.logout());
 
   private readonly currentUrl = toSignal(
     this.router.events.pipe(
@@ -104,41 +132,46 @@ export class MainLayoutComponent implements OnInit {
     return [user.firstName, user.lastName].filter(Boolean).join(' ') || user.username;
   });
 
-  readonly userMenuItems: MenuItem[] = [
-    { label: 'Mi Cuenta', icon: 'pi pi-user', routerLink: '/cronos/cuenta/mi-cuenta' },
-    { label: 'Seguridad', icon: 'pi pi-lock', routerLink: '/cronos/cuenta/seguridad' },
-    { separator: true },
-    { label: 'Cerrar Sesión', icon: 'pi pi-sign-out', command: () => this.logout() },
-  ];
+  constructor() {
+    // Navigating from the off-canvas sidebar should close it; the URL signal
+    // is the single source for "a navigation happened".
+    effect(() => {
+      this.currentUrl();
+      this.mobileMenuOpen.set(false);
+    });
+  }
 
   ngOnInit(): void {
     this.profileState.loadProfile();
   }
 
-  isRailItemActive(item: RailItem): boolean {
+  isActive(item: NavItem): boolean {
     const url = this.currentUrl();
-    return item.activePrefixes.some((prefix) => url.startsWith(prefix));
+    return activePrefixesOf(item).some((prefix) => url === prefix || url.startsWith(`${prefix}/`));
   }
 
-  onRailItemClick(item: RailItem, event: MouseEvent, flyout: Menu): void {
-    if (item.children?.length) {
-      this.flyoutItems.set(item.children);
-      flyout.toggle(event);
-    } else if (item.route) {
-      flyout.hide();
-      this.router.navigate([item.route]);
-    }
-  }
-
+  /** Below `lg` the button opens the off-canvas sidebar; above it toggles slim mode. */
   toggleSidebar(): void {
-    this.sidebarVisible.update((visible) => !visible);
+    if (window.innerWidth < DESKTOP_BREAKPOINT) {
+      this.mobileMenuOpen.update((open) => !open);
+      return;
+    }
+    this.slim.update((slim) => {
+      localStorage.setItem(SLIM_STORAGE_KEY, String(!slim));
+      return !slim;
+    });
+  }
+
+  closeMobileMenu(): void {
+    this.mobileMenuOpen.set(false);
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    this.closeMobileMenu();
   }
 
   logout(): void {
     this.authService.performLogout();
-  }
-
-  navigateHome(): void {
-    this.router.navigate(['/dashboard']);
   }
 }
