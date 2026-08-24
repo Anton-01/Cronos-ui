@@ -49,7 +49,10 @@
       "FILTER_BY_CODE": "Filter by code",
       "FILTER": "Filter"
     },
-    "OPTIONAL_DESCRIPTION": "Optional description"
+    "OPTIONAL_DESCRIPTION": "Optional description",
+    "BACK": "Back",
+    "SAVE": "Save",
+    "NEW": "New"
   },
   "NAV": {
     "SECTIONS": {
@@ -80,7 +83,8 @@
   },
   "BREADCRUMB": {
     "HOME": "Home",
-    "CATALOGS": "Catalogs"
+    "CATALOGS": "Catalogs",
+    "OPERATIONS": "Operations"
   },
   "CATEGORIES": {
     "TYPE": {
@@ -377,6 +381,145 @@
       "UPDATED": "Measurement unit updated successfully",
       "DELETED": "Measurement unit deleted successfully",
       "LOAD_FAILED": "Measurement units could not be loaded"
+    }
+  },
+  "FIXED_COSTS": {
+    "TITLE": "Fixed Costs",
+    "DESCRIPTION": "Manage the fixed costs of your operation",
+    "SEARCH_PLACEHOLDER": "Search fixed cost...",
+    "CREATE": "New Fixed Cost",
+    "EDIT": "Edit Fixed Cost",
+    "EMPTY": "No fixed costs registered yet",
+    "FIELDS": {
+      "TYPE": "Cost Type",
+      "AMOUNT": "Amount",
+      "METHOD": "Calculation Method",
+      "PERCENTAGE": "Percentage (%)"
+    },
+    "PLACEHOLDERS": {
+      "NAME": "e.g. Shop rent",
+      "TYPE": "Select a type",
+      "METHOD": "Select a method"
+    },
+    "TYPES": {
+      "LABOR": "Labor / Wages",
+      "UTILITY": "Utilities: Water, Power, Gas",
+      "RENT": "Premises / Space Rent",
+      "PACKAGING": "Boxes, Domes, Labels",
+      "OVERHEAD": "Administrative / Indirect Costs",
+      "MARKETING": "Advertising / Social"
+    },
+    "METHODS": {
+      "HOURLY_RATE": {
+        "LABEL": "Hourly Rate",
+        "HINT": "Best for LABOR or UTILITY"
+      },
+      "PER_UNIT": {
+        "LABEL": "Cost per Unit",
+        "HINT": "Best for PACKAGING"
+      },
+      "FIXED_PER_BATCH": {
+        "LABEL": "Fixed cost per batch produced",
+        "HINT": "Best for RENT or OVERHEAD"
+      },
+      "PERCENTAGE": {
+        "LABEL": "Percentage (%) of inputs",
+        "HINT": "Applies a global % to the recipe's total cost"
+      }
+    },
+    "ERRORS": {
+      "NAME_REQUIRED": "Name is required",
+      "TYPE_REQUIRED": "Type is required",
+      "METHOD_REQUIRED": "Calculation method is required",
+      "PERCENTAGE_REQUIRED": "Percentage is required",
+      "AMOUNT_REQUIRED": "Amount is required"
+    },
+    "TOAST": {
+      "CREATED": "Fixed cost created successfully",
+      "UPDATED": "Fixed cost updated successfully",
+      "DELETED": "Fixed cost deleted successfully",
+      "LOAD_FAILED": "Fixed costs could not be loaded"
+    }
+  },
+  "INGREDIENTS": {
+    "TITLE": "Ingredients",
+    "DESCRIPTION": "Manage the ingredient catalog and its costs",
+    "SEARCH_PLACEHOLDER": "Search ingredient...",
+    "CREATE": "New Ingredient",
+    "EDIT": "Edit Ingredient",
+    "EMPTY": "No ingredients registered yet",
+    "FILTER_BY_CATEGORY": "Filter by category",
+    "FIELDS": {
+      "CATEGORY": "Category",
+      "PURCHASE_UNIT": "Purch. Unit",
+      "PURCHASE_QTY": "Purch. Qty",
+      "UNIT_COST": "Unit Cost",
+      "YIELD": "Yield",
+      "BASE_COST": "Base Cost",
+      "BRAND": "Brand",
+      "SUPPLIER": "Supplier",
+      "CURRENCY": "Currency",
+      "PURCHASE_UNIT_FULL": "Purchase Unit",
+      "PURCHASE_QTY_FULL": "Purchase Quantity",
+      "PURCHASE_COST": "Purchase Cost",
+      "YIELD_PCT": "Yield (%)",
+      "MIN_STOCK": "Minimum stock"
+    },
+    "PLACEHOLDERS": {
+      "NAME": "e.g. Wheat flour",
+      "CATEGORY": "Select a category",
+      "BRAND": "Optional brand",
+      "SUPPLIER": "Optional supplier",
+      "UNIT": "Select a unit"
+    },
+    "FORM": {
+      "DESCRIPTION": "Record the ingredient's purchase and costing information",
+      "GENERAL": "General Information",
+      "GENERAL_SUBTITLE": "Main ingredient details",
+      "PURCHASE": "Purchase and Costing",
+      "PURCHASE_SUBTITLE": "Define how you buy it and at what cost",
+      "STOCK": "Stock and Status",
+      "STOCK_SUBTITLE": "Inventory control and availability",
+      "COST_SUMMARY": "Cost Summary",
+      "REAL_COST": "Real Usable Cost",
+      "USABLE_QTY": "Usable Quantity",
+      "UNIT_FALLBACK": "unit",
+      "REAL_COST_HINT": "The real cost accounts for the ingredient's yield (waste included)."
+    },
+    "DENSITY": {
+      "TITLE": "Density conversion",
+      "HINT": "Allows cups and spoons to be used in recipes",
+      "MODAL_HINT": "Enter how many grams one cup of this ingredient weighs.",
+      "GRAMS_PER_CUP": "Grams per cup",
+      "GRAMS_PER_TBSP": "Grams per tablespoon",
+      "GRAMS_PER_TSP": "Grams per teaspoon",
+      "GRAMS_PER_CUP_TAG": "{{ grams }} g/cup",
+      "VALUE_REQUIRED": "This value is required"
+    },
+    "YIELD": {
+      "EXCELLENT": "Excellent",
+      "GOOD": "Good",
+      "WARNING": "High waste"
+    },
+    "CURRENCIES": {
+      "MXN": "MXN – Mexican Peso",
+      "USD": "USD – US Dollar",
+      "EUR": "EUR – Euro"
+    },
+    "ERRORS": {
+      "NAME_REQUIRED": "Name is required",
+      "CATEGORY_REQUIRED": "Category is required",
+      "UNIT_REQUIRED": "Unit is required",
+      "QUANTITY_REQUIRED": "Quantity is required",
+      "COST_REQUIRED": "Cost is required",
+      "YIELD_REQUIRED": "Yield is required (1-100)"
+    },
+    "TOAST": {
+      "CREATED": "Ingredient created successfully",
+      "UPDATED": "Ingredient updated successfully",
+      "DELETED": "Ingredient deleted successfully",
+      "LOAD_FAILED": "Ingredients could not be loaded",
+      "LOAD_ONE_FAILED": "The ingredient could not be loaded"
     }
   }
 }

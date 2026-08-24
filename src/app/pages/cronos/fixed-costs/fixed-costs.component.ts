@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DialogModule } from 'primeng/dialog';
@@ -19,6 +20,7 @@ import { TooltipModule } from 'primeng/tooltip';
 
 import { UserFixedCostService } from 'src/app/core/services/domain/user-fixed-cost.service';
 import { UserFixedCostResponse } from 'src/app/core/models/domain.model';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
@@ -35,20 +37,19 @@ interface CalculationMethodOption extends SelectOption {
 
 type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast';
 
-const COST_TYPES: SelectOption[] = [
-  { value: 'LABOR', label: 'Mano de Obra / Sueldos' },
-  { value: 'UTILITY', label: 'Servicios: Agua, Luz, Gas' },
-  { value: 'RENT', label: 'Renta de Local / Espacio' },
-  { value: 'PACKAGING', label: 'Cajas, Domos, Etiquetas' },
-  { value: 'OVERHEAD', label: 'Gastos Administrativos / Indirectos' },
-  { value: 'MARKETING', label: 'Publicidad / Redes' },
-];
+/**
+ * The API's enum values, in display order. Labels are not stored next to them:
+ * each one is looked up as `FIXED_COSTS.TYPES.<value>` at render time so the
+ * selector re-labels itself on a language switch.
+ */
+const COST_TYPE_VALUES: readonly string[] = ['LABOR', 'UTILITY', 'RENT', 'PACKAGING', 'OVERHEAD', 'MARKETING'];
 
-const CALCULATION_METHODS: CalculationMethodOption[] = [
-  { value: 'HOURLY_RATE', label: 'Tarifa por Hora', hint: 'Ideal para LABOR o UTILITY' },
-  { value: 'PER_UNIT', label: 'Costo por Unidad', hint: 'Ideal para PACKAGING' },
-  { value: 'FIXED_PER_BATCH', label: 'Costo fijo por lote producido', hint: 'Ideal para RENT u OVERHEAD' },
-  { value: 'PERCENTAGE', label: 'Porcentaje (%) sobre insumos', hint: 'Aplica un % global al costo total de la receta' },
+/** Same contract, under `FIXED_COSTS.METHODS.<value>.LABEL` / `.HINT`. */
+const CALCULATION_METHOD_VALUES: readonly string[] = [
+  'HOURLY_RATE',
+  'PER_UNIT',
+  'FIXED_PER_BATCH',
+  'PERCENTAGE',
 ];
 
 const METHODS_BY_TYPE: Record<string, string[]> = {
@@ -75,6 +76,7 @@ const TYPE_TAG_SEVERITY: Record<string, TagSeverity> = {
   imports: [
     FormsModule,
     ReactiveFormsModule,
+    TranslatePipe,
     ButtonModule,
     CardModule,
     DialogModule,
@@ -98,6 +100,7 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
   private readonly alertService = inject(AlertService);
   private readonly confirmService = inject(ConfirmService);
   private readonly pageInfoService = inject(PageInfoService);
+  private readonly language = inject(LanguageService);
   private readonly fb = inject(FormBuilder);
   private readonly destroy$ = new Subject<void>();
 
@@ -109,14 +112,29 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
   readonly selectedItem = signal<UserFixedCostResponse | null>(null);
   readonly isSaving = signal(false);
   readonly isPercentageMethod = signal(false);
-  readonly filteredCalculationMethods = signal<CalculationMethodOption[]>([...CALCULATION_METHODS]);
+  /**
+   * Which methods the chosen cost type allows. Held as values, not built
+   * options, so the rendered list re-translates without being recomputed by
+   * whatever last narrowed it.
+   */
+  private readonly allowedMethodValues = signal<readonly string[]>(CALCULATION_METHOD_VALUES);
 
-  readonly costTypes = COST_TYPES;
+  readonly filteredCalculationMethods = computed<CalculationMethodOption[]>(() =>
+    this.allowedMethodValues().map((value) => ({
+      value,
+      label: this.language.t(`FIXED_COSTS.METHODS.${value}.LABEL`),
+      hint: this.language.t(`FIXED_COSTS.METHODS.${value}.HINT`),
+    })),
+  );
 
-  readonly statusFilterOptions = [
-    { label: 'Activo', value: true },
-    { label: 'Inactivo', value: false },
-  ];
+  readonly costTypes = computed<SelectOption[]>(() =>
+    COST_TYPE_VALUES.map((value) => ({ value, label: this.language.t(`FIXED_COSTS.TYPES.${value}`) })),
+  );
+
+  readonly statusFilterOptions = computed<{ label: string; value: boolean }[]>(() => [
+    { label: this.language.t('COMMON.STATUS.ACTIVE'), value: true },
+    { label: this.language.t('COMMON.STATUS.INACTIVE'), value: false },
+  ]);
 
   readonly form = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
@@ -127,14 +145,20 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
     percentage: [null as number | null],
   });
 
+  constructor() {
+    // Page chrome re-renders on a language switch; the fetch stays in ngOnInit.
+    effect(() => {
+      this.pageInfoService.updateTitle(this.language.t('FIXED_COSTS.TITLE'));
+      this.pageInfoService.updateDescription(this.language.t('FIXED_COSTS.DESCRIPTION'));
+      this.pageInfoService.updateBreadcrumbs([
+        { title: this.language.t('BREADCRUMB.HOME'), path: '/dashboard', isActive: false },
+        { title: this.language.t('BREADCRUMB.OPERATIONS'), path: '', isActive: false },
+        { title: this.language.t('FIXED_COSTS.TITLE'), path: '', isActive: true },
+      ]);
+    });
+  }
+
   ngOnInit(): void {
-    this.pageInfoService.updateTitle('Costos Fijos');
-    this.pageInfoService.updateDescription('Gestión de los costos fijos de tu operación');
-    this.pageInfoService.updateBreadcrumbs([
-      { title: 'Inicio', path: '/dashboard', isActive: false },
-      { title: 'Operación', path: '', isActive: false },
-      { title: 'Costos Fijos', path: '', isActive: true },
-    ]);
     this.load();
 
     this.form.controls.calculationMethod.valueChanges
@@ -156,13 +180,13 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.alertService.error(err?.error?.message || err?.message || 'Error al cargar costos fijos');
+        this.alertService.error(err?.error?.message || err?.message || this.language.t('FIXED_COSTS.TOAST.LOAD_FAILED'));
       },
     });
   }
 
   getTypeLabel(type: string): string {
-    return COST_TYPES.find((t) => t.value === type)?.label ?? type;
+    return COST_TYPE_VALUES.includes(type) ? this.language.t(`FIXED_COSTS.TYPES.${type}`) : type;
   }
 
   getTypeSeverity(type: string): TagSeverity {
@@ -170,7 +194,9 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
   }
 
   getCalculationMethodLabel(method: string): string {
-    return CALCULATION_METHODS.find((m) => m.value === method)?.label ?? method;
+    return CALCULATION_METHOD_VALUES.includes(method)
+      ? this.language.t(`FIXED_COSTS.METHODS.${method}.LABEL`)
+      : method;
   }
 
   formatAmountDisplay(item: UserFixedCostResponse): string {
@@ -186,12 +212,12 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
 
     const allowed = METHODS_BY_TYPE[type];
     const methods = allowed
-      ? CALCULATION_METHODS.filter((m) => allowed.includes(m.value))
-      : [...CALCULATION_METHODS];
-    this.filteredCalculationMethods.set(methods);
+      ? CALCULATION_METHOD_VALUES.filter((value) => allowed.includes(value))
+      : CALCULATION_METHOD_VALUES;
+    this.allowedMethodValues.set(methods);
 
     if (methods.length === 1) {
-      this.form.controls.calculationMethod.setValue(methods[0].value);
+      this.form.controls.calculationMethod.setValue(methods[0]);
     }
   }
 
@@ -217,7 +243,7 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
     this.selectedItem.set(null);
     this.form.reset();
     this.isPercentageMethod.set(false);
-    this.filteredCalculationMethods.set([...CALCULATION_METHODS]);
+    this.allowedMethodValues.set(CALCULATION_METHOD_VALUES);
     this.form.controls.defaultAmount.setValidators([Validators.required, Validators.min(0)]);
     this.form.controls.defaultAmount.updateValueAndValidity({ emitEvent: false });
     this.form.controls.percentage.clearValidators();
@@ -247,7 +273,7 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
   }
 
   saveForm(): void {
-    if (this.form.invalid) {
+    if (this.form.invalid || this.isSaving()) {
       this.form.markAllAsTouched();
       return;
     }
@@ -272,11 +298,11 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
         this.isSaving.set(false);
         this.closeForm();
         this.load();
-        this.alertService.success(isEdit ? 'Costo fijo actualizado correctamente' : 'Costo fijo creado correctamente');
+        this.alertService.success(isEdit ? this.language.t('FIXED_COSTS.TOAST.UPDATED') : this.language.t('FIXED_COSTS.TOAST.CREATED'));
       },
       error: (err) => {
         this.isSaving.set(false);
-        this.alertService.error(err?.error?.message || err?.message || 'Error al guardar');
+        this.alertService.error(err?.error?.message || err?.message || this.language.t('COMMON.TOAST.SAVE_FAILED'));
       },
     });
   }
@@ -289,10 +315,10 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
     this.fixedCostService.delete(item.id).subscribe({
       next: () => {
         this.load();
-        this.alertService.success('Costo fijo eliminado correctamente');
+        this.alertService.success(this.language.t('FIXED_COSTS.TOAST.DELETED'));
       },
       error: (err) => {
-        this.alertService.error(err?.error?.message || err?.message || 'Error al eliminar');
+        this.alertService.error(err?.error?.message || err?.message || this.language.t('COMMON.TOAST.DELETE_FAILED'));
       },
     });
   }

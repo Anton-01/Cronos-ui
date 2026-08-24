@@ -49,7 +49,10 @@
       "FILTER_BY_CODE": "Filtrar por código",
       "FILTER": "Filtrar"
     },
-    "OPTIONAL_DESCRIPTION": "Descripción opcional"
+    "OPTIONAL_DESCRIPTION": "Descripción opcional",
+    "BACK": "Volver",
+    "SAVE": "Guardar",
+    "NEW": "Nuevo"
   },
   "NAV": {
     "SECTIONS": {
@@ -80,7 +83,8 @@
   },
   "BREADCRUMB": {
     "HOME": "Inicio",
-    "CATALOGS": "Catálogos"
+    "CATALOGS": "Catálogos",
+    "OPERATIONS": "Operación"
   },
   "CATEGORIES": {
     "TYPE": {
@@ -377,6 +381,145 @@
       "UPDATED": "Unidad de medida actualizada correctamente",
       "DELETED": "Unidad de medida eliminada correctamente",
       "LOAD_FAILED": "Error al cargar unidades de medida"
+    }
+  },
+  "FIXED_COSTS": {
+    "TITLE": "Costos Fijos",
+    "DESCRIPTION": "Gestión de los costos fijos de tu operación",
+    "SEARCH_PLACEHOLDER": "Buscar costo fijo...",
+    "CREATE": "Nuevo Costo Fijo",
+    "EDIT": "Editar Costo Fijo",
+    "EMPTY": "No hay costos fijos registrados",
+    "FIELDS": {
+      "TYPE": "Tipo de Costo",
+      "AMOUNT": "Monto",
+      "METHOD": "Método de Cálculo",
+      "PERCENTAGE": "Porcentaje (%)"
+    },
+    "PLACEHOLDERS": {
+      "NAME": "Ej. Renta del local",
+      "TYPE": "Selecciona un tipo",
+      "METHOD": "Selecciona un método"
+    },
+    "TYPES": {
+      "LABOR": "Mano de Obra / Sueldos",
+      "UTILITY": "Servicios: Agua, Luz, Gas",
+      "RENT": "Renta de Local / Espacio",
+      "PACKAGING": "Cajas, Domos, Etiquetas",
+      "OVERHEAD": "Gastos Administrativos / Indirectos",
+      "MARKETING": "Publicidad / Redes"
+    },
+    "METHODS": {
+      "HOURLY_RATE": {
+        "LABEL": "Tarifa por Hora",
+        "HINT": "Ideal para LABOR o UTILITY"
+      },
+      "PER_UNIT": {
+        "LABEL": "Costo por Unidad",
+        "HINT": "Ideal para PACKAGING"
+      },
+      "FIXED_PER_BATCH": {
+        "LABEL": "Costo fijo por lote producido",
+        "HINT": "Ideal para RENT u OVERHEAD"
+      },
+      "PERCENTAGE": {
+        "LABEL": "Porcentaje (%) sobre insumos",
+        "HINT": "Aplica un % global al costo total de la receta"
+      }
+    },
+    "ERRORS": {
+      "NAME_REQUIRED": "El nombre es requerido",
+      "TYPE_REQUIRED": "El tipo es requerido",
+      "METHOD_REQUIRED": "El método de cálculo es requerido",
+      "PERCENTAGE_REQUIRED": "El porcentaje es requerido",
+      "AMOUNT_REQUIRED": "El monto es requerido"
+    },
+    "TOAST": {
+      "CREATED": "Costo fijo creado correctamente",
+      "UPDATED": "Costo fijo actualizado correctamente",
+      "DELETED": "Costo fijo eliminado correctamente",
+      "LOAD_FAILED": "Error al cargar costos fijos"
+    }
+  },
+  "INGREDIENTS": {
+    "TITLE": "Ingredientes",
+    "DESCRIPTION": "Gestión del catálogo de ingredientes y sus costos",
+    "SEARCH_PLACEHOLDER": "Buscar ingrediente...",
+    "CREATE": "Nuevo Ingrediente",
+    "EDIT": "Editar Ingrediente",
+    "EMPTY": "No hay ingredientes registrados",
+    "FILTER_BY_CATEGORY": "Filtrar por categoría",
+    "FIELDS": {
+      "CATEGORY": "Categoría",
+      "PURCHASE_UNIT": "Unid. Compra",
+      "PURCHASE_QTY": "Cant. Compra",
+      "UNIT_COST": "Costo Unitario",
+      "YIELD": "Rendimiento",
+      "BASE_COST": "Costo Base",
+      "BRAND": "Marca",
+      "SUPPLIER": "Proveedor",
+      "CURRENCY": "Moneda",
+      "PURCHASE_UNIT_FULL": "Unidad de Compra",
+      "PURCHASE_QTY_FULL": "Cantidad de Compra",
+      "PURCHASE_COST": "Costo de Compra",
+      "YIELD_PCT": "Rendimiento (%)",
+      "MIN_STOCK": "Stock mínimo"
+    },
+    "PLACEHOLDERS": {
+      "NAME": "Ej. Harina de trigo",
+      "CATEGORY": "Selecciona una categoría",
+      "BRAND": "Marca opcional",
+      "SUPPLIER": "Proveedor opcional",
+      "UNIT": "Selecciona una unidad"
+    },
+    "FORM": {
+      "DESCRIPTION": "Registra la información de compra y costeo del ingrediente",
+      "GENERAL": "Información General",
+      "GENERAL_SUBTITLE": "Datos principales del ingrediente",
+      "PURCHASE": "Compra y Costeo",
+      "PURCHASE_SUBTITLE": "Define cómo compras y a qué costo",
+      "STOCK": "Stock y Estado",
+      "STOCK_SUBTITLE": "Control de inventario y disponibilidad",
+      "COST_SUMMARY": "Resumen de Costo",
+      "REAL_COST": "Costo Real Utilizable",
+      "USABLE_QTY": "Cantidad Utilizable",
+      "UNIT_FALLBACK": "unidad",
+      "REAL_COST_HINT": "El costo real considera el rendimiento del ingrediente (merma incluida)."
+    },
+    "DENSITY": {
+      "TITLE": "Conversión de densidad",
+      "HINT": "Permite usar tazas y cucharadas en recetas",
+      "MODAL_HINT": "Indica cuántos gramos pesa una taza de este ingrediente.",
+      "GRAMS_PER_CUP": "Gramos por taza",
+      "GRAMS_PER_TBSP": "Gramos por cucharada",
+      "GRAMS_PER_TSP": "Gramos por cucharadita",
+      "GRAMS_PER_CUP_TAG": "{{ grams }} g/taza",
+      "VALUE_REQUIRED": "Este valor es requerido"
+    },
+    "YIELD": {
+      "EXCELLENT": "Excelente",
+      "GOOD": "Bueno",
+      "WARNING": "Alto desperdicio"
+    },
+    "CURRENCIES": {
+      "MXN": "MXN – Peso Mexicano",
+      "USD": "USD – Dólar Americano",
+      "EUR": "EUR – Euro"
+    },
+    "ERRORS": {
+      "NAME_REQUIRED": "El nombre es requerido",
+      "CATEGORY_REQUIRED": "La categoría es requerida",
+      "UNIT_REQUIRED": "La unidad es requerida",
+      "QUANTITY_REQUIRED": "La cantidad es requerida",
+      "COST_REQUIRED": "El costo es requerido",
+      "YIELD_REQUIRED": "El rendimiento es requerido (1-100)"
+    },
+    "TOAST": {
+      "CREATED": "Ingrediente creado correctamente",
+      "UPDATED": "Ingrediente actualizado correctamente",
+      "DELETED": "Ingrediente eliminado correctamente",
+      "LOAD_FAILED": "Error al cargar ingredientes",
+      "LOAD_ONE_FAILED": "Error al cargar el ingrediente"
     }
   }
 }
