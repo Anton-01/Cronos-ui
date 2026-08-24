@@ -47,12 +47,23 @@
       "FILTER_BY_NAME": "Filtrar por nombre",
       "FILTER_BY_DESCRIPTION": "Filtrar por descripción",
       "FILTER_BY_CODE": "Filtrar por código",
-      "FILTER": "Filtrar"
+      "FILTER": "Filtrar",
+      "UPDATED_AT": "Actualizado"
     },
     "OPTIONAL_DESCRIPTION": "Descripción opcional",
     "BACK": "Volver",
     "SAVE": "Guardar",
-    "NEW": "Nuevo"
+    "NEW": "Nuevo",
+    "VIEW_DETAIL": "Ver Detalle",
+    "DETAIL": "Detalle",
+    "OPTIONAL": "Opcional",
+    "REMOVE": "Quitar",
+    "SAVE_CHANGES": "Guardar cambios",
+    "FILE_SIZE": {
+      "B": "{{ size }} B",
+      "KB": "{{ size }} KB",
+      "MB": "{{ size }} MB"
+    }
   },
   "NAV": {
     "SECTIONS": {
@@ -520,6 +531,190 @@
       "DELETED": "Ingrediente eliminado correctamente",
       "LOAD_FAILED": "Error al cargar ingredientes",
       "LOAD_ONE_FAILED": "Error al cargar el ingrediente"
+    }
+  },
+  "RECIPES": {
+    "TITLE": "Recetas",
+    "DESCRIPTION": "Gestión de tus recetas con costos calculados",
+    "SEARCH_PLACEHOLDER": "Buscar receta...",
+    "CREATE": "Nueva Receta",
+    "EMPTY": "No hay recetas registradas",
+    "NEEDS_RECALC": "Necesita recálculo",
+    "FIELDS": {
+      "YIELD": "Rendimiento",
+      "VERSION": "Versión",
+      "YIELD_QUANTITY": "Cantidad de Rendimiento",
+      "YIELD_UNIT": "Unidad de Rendimiento",
+      "PREP_TIME": "Preparación",
+      "BAKING_TIME": "Horneado",
+      "COOLING_TIME": "Enfriado"
+    },
+    "TOAST": {
+      "DELETED": "Receta eliminada correctamente",
+      "LOAD_FAILED": "Error al cargar recetas",
+      "CREATED": "Receta creada correctamente",
+      "UPDATED": "Receta actualizada correctamente",
+      "LOAD_ONE_FAILED": "Error al cargar la receta",
+      "SAVE_FAILED": "Error al guardar la receta"
+    },
+    "EDIT": "Editar Receta",
+    "PLACEHOLDERS": {
+      "NAME": "Ej. Pastel de chocolate",
+      "YIELD_UNIT": "Ej. Porciones"
+    },
+    "FORM": {
+      "TITLE": "Información de la Receta",
+      "TIMES": "Tiempos (minutos)",
+      "DESCRIPTION": "Datos generales y rendimiento de la receta"
+    },
+    "YIELD_UNITS": {
+      "CAKES": "Pasteles",
+      "SERVINGS": "Porciones",
+      "PIECES": "Piezas",
+      "DOZENS": "Docenas",
+      "COOKIES": "Galletas",
+      "CUPCAKES": "Cupcakes",
+      "BARS": "Barras",
+      "LITERS": "Litros",
+      "KILOGRAMS": "Kilogramos"
+    },
+    "ERRORS": {
+      "NAME_REQUIRED": "El nombre es requerido (2-150 caracteres)",
+      "QUANTITY_REQUIRED": "La cantidad es requerida",
+      "UNIT_REQUIRED": "La unidad es requerida"
+    },
+    "DETAIL": {
+      "TITLE": "Detalle de Receta",
+      "SYNC_PRICES": "Sincronizar Precios",
+      "PUBLISH": "Publicar",
+      "STALE_WARNING": "La receta cambió desde el último cálculo. Recalcula los costos para ver cifras actualizadas.",
+      "TABS": {
+        "INGREDIENTS": "Ingredientes",
+        "FIXED_COSTS": "Costos Fijos",
+        "INSTRUCTIONS": "Instrucciones",
+        "FILES": "Archivos",
+        "SHARES": "Compartir"
+      },
+      "INGREDIENTS": {
+        "SELECT": "Selecciona un ingrediente",
+        "UNIT": "Unidad",
+        "ADD": "Agregar ingrediente",
+        "SUBSTITUTE_TOOLTIP": "Sustituir por alérgeno",
+        "INGREDIENT": "Ingrediente",
+        "QUANTITY": "Cantidad",
+        "ALLERGENS": "Alérgenos",
+        "NOTES": "Notas",
+        "EMPTY": "Aún no hay ingredientes en la receta"
+      },
+      "COSTS": {
+        "SELECT": "Selecciona un costo fijo",
+        "ADD": "Agregar costo fijo",
+        "FIXED_COST": "Costo Fijo",
+        "TIME_MINUTES": "Tiempo (minutos)",
+        "PERCENTAGE": "Porcentaje",
+        "METHOD": "Método",
+        "PARAMETER": "Parámetro",
+        "CALCULATED": "Costo Calculado",
+        "EMPTY": "Aún no hay costos fijos asignados"
+      },
+      "INSTRUCTIONS": {
+        "PREP": "Instrucciones de preparación",
+        "PREP_PLACEHOLDER": "Describe el paso a paso de la receta...",
+        "STORAGE": "Instrucciones de almacenamiento",
+        "STORAGE_PLACEHOLDER": "Refrigeración, temperatura, etc.",
+        "SHELF_LIFE": "Vida útil (días)",
+        "SAVE": "Guardar Instrucciones"
+      },
+      "FILES": {
+        "DROP_HINT": "Arrastra un archivo aquí o",
+        "CHOOSE": "Seleccionar archivo",
+        "EMPTY": "No hay archivos adjuntos",
+        "DETAIL_TITLE": "Detalle del archivo",
+        "OPEN_PDF": "Abrir PDF",
+        "REPLACE": "Reemplazar archivo"
+      },
+      "SHARES": {
+        "EXPIRES_IN": "Expira en (días)",
+        "RECIPIENT_EMAIL": "Email del destinatario (opcional)",
+        "GENERATE": "Generar Enlace",
+        "LINK": "Enlace",
+        "VIEWS": "Vistas",
+        "EXPIRES": "Expira",
+        "REVOKED": "Revocado",
+        "EXPIRED": "Expirado",
+        "COPY": "Copiar enlace",
+        "ANALYTICS": "Analíticas",
+        "REVOKE": "Revocar",
+        "EMPTY": "No hay enlaces generados",
+        "ANALYTICS_TITLE": "Analíticas del enlace",
+        "ACCESS_DATE": "Fecha de acceso",
+        "BROWSER": "Navegador",
+        "NO_ACCESS": "Sin accesos registrados"
+      },
+      "FINANCE": {
+        "TITLE": "Panel Financiero",
+        "CALCULATE": "Calcular",
+        "TARGET_YIELD": "Rendimiento objetivo",
+        "SUB_RECIPES": "Sub-recetas",
+        "FIXED_COSTS": "Costos fijos",
+        "TOTAL_COST": "Costo total",
+        "UNIT_COST": "Costo por unidad",
+        "SIMULATE": "Simular otro rendimiento",
+        "SIMULATE_TOOLTIP": "Simular",
+        "RESET": "Restablecer",
+        "EMPTY_HINT": "Presiona «Calcular» para obtener el desglose de costos."
+      },
+      "SUBSTITUTE": {
+        "TITLE": "Sustituir ingrediente",
+        "REPLACEMENT": "Ingrediente sustituto",
+        "SELECT": "Selecciona un sustituto",
+        "SUBMIT": "Sustituir"
+      },
+      "CONFIRM": {
+        "PUBLISH_TITLE": "¿Publicar receta?",
+        "PUBLISH_MESSAGE": "La receta \"{{ name }}\" pasará a estado Activa y estará disponible para producción.",
+        "PUBLISH_ACCEPT": "Sí, publicar",
+        "REMOVE_INGREDIENT_TITLE": "¿Quitar ingrediente?",
+        "REMOVE_COST_TITLE": "¿Quitar costo fijo?",
+        "REMOVE_MESSAGE": "Se quitará \"{{ name }}\" de la receta.",
+        "REMOVE_ACCEPT": "Sí, quitar",
+        "REVOKE_TITLE": "¿Revocar enlace?",
+        "REVOKE_MESSAGE": "El enlace dejará de funcionar inmediatamente.",
+        "REVOKE_ACCEPT": "Sí, revocar"
+      },
+      "TOAST": {
+        "PRICES_SYNCED": "Precios sincronizados correctamente",
+        "SYNC_FAILED": "Error al sincronizar precios",
+        "PUBLISHED": "Receta publicada correctamente",
+        "PUBLISH_FAILED": "Error al publicar la receta",
+        "INGREDIENT_ADDED": "Ingrediente agregado",
+        "INGREDIENT_ADD_FAILED": "Error al agregar ingrediente",
+        "INGREDIENT_REMOVED": "Ingrediente eliminado",
+        "INGREDIENT_REMOVE_FAILED": "Error al quitar ingrediente",
+        "INGREDIENT_SUBSTITUTED": "Ingrediente sustituido correctamente",
+        "INGREDIENT_SUBSTITUTE_FAILED": "Error al sustituir ingrediente",
+        "COST_ADDED": "Costo fijo agregado",
+        "COST_ADD_FAILED": "Error al agregar costo fijo",
+        "COST_REMOVED": "Costo fijo eliminado",
+        "COST_REMOVE_FAILED": "Error al quitar costo fijo",
+        "INSTRUCTIONS_SAVED": "Instrucciones guardadas",
+        "INSTRUCTIONS_FAILED": "Error al guardar instrucciones",
+        "FILES_LOAD_FAILED": "Error al cargar archivos",
+        "FILE_UPLOADED": "Archivo subido correctamente",
+        "FILE_UPLOAD_FAILED": "Error al subir archivo",
+        "FILE_DELETED": "Archivo eliminado",
+        "FILE_DELETE_FAILED": "Error al eliminar archivo",
+        "FILE_UPDATED": "Archivo actualizado correctamente",
+        "FILE_UPDATE_FAILED": "Error al actualizar archivo",
+        "SHARES_LOAD_FAILED": "Error al cargar enlaces",
+        "SHARE_CREATED": "Enlace generado correctamente",
+        "SHARE_CREATE_FAILED": "Error al generar enlace",
+        "SHARE_COPIED": "Enlace copiado al portapapeles",
+        "SHARE_REVOKED": "Enlace revocado",
+        "SHARE_REVOKE_FAILED": "Error al revocar enlace",
+        "ANALYTICS_FAILED": "Error al cargar analíticas",
+        "COSTS_FAILED": "Error al calcular costos"
+      }
     }
   }
 }

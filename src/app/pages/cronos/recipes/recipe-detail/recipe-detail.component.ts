@@ -4,6 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { ChipModule } from 'primeng/chip';
@@ -36,6 +37,7 @@ import {
   UserFixedCostResponse,
 } from 'src/app/core/models/domain.model';
 import { PageRequest } from 'src/app/core/models/pagination.model';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
@@ -47,6 +49,7 @@ type TabId = 'ingredients' | 'fixed-costs' | 'instructions' | 'files' | 'shares'
   selector: 'app-recipe-detail',
   standalone: true,
   imports: [
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     ButtonModule,
@@ -76,6 +79,7 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
   private readonly alertService = inject(AlertService);
   private readonly confirmService = inject(ConfirmService);
   private readonly pageInfoService = inject(PageInfoService);
+  private readonly language = inject(LanguageService);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -170,11 +174,11 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.recipeId = this.route.snapshot.paramMap.get('id')!;
-    this.pageInfoService.updateTitle('Detalle de Receta');
+    this.pageInfoService.updateTitle(this.language.t('RECIPES.DETAIL.TITLE'));
     this.pageInfoService.updateBreadcrumbs([
-      { title: 'Inicio', path: '/dashboard', isActive: false },
-      { title: 'Recetas', path: '/cronos/recetas', isActive: false },
-      { title: 'Detalle', path: '', isActive: true },
+      { title: this.language.t('BREADCRUMB.HOME'), path: '/dashboard', isActive: false },
+      { title: this.language.t('RECIPES.TITLE'), path: '/cronos/recetas', isActive: false },
+      { title: this.language.t('COMMON.DETAIL'), path: '', isActive: true },
     ]);
 
     this.loadRecipe();
@@ -208,7 +212,7 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
         this.isLoading.set(false);
       },
       error: (err) => {
-        this.alertService.error(err?.error?.message || 'Error al cargar la receta');
+        this.alertService.error(err?.error?.message || this.language.t('RECIPES.TOAST.LOAD_ONE_FAILED'));
         this.isLoading.set(false);
       },
     });
@@ -242,13 +246,13 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
     this.recipeService.syncCosts(this.recipeId).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.isSyncing.set(false);
-        this.alertService.success('Precios sincronizados correctamente');
+        this.alertService.success(this.language.t('RECIPES.DETAIL.TOAST.PRICES_SYNCED'));
         this.loadRecipe();
         this.costBreakdown.set(null);
       },
       error: (err) => {
         this.isSyncing.set(false);
-        this.alertService.error(err?.error?.message || 'Error al sincronizar precios');
+        this.alertService.error(err?.error?.message || this.language.t('RECIPES.DETAIL.TOAST.SYNC_FAILED'));
       },
     });
   }
@@ -262,9 +266,9 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
     }
 
     const confirmed = await this.confirmService.confirm({
-      title: '¿Publicar receta?',
-      message: `La receta "${recipe.name}" pasará a estado Activa y estará disponible para producción.`,
-      acceptLabel: 'Sí, publicar',
+      title: this.language.t('RECIPES.DETAIL.CONFIRM.PUBLISH_TITLE'),
+      message: this.language.t('RECIPES.DETAIL.CONFIRM.PUBLISH_MESSAGE', { name: recipe.name }),
+      acceptLabel: this.language.t('RECIPES.DETAIL.CONFIRM.PUBLISH_ACCEPT'),
       icon: 'pi pi-cloud-upload',
     });
     if (!confirmed) {
@@ -289,12 +293,12 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
     this.recipeService.update(this.recipeId, payload).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.isPublishing.set(false);
-        this.alertService.success('Receta publicada correctamente');
+        this.alertService.success(this.language.t('RECIPES.DETAIL.TOAST.PUBLISHED'));
         this.loadRecipe();
       },
       error: (err) => {
         this.isPublishing.set(false);
-        this.alertService.error(err?.error?.message || 'Error al publicar la receta');
+        this.alertService.error(err?.error?.message || this.language.t('RECIPES.DETAIL.TOAST.PUBLISH_FAILED'));
       },
     });
   }
@@ -353,22 +357,24 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
       next: () => {
         this.isAddingIngredient.set(false);
         this.ingredientForm.reset();
-        this.alertService.success('Ingrediente agregado');
+        this.alertService.success(this.language.t('RECIPES.DETAIL.TOAST.INGREDIENT_ADDED'));
         this.loadRecipe();
         this.recipeChanged$.next();
       },
       error: (err) => {
         this.isAddingIngredient.set(false);
-        this.alertService.error(err?.error?.message || 'Error al agregar ingrediente');
+        this.alertService.error(err?.error?.message || this.language.t('RECIPES.DETAIL.TOAST.INGREDIENT_ADD_FAILED'));
       },
     });
   }
 
   async removeIngredient(ingredient: RecipeIngredientResponse): Promise<void> {
     const confirmed = await this.confirmService.confirm({
-      title: '¿Quitar ingrediente?',
-      message: `Se quitará "${ingredient.rawMaterialName}" de la receta.`,
-      acceptLabel: 'Sí, quitar',
+      title: this.language.t('RECIPES.DETAIL.CONFIRM.REMOVE_INGREDIENT_TITLE'),
+      message: this.language.t('RECIPES.DETAIL.CONFIRM.REMOVE_MESSAGE', {
+        name: ingredient.rawMaterialName,
+      }),
+      acceptLabel: this.language.t('RECIPES.DETAIL.CONFIRM.REMOVE_ACCEPT'),
       severity: 'danger',
       icon: 'pi pi-trash',
     });
@@ -380,12 +386,12 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.alertService.success('Ingrediente eliminado');
+          this.alertService.success(this.language.t('RECIPES.DETAIL.TOAST.INGREDIENT_REMOVED'));
           this.loadRecipe();
           this.recipeChanged$.next();
         },
         error: (err) => {
-          this.alertService.error(err?.error?.message || 'Error al quitar ingrediente');
+          this.alertService.error(err?.error?.message || this.language.t('RECIPES.DETAIL.TOAST.INGREDIENT_REMOVE_FAILED'));
         },
       });
   }
@@ -419,13 +425,13 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
         next: () => {
           this.isSubstituting.set(false);
           this.closeSubstituteModal();
-          this.alertService.success('Ingrediente sustituido correctamente');
+          this.alertService.success(this.language.t('RECIPES.DETAIL.TOAST.INGREDIENT_SUBSTITUTED'));
           this.loadRecipe();
           this.recipeChanged$.next();
         },
         error: (err) => {
           this.isSubstituting.set(false);
-          this.alertService.error(err?.error?.message || 'Error al sustituir ingrediente');
+          this.alertService.error(err?.error?.message || this.language.t('RECIPES.DETAIL.TOAST.INGREDIENT_SUBSTITUTE_FAILED'));
         },
       });
   }
@@ -458,22 +464,24 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
         this.isAddingFixedCost.set(false);
         this.fixedCostForm.reset();
         this.selectedFixedCostMethod.set('');
-        this.alertService.success('Costo fijo agregado');
+        this.alertService.success(this.language.t('RECIPES.DETAIL.TOAST.COST_ADDED'));
         this.loadRecipe();
         this.recipeChanged$.next();
       },
       error: (err) => {
         this.isAddingFixedCost.set(false);
-        this.alertService.error(err?.error?.message || 'Error al agregar costo fijo');
+        this.alertService.error(err?.error?.message || this.language.t('RECIPES.DETAIL.TOAST.COST_ADD_FAILED'));
       },
     });
   }
 
   async removeFixedCost(cost: RecipeFixedCostResponse): Promise<void> {
     const confirmed = await this.confirmService.confirm({
-      title: '¿Quitar costo fijo?',
-      message: `Se quitará "${cost.userFixedCostName}" de la receta.`,
-      acceptLabel: 'Sí, quitar',
+      title: this.language.t('RECIPES.DETAIL.CONFIRM.REMOVE_COST_TITLE'),
+      message: this.language.t('RECIPES.DETAIL.CONFIRM.REMOVE_MESSAGE', {
+        name: cost.userFixedCostName,
+      }),
+      acceptLabel: this.language.t('RECIPES.DETAIL.CONFIRM.REMOVE_ACCEPT'),
       severity: 'danger',
       icon: 'pi pi-trash',
     });
@@ -485,12 +493,12 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.alertService.success('Costo fijo eliminado');
+          this.alertService.success(this.language.t('RECIPES.DETAIL.TOAST.COST_REMOVED'));
           this.loadRecipe();
           this.recipeChanged$.next();
         },
         error: (err) => {
-          this.alertService.error(err?.error?.message || 'Error al quitar costo fijo');
+          this.alertService.error(err?.error?.message || this.language.t('RECIPES.DETAIL.TOAST.COST_REMOVE_FAILED'));
         },
       });
   }
@@ -516,11 +524,11 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
     this.recipeService.update(this.recipeId, payload).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.isSavingInstructions.set(false);
-        this.alertService.success('Instrucciones guardadas');
+        this.alertService.success(this.language.t('RECIPES.DETAIL.TOAST.INSTRUCTIONS_SAVED'));
       },
       error: (err) => {
         this.isSavingInstructions.set(false);
-        this.alertService.error(err?.error?.message || 'Error al guardar instrucciones');
+        this.alertService.error(err?.error?.message || this.language.t('RECIPES.DETAIL.TOAST.INSTRUCTIONS_FAILED'));
       },
     });
   }
@@ -536,7 +544,7 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isLoadingFiles.set(false);
-        this.alertService.error(err?.error?.message || 'Error al cargar archivos');
+        this.alertService.error(err?.error?.message || this.language.t('RECIPES.DETAIL.TOAST.FILES_LOAD_FAILED'));
       },
     });
   }
@@ -575,12 +583,12 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
     this.recipeService.uploadFile(this.recipeId, file).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.isUploadingFile.set(false);
-        this.alertService.success('Archivo subido correctamente');
+        this.alertService.success(this.language.t('RECIPES.DETAIL.TOAST.FILE_UPLOADED'));
         this.loadFiles();
       },
       error: (err) => {
         this.isUploadingFile.set(false);
-        this.alertService.error(err?.error?.message || 'Error al subir archivo');
+        this.alertService.error(err?.error?.message || this.language.t('RECIPES.DETAIL.TOAST.FILE_UPLOAD_FAILED'));
       },
     });
   }
@@ -594,11 +602,11 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.alertService.success('Archivo eliminado');
+          this.alertService.success(this.language.t('RECIPES.DETAIL.TOAST.FILE_DELETED'));
           this.loadFiles();
         },
         error: (err) => {
-          this.alertService.error(err?.error?.message || 'Error al eliminar archivo');
+          this.alertService.error(err?.error?.message || this.language.t('RECIPES.DETAIL.TOAST.FILE_DELETE_FAILED'));
         },
       });
   }
@@ -613,12 +621,12 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
 
   formatFileSize(bytes: number): string {
     if (bytes < 1024) {
-      return bytes + ' B';
+      return this.language.t('COMMON.FILE_SIZE.B', { size: bytes });
     }
     if (bytes < 1048576) {
-      return (bytes / 1024).toFixed(1) + ' KB';
+      return this.language.t('COMMON.FILE_SIZE.KB', { size: (bytes / 1024).toFixed(1) });
     }
-    return (bytes / 1048576).toFixed(1) + ' MB';
+    return this.language.t('COMMON.FILE_SIZE.MB', { size: (bytes / 1048576).toFixed(1) });
   }
 
   getFileIcon(fileType: string): string {
@@ -680,13 +688,13 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res) => {
           this.isUpdatingFile.set(false);
-          this.alertService.success('Archivo actualizado correctamente');
+          this.alertService.success(this.language.t('RECIPES.DETAIL.TOAST.FILE_UPDATED'));
           this.selectedFile.set(res.data);
           this.loadFiles();
         },
         error: (err) => {
           this.isUpdatingFile.set(false);
-          this.alertService.error(err?.error?.message || 'Error al actualizar archivo');
+          this.alertService.error(err?.error?.message || this.language.t('RECIPES.DETAIL.TOAST.FILE_UPDATE_FAILED'));
         },
       });
   }
@@ -702,7 +710,7 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isLoadingShares.set(false);
-        this.alertService.error(err?.error?.message || 'Error al cargar enlaces');
+        this.alertService.error(err?.error?.message || this.language.t('RECIPES.DETAIL.TOAST.SHARES_LOAD_FAILED'));
       },
     });
   }
@@ -723,27 +731,27 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
       next: () => {
         this.isCreatingShare.set(false);
         this.shareForm.reset({ expirationDays: 7, recipientEmail: '' });
-        this.alertService.success('Enlace generado correctamente');
+        this.alertService.success(this.language.t('RECIPES.DETAIL.TOAST.SHARE_CREATED'));
         this.loadShares();
       },
       error: (err) => {
         this.isCreatingShare.set(false);
-        this.alertService.error(err?.error?.message || 'Error al generar enlace');
+        this.alertService.error(err?.error?.message || this.language.t('RECIPES.DETAIL.TOAST.SHARE_CREATE_FAILED'));
       },
     });
   }
 
   copyShareUrl(url: string): void {
     navigator.clipboard.writeText(url).then(() => {
-      this.alertService.success('Enlace copiado al portapapeles');
+      this.alertService.success(this.language.t('RECIPES.DETAIL.TOAST.SHARE_COPIED'));
     });
   }
 
   async revokeShare(share: RecipeShareResponse): Promise<void> {
     const confirmed = await this.confirmService.confirm({
-      title: '¿Revocar enlace?',
-      message: 'El enlace dejará de funcionar inmediatamente.',
-      acceptLabel: 'Sí, revocar',
+      title: this.language.t('RECIPES.DETAIL.CONFIRM.REVOKE_TITLE'),
+      message: this.language.t('RECIPES.DETAIL.CONFIRM.REVOKE_MESSAGE'),
+      acceptLabel: this.language.t('RECIPES.DETAIL.CONFIRM.REVOKE_ACCEPT'),
       severity: 'danger',
       icon: 'pi pi-ban',
     });
@@ -755,11 +763,11 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
-          this.alertService.success('Enlace revocado');
+          this.alertService.success(this.language.t('RECIPES.DETAIL.TOAST.SHARE_REVOKED'));
           this.loadShares();
         },
         error: (err) => {
-          this.alertService.error(err?.error?.message || 'Error al revocar enlace');
+          this.alertService.error(err?.error?.message || this.language.t('RECIPES.DETAIL.TOAST.SHARE_REVOKE_FAILED'));
         },
       });
   }
@@ -779,7 +787,7 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.isLoadingAnalytics.set(false);
-          this.alertService.error(err?.error?.message || 'Error al cargar analíticas');
+          this.alertService.error(err?.error?.message || this.language.t('RECIPES.DETAIL.TOAST.ANALYTICS_FAILED'));
         },
       });
   }
@@ -807,7 +815,7 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.isCalculating.set(false);
-          this.alertService.error(err?.error?.message || 'Error al calcular costos');
+          this.alertService.error(err?.error?.message || this.language.t('RECIPES.DETAIL.TOAST.COSTS_FAILED'));
         },
       });
   }
@@ -848,7 +856,7 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
   }
 
   formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('es-MX', {
+    return new Date(date).toLocaleDateString(this.language.current(), {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -858,20 +866,17 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
   }
 
   formatDateShort(date: string): string {
-    return new Date(date).toLocaleDateString('es-MX', {
+    return new Date(date).toLocaleDateString(this.language.current(), {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
     });
   }
 
+  /** Shares the fixed-cost method catalog with the Fixed Costs module. */
   getFixedCostMethodLabel(method: string): string {
-    const map: Record<string, string> = {
-      HOURLY_RATE: 'Tarifa por Hora',
-      PER_UNIT: 'Costo por Unidad',
-      FIXED_PER_BATCH: 'Fijo por Lote',
-    };
-    return map[method] || method;
+    const known = ['HOURLY_RATE', 'PER_UNIT', 'FIXED_PER_BATCH', 'PERCENTAGE'];
+    return known.includes(method) ? this.language.t(`FIXED_COSTS.METHODS.${method}.LABEL`) : method;
   }
 
   parseBrowser(userAgent: string): string {

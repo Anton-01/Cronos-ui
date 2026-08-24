@@ -26,9 +26,9 @@
       </div>
     </div>
     <div class="flex align-items-center gap-2 flex-wrap">
-      <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="goBack()" />
+      <p-button [label]="'COMMON.BACK' | translate" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="goBack()" />
       <p-button
-        label="Sincronizar Precios"
+        [label]="'RECIPES.DETAIL.SYNC_PRICES' | translate"
         icon="pi pi-refresh"
         severity="info"
         [outlined]="true"
@@ -37,21 +37,21 @@
       />
       @if (currentRecipe.status === 'DRAFT') {
         <p-button
-          label="Publicar"
+          [label]="'RECIPES.DETAIL.PUBLISH' | translate"
           icon="pi pi-cloud-upload"
           severity="success"
           [loading]="isPublishing()"
           (onClick)="publishRecipe()"
         />
       }
-      <p-button label="Editar" icon="pi pi-pencil" (onClick)="editRecipe()" />
+      <p-button [label]="'COMMON.EDIT' | translate" icon="pi pi-pencil" (onClick)="editRecipe()" />
     </div>
   </div>
 
   @if (needsRecalculation()) {
     <p-message
       severity="warn"
-      text="La receta cambió desde el último cálculo. Recalcula los costos para ver cifras actualizadas."
+      [text]="'RECIPES.DETAIL.STALE_WARNING' | translate"
       styleClass="mb-3 w-full"
     />
   }
@@ -62,49 +62,49 @@
       <p-card>
         <p-tabs [value]="activeTab()" (valueChange)="setTab($any($event))">
           <p-tablist>
-            <p-tab value="ingredients"><i class="pi pi-shopping-bag mr-2"></i>Ingredientes</p-tab>
-            <p-tab value="fixed-costs"><i class="pi pi-wallet mr-2"></i>Costos Fijos</p-tab>
-            <p-tab value="instructions"><i class="pi pi-list mr-2"></i>Instrucciones</p-tab>
-            <p-tab value="files"><i class="pi pi-paperclip mr-2"></i>Archivos</p-tab>
-            <p-tab value="shares"><i class="pi pi-share-alt mr-2"></i>Compartir</p-tab>
+            <p-tab value="ingredients"><i class="pi pi-shopping-bag mr-2"></i>{{ 'RECIPES.DETAIL.TABS.INGREDIENTS' | translate }}</p-tab>
+            <p-tab value="fixed-costs"><i class="pi pi-wallet mr-2"></i>{{ 'RECIPES.DETAIL.TABS.FIXED_COSTS' | translate }}</p-tab>
+            <p-tab value="instructions"><i class="pi pi-list mr-2"></i>{{ 'RECIPES.DETAIL.TABS.INSTRUCTIONS' | translate }}</p-tab>
+            <p-tab value="files"><i class="pi pi-paperclip mr-2"></i>{{ 'RECIPES.DETAIL.TABS.FILES' | translate }}</p-tab>
+            <p-tab value="shares"><i class="pi pi-share-alt mr-2"></i>{{ 'RECIPES.DETAIL.TABS.SHARES' | translate }}</p-tab>
           </p-tablist>
           <p-tabpanels>
             <!-- ─── Ingredients tab ─── -->
             <p-tabpanel value="ingredients">
               <form [formGroup]="ingredientForm" (ngSubmit)="addIngredient()" class="grid align-items-end mb-3">
                 <div class="col-12 md:col-4 flex flex-column gap-1">
-                  <label class="font-medium text-sm">Ingrediente</label>
+                  <label class="font-medium text-sm">{{ 'RECIPES.DETAIL.INGREDIENTS.INGREDIENT' | translate }}</label>
                   <p-select
                     formControlName="rawMaterialId"
                     [options]="rawMaterials()"
                     optionLabel="name"
                     optionValue="id"
-                    placeholder="Selecciona un ingrediente"
+                    [placeholder]="'RECIPES.DETAIL.INGREDIENTS.SELECT' | translate"
                     [filter]="true"
                     filterBy="name,categoryName"
                     appendTo="body"
                   />
                 </div>
                 <div class="col-6 md:col-2 flex flex-column gap-1">
-                  <label class="font-medium text-sm">Cantidad</label>
+                  <label class="font-medium text-sm">{{ 'RECIPES.DETAIL.INGREDIENTS.QUANTITY' | translate }}</label>
                   <p-inputnumber formControlName="quantity" [min]="0.001" [maxFractionDigits]="4" />
                 </div>
                 <div class="col-6 md:col-2 flex flex-column gap-1">
-                  <label class="font-medium text-sm">Unidad</label>
+                  <label class="font-medium text-sm">{{ 'RECIPES.DETAIL.INGREDIENTS.UNIT' | translate }}</label>
                   <p-select
                     formControlName="unitId"
                     [options]="measurementUnits()"
                     optionLabel="codeIdentity"
                     optionValue="id"
-                    placeholder="Unidad"
+                    [placeholder]="'RECIPES.DETAIL.INGREDIENTS.UNIT' | translate"
                     [filter]="true"
                     filterBy="name,codeIdentity"
                     appendTo="body"
                   />
                 </div>
                 <div class="col-8 md:col-3 flex flex-column gap-1">
-                  <label class="font-medium text-sm">Notas</label>
-                  <input pInputText formControlName="notes" placeholder="Opcional" />
+                  <label class="font-medium text-sm">{{ 'RECIPES.DETAIL.INGREDIENTS.NOTES' | translate }}</label>
+                  <input pInputText formControlName="notes" [placeholder]="'COMMON.OPTIONAL' | translate" />
                 </div>
                 <div class="col-4 md:col-1">
                   <p-button
@@ -112,7 +112,7 @@
                     type="submit"
                     [disabled]="ingredientForm.invalid"
                     [loading]="isAddingIngredient()"
-                    pTooltip="Agregar ingrediente"
+                    [pTooltip]="'RECIPES.DETAIL.INGREDIENTS.ADD' | translate"
                   />
                 </div>
               </form>
@@ -120,11 +120,11 @@
               <p-table [value]="ingredients()" dataKey="id" [rowHover]="true">
                 <ng-template pTemplate="header">
                   <tr>
-                    <th>Ingrediente</th>
-                    <th>Cantidad</th>
-                    <th>Alérgenos</th>
-                    <th>Notas</th>
-                    <th class="text-right" style="width: 8rem">Acciones</th>
+                    <th>{{ 'RECIPES.DETAIL.INGREDIENTS.INGREDIENT' | translate }}</th>
+                    <th>{{ 'RECIPES.DETAIL.INGREDIENTS.QUANTITY' | translate }}</th>
+                    <th>{{ 'RECIPES.DETAIL.INGREDIENTS.ALLERGENS' | translate }}</th>
+                    <th>{{ 'RECIPES.DETAIL.INGREDIENTS.NOTES' | translate }}</th>
+                    <th class="text-right" style="width: 8rem">{{ 'COMMON.ACTIONS' | translate }}</th>
                   </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-ingredient>
@@ -150,7 +150,7 @@
                           severity="warn"
                           [text]="true"
                           [rounded]="true"
-                          pTooltip="Sustituir por alérgeno"
+                          [pTooltip]="'RECIPES.DETAIL.INGREDIENTS.SUBSTITUTE_TOOLTIP' | translate"
                           (onClick)="openSubstituteModal(ingredient)"
                         />
                       }
@@ -159,7 +159,7 @@
                         severity="danger"
                         [text]="true"
                         [rounded]="true"
-                        pTooltip="Quitar"
+                        [pTooltip]="'COMMON.REMOVE' | translate"
                         (onClick)="removeIngredient(ingredient)"
                       />
                     </td>
@@ -167,7 +167,7 @@
                 </ng-template>
                 <ng-template pTemplate="emptymessage">
                   <tr>
-                    <td colspan="5" class="text-center text-color-secondary py-4">Aún no hay ingredientes en la receta</td>
+                    <td colspan="5" class="text-center text-color-secondary py-4">{{ 'RECIPES.DETAIL.INGREDIENTS.EMPTY' | translate }}</td>
                   </tr>
                 </ng-template>
               </p-table>
@@ -177,12 +177,12 @@
             <p-tabpanel value="fixed-costs">
               <form [formGroup]="fixedCostForm" (ngSubmit)="addFixedCost()" class="grid align-items-end mb-3">
                 <div class="col-12 md:col-5 flex flex-column gap-1">
-                  <label class="font-medium text-sm">Costo Fijo</label>
+                  <label class="font-medium text-sm">{{ 'RECIPES.DETAIL.COSTS.FIXED_COST' | translate }}</label>
                   <p-select
                     formControlName="userFixedCostId"
                     [options]="userFixedCosts()"
                     optionValue="id"
-                    placeholder="Selecciona un costo fijo"
+                    [placeholder]="'RECIPES.DETAIL.COSTS.SELECT' | translate"
                     appendTo="body"
                     (onChange)="onFixedCostSelect()"
                   >
@@ -194,13 +194,13 @@
                 </div>
                 @if (selectedFixedCostMethod() === 'HOURLY_RATE') {
                   <div class="col-6 md:col-3 flex flex-column gap-1">
-                    <label class="font-medium text-sm">Tiempo (minutos)</label>
+                    <label class="font-medium text-sm">{{ 'RECIPES.DETAIL.COSTS.TIME_MINUTES' | translate }}</label>
                     <p-inputnumber formControlName="timeInMinutes" [min]="0" suffix=" min" />
                   </div>
                 }
                 @if (selectedFixedCostMethod() === 'PERCENTAGE') {
                   <div class="col-6 md:col-3 flex flex-column gap-1">
-                    <label class="font-medium text-sm">Porcentaje</label>
+                    <label class="font-medium text-sm">{{ 'RECIPES.DETAIL.COSTS.PERCENTAGE' | translate }}</label>
                     <p-inputnumber formControlName="percentage" [min]="0" suffix=" %" />
                   </div>
                 }
@@ -210,7 +210,7 @@
                     type="submit"
                     [disabled]="fixedCostForm.controls.userFixedCostId.invalid"
                     [loading]="isAddingFixedCost()"
-                    pTooltip="Agregar costo fijo"
+                    [pTooltip]="'RECIPES.DETAIL.COSTS.ADD' | translate"
                   />
                 </div>
               </form>
@@ -218,11 +218,11 @@
               <p-table [value]="recipeFixedCosts()" dataKey="id" [rowHover]="true">
                 <ng-template pTemplate="header">
                   <tr>
-                    <th>Nombre</th>
-                    <th>Método</th>
-                    <th>Parámetro</th>
-                    <th>Costo Calculado</th>
-                    <th class="text-right" style="width: 6rem">Acciones</th>
+                    <th>{{ 'COMMON.TABLE.NAME' | translate }}</th>
+                    <th>{{ 'RECIPES.DETAIL.COSTS.METHOD' | translate }}</th>
+                    <th>{{ 'RECIPES.DETAIL.COSTS.PARAMETER' | translate }}</th>
+                    <th>{{ 'RECIPES.DETAIL.COSTS.CALCULATED' | translate }}</th>
+                    <th class="text-right" style="width: 6rem">{{ 'COMMON.ACTIONS' | translate }}</th>
                   </tr>
                 </ng-template>
                 <ng-template pTemplate="body" let-cost>
@@ -247,7 +247,7 @@
                         severity="danger"
                         [text]="true"
                         [rounded]="true"
-                        pTooltip="Quitar"
+                        [pTooltip]="'COMMON.REMOVE' | translate"
                         (onClick)="removeFixedCost(cost)"
                       />
                     </td>
@@ -255,7 +255,7 @@
                 </ng-template>
                 <ng-template pTemplate="emptymessage">
                   <tr>
-                    <td colspan="5" class="text-center text-color-secondary py-4">Aún no hay costos fijos asignados</td>
+                    <td colspan="5" class="text-center text-color-secondary py-4">{{ 'RECIPES.DETAIL.COSTS.EMPTY' | translate }}</td>
                   </tr>
                 </ng-template>
               </p-table>
@@ -265,29 +265,29 @@
             <p-tabpanel value="instructions">
               <div class="flex flex-column gap-3">
                 <div class="flex flex-column gap-1">
-                  <label for="recipeInstructions" class="font-medium">Instrucciones de preparación</label>
+                  <label for="recipeInstructions" class="font-medium">{{ 'RECIPES.DETAIL.INSTRUCTIONS.PREP' | translate }}</label>
                   <textarea
                     pTextarea
                     id="recipeInstructions"
                     rows="8"
                     [ngModel]="instructions()"
                     (ngModelChange)="instructions.set($event)"
-                    placeholder="Describe el paso a paso de la receta..."
+                    [placeholder]="'RECIPES.DETAIL.INSTRUCTIONS.PREP_PLACEHOLDER' | translate"
                   ></textarea>
                 </div>
                 <div class="flex flex-column gap-1">
-                  <label for="recipeStorage" class="font-medium">Instrucciones de almacenamiento</label>
+                  <label for="recipeStorage" class="font-medium">{{ 'RECIPES.DETAIL.INSTRUCTIONS.STORAGE' | translate }}</label>
                   <textarea
                     pTextarea
                     id="recipeStorage"
                     rows="3"
                     [ngModel]="storageInstructions()"
                     (ngModelChange)="storageInstructions.set($event)"
-                    placeholder="Refrigeración, temperatura, etc."
+                    [placeholder]="'RECIPES.DETAIL.INSTRUCTIONS.STORAGE_PLACEHOLDER' | translate"
                   ></textarea>
                 </div>
                 <div class="flex flex-column gap-1 md:w-20rem">
-                  <label for="recipeShelfLife" class="font-medium">Vida útil (días)</label>
+                  <label for="recipeShelfLife" class="font-medium">{{ 'RECIPES.DETAIL.INSTRUCTIONS.SHELF_LIFE' | translate }}</label>
                   <p-inputnumber
                     inputId="recipeShelfLife"
                     [ngModel]="shelfLifeDays()"
@@ -298,7 +298,7 @@
                 </div>
                 <div class="flex justify-content-end">
                   <p-button
-                    label="Guardar Instrucciones"
+                    [label]="'RECIPES.DETAIL.INSTRUCTIONS.SAVE' | translate"
                     icon="pi pi-check"
                     [loading]="isSavingInstructions()"
                     (onClick)="saveInstructions()"
@@ -317,9 +317,9 @@
                 (drop)="onDrop($event)"
               >
                 <i class="pi pi-cloud-upload text-3xl text-primary"></i>
-                <p class="m-0 text-color-secondary">Arrastra un archivo aquí o</p>
+                <p class="m-0 text-color-secondary">{{ 'RECIPES.DETAIL.FILES.DROP_HINT' | translate }}</p>
                 <label class="p-button p-button-outlined p-button-sm cursor-pointer">
-                  <span class="p-button-label">Seleccionar archivo</span>
+                  <span class="p-button-label">{{ 'RECIPES.DETAIL.FILES.CHOOSE' | translate }}</span>
                   <input type="file" class="hidden" (change)="onFileSelected($event)" />
                 </label>
                 @if (isUploadingFile()) {
@@ -357,7 +357,7 @@
                       </div>
                     </div>
                   } @empty {
-                    <div class="col-12 text-center text-color-secondary py-4">No hay archivos adjuntos</div>
+                    <div class="col-12 text-center text-color-secondary py-4">{{ 'RECIPES.DETAIL.FILES.EMPTY' | translate }}</div>
                   }
                 </div>
               }
@@ -367,16 +367,16 @@
             <p-tabpanel value="shares">
               <form [formGroup]="shareForm" (ngSubmit)="createShare()" class="grid align-items-end mb-3">
                 <div class="col-6 md:col-3 flex flex-column gap-1">
-                  <label class="font-medium text-sm">Expira en (días)</label>
+                  <label class="font-medium text-sm">{{ 'RECIPES.DETAIL.SHARES.EXPIRES_IN' | translate }}</label>
                   <p-inputnumber formControlName="expirationDays" [min]="1" [max]="30" suffix=" días" />
                 </div>
                 <div class="col-6 md:col-5 flex flex-column gap-1">
-                  <label class="font-medium text-sm">Email del destinatario (opcional)</label>
-                  <input pInputText formControlName="recipientEmail" placeholder="correo@ejemplo.com" />
+                  <label class="font-medium text-sm">{{ 'RECIPES.DETAIL.SHARES.RECIPIENT_EMAIL' | translate }}</label>
+                  <input pInputText formControlName="recipientEmail" [placeholder]="'AUTH.REGISTER.EMAIL_PLACEHOLDER' | translate" />
                 </div>
                 <div class="col-12 md:col-4">
                   <p-button
-                    label="Generar Enlace"
+                    [label]="'RECIPES.DETAIL.SHARES.GENERATE' | translate"
                     icon="pi pi-link"
                     type="submit"
                     [disabled]="shareForm.invalid"
@@ -393,11 +393,11 @@
                 <p-table [value]="shares()" dataKey="id" [rowHover]="true">
                   <ng-template pTemplate="header">
                     <tr>
-                      <th>Enlace</th>
-                      <th>Estado</th>
-                      <th>Vistas</th>
-                      <th>Expira</th>
-                      <th class="text-right" style="width: 10rem">Acciones</th>
+                      <th>{{ 'RECIPES.DETAIL.SHARES.LINK' | translate }}</th>
+                      <th>{{ 'COMMON.TABLE.STATUS' | translate }}</th>
+                      <th>{{ 'RECIPES.DETAIL.SHARES.VIEWS' | translate }}</th>
+                      <th>{{ 'RECIPES.DETAIL.SHARES.EXPIRES' | translate }}</th>
+                      <th class="text-right" style="width: 10rem">{{ 'COMMON.ACTIONS' | translate }}</th>
                     </tr>
                   </ng-template>
                   <ng-template pTemplate="body" let-share>
@@ -407,11 +407,11 @@
                       </td>
                       <td>
                         @if (share.isRevoked) {
-                          <p-tag value="Revocado" severity="danger" />
+                          <p-tag [value]="'RECIPES.DETAIL.SHARES.REVOKED' | translate" severity="danger" />
                         } @else if (isShareExpired(share)) {
-                          <p-tag value="Expirado" severity="warn" />
+                          <p-tag [value]="'RECIPES.DETAIL.SHARES.EXPIRED' | translate" severity="warn" />
                         } @else {
-                          <p-tag value="Activo" severity="success" />
+                          <p-tag [value]="'COMMON.STATUS.ACTIVE' | translate" severity="success" />
                         }
                       </td>
                       <td>{{ share.viewsCount }}</td>
@@ -422,7 +422,7 @@
                           severity="secondary"
                           [text]="true"
                           [rounded]="true"
-                          pTooltip="Copiar enlace"
+                          [pTooltip]="'RECIPES.DETAIL.SHARES.COPY' | translate"
                           (onClick)="copyShareUrl(share.shareUrl)"
                         />
                         <p-button
@@ -430,7 +430,7 @@
                           severity="info"
                           [text]="true"
                           [rounded]="true"
-                          pTooltip="Analíticas"
+                          [pTooltip]="'RECIPES.DETAIL.SHARES.ANALYTICS' | translate"
                           (onClick)="openAnalyticsModal(share)"
                         />
                         @if (!share.isRevoked) {
@@ -439,7 +439,7 @@
                             severity="danger"
                             [text]="true"
                             [rounded]="true"
-                            pTooltip="Revocar"
+                            [pTooltip]="'RECIPES.DETAIL.SHARES.REVOKE' | translate"
                             (onClick)="revokeShare(share)"
                           />
                         }
@@ -448,7 +448,7 @@
                   </ng-template>
                   <ng-template pTemplate="emptymessage">
                     <tr>
-                      <td colspan="5" class="text-center text-color-secondary py-4">No hay enlaces generados</td>
+                      <td colspan="5" class="text-center text-color-secondary py-4">{{ 'RECIPES.DETAIL.SHARES.EMPTY' | translate }}</td>
                     </tr>
                   </ng-template>
                 </p-table>
@@ -466,10 +466,10 @@
           <div class="flex align-items-center justify-content-between">
             <div class="flex align-items-center gap-2">
               <i class="pi pi-calculator text-primary"></i>
-              <span>Panel Financiero</span>
+              <span>{{ 'RECIPES.DETAIL.FINANCE.TITLE' | translate }}</span>
             </div>
             <p-button
-              label="Calcular"
+              [label]="'RECIPES.DETAIL.FINANCE.CALCULATE' | translate"
               icon="pi pi-play"
               size="small"
               [loading]="isCalculating()"
@@ -481,48 +481,48 @@
         @if (costBreakdown(); as breakdown) {
           <div class="flex flex-column gap-2 mt-2">
             <div class="flex justify-content-between">
-              <span class="text-color-secondary">Rendimiento objetivo</span>
+              <span class="text-color-secondary">{{ 'RECIPES.DETAIL.FINANCE.TARGET_YIELD' | translate }}</span>
               <span class="font-medium">{{ breakdown.targetYield }} {{ breakdown.yieldUnit }}</span>
             </div>
             <div class="flex justify-content-between">
-              <span class="text-color-secondary">Ingredientes</span>
+              <span class="text-color-secondary">{{ 'RECIPES.DETAIL.TABS.INGREDIENTS' | translate }}</span>
               <span class="font-medium">{{ formatCurrency(breakdown.materialsCost) }}</span>
             </div>
             @if (breakdown.subRecipesCost > 0) {
               <div class="flex justify-content-between">
-                <span class="text-color-secondary">Sub-recetas</span>
+                <span class="text-color-secondary">{{ 'RECIPES.DETAIL.FINANCE.SUB_RECIPES' | translate }}</span>
                 <span class="font-medium">{{ formatCurrency(breakdown.subRecipesCost) }}</span>
               </div>
             }
             <div class="flex justify-content-between">
-              <span class="text-color-secondary">Costos fijos</span>
+              <span class="text-color-secondary">{{ 'RECIPES.DETAIL.FINANCE.FIXED_COSTS' | translate }}</span>
               <span class="font-medium">{{ formatCurrency(breakdown.fixedCosts) }}</span>
             </div>
             <div class="border-top-1 surface-border pt-2 flex justify-content-between">
-              <span class="font-bold text-color">Costo total</span>
+              <span class="font-bold text-color">{{ 'RECIPES.DETAIL.FINANCE.TOTAL_COST' | translate }}</span>
               <span class="font-bold text-color">{{ formatCurrency(breakdown.totalCost) }}</span>
             </div>
             <div class="flex justify-content-between align-items-center summary-highlight">
-              <span class="font-bold">Costo por unidad</span>
+              <span class="font-bold">{{ 'RECIPES.DETAIL.FINANCE.UNIT_COST' | translate }}</span>
               <span class="text-2xl font-bold">{{ formatCurrency(breakdown.costPerUnit) }}</span>
             </div>
           </div>
         } @else {
-          <p class="text-color-secondary mt-2">Presiona "Calcular" para obtener el desglose de costos.</p>
+          <p class="text-color-secondary mt-2">{{ 'RECIPES.DETAIL.FINANCE.EMPTY_HINT' | translate }}</p>
         }
 
         <div class="border-top-1 surface-border mt-3 pt-3 flex flex-column gap-2">
-          <label class="font-medium text-sm">Simular otro rendimiento</label>
+          <label class="font-medium text-sm">{{ 'RECIPES.DETAIL.FINANCE.SIMULATE' | translate }}</label>
           <div class="flex gap-2">
             <p-inputnumber
               [ngModel]="simulationYield()"
               (ngModelChange)="simulationYield.set($event)"
               [min]="0.01"
-              placeholder="Cantidad"
+              [placeholder]="'RECIPES.DETAIL.INGREDIENTS.QUANTITY' | translate"
               styleClass="flex-1"
             />
-            <p-button icon="pi pi-play" severity="info" pTooltip="Simular" (onClick)="simulateYield()" />
-            <p-button icon="pi pi-undo" severity="secondary" [outlined]="true" pTooltip="Restablecer" (onClick)="resetSimulation()" />
+            <p-button icon="pi pi-play" severity="info" [pTooltip]="'RECIPES.DETAIL.FINANCE.SIMULATE_TOOLTIP' | translate" (onClick)="simulateYield()" />
+            <p-button icon="pi pi-undo" severity="secondary" [outlined]="true" [pTooltip]="'RECIPES.DETAIL.FINANCE.RESET' | translate" (onClick)="resetSimulation()" />
           </div>
         </div>
       </p-card>
@@ -532,7 +532,7 @@
 
 <!-- Substitute ingredient dialog -->
 <p-dialog
-  header="Sustituir ingrediente"
+  [header]="'RECIPES.DETAIL.SUBSTITUTE.TITLE' | translate"
   [visible]="showSubstituteModal()"
   (visibleChange)="!$event && closeSubstituteModal()"
   [modal]="true"
@@ -546,14 +546,14 @@
         [text]="'Sustituirás &quot;' + target.rawMaterialName + '&quot; que contiene: ' + target.allergenNames.join(', ')"
       />
       <div class="flex flex-column gap-1">
-        <label class="font-medium">Ingrediente sustituto</label>
+        <label class="font-medium">{{ 'RECIPES.DETAIL.SUBSTITUTE.REPLACEMENT' | translate }}</label>
         <p-select
           [ngModel]="selectedSubstituteId()"
           (ngModelChange)="selectedSubstituteId.set($event)"
           [options]="substituteOptions()"
           optionLabel="name"
           optionValue="id"
-          placeholder="Selecciona un sustituto"
+          [placeholder]="'RECIPES.DETAIL.SUBSTITUTE.SELECT' | translate"
           [filter]="true"
           filterBy="name"
           appendTo="body"
@@ -562,9 +562,9 @@
     </div>
   }
   <ng-template pTemplate="footer">
-    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="closeSubstituteModal()" />
+    <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="closeSubstituteModal()" />
     <p-button
-      label="Sustituir"
+      [label]="'RECIPES.DETAIL.SUBSTITUTE.SUBMIT' | translate"
       [disabled]="!selectedSubstituteId()"
       [loading]="isSubstituting()"
       (onClick)="confirmSubstitution()"
@@ -574,7 +574,7 @@
 
 <!-- File detail dialog -->
 <p-dialog
-  header="Detalle del archivo"
+  [header]="'RECIPES.DETAIL.FILES.DETAIL_TITLE' | translate"
   [visible]="showFileDetailModal()"
   (visibleChange)="!$event && closeFileDetail()"
   [modal]="true"
@@ -587,20 +587,20 @@
         <img [src]="file.fileUrl" [alt]="file.fileName" class="w-full border-round" style="max-height: 16rem; object-fit: contain;" />
       } @else if (isPdfFile(file.fileType)) {
         <a [href]="file.fileUrl" target="_blank" rel="noopener" class="flex align-items-center gap-2 text-primary">
-          <i class="pi pi-file-pdf text-2xl"></i> Abrir PDF
+          <i class="pi pi-file-pdf text-2xl"></i> {{ 'RECIPES.DETAIL.FILES.OPEN_PDF' | translate }}
         </a>
       }
       <form [formGroup]="fileDetailForm" class="flex flex-column gap-3">
         <div class="flex flex-column gap-1">
-          <label for="fileDetailName" class="font-medium">Nombre</label>
+          <label for="fileDetailName" class="font-medium">{{ 'COMMON.TABLE.NAME' | translate }}</label>
           <input pInputText id="fileDetailName" formControlName="fileName" />
         </div>
         <div class="flex flex-column gap-1">
-          <label for="fileDetailDescription" class="font-medium">Descripción</label>
+          <label for="fileDetailDescription" class="font-medium">{{ 'COMMON.TABLE.DESCRIPTION' | translate }}</label>
           <textarea pTextarea id="fileDetailDescription" formControlName="description" rows="2"></textarea>
         </div>
         <div class="flex flex-column gap-1">
-          <label class="font-medium">Reemplazar archivo</label>
+          <label class="font-medium">{{ 'RECIPES.DETAIL.FILES.REPLACE' | translate }}</label>
           <input type="file" (change)="onReplacementFileSelected($event)" />
           @if (replacementFile(); as replacement) {
             <small class="text-color-secondary">Nuevo archivo: {{ replacement.name }}</small>
@@ -610,14 +610,14 @@
     </div>
   }
   <ng-template pTemplate="footer">
-    <p-button label="Cerrar" severity="secondary" [outlined]="true" (onClick)="closeFileDetail()" />
-    <p-button label="Guardar cambios" [loading]="isUpdatingFile()" (onClick)="updateFileDetail()" />
+    <p-button [label]="'COMMON.CLOSE' | translate" severity="secondary" [outlined]="true" (onClick)="closeFileDetail()" />
+    <p-button [label]="'COMMON.SAVE_CHANGES' | translate" [loading]="isUpdatingFile()" (onClick)="updateFileDetail()" />
   </ng-template>
 </p-dialog>
 
 <!-- Share analytics dialog -->
 <p-dialog
-  header="Analíticas del enlace"
+  [header]="'RECIPES.DETAIL.SHARES.ANALYTICS_TITLE' | translate"
   [visible]="showAnalyticsModal()"
   (visibleChange)="!$event && closeAnalyticsModal()"
   [modal]="true"
@@ -638,9 +638,9 @@
     <p-table [value]="analyticsLogs()" [rowHover]="true">
       <ng-template pTemplate="header">
         <tr>
-          <th>Fecha de acceso</th>
+          <th>{{ 'RECIPES.DETAIL.SHARES.ACCESS_DATE' | translate }}</th>
           <th>IP</th>
-          <th>Navegador</th>
+          <th>{{ 'RECIPES.DETAIL.SHARES.BROWSER' | translate }}</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-log>
@@ -652,12 +652,12 @@
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="3" class="text-center text-color-secondary py-4">Sin accesos registrados</td>
+          <td colspan="3" class="text-center text-color-secondary py-4">{{ 'RECIPES.DETAIL.SHARES.NO_ACCESS' | translate }}</td>
         </tr>
       </ng-template>
     </p-table>
   }
   <ng-template pTemplate="footer">
-    <p-button label="Cerrar" severity="secondary" [outlined]="true" (onClick)="closeAnalyticsModal()" />
+    <p-button [label]="'COMMON.CLOSE' | translate" severity="secondary" [outlined]="true" (onClick)="closeAnalyticsModal()" />
   </ng-template>
 </p-dialog>

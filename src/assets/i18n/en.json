@@ -47,12 +47,23 @@
       "FILTER_BY_NAME": "Filter by name",
       "FILTER_BY_DESCRIPTION": "Filter by description",
       "FILTER_BY_CODE": "Filter by code",
-      "FILTER": "Filter"
+      "FILTER": "Filter",
+      "UPDATED_AT": "Updated"
     },
     "OPTIONAL_DESCRIPTION": "Optional description",
     "BACK": "Back",
     "SAVE": "Save",
-    "NEW": "New"
+    "NEW": "New",
+    "VIEW_DETAIL": "View Detail",
+    "DETAIL": "Detail",
+    "OPTIONAL": "Optional",
+    "REMOVE": "Remove",
+    "SAVE_CHANGES": "Save changes",
+    "FILE_SIZE": {
+      "B": "{{ size }} B",
+      "KB": "{{ size }} KB",
+      "MB": "{{ size }} MB"
+    }
   },
   "NAV": {
     "SECTIONS": {
@@ -520,6 +531,190 @@
       "DELETED": "Ingredient deleted successfully",
       "LOAD_FAILED": "Ingredients could not be loaded",
       "LOAD_ONE_FAILED": "The ingredient could not be loaded"
+    }
+  },
+  "RECIPES": {
+    "TITLE": "Recipes",
+    "DESCRIPTION": "Manage your recipes with calculated costs",
+    "SEARCH_PLACEHOLDER": "Search recipe...",
+    "CREATE": "New Recipe",
+    "EMPTY": "No recipes registered yet",
+    "NEEDS_RECALC": "Needs recalculation",
+    "FIELDS": {
+      "YIELD": "Yield",
+      "VERSION": "Version",
+      "YIELD_QUANTITY": "Yield Quantity",
+      "YIELD_UNIT": "Yield Unit",
+      "PREP_TIME": "Preparation",
+      "BAKING_TIME": "Baking",
+      "COOLING_TIME": "Cooling"
+    },
+    "TOAST": {
+      "DELETED": "Recipe deleted successfully",
+      "LOAD_FAILED": "Recipes could not be loaded",
+      "CREATED": "Recipe created successfully",
+      "UPDATED": "Recipe updated successfully",
+      "LOAD_ONE_FAILED": "The recipe could not be loaded",
+      "SAVE_FAILED": "The recipe could not be saved"
+    },
+    "EDIT": "Edit Recipe",
+    "PLACEHOLDERS": {
+      "NAME": "e.g. Chocolate cake",
+      "YIELD_UNIT": "e.g. Servings"
+    },
+    "FORM": {
+      "TITLE": "Recipe Information",
+      "TIMES": "Times (minutes)",
+      "DESCRIPTION": "General details and yield of the recipe"
+    },
+    "YIELD_UNITS": {
+      "CAKES": "Cakes",
+      "SERVINGS": "Servings",
+      "PIECES": "Pieces",
+      "DOZENS": "Dozens",
+      "COOKIES": "Cookies",
+      "CUPCAKES": "Cupcakes",
+      "BARS": "Bars",
+      "LITERS": "Liters",
+      "KILOGRAMS": "Kilograms"
+    },
+    "ERRORS": {
+      "NAME_REQUIRED": "Name is required (2-150 characters)",
+      "QUANTITY_REQUIRED": "Quantity is required",
+      "UNIT_REQUIRED": "Unit is required"
+    },
+    "DETAIL": {
+      "TITLE": "Recipe Detail",
+      "SYNC_PRICES": "Sync Prices",
+      "PUBLISH": "Publish",
+      "STALE_WARNING": "The recipe changed since the last calculation. Recalculate the costs to see up-to-date figures.",
+      "TABS": {
+        "INGREDIENTS": "Ingredients",
+        "FIXED_COSTS": "Fixed Costs",
+        "INSTRUCTIONS": "Instructions",
+        "FILES": "Files",
+        "SHARES": "Share"
+      },
+      "INGREDIENTS": {
+        "SELECT": "Select an ingredient",
+        "UNIT": "Unit",
+        "ADD": "Add ingredient",
+        "SUBSTITUTE_TOOLTIP": "Substitute for allergen",
+        "INGREDIENT": "Ingredient",
+        "QUANTITY": "Quantity",
+        "ALLERGENS": "Allergens",
+        "NOTES": "Notes",
+        "EMPTY": "No ingredients in this recipe yet"
+      },
+      "COSTS": {
+        "SELECT": "Select a fixed cost",
+        "ADD": "Add fixed cost",
+        "FIXED_COST": "Fixed Cost",
+        "TIME_MINUTES": "Time (minutes)",
+        "PERCENTAGE": "Percentage",
+        "METHOD": "Method",
+        "PARAMETER": "Parameter",
+        "CALCULATED": "Calculated Cost",
+        "EMPTY": "No fixed costs assigned yet"
+      },
+      "INSTRUCTIONS": {
+        "PREP": "Preparation instructions",
+        "PREP_PLACEHOLDER": "Describe the recipe step by step...",
+        "STORAGE": "Storage instructions",
+        "STORAGE_PLACEHOLDER": "Refrigeration, temperature, etc.",
+        "SHELF_LIFE": "Shelf life (days)",
+        "SAVE": "Save Instructions"
+      },
+      "FILES": {
+        "DROP_HINT": "Drag a file here or",
+        "CHOOSE": "Choose file",
+        "EMPTY": "No attached files",
+        "DETAIL_TITLE": "File detail",
+        "OPEN_PDF": "Open PDF",
+        "REPLACE": "Replace file"
+      },
+      "SHARES": {
+        "EXPIRES_IN": "Expires in (days)",
+        "RECIPIENT_EMAIL": "Recipient email (optional)",
+        "GENERATE": "Generate Link",
+        "LINK": "Link",
+        "VIEWS": "Views",
+        "EXPIRES": "Expires",
+        "REVOKED": "Revoked",
+        "EXPIRED": "Expired",
+        "COPY": "Copy link",
+        "ANALYTICS": "Analytics",
+        "REVOKE": "Revoke",
+        "EMPTY": "No links generated",
+        "ANALYTICS_TITLE": "Link analytics",
+        "ACCESS_DATE": "Access date",
+        "BROWSER": "Browser",
+        "NO_ACCESS": "No accesses recorded"
+      },
+      "FINANCE": {
+        "TITLE": "Financial Panel",
+        "CALCULATE": "Calculate",
+        "TARGET_YIELD": "Target yield",
+        "SUB_RECIPES": "Sub-recipes",
+        "FIXED_COSTS": "Fixed costs",
+        "TOTAL_COST": "Total cost",
+        "UNIT_COST": "Cost per unit",
+        "SIMULATE": "Simulate another yield",
+        "SIMULATE_TOOLTIP": "Simulate",
+        "RESET": "Reset",
+        "EMPTY_HINT": "Press «Calculate» to get the cost breakdown."
+      },
+      "SUBSTITUTE": {
+        "TITLE": "Substitute ingredient",
+        "REPLACEMENT": "Replacement ingredient",
+        "SELECT": "Select a replacement",
+        "SUBMIT": "Substitute"
+      },
+      "CONFIRM": {
+        "PUBLISH_TITLE": "Publish recipe?",
+        "PUBLISH_MESSAGE": "Recipe \"{{ name }}\" will become Active and available for production.",
+        "PUBLISH_ACCEPT": "Yes, publish",
+        "REMOVE_INGREDIENT_TITLE": "Remove ingredient?",
+        "REMOVE_COST_TITLE": "Remove fixed cost?",
+        "REMOVE_MESSAGE": "\"{{ name }}\" will be removed from the recipe.",
+        "REMOVE_ACCEPT": "Yes, remove",
+        "REVOKE_TITLE": "Revoke link?",
+        "REVOKE_MESSAGE": "The link will stop working immediately.",
+        "REVOKE_ACCEPT": "Yes, revoke"
+      },
+      "TOAST": {
+        "PRICES_SYNCED": "Prices synced successfully",
+        "SYNC_FAILED": "Prices could not be synced",
+        "PUBLISHED": "Recipe published successfully",
+        "PUBLISH_FAILED": "The recipe could not be published",
+        "INGREDIENT_ADDED": "Ingredient added",
+        "INGREDIENT_ADD_FAILED": "The ingredient could not be added",
+        "INGREDIENT_REMOVED": "Ingredient removed",
+        "INGREDIENT_REMOVE_FAILED": "The ingredient could not be removed",
+        "INGREDIENT_SUBSTITUTED": "Ingredient substituted successfully",
+        "INGREDIENT_SUBSTITUTE_FAILED": "The ingredient could not be substituted",
+        "COST_ADDED": "Fixed cost added",
+        "COST_ADD_FAILED": "The fixed cost could not be added",
+        "COST_REMOVED": "Fixed cost removed",
+        "COST_REMOVE_FAILED": "The fixed cost could not be removed",
+        "INSTRUCTIONS_SAVED": "Instructions saved",
+        "INSTRUCTIONS_FAILED": "The instructions could not be saved",
+        "FILES_LOAD_FAILED": "Files could not be loaded",
+        "FILE_UPLOADED": "File uploaded successfully",
+        "FILE_UPLOAD_FAILED": "The file could not be uploaded",
+        "FILE_DELETED": "File deleted",
+        "FILE_DELETE_FAILED": "The file could not be deleted",
+        "FILE_UPDATED": "File updated successfully",
+        "FILE_UPDATE_FAILED": "The file could not be updated",
+        "SHARES_LOAD_FAILED": "Links could not be loaded",
+        "SHARE_CREATED": "Link generated successfully",
+        "SHARE_CREATE_FAILED": "The link could not be generated",
+        "SHARE_COPIED": "Link copied to clipboard",
+        "SHARE_REVOKED": "Link revoked",
+        "SHARE_REVOKE_FAILED": "The link could not be revoked",
+        "ANALYTICS_FAILED": "Analytics could not be loaded",
+        "COSTS_FAILED": "Costs could not be calculated"
+      }
     }
   }
 }

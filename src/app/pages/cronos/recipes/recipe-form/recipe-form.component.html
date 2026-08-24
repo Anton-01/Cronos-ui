@@ -1,5 +1,5 @@
 <div class="flex align-items-center justify-content-end mb-3">
-  <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="cancel()" />
+  <p-button [label]="'COMMON.BACK' | translate" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="cancel()" />
 </div>
 
 @if (isLoading()) {
@@ -12,42 +12,66 @@
         <ng-template pTemplate="title">
           <div class="flex align-items-center gap-2">
             <i class="pi pi-book text-primary"></i>
-            <span>Información de la Receta</span>
+            <span>{{ 'RECIPES.FORM.TITLE' | translate }}</span>
           </div>
         </ng-template>
         <div class="grid mt-1">
           <div class="col-12 flex flex-column gap-1">
-            <label for="recipeName" class="font-medium">Nombre <span class="text-red-500">*</span></label>
-            <input pInputText id="recipeName" formControlName="name" placeholder="Ej. Pastel de chocolate" />
+            <label for="recipeName" class="font-medium">
+              {{ 'COMMON.TABLE.NAME' | translate }} <span class="text-red-500">*</span>
+            </label>
+            <input
+              pInputText
+              id="recipeName"
+              formControlName="name"
+              [placeholder]="'RECIPES.PLACEHOLDERS.NAME' | translate"
+            />
             @if (form.controls.name.invalid && form.controls.name.touched) {
-              <small class="text-red-500">El nombre es requerido (2-150 caracteres)</small>
+              <small class="text-red-500">{{ 'RECIPES.ERRORS.NAME_REQUIRED' | translate }}</small>
             }
           </div>
           <div class="col-12 flex flex-column gap-1">
-            <label for="recipeDescription" class="font-medium">Descripción</label>
-            <textarea pTextarea id="recipeDescription" formControlName="description" rows="2" placeholder="Descripción opcional"></textarea>
+            <label for="recipeDescription" class="font-medium">
+              {{ 'COMMON.TABLE.DESCRIPTION' | translate }}
+            </label>
+            <textarea
+              pTextarea
+              id="recipeDescription"
+              formControlName="description"
+              rows="2"
+              [placeholder]="'COMMON.OPTIONAL_DESCRIPTION' | translate"
+            ></textarea>
           </div>
           <div class="col-12 md:col-6 flex flex-column gap-1">
-            <label for="recipeYieldQuantity" class="font-medium">Cantidad de Rendimiento <span class="text-red-500">*</span></label>
+            <label for="recipeYieldQuantity" class="font-medium">
+              {{ 'RECIPES.FIELDS.YIELD_QUANTITY' | translate }} <span class="text-red-500">*</span>
+            </label>
             <p-inputnumber inputId="recipeYieldQuantity" formControlName="yieldQuantity" [min]="0.01" [maxFractionDigits]="2" />
             @if (form.controls.yieldQuantity.invalid && form.controls.yieldQuantity.touched) {
-              <small class="text-red-500">La cantidad es requerida</small>
+              <small class="text-red-500">{{ 'RECIPES.ERRORS.QUANTITY_REQUIRED' | translate }}</small>
             }
           </div>
           <div class="col-12 md:col-6 flex flex-column gap-1">
-            <label for="recipeYieldUnit" class="font-medium">Unidad de Rendimiento <span class="text-red-500">*</span></label>
-            <input pInputText id="recipeYieldUnit" formControlName="yieldUnit" placeholder="Ej. Porciones" />
+            <label for="recipeYieldUnit" class="font-medium">
+              {{ 'RECIPES.FIELDS.YIELD_UNIT' | translate }} <span class="text-red-500">*</span>
+            </label>
+            <input
+              pInputText
+              id="recipeYieldUnit"
+              formControlName="yieldUnit"
+              [placeholder]="'RECIPES.PLACEHOLDERS.YIELD_UNIT' | translate"
+            />
             @if (form.controls.yieldUnit.invalid && form.controls.yieldUnit.touched) {
-              <small class="text-red-500">La unidad es requerida</small>
+              <small class="text-red-500">{{ 'RECIPES.ERRORS.UNIT_REQUIRED' | translate }}</small>
             }
           </div>
           <div class="col-12">
             <div class="flex flex-wrap gap-2">
-              @for (unit of commonYieldUnits; track unit) {
+              @for (unit of commonYieldUnits(); track unit.value) {
                 <p-chip
-                  [label]="unit"
+                  [label]="unit.label"
                   styleClass="cursor-pointer"
-                  (click)="selectYieldUnit(unit)"
+                  (click)="selectYieldUnit(unit.label)"
                 />
               }
             </div>
@@ -61,32 +85,32 @@
         <ng-template pTemplate="title">
           <div class="flex align-items-center gap-2">
             <i class="pi pi-clock text-primary"></i>
-            <span>Tiempos (minutos)</span>
+            <span>{{ 'RECIPES.FORM.TIMES' | translate }}</span>
           </div>
         </ng-template>
         <div class="flex flex-column gap-3 mt-1">
           <div class="flex flex-column gap-1">
-            <label for="recipePreparationTime" class="font-medium">Preparación</label>
+            <label for="recipePreparationTime" class="font-medium">{{ 'RECIPES.FIELDS.PREP_TIME' | translate }}</label>
             <p-inputnumber inputId="recipePreparationTime" formControlName="preparationTimeMinutes" [min]="0" suffix=" min" />
           </div>
           <div class="flex flex-column gap-1">
-            <label for="recipeBakingTime" class="font-medium">Horneado</label>
+            <label for="recipeBakingTime" class="font-medium">{{ 'RECIPES.FIELDS.BAKING_TIME' | translate }}</label>
             <p-inputnumber inputId="recipeBakingTime" formControlName="bakingTimeMinutes" [min]="0" suffix=" min" />
           </div>
           <div class="flex flex-column gap-1">
-            <label for="recipeCoolingTime" class="font-medium">Enfriado</label>
+            <label for="recipeCoolingTime" class="font-medium">{{ 'RECIPES.FIELDS.COOLING_TIME' | translate }}</label>
             <p-inputnumber inputId="recipeCoolingTime" formControlName="coolingTimeMinutes" [min]="0" suffix=" min" />
           </div>
         </div>
       </p-card>
 
       <div class="flex justify-content-end gap-2 mt-3">
-        <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancel()" />
+        <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="cancel()" />
         <p-button
-          [label]="isEditMode() ? 'Actualizar' : 'Guardar'"
+          [label]="(isEditMode() ? 'COMMON.UPDATE' : 'COMMON.SAVE') | translate"
           type="submit"
           icon="pi pi-check"
-          [disabled]="form.invalid"
+          [disabled]="form.invalid || isSaving()"
           [loading]="isSaving()"
         />
       </div>
