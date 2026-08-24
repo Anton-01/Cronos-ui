@@ -225,14 +225,15 @@ use `p-divider`.
 - When refactoring a file that contains Spanish (identifiers, comments, or UI
   copy), migrate the whole file's Spanish to English as part of that pass —
   don't leave a mixed-language file behind.
-- Scope reality check: Spanish UI copy is **not** confined to the modal legend
-  in section 5 — it's present across roughly 20 files including auth
-  (`login`, `register`), `dashboard`, `layout/main-layout`, `quotes` (list,
-  form, edit, detail), `recipes` (list, detail, form), `admin` (user
-  management, roles management, create-user modal), and `index.html`. Treat
-  the full-English rule as an incremental migration applied file-by-file as
-  each view is touched for the redesign — not a single mass find/replace pass
-  — so every string is verified in context rather than blindly translated.
+- Scope reality check — **done**: the Spanish UI copy that used to sit across
+  ~20 files (auth, dashboard, layout, quotes, recipes, categories, catalogs,
+  account, admin, public share pages) is now translation keys resolved from
+  `assets/i18n/*.json` (§16.5). Source literals are gone; what remains in
+  Spanish is bundle *content*, which is the point.
+- Two deliberate exceptions, both documented where they live: `index.html`
+  (§16.4, pre-bootstrap shell) and the `DENSITY_DIMENSIONS` set in the
+  ingredient form, whose Spanish words are matched against values the **API**
+  returns and are therefore data, not copy.
 
 ---
 
@@ -638,37 +639,114 @@ polish:
   byte instead of a generic `es` for the few milliseconds before Angular
   boots. That file and `LANGUAGE_OPTIONS` must be changed together.
 
-### 16.5 Not yet done — UI string translation
+### 16.5 UI string translation — IMPLEMENTED
 
-The header contract above makes the **backend** speak the user's language.
-Cronos' own UI copy is still hardcoded Spanish (§9 tracks that migration).
-When UI translation lands, `@ngx-translate/core` is the intended library, and
-it consumes `LanguageService` rather than holding a second copy of the state:
+`@ngx-translate/core` drives every UI string. It consumes `LanguageService`
+rather than holding a second copy of the state: `use()` is the only writer, and
+it moves the header, the bundle, the `<html lang>` and the `<title>` together.
 
-```bash
-npm install @ngx-translate/core @ngx-translate/http-loader
-```
+Bundle filenames match the BCP 47 tag exactly (`en.json`, `es-MX.json`) so one
+identifier drives the header, the `<html lang>` and the bundle lookup. There is
+deliberately no second locale enum for translation keys.
 
 ```ts
 // app.module.ts — providers
 provideTranslateService({
-  loader: provideTranslateHttpLoader({ prefix: './assets/i18n/', suffix: '.json' }),
-  fallbackLang: 'es-MX',
+  loader: provideTranslateHttpLoader({
+    prefix: './assets/i18n/',
+    suffix: '.json',
+    useHttpBackend: true,   // ← required, see below
+  }),
+  lang: resolveStoredLanguage(),
+  fallbackLang: DEFAULT_LANGUAGE,
 }),
 ```
 
-```ts
-// language.service.ts — the one new side effect, inside apply()
-private readonly translate = inject(TranslateService);
+**`useHttpBackend: true` is load-bearing — do not remove it.**
+`TranslateService` calls `use(lang)` from its own constructor, which runs while
+`LanguageService` is still being constructed. On `HttpClient` that fetch builds
+the interceptor chain at that moment, constructing
+`ErrorInterceptorService` → `AlertService` → `LanguageService` — a cycle.
+ngx-translate swallows a loader failure as a `console.warn`, so the symptom is
+silent: no bundle loads and every key renders as itself. `HttpBackend` skips the
+interceptor chain entirely, which is also correct on the merits — these are
+static assets that must not carry `Authorization` or trip the 401-refresh flow,
+exactly as `languageInterceptor` already documents about them.
 
-private apply(language: AppLanguage): void {
-  this.current.set(language);
-  localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
-  document.documentElement.lang = language;
-  this.translate.use(language);   // ← added; bundle files are en.json / es-MX.json
-}
-```
+`LanguageService.t(key, params)` is the only place that narrows
+`TranslateService.instant()` (typed `any`) to a `string`. It reads a revision
+signal bumped on `onLangChange`, so any `computed` that calls `t()` re-translates
+on a switch without knowing the mechanism. Component constants that hold labels
+(status maps, cost types, currencies) store **API enum values plus a key**, never
+display text, so a selector re-labels itself instead of keeping whatever was
+built at construction.
 
-Bundle filenames must match the tag exactly (`en.json`, `es-MX.json`) so one
-identifier drives the header, the `<html lang>` and the bundle lookup. Do not
-introduce a second locale enum for translation keys.
+Two invariants worth keeping:
+
+- Any `toLocaleDateString` / `Intl.NumberFormat` call passes
+  `language.current()`, never a pinned `'es-MX'`, so dates and currency match
+  the language on screen.
+- `src/index.html` stays hardcoded Spanish (§16.4) — no runtime loader can
+  reach it before Angular boots.
+
+---
+
+## 17. Dead Code & Migration Remnants — REMOVED
+
+The repo carried leftovers from two migrations: the Angular CLI scaffold it was
+generated from, and the move from class-based `HttpInterceptor`s to functional
+ones. Everything below was verified unreachable before deletion (import-graph
+walk from `src/main.ts`, plus a reference check for every asset), and the build,
+lint and test suites were re-run after. Nothing here is "cleanup for its own
+sake": each item was either unreachable, or configuration pointing at something
+that no longer exists.
+
+### 17.1 Superseded interceptors
+
+| Removed | Why |
+|---|---|
+| `core/interceptors/auth-interceptor.service.ts` | Class-based twin of the registered functional `authInterceptor`. Never provided anywhere. It also carried the *older* logic the live one documents fixing — `includes()` substring matching, which lets `/auth/login` match `/auth/login-history`. |
+| `core/interceptors/error.interceptor.ts` | Functional twin of the registered `ErrorInterceptorService`. Never registered. |
+
+Only `authInterceptor`, `languageInterceptor` (functional) and
+`ErrorInterceptorService` (class, via `HTTP_INTERCEPTORS`) are wired in
+`app.module.ts`. Keeping unregistered duplicates around is how a bug fix lands
+in the copy that does not run.
+
+The dead auth interceptor listed `/public/recipes/share` as a public URL and the
+live one does not. That is not a behavioural gap: an anonymous visitor has no
+token to attach, and a signed-in baker sending one to a public endpoint is
+harmless.
+
+### 17.2 Scaffold remnants
+
+| Removed | Why |
+|---|---|
+| `src/typings.d.ts` | Declared `var ClipboardJS: any` for a library that is not in `package.json` and is never referenced. Also the last `any` in the codebase (§8). |
+| `src/test.ts` | Used `require.context`, which the Angular ≥16 Karma builder dropped — the file was inert and `ng test` could not run at all. Removing it (plus the `main` option in `angular.json` and its `tsconfig.spec.json` entry) restores the builder's own spec auto-discovery. |
+| `src/polyfills.ts` | One `import 'zone.js'` wrapped in ~60 lines of IE/Edge-era scaffold comments. Replaced by the inline `"polyfills": ["zone.js"]` form in `angular.json` for both the `build` and `test` targets, and dropped from both tsconfigs. |
+| `core/models/error-response.model.ts` | Sole export `ErrorResponse` referenced nowhere. The app reads failures through the `ApiResponse.errors[]` envelope and `api-error.util.ts`. Its re-export was removed from the `core/models` barrel. |
+| `assets/media/logos/cronos-small.svg` | No reference in any template, style or config. |
+| `assets/media/logos/favicon.ico` | No reference anywhere. The icon is served from `favicon.svg`, linked in `index.html`. If an `.ico` fallback is wanted, add it deliberately and link it. |
+| `assets/.gitkeep` | Placeholder for an empty directory that now holds real tracked files. |
+
+### 17.3 Configuration pointing at nothing
+
+| Fixed | Why |
+|---|---|
+| `angular.json` → `assets: ["src/favicon.ico", …]` | That path does not exist; the favicon lives under `assets/media/logos/`. Removed from the `build` and `test` targets. |
+| `karma.conf.js` → `coverage/demo1` | Coverage output was named after a different project from the starter template. Now `coverage/cronos-ui`. |
+| `.browserslistrc` → `not IE 11` | Inert: Angular 21 cannot target IE, so the exclusion matched nothing. The rest of the support matrix is a deliberate product choice and was left alone. |
+
+### 17.4 Deliberately kept
+
+- **`RegisterUserRequest`** looked unused, but `create-user-modal` builds exactly
+  that shape as an untyped object literal for the `userData` request part. It was
+  *unwired*, not dead — the local is now annotated with it, so drift against the
+  backend contract is a compile error instead of a runtime 400.
+- **`environment.prod.ts`** is unreachable by import on purpose: it arrives
+  through `fileReplacements` in the production configuration.
+- **Over-exported symbols** (`ThemeMode`, `PageLink`, `ConfirmOptions`,
+  `PHONE_COUNTRIES`, `CATEGORY_NAME_MAX_LENGTH`, …) are each used inside their
+  own file. They are a wider API surface than needed, not dead code, so they were
+  left as-is rather than churned.

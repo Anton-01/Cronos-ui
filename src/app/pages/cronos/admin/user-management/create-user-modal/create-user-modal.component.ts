@@ -28,7 +28,7 @@ import { UserService } from 'src/app/core/services/user.service';
 import { RoleService } from 'src/app/core/services/role.service';
 import { LanguageService } from 'src/app/core/services/language.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
-import { UserResponse } from 'src/app/core/models/user.model';
+import { RegisterUserRequest, UserResponse } from 'src/app/core/models/user.model';
 import { RoleResponse } from 'src/app/core/models/role.model';
 
 @Component({
@@ -190,7 +190,7 @@ export class CreateUserModalComponent implements OnInit, OnDestroy {
   private buildFormData(): FormData {
     const formData = new FormData();
 
-    const userData = {
+    const userData: RegisterUserRequest = {
       username: this.form.value.username!.trim(),
       email: this.form.value.email!.trim(),
       firstName: this.form.value.firstName?.trim() || null,
