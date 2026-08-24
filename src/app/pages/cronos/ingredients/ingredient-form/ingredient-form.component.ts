@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angu
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, combineLatest, debounceTime, startWith, takeUntil } from 'rxjs';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DialogModule } from 'primeng/dialog';
@@ -23,6 +24,7 @@ import {
   DensityConversion,
   MeasurementUnitResponse,
 } from 'src/app/core/models/domain.model';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { DetailSkeletonComponent } from 'src/app/shared/components/detail-skeleton/detail-skeleton.component';
@@ -46,6 +48,7 @@ const DENSITY_DIMENSIONS = new Set([
     DecimalPipe,
     FormsModule,
     ReactiveFormsModule,
+    TranslatePipe,
     ButtonModule,
     CardModule,
     DialogModule,
@@ -68,6 +71,7 @@ export class IngredientFormComponent implements OnInit, OnDestroy {
   private readonly measurementUnitService = inject(MeasurementUnitService);
   private readonly alertService = inject(AlertService);
   private readonly pageInfoService = inject(PageInfoService);
+  private readonly language = inject(LanguageService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly destroy$ = new Subject<void>();
@@ -94,11 +98,19 @@ export class IngredientFormComponent implements OnInit, OnDestroy {
   // Yield indicator
   readonly yieldLevel = signal<YieldLevel>('none');
 
-  readonly currencies = [
-    { code: 'MXN', name: 'MXN – Peso Mexicano' },
-    { code: 'USD', name: 'USD – Dólar Americano' },
-    { code: 'EUR', name: 'EUR – Euro' },
-  ];
+  /**
+   * ISO codes the API accepts. The display name is a bundle lookup rather than
+   * a literal, so the currency reads in the user's language while the value
+   * sent stays the code.
+   */
+  private static readonly CURRENCY_CODES: readonly string[] = ['MXN', 'USD', 'EUR'];
+
+  readonly currencies = computed<{ code: string; name: string }[]>(() =>
+    IngredientFormComponent.CURRENCY_CODES.map((code) => ({
+      code,
+      name: this.language.t(`INGREDIENTS.CURRENCIES.${code}`),
+    })),
+  );
 
   readonly form = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2)]],
@@ -132,12 +144,18 @@ export class IngredientFormComponent implements OnInit, OnDestroy {
     this.ingredientId = this.route.snapshot.paramMap.get('id');
     this.isEdit = !!this.ingredientId;
 
-    this.pageInfoService.updateTitle(this.isEdit ? 'Editar Ingrediente' : 'Nuevo Ingrediente');
-    this.pageInfoService.updateDescription('Registra la información de compra y costeo del ingrediente');
+    this.pageInfoService.updateTitle(
+      this.language.t(this.isEdit ? 'INGREDIENTS.EDIT' : 'INGREDIENTS.CREATE'),
+    );
+    this.pageInfoService.updateDescription(this.language.t('INGREDIENTS.FORM.DESCRIPTION'));
     this.pageInfoService.updateBreadcrumbs([
-      { title: 'Inicio', path: '/dashboard', isActive: false },
-      { title: 'Ingredientes', path: '/cronos/ingredientes', isActive: false },
-      { title: this.isEdit ? 'Editar' : 'Nuevo', path: '', isActive: true },
+      { title: this.language.t('BREADCRUMB.HOME'), path: '/dashboard', isActive: false },
+      { title: this.language.t('INGREDIENTS.TITLE'), path: '/cronos/ingredientes', isActive: false },
+      {
+        title: this.language.t(this.isEdit ? 'COMMON.EDIT' : 'COMMON.NEW'),
+        path: '',
+        isActive: true,
+      },
     ]);
 
     this.loadCategories();
@@ -198,7 +216,7 @@ export class IngredientFormComponent implements OnInit, OnDestroy {
         this.isLoading.set(false);
       },
       error: () => {
-        this.alertService.error('Error al cargar el ingrediente');
+        this.alertService.error(this.language.t('INGREDIENTS.TOAST.LOAD_ONE_FAILED'));
         this.isLoading.set(false);
       },
     });
@@ -257,16 +275,8 @@ export class IngredientFormComponent implements OnInit, OnDestroy {
   }
 
   getYieldLabel(): string {
-    switch (this.yieldLevel()) {
-      case 'excellent':
-        return 'Excelente';
-      case 'good':
-        return 'Bueno';
-      case 'warning':
-        return 'Alto desperdicio';
-      default:
-        return '';
-    }
+    const level = this.yieldLevel();
+    return level === 'none' ? '' : this.language.t(`INGREDIENTS.YIELD.${level.toUpperCase()}`);
   }
 
   getYieldSeverity(): 'success' | 'info' | 'warn' | 'secondary' {
@@ -361,13 +371,13 @@ export class IngredientFormComponent implements OnInit, OnDestroy {
       next: () => {
         this.isSaving.set(false);
         this.alertService.success(
-          this.isEdit ? 'Ingrediente actualizado correctamente' : 'Ingrediente creado correctamente'
+          this.language.t(this.isEdit ? 'INGREDIENTS.TOAST.UPDATED' : 'INGREDIENTS.TOAST.CREATED')
         );
         this.router.navigate(['/cronos/ingredientes']);
       },
       error: (err) => {
         this.isSaving.set(false);
-        this.alertService.error(err?.message || 'Error al guardar');
+        this.alertService.error(err?.message || this.language.t('COMMON.TOAST.SAVE_FAILED'));
       },
     });
   }

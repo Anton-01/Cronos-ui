@@ -11,6 +11,7 @@ import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
 import { AutoCompleteCompleteEvent, AutoCompleteModule } from 'primeng/autocomplete';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DividerModule } from 'primeng/divider';
@@ -26,13 +27,15 @@ import {
   QuoteItemRequest,
   RecipeSimpleResponse,
 } from 'src/app/core/models/domain.model';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
 
 export interface PhoneCountry {
   code: 'MX' | 'US';
-  name: string;
+  /** Translation key for the country's display name. */
+  nameKey: string;
   dialCode: string;
   flag: string;
   mask: string; // pattern with '#' as digit placeholder
@@ -43,7 +46,7 @@ export interface PhoneCountry {
 export const PHONE_COUNTRIES: PhoneCountry[] = [
   {
     code: 'MX',
-    name: 'México',
+    nameKey: 'QUOTES.FORM.COUNTRIES.MX',
     dialCode: '+52',
     flag: '🇲🇽',
     mask: '## #### ####',
@@ -52,7 +55,7 @@ export const PHONE_COUNTRIES: PhoneCountry[] = [
   },
   {
     code: 'US',
-    name: 'Estados Unidos',
+    nameKey: 'QUOTES.FORM.COUNTRIES.US',
     dialCode: '+1',
     flag: '🇺🇸',
     mask: '(###) ###-####',
@@ -65,6 +68,7 @@ export const PHONE_COUNTRIES: PhoneCountry[] = [
   selector: 'app-quote-form',
   standalone: true,
   imports: [
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     AutoCompleteModule,
@@ -87,6 +91,7 @@ export class QuoteFormComponent implements OnInit, OnDestroy {
   private readonly alertService = inject(AlertService);
   private readonly toastService = inject(ToastService);
   private readonly pageInfoService = inject(PageInfoService);
+  private readonly language = inject(LanguageService);
   private readonly router = inject(Router);
   private readonly destroy$ = new Subject<void>();
 
@@ -125,12 +130,12 @@ export class QuoteFormComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.pageInfoService.updateTitle('Nueva Cotización');
-    this.pageInfoService.updateDescription('Captura los datos del cliente y los productos a cotizar');
+    this.pageInfoService.updateTitle(this.language.t('QUOTES.CREATE'));
+    this.pageInfoService.updateDescription(this.language.t('QUOTES.FORM.DESCRIPTION_CREATE'));
     this.pageInfoService.updateBreadcrumbs([
-      { title: 'Inicio', path: '/dashboard', isActive: false },
-      { title: 'Cotizaciones', path: '/cronos/cotizaciones', isActive: false },
-      { title: 'Nueva', path: '', isActive: true },
+      { title: this.language.t('BREADCRUMB.HOME'), path: '/dashboard', isActive: false },
+      { title: this.language.t('QUOTES.TITLE'), path: '/cronos/cotizaciones', isActive: false },
+      { title: this.language.t('COMMON.NEW'), path: '', isActive: true },
     ]);
 
     this.addItem();
@@ -290,7 +295,7 @@ export class QuoteFormComponent implements OnInit, OnDestroy {
     if (this.form.invalid || this.items.length === 0) {
       this.form.markAllAsTouched();
       this.items.controls.forEach((control) => (control as FormGroup).markAllAsTouched());
-      this.alertService.warning('Revisa los campos marcados antes de guardar.');
+      this.alertService.warning(this.language.t('QUOTES.FORM.CHECK_FIELDS'));
       return;
     }
 
@@ -328,12 +333,12 @@ export class QuoteFormComponent implements OnInit, OnDestroy {
     this.quoteService.create(payload).pipe(takeUntil(this.destroy$)).subscribe({
       next: () => {
         this.isSaving.set(false);
-        this.toastService.success('Cotización creada', 'Se ha generado la cotización exitosamente.');
+        this.toastService.success(this.language.t('QUOTES.FORM.CREATED_TITLE'), this.language.t('QUOTES.FORM.CREATED_MESSAGE'));
         this.router.navigate(['/cronos/cotizaciones']);
       },
       error: (err) => {
         this.isSaving.set(false);
-        this.alertService.error(err?.error?.message || 'Error al crear la cotización');
+        this.alertService.error(err?.error?.message || this.language.t('QUOTES.FORM.CREATE_FAILED'));
       },
     });
   }

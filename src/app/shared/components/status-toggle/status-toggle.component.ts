@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
+import { LanguageService } from 'src/app/core/services/language.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
 import { StatusEntity } from 'src/app/core/models/common.models';
@@ -26,7 +27,7 @@ type EntityStatus = 'ACTIVE' | 'INACTIVE';
         [class.status-pill-active]="item.status === 'ACTIVE'"
         [class.status-pill-inactive]="item.status !== 'ACTIVE'"
       >
-        {{ item.status === 'ACTIVE' ? 'Activo' : 'Inactivo' }}
+        {{ statusLabel(item.status) }}
       </span>
     </div>
   `,
@@ -41,6 +42,7 @@ export class StatusToggleComponent {
   private readonly http = inject(HttpClient);
   private readonly alertService = inject(AlertService);
   private readonly confirmService = inject(ConfirmService);
+  private readonly language = inject(LanguageService);
 
   @Input({ required: true }) item!: StatusEntity;
   @Input({ required: true }) endpoint!: string;
@@ -50,14 +52,22 @@ export class StatusToggleComponent {
 
   readonly loading = signal(false);
 
+  /** Shared with every catalog grid, so it reads the common status keys. */
+  statusLabel(status: string): string {
+    return this.language.t(status === 'ACTIVE' ? 'COMMON.STATUS.ACTIVE' : 'COMMON.STATUS.INACTIVE');
+  }
+
   async onToggle(): Promise<void> {
     const previousStatus = this.item.status as EntityStatus;
     const newStatus: EntityStatus = previousStatus === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
 
     const confirmed = await this.confirmService.confirm({
-      title: '¿Actualizar estatus?',
-      message: `"${this.nameEntity}" pasará a estar ${newStatus === 'ACTIVE' ? 'Activo' : 'Inactivo'}.`,
-      acceptLabel: 'Sí, cambiar',
+      title: this.language.t('COMMON.STATUS_TOGGLE.CONFIRM_TITLE'),
+      message: this.language.t('COMMON.STATUS_TOGGLE.CONFIRM_MESSAGE', {
+        name: this.nameEntity,
+        status: this.statusLabel(newStatus),
+      }),
+      acceptLabel: this.language.t('COMMON.STATUS_TOGGLE.ACCEPT'),
       severity: newStatus === 'ACTIVE' ? 'primary' : 'danger',
       icon: 'pi pi-question-circle',
     });
@@ -74,12 +84,12 @@ export class StatusToggleComponent {
         this.loading.set(false);
         this.item = { ...this.item, status: newStatus };
         this.statusChanged.emit(newStatus);
-        this.alertService.success('Estatus actualizado');
+        this.alertService.success(this.language.t('COMMON.STATUS_TOGGLE.SUCCESS'));
       },
       error: (err) => {
         this.loading.set(false);
         this.item = { ...this.item, status: previousStatus };
-        this.alertService.error(err?.message || 'Error al actualizar');
+        this.alertService.error(err?.message || this.language.t('COMMON.STATUS_TOGGLE.FAILED'));
       },
     });
   }

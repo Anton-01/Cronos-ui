@@ -9,7 +9,13 @@ import { MenuItem } from 'primeng/api';
  * tooltip — it never swaps in a different template or a different model.
  */
 export interface NavItem {
-  label: string;
+  /**
+   * Translation key, not display text — the sidebar renders it through the
+   * `translate` pipe. Keeping the key (rather than resolved text) in the model
+   * is what lets the menu re-label itself on a language switch without being
+   * rebuilt, and it doubles as the stable identity `@for` tracks by.
+   */
+  labelKey: string;
   icon: string;
   route: string;
   /**
@@ -30,12 +36,12 @@ export interface NavItem {
 }
 
 /**
- * A titled group of items. `label` renders as the small uppercase muted
+ * A titled group of items. `labelKey` renders as the small uppercase muted
  * section header ("DASHBOARDS", "APPS") that gives Freya its scannable
  * sidebar rhythm; it is hidden in slim mode.
  */
 export interface NavSection {
-  label: string;
+  labelKey: string;
   items: NavItem[];
 }
 
@@ -49,53 +55,65 @@ export interface NavSection {
 export function buildNavSections(hasAdminRole: boolean, hasSuperAdminRole: boolean): NavSection[] {
   const sections: NavSection[] = [
     {
-      label: 'Dashboards',
-      items: [{ label: 'Dashboard', icon: 'pi pi-home', route: '/dashboard' }],
+      labelKey: 'NAV.SECTIONS.DASHBOARDS',
+      items: [{ labelKey: 'NAV.ITEMS.DASHBOARD', icon: 'pi pi-home', route: '/dashboard' }],
     },
     {
-      label: 'Operations',
+      labelKey: 'NAV.SECTIONS.OPERATIONS',
       items: [
-        { label: 'My Recipes', icon: 'pi pi-book', route: '/cronos/recetas' },
-        { label: 'My Quotes', icon: 'pi pi-file-edit', route: '/cronos/cotizaciones' },
-        { label: 'Ingredients', icon: 'pi pi-shopping-bag', route: '/cronos/ingredientes' },
-        { label: 'Fixed Costs', icon: 'pi pi-wallet', route: '/cronos/costos-fijos' },
+        { labelKey: 'NAV.ITEMS.MY_RECIPES', icon: 'pi pi-book', route: '/cronos/recetas' },
+        { labelKey: 'NAV.ITEMS.MY_QUOTES', icon: 'pi pi-file-edit', route: '/cronos/cotizaciones' },
+        { labelKey: 'NAV.ITEMS.INGREDIENTS', icon: 'pi pi-shopping-bag', route: '/cronos/ingredientes' },
+        { labelKey: 'NAV.ITEMS.FIXED_COSTS', icon: 'pi pi-wallet', route: '/cronos/costos-fijos' },
       ],
     },
     {
-      label: 'Catalogs',
+      labelKey: 'NAV.SECTIONS.CATALOGS',
       items: [
-        { label: 'Unit Types', icon: 'pi pi-sitemap', route: '/cronos/tipos-unidad' },
-        { label: 'Measurement Units', icon: 'pi pi-calculator', route: '/cronos/unidades-medida' },
+        { labelKey: 'NAV.ITEMS.UNIT_TYPES', icon: 'pi pi-sitemap', route: '/cronos/tipos-unidad' },
         {
-          label: 'Categories',
+          labelKey: 'NAV.ITEMS.MEASUREMENT_UNITS',
+          icon: 'pi pi-calculator',
+          route: '/cronos/unidades-medida',
+        },
+        {
+          labelKey: 'NAV.ITEMS.CATEGORIES',
           icon: 'pi pi-tags',
           route: '/cronos/categorias',
           children: [
-            { label: 'Product Categories', icon: 'pi pi-shopping-cart', route: '/cronos/categorias/productos' },
-            { label: 'Ingredient Categories', icon: 'pi pi-inbox', route: '/cronos/categorias/ingredientes' },
+            {
+              labelKey: 'NAV.ITEMS.PRODUCT_CATEGORIES',
+              icon: 'pi pi-shopping-cart',
+              route: '/cronos/categorias/productos',
+            },
+            {
+              labelKey: 'NAV.ITEMS.INGREDIENT_CATEGORIES',
+              icon: 'pi pi-inbox',
+              route: '/cronos/categorias/ingredientes',
+            },
           ],
         },
-        { label: 'Allergens', icon: 'pi pi-exclamation-triangle', route: '/cronos/alergenos' },
+        { labelKey: 'NAV.ITEMS.ALLERGENS', icon: 'pi pi-exclamation-triangle', route: '/cronos/alergenos' },
       ],
     },
     {
-      label: 'Account',
+      labelKey: 'NAV.SECTIONS.ACCOUNT',
       items: [
-        { label: 'My Account', icon: 'pi pi-user', route: '/cronos/cuenta/mi-cuenta' },
-        { label: 'Security', icon: 'pi pi-lock', route: '/cronos/cuenta/seguridad' },
+        { labelKey: 'NAV.ITEMS.MY_ACCOUNT', icon: 'pi pi-user', route: '/cronos/cuenta/mi-cuenta' },
+        { labelKey: 'NAV.ITEMS.SECURITY', icon: 'pi pi-lock', route: '/cronos/cuenta/seguridad' },
       ],
     },
   ];
 
   const adminItems: NavItem[] = [];
   if (hasAdminRole) {
-    adminItems.push({ label: 'User Management', icon: 'pi pi-users', route: '/cronos/admin/usuarios' });
+    adminItems.push({ labelKey: 'NAV.ITEMS.USER_MANAGEMENT', icon: 'pi pi-users', route: '/cronos/admin/usuarios' });
   }
   if (hasSuperAdminRole) {
-    adminItems.push({ label: 'Role Management', icon: 'pi pi-shield', route: '/cronos/admin/roles' });
+    adminItems.push({ labelKey: 'NAV.ITEMS.ROLE_MANAGEMENT', icon: 'pi pi-shield', route: '/cronos/admin/roles' });
   }
   if (adminItems.length > 0) {
-    sections.push({ label: 'Administration', items: adminItems });
+    sections.push({ labelKey: 'NAV.SECTIONS.ADMINISTRATION', items: adminItems });
   }
 
   return sections;
@@ -106,12 +124,19 @@ export function activePrefixesOf(item: NavItem): string[] {
   return item.activePrefixes ?? [item.route];
 }
 
-/** Account dropdown in the topbar. Kept next to the nav model so every label lives in one file. */
-export function buildUserMenu(onLogout: () => void): MenuItem[] {
+/**
+ * Account dropdown in the topbar. Kept next to the nav model so every label
+ * lives in one file.
+ *
+ * `MenuItem.label` is plain text with no pipe to run it through, so this takes
+ * a translator and is rebuilt inside a `computed` on each language change —
+ * the sidebar gets the same result from the `translate` pipe instead.
+ */
+export function buildUserMenu(t: (key: string) => string, onLogout: () => void): MenuItem[] {
   return [
-    { label: 'My Account', icon: 'pi pi-user', routerLink: '/cronos/cuenta/mi-cuenta' },
-    { label: 'Security', icon: 'pi pi-lock', routerLink: '/cronos/cuenta/seguridad' },
+    { label: t('NAV.ITEMS.MY_ACCOUNT'), icon: 'pi pi-user', routerLink: '/cronos/cuenta/mi-cuenta' },
+    { label: t('NAV.ITEMS.SECURITY'), icon: 'pi pi-lock', routerLink: '/cronos/cuenta/seguridad' },
     { separator: true },
-    { label: 'Sign Out', icon: 'pi pi-sign-out', command: onLogout },
+    { label: t('NAV.ITEMS.SIGN_OUT'), icon: 'pi pi-sign-out', command: onLogout },
   ];
 }

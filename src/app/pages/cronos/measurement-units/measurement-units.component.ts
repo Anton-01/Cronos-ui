@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -16,21 +17,19 @@ import { TooltipModule } from 'primeng/tooltip';
 
 import { MeasurementUnitService } from 'src/app/core/services/domain/measurement-unit.service';
 import { MeasurementUnitResponse } from 'src/app/core/models/domain.model';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
 import { StatusToggleComponent } from 'src/app/shared/components/status-toggle/status-toggle.component';
+import { SelectOption, EntityStatus, statusOptions } from 'src/app/shared/i18n/catalog-options';
 import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skeleton-row/table-skeleton-row.component';
-
-const STATUS_FILTER_OPTIONS = [
-  { label: 'Activo', value: 'ACTIVE' },
-  { label: 'Inactivo', value: 'INACTIVE' },
-];
 
 @Component({
   selector: 'app-measurement-units',
   standalone: true,
   imports: [
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     ButtonModule,
@@ -56,6 +55,7 @@ export class MeasurementUnitsComponent implements OnInit {
   private readonly alertService = inject(AlertService);
   private readonly confirmService = inject(ConfirmService);
   private readonly pageInfoService = inject(PageInfoService);
+  private readonly language = inject(LanguageService);
   private readonly fb = inject(FormBuilder);
 
   readonly items = signal<MeasurementUnitResponse[]>([]);
@@ -66,7 +66,9 @@ export class MeasurementUnitsComponent implements OnInit {
   readonly selectedItem = signal<MeasurementUnitResponse | null>(null);
   readonly isSaving = signal(false);
 
-  readonly statusFilterOptions = STATUS_FILTER_OPTIONS;
+  readonly statusFilterOptions = computed<SelectOption<EntityStatus>[]>(() =>
+    statusOptions((key) => this.language.t(key)),
+  );
 
   readonly form = this.fb.group({
     code: ['', [Validators.required, Validators.minLength(1)]],
@@ -77,14 +79,20 @@ export class MeasurementUnitsComponent implements OnInit {
     isBase: [false as boolean],
   });
 
+  constructor() {
+    // Page chrome re-renders on a language switch; the fetch stays in ngOnInit.
+    effect(() => {
+      this.pageInfoService.updateTitle(this.language.t('MEASUREMENT_UNITS.TITLE'));
+      this.pageInfoService.updateDescription(this.language.t('MEASUREMENT_UNITS.DESCRIPTION'));
+      this.pageInfoService.updateBreadcrumbs([
+        { title: this.language.t('BREADCRUMB.HOME'), path: '/dashboard', isActive: false },
+        { title: this.language.t('BREADCRUMB.CATALOGS'), path: '', isActive: false },
+        { title: this.language.t('MEASUREMENT_UNITS.TITLE'), path: '', isActive: true },
+      ]);
+    });
+  }
+
   ngOnInit(): void {
-    this.pageInfoService.updateTitle('Unidades de Medida');
-    this.pageInfoService.updateDescription('Gestión del catálogo de unidades de medida del sistema');
-    this.pageInfoService.updateBreadcrumbs([
-      { title: 'Inicio', path: '/dashboard', isActive: false },
-      { title: 'Catálogos', path: '', isActive: false },
-      { title: 'Unidades de Medida', path: '', isActive: true },
-    ]);
     this.load();
   }
 
@@ -97,7 +105,7 @@ export class MeasurementUnitsComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.alertService.error(err?.message || 'Error al cargar unidades de medida');
+        this.alertService.error(err?.message || this.language.t('MEASUREMENT_UNITS.TOAST.LOAD_FAILED'));
       },
     });
   }
@@ -127,7 +135,8 @@ export class MeasurementUnitsComponent implements OnInit {
   }
 
   saveForm(): void {
-    if (this.form.invalid) {
+    if (this.form.invalid || this.isSaving()) {
+      this.form.markAllAsTouched();
       return;
     }
     this.isSaving.set(true);
@@ -152,12 +161,12 @@ export class MeasurementUnitsComponent implements OnInit {
         this.closeForm();
         this.load();
         this.alertService.success(
-          isEdit ? 'Unidad de medida actualizada correctamente' : 'Unidad de medida creada correctamente'
+          this.language.t(isEdit ? 'MEASUREMENT_UNITS.TOAST.UPDATED' : 'MEASUREMENT_UNITS.TOAST.CREATED')
         );
       },
       error: (err) => {
         this.isSaving.set(false);
-        this.alertService.error(err?.message || 'Error al guardar');
+        this.alertService.error(err?.message || this.language.t('COMMON.TOAST.SAVE_FAILED'));
       },
     });
   }
@@ -170,10 +179,10 @@ export class MeasurementUnitsComponent implements OnInit {
     this.measurementUnitService.delete(item.id).subscribe({
       next: () => {
         this.load();
-        this.alertService.success('Unidad de medida eliminada correctamente');
+        this.alertService.success(this.language.t('MEASUREMENT_UNITS.TOAST.DELETED'));
       },
       error: (err) => {
-        this.alertService.error(err?.message || 'Error al eliminar');
+        this.alertService.error(err?.message || this.language.t('COMMON.TOAST.DELETE_FAILED'));
       },
     });
   }

@@ -4,38 +4,38 @@
   } @else {
     <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-column gap-3 mt-2" style="max-width: 40rem;">
       <div class="grid align-items-center">
-        <label for="accountUsername" class="col-12 md:col-4 font-medium">Username</label>
+        <label for="accountUsername" class="col-12 md:col-4 font-medium">{{ 'AUTH.FIELDS.USERNAME' | translate }}</label>
         <div class="col-12 md:col-8">
           <input pInputText id="accountUsername" formControlName="username" class="w-full" />
         </div>
       </div>
       <div class="grid align-items-center">
-        <label for="accountEmail" class="col-12 md:col-4 font-medium">Email</label>
+        <label for="accountEmail" class="col-12 md:col-4 font-medium">{{ 'AUTH.FIELDS.EMAIL' | translate }}</label>
         <div class="col-12 md:col-8">
           <input pInputText id="accountEmail" [value]="user()?.email" disabled class="w-full" />
         </div>
       </div>
       <div class="grid align-items-center">
-        <label for="accountFirstName" class="col-12 md:col-4 font-medium">Nombre</label>
+        <label for="accountFirstName" class="col-12 md:col-4 font-medium">{{ 'AUTH.FIELDS.FIRST_NAME' | translate }}</label>
         <div class="col-12 md:col-8">
           <input pInputText id="accountFirstName" formControlName="firstName" class="w-full" />
         </div>
       </div>
       <div class="grid align-items-center">
-        <label for="accountLastName" class="col-12 md:col-4 font-medium">Apellido</label>
+        <label for="accountLastName" class="col-12 md:col-4 font-medium">{{ 'AUTH.FIELDS.LAST_NAME' | translate }}</label>
         <div class="col-12 md:col-8">
           <input pInputText id="accountLastName" formControlName="lastName" class="w-full" />
         </div>
       </div>
       <div class="grid align-items-center">
-        <label for="accountPhone" class="col-12 md:col-4 font-medium">Teléfono</label>
+        <label for="accountPhone" class="col-12 md:col-4 font-medium">{{ 'AUTH.FIELDS.PHONE' | translate }}</label>
         <div class="col-12 md:col-8">
           <input pInputText id="accountPhone" formControlName="phoneNumber" class="w-full" />
         </div>
       </div>
       <p-divider styleClass="my-0" />
       <div class="grid align-items-center">
-        <span class="col-12 md:col-4 font-medium">Roles</span>
+        <span class="col-12 md:col-4 font-medium">{{ 'ACCOUNT.ROLES' | translate }}</span>
         <div class="col-12 md:col-8 flex flex-wrap gap-2">
           @for (role of user()?.roles || []; track role) {
             <p-tag [value]="role" severity="info" />
@@ -43,7 +43,7 @@
         </div>
       </div>
       <div class="flex justify-content-end">
-        <p-button label="Guardar cambios" type="submit" icon="pi pi-check" [loading]="isSaving()" />
+        <p-button [label]="'COMMON.SAVE_CHANGES' | translate" type="submit" icon="pi pi-check" [loading]="isSaving()" />
       </div>
     </form>
   }

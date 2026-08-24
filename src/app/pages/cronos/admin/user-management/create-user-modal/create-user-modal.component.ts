@@ -15,6 +15,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -25,14 +26,16 @@ import { TooltipModule } from 'primeng/tooltip';
 
 import { UserService } from 'src/app/core/services/user.service';
 import { RoleService } from 'src/app/core/services/role.service';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
-import { UserResponse } from 'src/app/core/models/user.model';
+import { RegisterUserRequest, UserResponse } from 'src/app/core/models/user.model';
 import { RoleResponse } from 'src/app/core/models/role.model';
 
 @Component({
   selector: 'app-create-user-modal',
   standalone: true,
   imports: [
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     AvatarModule,
@@ -52,6 +55,7 @@ export class CreateUserModalComponent implements OnInit, OnDestroy {
   private readonly userService = inject(UserService);
   private readonly roleService = inject(RoleService);
   private readonly toastService = inject(ToastService);
+  private readonly language = inject(LanguageService);
   private readonly fb = inject(FormBuilder);
 
   @Output() closed = new EventEmitter<void>();
@@ -117,7 +121,7 @@ export class CreateUserModalComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.isLoadingRoles.set(false);
-        this.toastService.error('Error', 'No se pudieron cargar los roles disponibles');
+        this.toastService.error('Error', this.language.t('ADMIN.USERS.MODAL.ROLES_LOAD_FAILED'));
       },
     });
   }
@@ -167,7 +171,7 @@ export class CreateUserModalComponent implements OnInit, OnDestroy {
     this.imageLoadError.set(true);
     this.hasCropperImage.set(false);
     this.imageChangedEvent = null;
-    this.toastService.error('Formato inválido', 'Usa una imagen JPG, PNG o WEBP');
+    this.toastService.error(this.language.t('ADMIN.USERS.MODAL.INVALID_FORMAT'), this.language.t('ADMIN.USERS.MODAL.INVALID_FORMAT_DETAIL'));
   }
 
   removeImage(): void {
@@ -186,7 +190,7 @@ export class CreateUserModalComponent implements OnInit, OnDestroy {
   private buildFormData(): FormData {
     const formData = new FormData();
 
-    const userData = {
+    const userData: RegisterUserRequest = {
       username: this.form.value.username!.trim(),
       email: this.form.value.email!.trim(),
       firstName: this.form.value.firstName?.trim() || null,
@@ -218,13 +222,13 @@ export class CreateUserModalComponent implements OnInit, OnDestroy {
     this.userService.registerUser(this.buildFormData()).subscribe({
       next: (res) => {
         this.isSaving.set(false);
-        this.toastService.success('Usuario creado', `"${res.data.username}" fue registrado exitosamente`);
+        this.toastService.success(this.language.t('ADMIN.USERS.TOAST.CREATED'), this.language.t('ADMIN.USERS.TOAST.CREATED_DETAIL', { username: res.data.username }));
         this.userCreated.emit(res.data);
         this.close();
       },
       error: (err) => {
         this.isSaving.set(false);
-        this.toastService.error('Error al crear usuario', err?.error?.message ?? 'Inténtalo de nuevo');
+        this.toastService.error(this.language.t('ADMIN.USERS.TOAST.CREATE_FAILED'), err?.error?.message ?? this.language.t('COMMON.TRY_AGAIN'));
       },
     });
   }

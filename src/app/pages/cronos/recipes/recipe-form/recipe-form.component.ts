@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { ChipModule } from 'primeng/chip';
@@ -13,26 +14,34 @@ import { TextareaModule } from 'primeng/textarea';
 
 import { RecipeService } from 'src/app/core/services/domain/recipe.service';
 import { CreateRecipeRequest } from 'src/app/core/models/domain.model';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { DetailSkeletonComponent } from 'src/app/shared/components/detail-skeleton/detail-skeleton.component';
 
-const COMMON_YIELD_UNITS = [
-  'Pasteles',
-  'Porciones',
-  'Piezas',
-  'Docenas',
-  'Galletas',
-  'Cupcakes',
-  'Barras',
-  'Litros',
-  'Kilogramos',
+/**
+ * Quick-pick chips for the yield unit. These are stored on the recipe as free
+ * text, so the chip shows the translated word while the key stays stable —
+ * a baker switching language sees "Servings" rather than "Porciones", and the
+ * value written is whatever they picked in their own language.
+ */
+const COMMON_YIELD_UNIT_KEYS: readonly string[] = [
+  'CAKES',
+  'SERVINGS',
+  'PIECES',
+  'DOZENS',
+  'COOKIES',
+  'CUPCAKES',
+  'BARS',
+  'LITERS',
+  'KILOGRAMS',
 ];
 
 @Component({
   selector: 'app-recipe-form',
   standalone: true,
   imports: [
+    TranslatePipe,
     ReactiveFormsModule,
     ButtonModule,
     CardModule,
@@ -49,6 +58,7 @@ export class RecipeFormComponent implements OnInit, OnDestroy {
   private readonly recipeService = inject(RecipeService);
   private readonly alertService = inject(AlertService);
   private readonly pageInfoService = inject(PageInfoService);
+  private readonly language = inject(LanguageService);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
@@ -59,7 +69,12 @@ export class RecipeFormComponent implements OnInit, OnDestroy {
   readonly isLoading = signal(false);
   readonly isSaving = signal(false);
 
-  readonly commonYieldUnits = COMMON_YIELD_UNITS;
+  readonly commonYieldUnits = computed<{ value: string; label: string }[]>(() =>
+    COMMON_YIELD_UNIT_KEYS.map((value) => ({
+      value,
+      label: this.language.t(`RECIPES.YIELD_UNITS.${value}`),
+    })),
+  );
 
   readonly form = this.fb.group({
     name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(150)]],
@@ -79,12 +94,12 @@ export class RecipeFormComponent implements OnInit, OnDestroy {
       this.loadRecipe(id);
     }
 
-    this.pageInfoService.updateTitle(id ? 'Editar Receta' : 'Nueva Receta');
-    this.pageInfoService.updateDescription('Datos generales y rendimiento de la receta');
+    this.pageInfoService.updateTitle(this.language.t(id ? 'RECIPES.EDIT' : 'RECIPES.CREATE'));
+    this.pageInfoService.updateDescription(this.language.t('RECIPES.FORM.DESCRIPTION'));
     this.pageInfoService.updateBreadcrumbs([
-      { title: 'Inicio', path: '/dashboard', isActive: false },
-      { title: 'Recetas', path: '/cronos/recetas', isActive: false },
-      { title: id ? 'Editar' : 'Nueva', path: '', isActive: true },
+      { title: this.language.t('BREADCRUMB.HOME'), path: '/dashboard', isActive: false },
+      { title: this.language.t('RECIPES.TITLE'), path: '/cronos/recetas', isActive: false },
+      { title: this.language.t(id ? 'COMMON.EDIT' : 'COMMON.NEW'), path: '', isActive: true },
     ]);
   }
 
@@ -109,7 +124,7 @@ export class RecipeFormComponent implements OnInit, OnDestroy {
         this.isLoading.set(false);
       },
       error: (err) => {
-        this.alertService.error(err?.error?.message || 'Error al cargar la receta');
+        this.alertService.error(err?.error?.message || this.language.t('RECIPES.TOAST.LOAD_ONE_FAILED'));
         this.isLoading.set(false);
       },
     });
@@ -140,7 +155,7 @@ export class RecipeFormComponent implements OnInit, OnDestroy {
       next: (res) => {
         this.isSaving.set(false);
         this.alertService.success(
-          this.isEditMode() ? 'Receta actualizada correctamente' : 'Receta creada correctamente'
+          this.language.t(this.isEditMode() ? 'RECIPES.TOAST.UPDATED' : 'RECIPES.TOAST.CREATED')
         );
         // Redirect to detail view after create, or back to detail after edit
         const targetId = this.isEditMode() ? this.recipeId()! : res.data.id;
@@ -148,7 +163,7 @@ export class RecipeFormComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         this.isSaving.set(false);
-        this.alertService.error(err?.error?.message || 'Error al guardar la receta');
+        this.alertService.error(err?.error?.message || this.language.t('RECIPES.TOAST.SAVE_FAILED'));
       },
     });
   }

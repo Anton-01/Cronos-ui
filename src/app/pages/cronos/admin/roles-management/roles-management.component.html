@@ -5,15 +5,15 @@
         <ng-template pTemplate="caption">
           <div class="flex align-items-center justify-content-between flex-wrap gap-2">
             <span class="text-color-secondary text-sm">{{ roles().length }} roles</span>
-            <p-button label="Nuevo Rol" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
+            <p-button [label]="'ADMIN.ROLES.CREATE' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
           </div>
         </ng-template>
         <ng-template pTemplate="header">
           <tr>
-            <th style="min-width: 9rem">Rol</th>
-            <th style="min-width: 12rem">Descripción</th>
-            <th style="min-width: 14rem">Permisos</th>
-            <th style="width: 6rem" class="text-right">Acciones</th>
+            <th style="min-width: 9rem">{{ 'ADMIN.ROLES.ROLE' | translate }}</th>
+            <th style="min-width: 12rem">{{ 'COMMON.TABLE.DESCRIPTION' | translate }}</th>
+            <th style="min-width: 14rem">{{ 'ADMIN.ROLES.PERMISSIONS' | translate }}</th>
+            <th style="width: 6rem" class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </ng-template>
         <ng-template pTemplate="body" let-role>
@@ -28,7 +28,7 @@
                   <p-tag [value]="permission.name" severity="secondary" />
                 }
                 @if (extraCount(role) > 0) {
-                  <span class="text-color-secondary text-sm" [pTooltip]="role.permissions.length + ' permisos en total'">
+                  <span class="text-color-secondary text-sm" [pTooltip]="'ADMIN.ROLES.TOTAL_PERMISSIONS' | translate: { count: role.permissions.length }">
                     +{{ extraCount(role) }} más
                   </span>
                 }
@@ -54,7 +54,7 @@
 
         <ng-template pTemplate="emptymessage">
           <tr>
-            <td colspan="4" class="text-center text-color-secondary py-5">No hay roles registrados</td>
+            <td colspan="4" class="text-center text-color-secondary py-5">{{ 'ADMIN.ROLES.EMPTY' | translate }}</td>
           </tr>
         </ng-template>
       </p-table>
@@ -77,26 +77,26 @@
 
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="flex flex-column gap-3 mt-2">
           <div class="flex flex-column gap-1">
-            <label for="roleName" class="font-medium">Nombre <span class="text-red-500">*</span></label>
+            <label for="roleName" class="font-medium">{{ 'COMMON.TABLE.NAME' | translate }} <span class="text-red-500">*</span></label>
             <input
               pInputText
               id="roleName"
               formControlName="name"
-              placeholder="Ej. MANAGER"
+              [placeholder]="'ADMIN.ROLES.NAME_PLACEHOLDER' | translate"
               [pTooltip]="isNameLocked() ? 'El nombre del rol principal del sistema no puede modificarse' : ''"
             />
             @if (form.controls.name.hasError('required') && form.controls.name.touched) {
-              <small class="text-red-500">El nombre es requerido</small>
+              <small class="text-red-500">{{ 'ADMIN.ROLES.ERRORS.NAME_REQUIRED' | translate }}</small>
             }
           </div>
           <div class="flex flex-column gap-1">
-            <label for="roleDescription" class="font-medium">Descripción</label>
-            <textarea pTextarea id="roleDescription" formControlName="description" rows="2" placeholder="Descripción del rol"></textarea>
+            <label for="roleDescription" class="font-medium">{{ 'COMMON.TABLE.DESCRIPTION' | translate }}</label>
+            <textarea pTextarea id="roleDescription" formControlName="description" rows="2" [placeholder]="'ADMIN.ROLES.DESCRIPTION_PLACEHOLDER' | translate"></textarea>
           </div>
 
           <!-- Permissions matrix -->
           <div class="flex flex-column gap-2">
-            <label class="font-medium">Permisos</label>
+            <label class="font-medium">{{ 'ADMIN.ROLES.PERMISSIONS' | translate }}</label>
             @if (isLoadingPermissions()) {
               <i class="pi pi-spinner pi-spin text-primary"></i>
             } @else {
@@ -137,7 +137,7 @@
           </div>
 
           <div class="flex justify-content-end gap-2">
-            <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="closePanel()" />
+            <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="closePanel()" />
             <p-button
               [label]="panelMode() === 'create' ? 'Crear Rol' : 'Guardar Cambios'"
               type="submit"

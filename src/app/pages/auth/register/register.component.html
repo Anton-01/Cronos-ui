@@ -1,4 +1,4 @@
-<h3 class="m-0 mb-3 text-center text-lg font-semibold text-color">Crear Cuenta</h3>
+<h3 class="m-0 mb-3 text-center text-lg font-semibold text-color">{{ 'AUTH.REGISTER.TITLE' | translate }}</h3>
 
 @if (errorMessage()) {
   <p-message severity="error" [text]="errorMessage()!" styleClass="w-full mb-3" />
@@ -6,35 +6,35 @@
 
 <form [formGroup]="registerForm" (ngSubmit)="submit()" class="flex flex-column gap-3">
   <div class="flex flex-column gap-1">
-    <label for="registerUsername" class="font-medium">Usuario <span class="text-red-500">*</span></label>
-    <input pInputText id="registerUsername" formControlName="username" placeholder="usuario123" autocomplete="username" />
+    <label for="registerUsername" class="font-medium">{{ 'AUTH.FIELDS.USERNAME' | translate }} <span class="text-red-500">*</span></label>
+    <input pInputText id="registerUsername" formControlName="username" [placeholder]="'AUTH.REGISTER.USERNAME_PLACEHOLDER' | translate" autocomplete="username" />
     @if (registerForm.controls.username.invalid && registerForm.controls.username.touched) {
-      <small class="text-red-500">Usuario requerido (mínimo 3 caracteres)</small>
+      <small class="text-red-500">{{ 'AUTH.ERRORS.USERNAME_MIN' | translate }}</small>
     }
   </div>
   <div class="flex flex-column gap-1">
-    <label for="registerEmail" class="font-medium">Correo electrónico <span class="text-red-500">*</span></label>
-    <input pInputText id="registerEmail" formControlName="email" placeholder="correo@ejemplo.com" autocomplete="email" />
+    <label for="registerEmail" class="font-medium">{{ 'AUTH.FIELDS.EMAIL' | translate }} <span class="text-red-500">*</span></label>
+    <input pInputText id="registerEmail" formControlName="email" [placeholder]="'AUTH.REGISTER.EMAIL_PLACEHOLDER' | translate" autocomplete="email" />
     @if (registerForm.controls.email.invalid && registerForm.controls.email.touched) {
-      <small class="text-red-500">Correo válido requerido</small>
+      <small class="text-red-500">{{ 'AUTH.ERRORS.EMAIL_INVALID' | translate }}</small>
     }
   </div>
   <div class="grid">
     <div class="col-12 md:col-6 flex flex-column gap-1">
-      <label for="registerFirstName" class="font-medium">Nombre</label>
+      <label for="registerFirstName" class="font-medium">{{ 'AUTH.FIELDS.FIRST_NAME' | translate }}</label>
       <input pInputText id="registerFirstName" formControlName="firstName" />
     </div>
     <div class="col-12 md:col-6 flex flex-column gap-1">
-      <label for="registerLastName" class="font-medium">Apellido</label>
+      <label for="registerLastName" class="font-medium">{{ 'AUTH.FIELDS.LAST_NAME' | translate }}</label>
       <input pInputText id="registerLastName" formControlName="lastName" />
     </div>
   </div>
   <div class="flex flex-column gap-1">
-    <label for="registerPhone" class="font-medium">Teléfono</label>
+    <label for="registerPhone" class="font-medium">{{ 'AUTH.FIELDS.PHONE' | translate }}</label>
     <input pInputText id="registerPhone" formControlName="phoneNumber" />
   </div>
   <div class="flex flex-column gap-1">
-    <label for="registerPassword" class="font-medium">Contraseña <span class="text-red-500">*</span></label>
+    <label for="registerPassword" class="font-medium">{{ 'AUTH.FIELDS.PASSWORD' | translate }} <span class="text-red-500">*</span></label>
     <p-password
       inputId="registerPassword"
       formControlName="password"
@@ -44,11 +44,11 @@
       autocomplete="new-password"
     />
     @if (registerForm.controls.password.invalid && registerForm.controls.password.touched) {
-      <small class="text-red-500">Mínimo 6 caracteres</small>
+      <small class="text-red-500">{{ 'AUTH.ERRORS.PASSWORD_MIN' | translate }}</small>
     }
   </div>
   <div class="flex flex-column gap-1">
-    <label for="registerConfirmPassword" class="font-medium">Confirmar contraseña <span class="text-red-500">*</span></label>
+    <label for="registerConfirmPassword" class="font-medium">{{ 'AUTH.FIELDS.CONFIRM_PASSWORD' | translate }} <span class="text-red-500">*</span></label>
     <p-password
       inputId="registerConfirmPassword"
       formControlName="confirmPassword"
@@ -59,14 +59,14 @@
       autocomplete="new-password"
     />
     @if (registerForm.hasError('passwordMismatch') && registerForm.controls.confirmPassword.touched) {
-      <small class="text-red-500">Las contraseñas no coinciden</small>
+      <small class="text-red-500">{{ 'AUTH.ERRORS.PASSWORD_MISMATCH' | translate }}</small>
     }
   </div>
 
-  <p-button label="Crear Cuenta" type="submit" styleClass="w-full" [disabled]="registerForm.invalid" [loading]="isLoading()" />
+  <p-button [label]="'AUTH.REGISTER.SUBMIT' | translate" type="submit" styleClass="w-full" [disabled]="registerForm.invalid" [loading]="isLoading()" />
 
   <div class="text-center text-color-secondary text-sm">
-    ¿Ya tienes cuenta?
-    <a routerLink="/auth/login" class="text-primary no-underline">Inicia sesión</a>
+    {{ 'AUTH.REGISTER.HAVE_ACCOUNT' | translate }}
+    <a routerLink="/auth/login" class="text-primary no-underline">{{ 'AUTH.REGISTER.SIGN_IN_LINK' | translate }}</a>
   </div>
 </form>

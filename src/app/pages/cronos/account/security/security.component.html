@@ -4,7 +4,7 @@
     <ng-template pTemplate="title">
       <div class="flex align-items-center gap-2">
         <i class="pi pi-lock text-primary"></i>
-        <span>Método de Inicio de Sesión</span>
+        <span>{{ 'ACCOUNT.SECURITY.SIGN_IN_METHOD' | translate }}</span>
       </div>
     </ng-template>
     <app-sign-in-method />
@@ -16,18 +16,18 @@
       <div class="flex align-items-center justify-content-between">
         <div class="flex align-items-center gap-2">
           <i class="pi pi-desktop text-primary"></i>
-          <span>Sesiones Activas</span>
+          <span>{{ 'ACCOUNT.SECURITY.ACTIVE_SESSIONS' | translate }}</span>
         </div>
-        <p-button icon="pi pi-refresh" [text]="true" [rounded]="true" pTooltip="Actualizar" (onClick)="loadSessions()" />
+        <p-button icon="pi pi-refresh" [text]="true" [rounded]="true" [pTooltip]="'COMMON.REFRESH' | translate" (onClick)="loadSessions()" />
       </div>
     </ng-template>
     <p-table [value]="sessions()" [loading]="isLoadingSessions()" [showLoader]="false" [rowHover]="true">
       <ng-template pTemplate="header">
         <tr>
-          <th>Dispositivo</th>
+          <th>{{ 'ACCOUNT.SECURITY.DEVICE' | translate }}</th>
           <th>IP</th>
-          <th>Última actividad</th>
-          <th style="width: 9rem" class="text-right">Acciones</th>
+          <th>{{ 'ACCOUNT.SECURITY.LAST_ACTIVITY' | translate }}</th>
+          <th style="width: 9rem" class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-session>
@@ -38,7 +38,7 @@
               <div class="flex flex-column">
                 <span class="font-medium">{{ session.browser }} · {{ session.os }}</span>
                 @if (session.isCurrentSession) {
-                  <p-tag value="Sesión actual" severity="success" styleClass="align-self-start mt-1" />
+                  <p-tag [value]="'ACCOUNT.SECURITY.CURRENT_SESSION' | translate" severity="success" styleClass="align-self-start mt-1" />
                 }
               </div>
             </div>
@@ -46,9 +46,9 @@
           <td>{{ session.ipAddress }}</td>
           <td class="text-color-secondary text-sm">{{ formatDate(session.lastActivityAt) }}</td>
           <td class="text-right">
-            <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true" pTooltip="Detalle" (onClick)="showSessionDetail(session)" />
+            <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true" [pTooltip]="'COMMON.DETAIL' | translate" (onClick)="showSessionDetail(session)" />
             @if (!session.isCurrentSession) {
-              <p-button icon="pi pi-sign-out" severity="danger" [text]="true" [rounded]="true" pTooltip="Revocar" (onClick)="confirmRevokeSession(session)" />
+              <p-button icon="pi pi-sign-out" severity="danger" [text]="true" [rounded]="true" [pTooltip]="'ACCOUNT.SECURITY.REVOKE' | translate" (onClick)="confirmRevokeSession(session)" />
             }
           </td>
         </tr>
@@ -60,7 +60,7 @@
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="4" class="text-center text-color-secondary py-4">Sin sesiones activas</td>
+          <td colspan="4" class="text-center text-color-secondary py-4">{{ 'ACCOUNT.SECURITY.NO_SESSIONS' | translate }}</td>
         </tr>
       </ng-template>
     </p-table>
@@ -71,16 +71,16 @@
     <ng-template pTemplate="title">
       <div class="flex align-items-center gap-2">
         <i class="pi pi-history text-primary"></i>
-        <span>Historial de Inicios de Sesión</span>
+        <span>{{ 'ACCOUNT.SECURITY.LOGIN_HISTORY' | translate }}</span>
       </div>
     </ng-template>
     <p-table [value]="loginHistory()" [loading]="isLoadingHistory()" [showLoader]="false" [rowHover]="true" [paginator]="true" [rows]="10">
       <ng-template pTemplate="header">
         <tr>
-          <th>Fecha</th>
+          <th>{{ 'COMMON.TABLE.DATE' | translate }}</th>
           <th>IP</th>
-          <th>Estado</th>
-          <th>Motivo de falla</th>
+          <th>{{ 'COMMON.TABLE.STATUS' | translate }}</th>
+          <th>{{ 'ACCOUNT.SECURITY.FAILURE_REASON' | translate }}</th>
         </tr>
       </ng-template>
       <ng-template pTemplate="body" let-entry>
@@ -103,7 +103,7 @@
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="4" class="text-center text-color-secondary py-4">Sin registros</td>
+          <td colspan="4" class="text-center text-color-secondary py-4">{{ 'ACCOUNT.SECURITY.NO_RECORDS' | translate }}</td>
         </tr>
       </ng-template>
     </p-table>
@@ -112,7 +112,7 @@
 
 <!-- Session detail dialog -->
 <p-dialog
-  header="Detalle de sesión"
+  [header]="'ACCOUNT.SECURITY.SESSION_DETAIL' | translate"
   [visible]="!!selectedSession()"
   (visibleChange)="!$event && closeSessionDetail()"
   [modal]="true"
@@ -121,15 +121,15 @@
 >
   @if (selectedSession(); as session) {
     <div class="flex flex-column gap-2">
-      <div class="flex justify-content-between"><span class="text-color-secondary">Navegador</span><span class="font-medium">{{ session.browser }}</span></div>
-      <div class="flex justify-content-between"><span class="text-color-secondary">Sistema</span><span class="font-medium">{{ session.os }}</span></div>
-      <div class="flex justify-content-between"><span class="text-color-secondary">Dispositivo</span><span class="font-medium">{{ session.device }}</span></div>
+      <div class="flex justify-content-between"><span class="text-color-secondary">{{ 'ACCOUNT.SECURITY.BROWSER' | translate }}</span><span class="font-medium">{{ session.browser }}</span></div>
+      <div class="flex justify-content-between"><span class="text-color-secondary">{{ 'ACCOUNT.SECURITY.OS' | translate }}</span><span class="font-medium">{{ session.os }}</span></div>
+      <div class="flex justify-content-between"><span class="text-color-secondary">{{ 'ACCOUNT.SECURITY.DEVICE' | translate }}</span><span class="font-medium">{{ session.device }}</span></div>
       <div class="flex justify-content-between"><span class="text-color-secondary">IP</span><span class="font-medium">{{ session.ipAddress }}</span></div>
-      <div class="flex justify-content-between"><span class="text-color-secondary">Ubicación</span><span class="font-medium">{{ session.location || '-' }}</span></div>
-      <div class="flex justify-content-between"><span class="text-color-secondary">Última actividad</span><span class="font-medium">{{ formatDate(session.lastActivityAt) }}</span></div>
+      <div class="flex justify-content-between"><span class="text-color-secondary">{{ 'ACCOUNT.SECURITY.LOCATION' | translate }}</span><span class="font-medium">{{ session.location || '-' }}</span></div>
+      <div class="flex justify-content-between"><span class="text-color-secondary">{{ 'ACCOUNT.SECURITY.LAST_ACTIVITY' | translate }}</span><span class="font-medium">{{ formatDate(session.lastActivityAt) }}</span></div>
     </div>
   }
   <ng-template pTemplate="footer">
-    <p-button label="Cerrar" severity="secondary" [outlined]="true" (onClick)="closeSessionDetail()" />
+    <p-button [label]="'COMMON.CLOSE' | translate" severity="secondary" [outlined]="true" (onClick)="closeSessionDetail()" />
   </ng-template>
 </p-dialog>

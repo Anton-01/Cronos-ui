@@ -15,7 +15,7 @@
     [sortOrder]="1"
     [rowHover]="true"
     [showCurrentPageReport]="true"
-    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
+    [currentPageReportTemplate]="'COMMON.TABLE.PAGE_REPORT' | translate"
   >
     <ng-template pTemplate="caption">
       <div class="flex align-items-center justify-content-between flex-wrap gap-2">
@@ -24,12 +24,12 @@
           <input
             pInputText
             type="text"
-            placeholder="Buscar tipo de unidad..."
+            [placeholder]="'UNIT_TYPES.SEARCH_PLACEHOLDER' | translate"
             (input)="table.filterGlobal($any($event.target).value, 'contains')"
           />
         </p-iconfield>
         <div class="flex align-items-center gap-3">
-          <p-button label="Nuevo Tipo de Unidad" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
+          <p-button [label]="'UNIT_TYPES.CREATE' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
         </div>
       </div>
     </ng-template>
@@ -37,37 +37,52 @@
     <ng-template pTemplate="header">
       <tr>
         <th pSortableColumn="codeIdentity" style="min-width: 9rem">
-          Código
+          {{ 'COMMON.TABLE.CODE' | translate }}
           <p-sortIcon field="codeIdentity" />
-          <p-columnFilter type="text" field="codeIdentity" display="menu" placeholder="Filtrar por código" />
+          <p-columnFilter
+            type="text"
+            field="codeIdentity"
+            display="menu"
+            [placeholder]="'COMMON.TABLE.FILTER_BY_CODE' | translate"
+          />
         </th>
         <th pSortableColumn="name" style="min-width: 12rem">
-          Nombre
+          {{ 'COMMON.TABLE.NAME' | translate }}
           <p-sortIcon field="name" />
-          <p-columnFilter type="text" field="name" display="menu" placeholder="Filtrar por nombre" />
+          <p-columnFilter
+            type="text"
+            field="name"
+            display="menu"
+            [placeholder]="'COMMON.TABLE.FILTER_BY_NAME' | translate"
+          />
         </th>
         <th pSortableColumn="dimension" style="min-width: 9rem">
-          Dimensión
+          {{ 'UNIT_TYPES.FIELDS.DIMENSION' | translate }}
           <p-sortIcon field="dimension" />
-          <p-columnFilter type="text" field="dimension" display="menu" placeholder="Filtrar por dimensión" />
+          <p-columnFilter
+            type="text"
+            field="dimension"
+            display="menu"
+            [placeholder]="'UNIT_TYPES.FILTER_BY_DIMENSION' | translate"
+          />
         </th>
         <th style="width: 10rem">
-          Estado
+          {{ 'COMMON.TABLE.STATUS' | translate }}
           <p-columnFilter field="status" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
             <ng-template pTemplate="filter" let-value let-filter="filterCallback">
               <p-select
                 [ngModel]="value"
-                [options]="statusFilterOptions"
+                [options]="statusFilterOptions()"
                 optionLabel="label"
                 optionValue="value"
-                placeholder="Todos"
+                [placeholder]="'COMMON.ALL' | translate"
                 [showClear]="true"
                 (onChange)="filter($event.value)"
               />
             </ng-template>
           </p-columnFilter>
         </th>
-        <th style="width: 8rem" class="text-right">Acciones</th>
+        <th style="width: 8rem" class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>
     </ng-template>
 
@@ -90,7 +105,7 @@
             severity="info"
             [text]="true"
             [rounded]="true"
-            pTooltip="Editar"
+            [pTooltip]="'COMMON.EDIT' | translate"
             (onClick)="openEdit(item)"
           />
           <p-button
@@ -98,7 +113,7 @@
             severity="danger"
             [text]="true"
             [rounded]="true"
-            pTooltip="Eliminar"
+            [pTooltip]="'COMMON.DELETE' | translate"
             (onClick)="confirmDelete(item)"
           />
         </td>
@@ -113,14 +128,14 @@
 
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="5" class="text-center text-color-secondary py-5">No hay tipos de unidad registrados</td>
+        <td colspan="5" class="text-center text-color-secondary py-5">{{ 'UNIT_TYPES.EMPTY' | translate }}</td>
       </tr>
     </ng-template>
   </p-table>
 </p-card>
 
 <p-dialog
-  [header]="selectedItem() ? 'Editar Tipo de Unidad' : 'Nuevo Tipo de Unidad'"
+  [header]="(selectedItem() ? 'UNIT_TYPES.EDIT' : 'UNIT_TYPES.CREATE') | translate"
   [visible]="showForm()"
   (visibleChange)="!$event && closeForm()"
   [modal]="true"
@@ -129,35 +144,55 @@
 >
   <form [formGroup]="form" (ngSubmit)="saveForm()" id="unitTypeForm" class="flex flex-column gap-3">
     <div class="flex flex-column gap-1">
-      <label for="unitTypeCode" class="font-medium">Código <span class="text-red-500">*</span></label>
-      <input pInputText id="unitTypeCode" formControlName="codeIdentity" placeholder="Código identificador" />
+      <label for="unitTypeCode" class="font-medium">
+        {{ 'COMMON.TABLE.CODE' | translate }} <span class="text-red-500">*</span>
+      </label>
+      <input
+        pInputText
+        id="unitTypeCode"
+        formControlName="codeIdentity"
+        [placeholder]="'UNIT_TYPES.PLACEHOLDERS.CODE' | translate"
+      />
       @if (form.controls.codeIdentity.hasError('required') && form.controls.codeIdentity.touched) {
-        <small class="text-red-500">El código es requerido</small>
+        <small class="text-red-500">{{ 'UNIT_TYPES.ERRORS.CODE_REQUIRED' | translate }}</small>
       }
     </div>
     <div class="flex flex-column gap-1">
-      <label for="unitTypeName" class="font-medium">Nombre <span class="text-red-500">*</span></label>
-      <input pInputText id="unitTypeName" formControlName="name" placeholder="Nombre del tipo de unidad" />
+      <label for="unitTypeName" class="font-medium">
+        {{ 'COMMON.TABLE.NAME' | translate }} <span class="text-red-500">*</span>
+      </label>
+      <input
+        pInputText
+        id="unitTypeName"
+        formControlName="name"
+        [placeholder]="'UNIT_TYPES.PLACEHOLDERS.NAME' | translate"
+      />
       @if (form.controls.name.hasError('required') && form.controls.name.touched) {
-        <small class="text-red-500">El nombre es requerido</small>
+        <small class="text-red-500">{{ 'UNIT_TYPES.ERRORS.NAME_REQUIRED' | translate }}</small>
       }
     </div>
     <div class="flex flex-column gap-1">
-      <label for="unitTypeDimension" class="font-medium">Dimensión <span class="text-red-500">*</span></label>
-      <input pInputText id="unitTypeDimension" formControlName="dimension" placeholder="Ej. masa, volumen, longitud" />
+      <label for="unitTypeDimension" class="font-medium">
+        {{ 'UNIT_TYPES.FIELDS.DIMENSION' | translate }} <span class="text-red-500">*</span>
+      </label>
+      <input
+        pInputText
+        id="unitTypeDimension"
+        formControlName="dimension"
+        [placeholder]="'UNIT_TYPES.PLACEHOLDERS.DIMENSION' | translate"
+      />
       @if (form.controls.dimension.hasError('required') && form.controls.dimension.touched) {
-        <small class="text-red-500">La dimensión es requerida</small>
+        <small class="text-red-500">{{ 'UNIT_TYPES.ERRORS.DIMENSION_REQUIRED' | translate }}</small>
       }
     </div>
   </form>
   <ng-template pTemplate="footer">
-    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="closeForm()" />
+    <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="closeForm()" />
     <p-button
-      [label]="selectedItem() ? 'Actualizar' : 'Crear'"
-      type="submit"
-      form="unitTypeForm"
-      [disabled]="form.invalid"
+      [label]="(selectedItem() ? 'COMMON.UPDATE' : 'COMMON.CREATE') | translate"
+      [disabled]="form.invalid || isSaving()"
       [loading]="isSaving()"
+      (onClick)="saveForm()"
     />
   </ng-template>
 </p-dialog>

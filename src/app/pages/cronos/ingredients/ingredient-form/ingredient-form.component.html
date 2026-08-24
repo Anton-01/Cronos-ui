@@ -1,5 +1,5 @@
 <div class="flex align-items-center justify-content-end mb-3">
-  <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="goBack()" />
+  <p-button [label]="'COMMON.BACK' | translate" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="goBack()" />
 </div>
 
 @if (isLoading()) {
@@ -13,45 +13,72 @@
         <ng-template pTemplate="title">
           <div class="flex align-items-center gap-2">
             <i class="pi pi-info-circle text-primary"></i>
-            <span>Información General</span>
+            <span>{{ 'INGREDIENTS.FORM.GENERAL' | translate }}</span>
           </div>
         </ng-template>
-        <ng-template pTemplate="subtitle">Datos principales del ingrediente</ng-template>
+        <ng-template pTemplate="subtitle">{{ 'INGREDIENTS.FORM.GENERAL_SUBTITLE' | translate }}</ng-template>
         <div class="grid mt-1">
           <div class="col-12 md:col-6 flex flex-column gap-1">
-            <label for="ingredientName" class="font-medium">Nombre <span class="text-red-500">*</span></label>
-            <input pInputText id="ingredientName" formControlName="name" placeholder="Ej. Harina de trigo" />
+            <label for="ingredientName" class="font-medium">
+              {{ 'COMMON.TABLE.NAME' | translate }} <span class="text-red-500">*</span>
+            </label>
+            <input
+              pInputText
+              id="ingredientName"
+              formControlName="name"
+              [placeholder]="'INGREDIENTS.PLACEHOLDERS.NAME' | translate"
+            />
             @if (isFieldInvalid('name')) {
-              <small class="text-red-500">El nombre es requerido</small>
+              <small class="text-red-500">{{ 'INGREDIENTS.ERRORS.NAME_REQUIRED' | translate }}</small>
             }
           </div>
           <div class="col-12 md:col-6 flex flex-column gap-1">
-            <label for="ingredientCategory" class="font-medium">Categoría <span class="text-red-500">*</span></label>
+            <label for="ingredientCategory" class="font-medium">
+              {{ 'INGREDIENTS.FIELDS.CATEGORY' | translate }} <span class="text-red-500">*</span>
+            </label>
             <p-select
               inputId="ingredientCategory"
               formControlName="categoryId"
               [options]="categories()"
               optionLabel="name"
               optionValue="id"
-              placeholder="Selecciona una categoría"
+              [placeholder]="'INGREDIENTS.PLACEHOLDERS.CATEGORY' | translate"
               [filter]="true"
               filterBy="name"
             />
             @if (isFieldInvalid('categoryId')) {
-              <small class="text-red-500">La categoría es requerida</small>
+              <small class="text-red-500">{{ 'INGREDIENTS.ERRORS.CATEGORY_REQUIRED' | translate }}</small>
             }
           </div>
           <div class="col-12 md:col-6 flex flex-column gap-1">
-            <label for="ingredientBrand" class="font-medium">Marca</label>
-            <input pInputText id="ingredientBrand" formControlName="brand" placeholder="Marca opcional" />
+            <label for="ingredientBrand" class="font-medium">{{ 'INGREDIENTS.FIELDS.BRAND' | translate }}</label>
+            <input
+              pInputText
+              id="ingredientBrand"
+              formControlName="brand"
+              [placeholder]="'INGREDIENTS.PLACEHOLDERS.BRAND' | translate"
+            />
           </div>
           <div class="col-12 md:col-6 flex flex-column gap-1">
-            <label for="ingredientSupplier" class="font-medium">Proveedor</label>
-            <input pInputText id="ingredientSupplier" formControlName="supplier" placeholder="Proveedor opcional" />
+            <label for="ingredientSupplier" class="font-medium">{{ 'INGREDIENTS.FIELDS.SUPPLIER' | translate }}</label>
+            <input
+              pInputText
+              id="ingredientSupplier"
+              formControlName="supplier"
+              [placeholder]="'INGREDIENTS.PLACEHOLDERS.SUPPLIER' | translate"
+            />
           </div>
           <div class="col-12 flex flex-column gap-1">
-            <label for="ingredientDescription" class="font-medium">Descripción</label>
-            <textarea pTextarea id="ingredientDescription" formControlName="description" rows="2" placeholder="Descripción opcional"></textarea>
+            <label for="ingredientDescription" class="font-medium">
+              {{ 'COMMON.TABLE.DESCRIPTION' | translate }}
+            </label>
+            <textarea
+              pTextarea
+              id="ingredientDescription"
+              formControlName="description"
+              rows="2"
+              [placeholder]="'COMMON.OPTIONAL_DESCRIPTION' | translate"
+            ></textarea>
           </div>
         </div>
       </p-card>
@@ -61,29 +88,33 @@
         <ng-template pTemplate="title">
           <div class="flex align-items-center gap-2">
             <i class="pi pi-shopping-cart text-primary"></i>
-            <span>Compra y Costeo</span>
+            <span>{{ 'INGREDIENTS.FORM.PURCHASE' | translate }}</span>
           </div>
         </ng-template>
-        <ng-template pTemplate="subtitle">Define cómo compras y a qué costo</ng-template>
+        <ng-template pTemplate="subtitle">{{ 'INGREDIENTS.FORM.PURCHASE_SUBTITLE' | translate }}</ng-template>
         <div class="grid mt-1">
           <div class="col-12 md:col-6 flex flex-column gap-1">
-            <label for="ingredientUnit" class="font-medium">Unidad de Compra <span class="text-red-500">*</span></label>
+            <label for="ingredientUnit" class="font-medium">
+              {{ 'INGREDIENTS.FIELDS.PURCHASE_UNIT_FULL' | translate }} <span class="text-red-500">*</span>
+            </label>
             <p-select
               inputId="ingredientUnit"
               formControlName="purchaseUnitId"
               [options]="measurementUnits()"
               optionLabel="name"
               optionValue="id"
-              placeholder="Selecciona una unidad"
+              [placeholder]="'INGREDIENTS.PLACEHOLDERS.UNIT' | translate"
               [filter]="true"
               filterBy="name,codeIdentity"
             />
             @if (isFieldInvalid('purchaseUnitId')) {
-              <small class="text-red-500">La unidad es requerida</small>
+              <small class="text-red-500">{{ 'INGREDIENTS.ERRORS.UNIT_REQUIRED' | translate }}</small>
             }
           </div>
           <div class="col-12 md:col-6 flex flex-column gap-1">
-            <label for="ingredientQuantity" class="font-medium">Cantidad de Compra <span class="text-red-500">*</span></label>
+            <label for="ingredientQuantity" class="font-medium">
+              {{ 'INGREDIENTS.FIELDS.PURCHASE_QTY_FULL' | translate }} <span class="text-red-500">*</span>
+            </label>
             <p-inputnumber
               inputId="ingredientQuantity"
               formControlName="purchaseQuantity"
@@ -92,51 +123,60 @@
               [suffix]="selectedUnitCode() ? ' ' + selectedUnitCode() : ''"
             />
             @if (isFieldInvalid('purchaseQuantity')) {
-              <small class="text-red-500">La cantidad es requerida</small>
+              <small class="text-red-500">{{ 'INGREDIENTS.ERRORS.QUANTITY_REQUIRED' | translate }}</small>
             }
           </div>
           <div class="col-12 md:col-6 flex flex-column gap-1">
-            <label for="ingredientCost" class="font-medium">Costo de Compra <span class="text-red-500">*</span></label>
+            <label for="ingredientCost" class="font-medium">
+              {{ 'INGREDIENTS.FIELDS.PURCHASE_COST' | translate }} <span class="text-red-500">*</span>
+            </label>
             <p-inputnumber inputId="ingredientCost" formControlName="unitCost" mode="decimal" [min]="0" [maxFractionDigits]="2" prefix="$ " />
             @if (isFieldInvalid('unitCost')) {
-              <small class="text-red-500">El costo es requerido</small>
+              <small class="text-red-500">{{ 'INGREDIENTS.ERRORS.COST_REQUIRED' | translate }}</small>
             }
           </div>
           <div class="col-12 md:col-6 flex flex-column gap-1">
-            <label for="ingredientCurrency" class="font-medium">Moneda <span class="text-red-500">*</span></label>
+            <label for="ingredientCurrency" class="font-medium">
+              {{ 'INGREDIENTS.FIELDS.CURRENCY' | translate }} <span class="text-red-500">*</span>
+            </label>
             <p-select
               inputId="ingredientCurrency"
               formControlName="currency"
-              [options]="currencies"
+              [options]="currencies()"
               optionLabel="name"
               optionValue="code"
             />
           </div>
           <div class="col-12 md:col-6 flex flex-column gap-1">
-            <label for="ingredientYield" class="font-medium">Rendimiento (%) <span class="text-red-500">*</span></label>
+            <label for="ingredientYield" class="font-medium">
+              {{ 'INGREDIENTS.FIELDS.YIELD_PCT' | translate }} <span class="text-red-500">*</span>
+            </label>
             <p-inputnumber inputId="ingredientYield" formControlName="yieldPercentage" [min]="1" [max]="100" suffix=" %" />
             @if (yieldLevel() !== 'none') {
               <p-tag [value]="getYieldLabel()" [severity]="getYieldSeverity()" styleClass="mt-1 align-self-start" />
             }
             @if (isFieldInvalid('yieldPercentage')) {
-              <small class="text-red-500">El rendimiento es requerido (1-100)</small>
+              <small class="text-red-500">{{ 'INGREDIENTS.ERRORS.YIELD_REQUIRED' | translate }}</small>
             }
           </div>
           @if (showDensitySwitch()) {
             <div class="col-12 md:col-6 flex flex-column gap-2">
-              <label class="font-medium">Conversión de densidad</label>
+              <label class="font-medium">{{ 'INGREDIENTS.DENSITY.TITLE' | translate }}</label>
               <div class="flex align-items-center gap-2">
                 <p-toggleswitch
                   [ngModel]="hasDensityConversion()"
                   [ngModelOptions]="{ standalone: true }"
                   (onChange)="onDensitySwitchChange($event.checked)"
                 />
-                <span class="text-color-secondary text-sm">Permite usar tazas y cucharadas en recetas</span>
+                <span class="text-color-secondary text-sm">{{ 'INGREDIENTS.DENSITY.HINT' | translate }}</span>
               </div>
               @if (hasDensityConversion() && densityData()) {
                 <div class="flex align-items-center gap-2">
-                  <p-tag [value]="densityData()!.gramsPerCup + ' g/taza'" severity="info" />
-                  <p-button label="Editar" [link]="true" size="small" (onClick)="openDensityModal()" />
+                  <p-tag
+                    [value]="'INGREDIENTS.DENSITY.GRAMS_PER_CUP_TAG' | translate: { grams: densityData()!.gramsPerCup }"
+                    severity="info"
+                  />
+                  <p-button [label]="'COMMON.EDIT' | translate" [link]="true" size="small" (onClick)="openDensityModal()" />
                 </div>
               }
             </div>
@@ -149,13 +189,13 @@
         <ng-template pTemplate="title">
           <div class="flex align-items-center gap-2">
             <i class="pi pi-box text-primary"></i>
-            <span>Stock y Estado</span>
+            <span>{{ 'INGREDIENTS.FORM.STOCK' | translate }}</span>
           </div>
         </ng-template>
-        <ng-template pTemplate="subtitle">Control de inventario y disponibilidad</ng-template>
+        <ng-template pTemplate="subtitle">{{ 'INGREDIENTS.FORM.STOCK_SUBTITLE' | translate }}</ng-template>
         <div class="grid mt-1">
           <div class="col-12 md:col-6 flex flex-column gap-1">
-            <label for="ingredientMinimumStock" class="font-medium">Stock mínimo</label>
+            <label for="ingredientMinimumStock" class="font-medium">{{ 'INGREDIENTS.FIELDS.MIN_STOCK' | translate }}</label>
             <p-inputnumber inputId="ingredientMinimumStock" formControlName="minimumStock" [min]="0" [maxFractionDigits]="4" />
           </div>
         </div>
@@ -168,37 +208,43 @@
         <ng-template pTemplate="title">
           <div class="flex align-items-center gap-2">
             <i class="pi pi-calculator text-primary"></i>
-            <span>Resumen de Costo</span>
+            <span>{{ 'INGREDIENTS.FORM.COST_SUMMARY' | translate }}</span>
           </div>
         </ng-template>
         <div class="flex flex-column gap-3 mt-2">
           <div>
-            <div class="text-color-secondary text-xs font-bold uppercase mb-1">Costo Real Utilizable</div>
+            <div class="text-color-secondary text-xs font-bold uppercase mb-1">
+              {{ 'INGREDIENTS.FORM.REAL_COST' | translate }}
+            </div>
             <div class="text-3xl font-bold text-color">
               {{ realUnitCost() | number: '1.2-4' }}
-              <span class="text-sm font-normal text-color-secondary">$ / {{ selectedUnitCode() || 'unidad' }}</span>
+              <span class="text-sm font-normal text-color-secondary">
+                $ / {{ selectedUnitCode() || ('INGREDIENTS.FORM.UNIT_FALLBACK' | translate) }}
+              </span>
             </div>
           </div>
           <div>
-            <div class="text-color-secondary text-xs font-bold uppercase mb-1">Cantidad Utilizable</div>
+            <div class="text-color-secondary text-xs font-bold uppercase mb-1">
+              {{ 'INGREDIENTS.FORM.USABLE_QTY' | translate }}
+            </div>
             <div class="text-xl font-semibold text-color">
               {{ usableQuantity() | number: '1.0-4' }} {{ selectedUnitCode() }}
             </div>
           </div>
           <p-message
             severity="info"
-            text="El costo real considera el rendimiento del ingrediente (merma incluida)."
+            [text]="'INGREDIENTS.FORM.REAL_COST_HINT' | translate"
           />
         </div>
       </p-card>
 
       <div class="flex justify-content-end gap-2 mt-3">
-        <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="goBack()" />
+        <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="goBack()" />
         <p-button
-          [label]="isEdit ? 'Actualizar' : 'Guardar'"
+          [label]="(isEdit ? 'COMMON.UPDATE' : 'COMMON.SAVE') | translate"
           type="submit"
           icon="pi pi-check"
-          [disabled]="form.invalid"
+          [disabled]="form.invalid || isSaving()"
           [loading]="isSaving()"
         />
       </div>
@@ -209,7 +255,7 @@
 
 <!-- Density conversion dialog -->
 <p-dialog
-  header="Conversión de densidad"
+  [header]="'INGREDIENTS.DENSITY.TITLE' | translate"
   [visible]="showDensityModal()"
   (visibleChange)="!$event && closeDensityModal()"
   [modal]="true"
@@ -217,25 +263,31 @@
   [style]="{ width: '28rem' }"
 >
   <form [formGroup]="densityForm" (ngSubmit)="saveDensityConversion()" id="densityForm" class="flex flex-column gap-3">
-    <p-message severity="info" text="Indica cuántos gramos pesa una taza de este ingrediente." />
+    <p-message severity="info" [text]="'INGREDIENTS.DENSITY.MODAL_HINT' | translate" />
     <div class="flex flex-column gap-1">
-      <label for="densityCup" class="font-medium">Gramos por taza <span class="text-red-500">*</span></label>
+      <label for="densityCup" class="font-medium">
+        {{ 'INGREDIENTS.DENSITY.GRAMS_PER_CUP' | translate }} <span class="text-red-500">*</span>
+      </label>
       <p-inputnumber inputId="densityCup" formControlName="gramsPerCup" [min]="0.01" [maxFractionDigits]="2" suffix=" g" />
       @if (densityForm.controls.gramsPerCup.hasError('required') && densityForm.controls.gramsPerCup.touched) {
-        <small class="text-red-500">Este valor es requerido</small>
+        <small class="text-red-500">{{ 'INGREDIENTS.DENSITY.VALUE_REQUIRED' | translate }}</small>
       }
     </div>
     <div class="flex flex-column gap-1">
-      <label for="densityTablespoon" class="font-medium">Gramos por cucharada</label>
+      <label for="densityTablespoon" class="font-medium">{{ 'INGREDIENTS.DENSITY.GRAMS_PER_TBSP' | translate }}</label>
       <p-inputnumber inputId="densityTablespoon" formControlName="gramsPerTablespoon" [min]="0" [maxFractionDigits]="2" suffix=" g" />
     </div>
     <div class="flex flex-column gap-1">
-      <label for="densityTeaspoon" class="font-medium">Gramos por cucharadita</label>
+      <label for="densityTeaspoon" class="font-medium">{{ 'INGREDIENTS.DENSITY.GRAMS_PER_TSP' | translate }}</label>
       <p-inputnumber inputId="densityTeaspoon" formControlName="gramsPerTeaspoon" [min]="0" [maxFractionDigits]="2" suffix=" g" />
     </div>
   </form>
   <ng-template pTemplate="footer">
-    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="closeDensityModal()" />
-    <p-button label="Guardar" type="submit" form="densityForm" [disabled]="densityForm.invalid" />
+    <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="closeDensityModal()" />
+    <p-button
+      [label]="'COMMON.SAVE' | translate"
+      [disabled]="densityForm.invalid"
+      (onClick)="saveDensityConversion()"
+    />
   </ng-template>
 </p-dialog>

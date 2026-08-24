@@ -9,7 +9,7 @@
       <div class="flex align-items-center gap-2 flex-wrap">
         <p-tag [value]="getStatusLabel(currentQuote.status)" [severity]="getStatusSeverity(currentQuote.status)" />
         @if (currentQuote.isRevoked) {
-          <p-tag value="Enlace revocado" severity="danger" />
+          <p-tag [value]="'QUOTES.DETAIL.LINK_REVOKED' | translate" severity="danger" />
         }
       </div>
       <div class="flex align-items-center gap-3 mt-2 text-sm text-color-secondary flex-wrap">
@@ -19,17 +19,17 @@
       </div>
     </div>
     <div class="flex align-items-center gap-2 flex-wrap">
-      <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="goBack()" />
+      <p-button [label]="'COMMON.BACK' | translate" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="goBack()" />
       <p-button
-        label="Compartir"
+        [label]="'QUOTES.DETAIL.SHARE' | translate"
         icon="pi pi-share-alt"
         severity="info"
         [outlined]="true"
         [loading]="sendingEmail()"
         (onClick)="shareMenu.toggle($event)"
       />
-      <p-menu #shareMenu [model]="shareMenuItems" [popup]="true" appendTo="body" />
-      <p-button label="Editar" icon="pi pi-pencil" (onClick)="editQuote()" />
+      <p-menu #shareMenu [model]="shareMenuItems()" [popup]="true" appendTo="body" />
+      <p-button [label]="'COMMON.EDIT' | translate" icon="pi pi-pencil" (onClick)="editQuote()" />
     </div>
   </div>
 
@@ -40,21 +40,21 @@
         <ng-template pTemplate="title">
           <div class="flex align-items-center gap-2">
             <i class="pi pi-user text-primary"></i>
-            <span>Cliente</span>
+            <span>{{ 'QUOTES.FIELDS.CLIENT' | translate }}</span>
           </div>
         </ng-template>
         <div class="grid mt-1">
           <div class="col-12 md:col-4">
-            <div class="text-color-secondary text-sm">Nombre</div>
+            <div class="text-color-secondary text-sm">{{ 'COMMON.TABLE.NAME' | translate }}</div>
             <div class="font-medium text-color">{{ currentQuote.clientName }}</div>
           </div>
           <div class="col-12 md:col-4">
-            <div class="text-color-secondary text-sm">Correo</div>
-            <div class="font-medium text-color">{{ currentQuote.clientEmail || '-' }}</div>
+            <div class="text-color-secondary text-sm">{{ 'QUOTES.DETAIL.EMAIL' | translate }}</div>
+            <div class="font-medium text-color">{{ currentQuote.clientEmail || ('COMMON.EMPTY_VALUE' | translate) }}</div>
           </div>
           <div class="col-12 md:col-4">
-            <div class="text-color-secondary text-sm">Teléfono</div>
-            <div class="font-medium text-color">{{ currentQuote.clientPhone || '-' }}</div>
+            <div class="text-color-secondary text-sm">{{ 'QUOTES.DETAIL.PHONE' | translate }}</div>
+            <div class="font-medium text-color">{{ currentQuote.clientPhone || ('COMMON.EMPTY_VALUE' | translate) }}</div>
           </div>
         </div>
       </p-card>
@@ -64,16 +64,16 @@
         <ng-template pTemplate="title">
           <div class="flex align-items-center gap-2">
             <i class="pi pi-shopping-cart text-primary"></i>
-            <span>Productos</span>
+            <span>{{ 'QUOTES.DETAIL.PRODUCTS' | translate }}</span>
           </div>
         </ng-template>
         <p-table [value]="currentQuote.items" dataKey="id" [rowHover]="true">
           <ng-template pTemplate="header">
             <tr>
-              <th>Producto</th>
-              <th style="width: 7rem" class="text-center">Cantidad</th>
-              <th style="width: 9rem" class="text-right">Precio Unit.</th>
-              <th style="width: 9rem" class="text-right">Subtotal</th>
+              <th>{{ 'QUOTES.DETAIL.PRODUCT' | translate }}</th>
+              <th style="width: 7rem" class="text-center">{{ 'QUOTES.DETAIL.QUANTITY' | translate }}</th>
+              <th style="width: 9rem" class="text-right">{{ 'QUOTES.DETAIL.UNIT_PRICE' | translate }}</th>
+              <th style="width: 9rem" class="text-right">{{ 'QUOTES.DETAIL.SUBTOTAL' | translate }}</th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-item>
@@ -102,15 +102,15 @@
         <ng-template pTemplate="title">
           <div class="flex align-items-center gap-2">
             <i class="pi pi-history text-primary"></i>
-            <span>Historial de Accesos</span>
+            <span>{{ 'QUOTES.DETAIL.ACCESS_HISTORY' | translate }}</span>
           </div>
         </ng-template>
         <p-table [value]="currentQuote.accessLogs" [rowHover]="true">
           <ng-template pTemplate="header">
             <tr>
-              <th>Fecha</th>
+              <th>{{ 'COMMON.TABLE.DATE' | translate }}</th>
               <th>IP</th>
-              <th>Navegador</th>
+              <th>{{ 'QUOTES.DETAIL.BROWSER' | translate }}</th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-log>
@@ -122,7 +122,7 @@
           </ng-template>
           <ng-template pTemplate="emptymessage">
             <tr>
-              <td colspan="3" class="text-center text-color-secondary py-4">El cliente aún no ha abierto la cotización</td>
+              <td colspan="3" class="text-center text-color-secondary py-4">{{ 'QUOTES.DETAIL.NO_ACCESS' | translate }}</td>
             </tr>
           </ng-template>
         </p-table>
@@ -135,36 +135,36 @@
         <ng-template pTemplate="title">
           <div class="flex align-items-center gap-2">
             <i class="pi pi-calculator text-primary"></i>
-            <span>Resumen Financiero</span>
+            <span>{{ 'QUOTES.DETAIL.FINANCIAL_SUMMARY' | translate }}</span>
           </div>
         </ng-template>
         <div class="flex flex-column gap-2 mt-2">
           <div class="flex justify-content-between">
-            <span class="text-color-secondary">Subtotal</span>
+            <span class="text-color-secondary">{{ 'QUOTES.DETAIL.SUBTOTAL' | translate }}</span>
             <span class="font-medium">{{ formatCurrency(currentQuote.subtotal) }}</span>
           </div>
           <div class="flex justify-content-between">
-            <span class="text-color-secondary">Impuestos</span>
+            <span class="text-color-secondary">{{ 'QUOTES.DETAIL.TAXES' | translate }}</span>
             <span class="font-medium">{{ formatCurrency(currentQuote.taxAmount) }}</span>
           </div>
           <div class="flex justify-content-between">
-            <span class="text-color-secondary">Envío</span>
+            <span class="text-color-secondary">{{ 'QUOTES.DETAIL.SHIPPING' | translate }}</span>
             <span class="font-medium">{{ formatCurrency(currentQuote.deliveryFee) }}</span>
           </div>
           <div class="flex justify-content-between">
-            <span class="text-color-secondary">Extras</span>
+            <span class="text-color-secondary">{{ 'QUOTES.DETAIL.EXTRAS' | translate }}</span>
             <span class="font-medium">{{ formatCurrency(currentQuote.extraFee) }}</span>
           </div>
           <div class="border-top-1 surface-border pt-2 flex justify-content-between">
-            <span class="font-bold text-color">Total al Cliente</span>
+            <span class="font-bold text-color">{{ 'QUOTES.DETAIL.CLIENT_TOTAL' | translate }}</span>
             <span class="font-bold text-color text-xl">{{ formatCurrency(currentQuote.totalRevenue) }}</span>
           </div>
           <div class="flex justify-content-between">
-            <span class="text-color-secondary">Costo de producción</span>
+            <span class="text-color-secondary">{{ 'QUOTES.DETAIL.PRODUCTION_COST' | translate }}</span>
             <span class="font-medium">{{ formatCurrency(currentQuote.totalProductCost) }}</span>
           </div>
           <div class="flex justify-content-between align-items-center profit-highlight">
-            <span class="font-bold">Ganancia estimada</span>
+            <span class="font-bold">{{ 'QUOTES.DETAIL.ESTIMATED_PROFIT' | translate }}</span>
             <span class="text-2xl font-bold">{{ formatCurrency(currentQuote.estimatedProfit) }}</span>
           </div>
         </div>

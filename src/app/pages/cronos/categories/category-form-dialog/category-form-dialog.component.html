@@ -6,42 +6,44 @@
   [draggable]="false"
   [style]="{ width: '32rem', maxWidth: '95vw' }"
 >
-  <form [formGroup]="form" (ngSubmit)="onSubmit()" id="categoryForm" class="flex flex-column gap-3" novalidate>
-    <!-- Type: a selector on create, a static tag afterwards — the backend
-         fixes `type` at creation and rejects any later change. -->
+  <!-- `ngSubmit` keeps Enter-to-save working from inside the fields. The footer
+       button cannot reach this form (it renders outside it), so it calls
+       `saveCategory()` directly — see the method's comment. -->
+  <form [formGroup]="form" (ngSubmit)="saveCategory()" class="flex flex-column gap-3" novalidate>
+    <!-- Type: always disabled. On create it is pre-filled from the route the
+         list is showing, so a category can only ever be filed under the
+         catalog the user is actually standing in; after creation the backend
+         rejects any change to it. -->
     <div class="flex flex-column gap-1">
-      <label for="categoryType" class="font-medium">Tipo <span class="text-red-500">*</span></label>
-      @if (isEditMode() || readOnly()) {
-        <div class="flex align-items-center gap-2">
-          <p-tag [value]="lockedTypeLabel()" severity="secondary" />
-          <small class="text-color-secondary">El tipo no se puede cambiar después de crear la categoría.</small>
-        </div>
-      } @else {
-        <p-select
-          inputId="categoryType"
-          formControlName="type"
-          [options]="typeOptions"
-          optionLabel="label"
-          optionValue="value"
-          placeholder="Selecciona un tipo"
-          styleClass="w-full"
-          [class.ng-invalid]="isInvalid('type')"
-          [class.ng-dirty]="isInvalid('type')"
-        />
-        @if (isInvalid('type')) {
-          <small class="text-red-500">El tipo es requerido</small>
-        }
-      }
+      <label for="categoryType" class="font-medium">
+        {{ 'CATEGORIES.MODAL.TYPE_LABEL' | translate }}
+        <span class="text-red-500">{{ 'COMMON.REQUIRED_MARK' | translate }}</span>
+      </label>
+      <p-select
+        inputId="categoryType"
+        formControlName="type"
+        [options]="typeOptions()"
+        optionLabel="label"
+        optionValue="value"
+        styleClass="w-full"
+      />
+      <small class="text-color-secondary">
+        <i class="pi pi-lock mr-1" aria-hidden="true"></i>
+        {{ 'CATEGORIES.MODAL.TYPE_LOCKED_HINT' | translate }}
+      </small>
     </div>
 
     <div class="flex flex-column gap-1">
-      <label for="categoryName" class="font-medium">Nombre <span class="text-red-500">*</span></label>
+      <label for="categoryName" class="font-medium">
+        {{ 'CATEGORIES.MODAL.NAME_LABEL' | translate }}
+        <span class="text-red-500">{{ 'COMMON.REQUIRED_MARK' | translate }}</span>
+      </label>
       <input
         pInputText
         id="categoryName"
         formControlName="name"
         autocomplete="off"
-        placeholder="Ej. Panadería artesanal"
+        [placeholder]="'CATEGORIES.MODAL.NAME_PLACEHOLDER' | translate"
         [maxlength]="maxNameLength"
         [class.ng-invalid]="isInvalid('name')"
         [class.ng-dirty]="isInvalid('name')"
@@ -50,17 +52,23 @@
         @if (serverError('name'); as message) {
           <small class="text-red-500">{{ message }}</small>
         } @else if (form.controls.name.hasError('required')) {
-          <small class="text-red-500">El nombre es requerido</small>
+          <small class="text-red-500">{{ 'CATEGORIES.MODAL.ERRORS.NAME_REQUIRED' | translate }}</small>
         } @else if (form.controls.name.hasError('minlength')) {
-          <small class="text-red-500">El nombre debe tener al menos 2 caracteres</small>
+          <small class="text-red-500">{{ 'CATEGORIES.MODAL.ERRORS.NAME_MIN' | translate }}</small>
         } @else if (form.controls.name.hasError('maxlength')) {
-          <small class="text-red-500">El nombre no puede superar los {{ maxNameLength }} caracteres</small>
+          <small class="text-red-500">
+            {{ 'CATEGORIES.MODAL.ERRORS.NAME_MAX' | translate: { max: maxNameLength } }}
+          </small>
         } @else if (form.controls.name.hasError('surroundingWhitespace')) {
-          <small class="text-red-500">El nombre no puede empezar ni terminar con espacios</small>
+          <small class="text-red-500">
+            {{ 'CATEGORIES.MODAL.ERRORS.NAME_SURROUNDING_WHITESPACE' | translate }}
+          </small>
         } @else if (form.controls.name.hasError('repeatedWhitespace')) {
-          <small class="text-red-500">El nombre no puede contener espacios consecutivos</small>
+          <small class="text-red-500">
+            {{ 'CATEGORIES.MODAL.ERRORS.NAME_REPEATED_WHITESPACE' | translate }}
+          </small>
         } @else if (form.controls.name.hasError('cleanName')) {
-          <small class="text-red-500">Solo se permiten letras, números y los signos . , &amp; ' ( ) / -</small>
+          <small class="text-red-500">{{ 'CATEGORIES.MODAL.ERRORS.NAME_PATTERN' | translate }}</small>
         }
       } @else {
         <small class="text-color-secondary">{{ form.controls.name.value.length }} / {{ maxNameLength }}</small>
@@ -68,13 +76,15 @@
     </div>
 
     <div class="flex flex-column gap-1">
-      <label for="categoryDescription" class="font-medium">Descripción</label>
+      <label for="categoryDescription" class="font-medium">
+        {{ 'CATEGORIES.MODAL.DESCRIPTION_LABEL' | translate }}
+      </label>
       <textarea
         pTextarea
         id="categoryDescription"
         formControlName="description"
         rows="3"
-        placeholder="Descripción opcional"
+        [placeholder]="'CATEGORIES.MODAL.DESCRIPTION_PLACEHOLDER' | translate"
         [maxlength]="maxDescriptionLength"
         [class.ng-invalid]="isInvalid('description')"
         [class.ng-dirty]="isInvalid('description')"
@@ -84,7 +94,7 @@
           <small class="text-red-500">{{ message }}</small>
         } @else {
           <small class="text-red-500">
-            La descripción no puede superar los {{ maxDescriptionLength }} caracteres
+            {{ 'CATEGORIES.MODAL.ERRORS.DESCRIPTION_MAX' | translate: { max: maxDescriptionLength } }}
           </small>
         }
       } @else {
@@ -95,25 +105,26 @@
     </div>
 
     @if (readOnly()) {
-      <p-message
-        severity="info"
-        icon="pi pi-lock"
-        text="Esta es una categoría del sistema: se puede consultar, pero no editar ni eliminar."
-      />
+      <p-message severity="info" icon="pi pi-lock" [text]="'CATEGORIES.MODAL.SYSTEM_NOTICE' | translate" />
     }
   </form>
 
   <ng-template pTemplate="footer">
     @if (readOnly()) {
-      <p-button label="Cerrar" severity="secondary" [outlined]="true" (onClick)="close()" />
+      <p-button [label]="'COMMON.CLOSE' | translate" severity="secondary" [outlined]="true" (onClick)="close()" />
     } @else {
-      <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="close()" />
       <p-button
-        [label]="isEditMode() ? 'Actualizar' : 'Crear'"
-        type="submit"
-        form="categoryForm"
+        [label]="'COMMON.CANCEL' | translate"
+        severity="secondary"
+        [outlined]="true"
+        [disabled]="isSaving()"
+        (onClick)="close()"
+      />
+      <p-button
+        [label]="(isEditMode() ? 'COMMON.UPDATE' : 'COMMON.CREATE') | translate"
         [disabled]="!canSubmit()"
         [loading]="isSaving()"
+        (onClick)="saveCategory()"
       />
     }
   </ng-template>

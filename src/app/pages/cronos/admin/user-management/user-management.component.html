@@ -17,7 +17,7 @@
         [sortOrder]="1"
         [rowHover]="true"
         [showCurrentPageReport]="true"
-        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
+        [currentPageReportTemplate]="'COMMON.TABLE.PAGE_REPORT' | translate"
       >
         <ng-template pTemplate="caption">
           <div class="flex align-items-center justify-content-between flex-wrap gap-2">
@@ -26,7 +26,7 @@
               <input
                 pInputText
                 type="text"
-                placeholder="Buscar usuario..."
+                [placeholder]="'ADMIN.USERS.SEARCH_PLACEHOLDER' | translate"
                 (input)="table.filterGlobal($any($event.target).value, 'contains')"
               />
             </p-iconfield>
@@ -37,7 +37,7 @@
                 (ngModelChange)="roleFilter.set($event ?? ''); applyFilters()"
                 optionLabel="label"
                 optionValue="value"
-                placeholder="Todos los roles"
+                [placeholder]="'ADMIN.USERS.ALL_ROLES' | translate"
                 [showClear]="true"
                 styleClass="w-11rem"
               />
@@ -47,11 +47,11 @@
                 (ngModelChange)="statusFilter.set($event ?? ''); applyFilters()"
                 optionLabel="label"
                 optionValue="value"
-                placeholder="Todos los estados"
+                [placeholder]="'ADMIN.USERS.ALL_STATUSES' | translate"
                 [showClear]="true"
                 styleClass="w-11rem"
               />
-              <p-button label="Nuevo Usuario" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreateModal()" />
+              <p-button [label]="'ADMIN.USERS.CREATE' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreateModal()" />
             </div>
           </div>
         </ng-template>
@@ -60,17 +60,17 @@
           <tr>
             <th style="width: 4rem"></th>
             <th pSortableColumn="username" style="min-width: 9rem">
-              Username
+              {{ 'AUTH.FIELDS.USERNAME' | translate }}
               <p-sortIcon field="username" />
             </th>
             <th pSortableColumn="email" style="min-width: 12rem">
-              Email
+              {{ 'AUTH.FIELDS.EMAIL' | translate }}
               <p-sortIcon field="email" />
             </th>
-            <th style="min-width: 10rem">Roles</th>
-            <th style="width: 7rem">Estado</th>
-            <th style="min-width: 9rem">Último acceso</th>
-            <th style="width: 6rem" class="text-right">Acciones</th>
+            <th style="min-width: 10rem">{{ 'ACCOUNT.ROLES' | translate }}</th>
+            <th style="width: 7rem">{{ 'COMMON.TABLE.STATUS' | translate }}</th>
+            <th style="min-width: 9rem">{{ 'ADMIN.USERS.LAST_ACCESS' | translate }}</th>
+            <th style="width: 6rem" class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
           </tr>
         </ng-template>
 
@@ -90,11 +90,11 @@
             </td>
             <td>
               @if (!user.accountNonLocked) {
-                <p-tag value="Bloqueado" severity="danger" />
+                <p-tag [value]="'ADMIN.USERS.BLOCKED' | translate" severity="danger" />
               } @else if (user.enabled) {
-                <p-tag value="Activo" severity="success" />
+                <p-tag [value]="'COMMON.STATUS.ACTIVE' | translate" severity="success" />
               } @else {
-                <p-tag value="Inactivo" severity="warn" />
+                <p-tag [value]="'COMMON.STATUS.INACTIVE' | translate" severity="warn" />
               }
             </td>
             <td class="text-color-secondary text-sm">{{ formatDate(user.lastLoginAt) }}</td>
@@ -118,7 +118,7 @@
 
         <ng-template pTemplate="emptymessage">
           <tr>
-            <td colspan="7" class="text-center text-color-secondary py-5">No hay usuarios registrados</td>
+            <td colspan="7" class="text-center text-color-secondary py-5">{{ 'ADMIN.USERS.EMPTY' | translate }}</td>
           </tr>
         </ng-template>
       </p-table>
@@ -149,14 +149,17 @@
 
         @if (activePanel() === 'details') {
           <div class="flex flex-column gap-2">
-            <div class="flex justify-content-between"><span class="text-color-secondary">Username</span><span class="font-medium">{{ user.username }}</span></div>
-            <div class="flex justify-content-between"><span class="text-color-secondary">Teléfono</span><span class="font-medium">{{ user.phoneNumber || '-' }}</span></div>
+            <div class="flex justify-content-between"><span class="text-color-secondary">{{ 'AUTH.FIELDS.USERNAME' | translate }}</span><span class="font-medium">{{ user.username }}</span></div>
+            <div class="flex justify-content-between"><span class="text-color-secondary">{{ 'AUTH.FIELDS.PHONE' | translate }}</span><span class="font-medium">{{ user.phoneNumber || '-' }}</span></div>
             <div class="flex justify-content-between"><span class="text-color-secondary">2FA</span>
-              <p-tag [value]="user.twoFactorEnabled ? 'Activado' : 'Desactivado'" [severity]="user.twoFactorEnabled ? 'success' : 'secondary'" />
+              <p-tag
+                [value]="(user.twoFactorEnabled ? 'ACCOUNT.SIGN_IN.ENABLED' : 'ACCOUNT.SIGN_IN.DISABLED') | translate"
+                [severity]="user.twoFactorEnabled ? 'success' : 'secondary'"
+              />
             </div>
-            <div class="flex justify-content-between"><span class="text-color-secondary">Intentos fallidos</span><span class="font-medium">{{ user.failedLoginAttempts }}</span></div>
-            <div class="flex justify-content-between"><span class="text-color-secondary">Creado</span><span class="font-medium">{{ formatDate(user.createdAt) }}</span></div>
-            <div class="flex justify-content-between"><span class="text-color-secondary">Último acceso</span><span class="font-medium">{{ formatDate(user.lastLoginAt) }}</span></div>
+            <div class="flex justify-content-between"><span class="text-color-secondary">{{ 'ADMIN.USERS.FAILED_ATTEMPTS' | translate }}</span><span class="font-medium">{{ user.failedLoginAttempts }}</span></div>
+            <div class="flex justify-content-between"><span class="text-color-secondary">{{ 'ADMIN.USERS.CREATED_AT' | translate }}</span><span class="font-medium">{{ formatDate(user.createdAt) }}</span></div>
+            <div class="flex justify-content-between"><span class="text-color-secondary">{{ 'ADMIN.USERS.LAST_ACCESS' | translate }}</span><span class="font-medium">{{ formatDate(user.lastLoginAt) }}</span></div>
           </div>
         } @else {
           <form [formGroup]="rolesForm" class="flex flex-column gap-3">
@@ -177,8 +180,8 @@
               }
             </div>
             <div class="flex justify-content-end gap-2">
-              <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="closePanel()" />
-              <p-button label="Guardar Roles" icon="pi pi-check" (onClick)="saveRoles()" />
+              <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="closePanel()" />
+              <p-button [label]="'ADMIN.USERS.SAVE_ROLES' | translate" icon="pi pi-check" (onClick)="saveRoles()" />
             </div>
           </form>
         }

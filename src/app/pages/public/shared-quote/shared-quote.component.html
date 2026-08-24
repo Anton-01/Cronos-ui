@@ -2,7 +2,7 @@
 @if (loading()) {
   <div class="flex flex-column align-items-center justify-content-center py-8">
     <i class="pi pi-spinner pi-spin text-4xl text-primary mb-4"></i>
-    <span class="text-color-secondary text-base">Cargando cotización...</span>
+    <span class="text-color-secondary text-base">{{ 'PUBLIC.QUOTE.LOADING' | translate }}</span>
   </div>
 }
 
@@ -13,9 +13,9 @@
       <div class="mb-8">
         <i class="pi pi-info-circle text-6xl text-color-secondary"></i>
       </div>
-      <h2 class="font-bold text-color mb-3">Cotización no disponible</h2>
+      <h2 class="font-bold text-color mb-3">{{ 'PUBLIC.QUOTE.UNAVAILABLE' | translate }}</h2>
       <p class="text-color-secondary text-lg mb-8">{{ error() }}</p>
-      <a href="/" class="public-link-button">Ir al inicio</a>
+      <a href="/" class="public-link-button">{{ 'PUBLIC.GO_HOME' | translate }}</a>
     </div>
   </div>
 }
@@ -31,15 +31,15 @@
           <div class="mb-6">
             <i class="pi pi-circle text-6xl text-color-secondary"></i>
           </div>
-          <h2 class="font-bold text-color mb-3">Cotización no disponible</h2>
+          <h2 class="font-bold text-color mb-3">{{ 'PUBLIC.QUOTE.UNAVAILABLE' | translate }}</h2>
           <p class="text-color-secondary text-lg mb-3">{{ blockedReason() }}</p>
           @if (quote()!.status === 'REVOKED') {
-            <span class="public-badge public-badge-dark">Revocada</span>
+            <span class="public-badge public-badge-dark">{{ 'QUOTES.STATUS.REVOKED' | translate }}</span>
           } @else {
-            <span class="public-badge public-badge-warn">Expirada</span>
+            <span class="public-badge public-badge-warn">{{ 'QUOTES.STATUS.EXPIRED' | translate }}</span>
           }
           <div class="mt-8">
-            <p class="text-color-secondary text-sm">Contacta al vendedor para solicitar una nueva cotización.</p>
+            <p class="text-color-secondary text-sm">{{ 'PUBLIC.QUOTE.CONTACT_SELLER' | translate }}</p>
           </div>
         </div>
       </div>
@@ -51,7 +51,7 @@
       <div class="flex justify-content-end mb-4 no-print">
         <button class="public-link-button" (click)="print()">
           <i class="pi pi-circle text-lg mr-1"></i>
-          Imprimir
+          {{ 'PUBLIC.PRINT' | translate }}
         </button>
       </div>
 
@@ -62,7 +62,7 @@
           <!-- Header -->
           <div class="flex flex-column md:flex-grid justify-content-between align-items-start mb-10">
             <div>
-              <h1 class="font-bold text-color text-4xl mb-2">COTIZACIÓN</h1>
+              <h1 class="font-bold text-color text-4xl mb-2">{{ 'PUBLIC.QUOTE.HEADING' | translate }}</h1>
               <div class="flex flex-column gap-1">
                 <span class="text-color text-lg font-semibold">{{ quote()!.quoteNumber }}</span>
                 <span [class]="getStatusBadge().class + ' align-self-start mt-1'">{{ getStatusBadge().label }}</span>
@@ -70,7 +70,7 @@
             </div>
             <div class="text-sm-end mt-5 mt-sm-0">
               <h3 class="font-bold text-color mb-1">{{ quote()!.bakerName }}</h3>
-              <p class="text-color-secondary text-sm mb-0">Cotización generada con Cronos</p>
+              <p class="text-color-secondary text-sm mb-0">{{ 'PUBLIC.QUOTE.GENERATED_WITH' | translate }}</p>
             </div>
           </div>
 
@@ -79,15 +79,15 @@
           <!-- Client info & Dates -->
           <div class="grid mb-10">
             <div class="col-sm-6 mb-5 mb-sm-0">
-              <span class="text-color-secondary text-sm block mb-2 text-uppercase font-bold">Cotizado para</span>
+              <span class="text-color-secondary text-sm block mb-2 text-uppercase font-bold">{{ 'PUBLIC.QUOTE.QUOTED_FOR' | translate }}</span>
               <h4 class="font-bold text-color mb-1">{{ quote()!.clientName }}</h4>
             </div>
             <div class="col-sm-3">
-              <span class="text-color-secondary text-sm block mb-2 text-uppercase font-bold">Fecha</span>
+              <span class="text-color-secondary text-sm block mb-2 text-uppercase font-bold">{{ 'COMMON.TABLE.DATE' | translate }}</span>
               <span class="font-semibold text-color">{{ formatDate(quote()!.quoteDate) }}</span>
             </div>
             <div class="col-sm-3">
-              <span class="text-color-secondary text-sm block mb-2 text-uppercase font-bold">Válida hasta</span>
+              <span class="text-color-secondary text-sm block mb-2 text-uppercase font-bold">{{ 'PUBLIC.QUOTE.VALID_UNTIL' | translate }}</span>
               <span class="font-semibold text-color">{{ formatDate(quote()!.validUntil) }}</span>
             </div>
           </div>
@@ -98,7 +98,7 @@
               <div class="flex align-items-start">
                 <i class="pi pi-circle text-lg text-info mr-3 mt-1"></i>
                 <div>
-                  <span class="font-semibold text-color text-sm">Notas del vendedor</span>
+                  <span class="font-semibold text-color text-sm">{{ 'PUBLIC.QUOTE.SELLER_NOTES' | translate }}</span>
                   <p class="text-color-secondary text-base mb-0 mt-1">{{ quote()!.notes }}</p>
                 </div>
               </div>
@@ -107,7 +107,7 @@
 
           <!-- Items -->
           <div class="mb-10">
-            <h5 class="font-bold text-color mb-5">Detalle de Productos</h5>
+            <h5 class="font-bold text-color mb-5">{{ 'PUBLIC.QUOTE.PRODUCT_DETAILS' | translate }}</h5>
             @for (item of quote()!.items; track $index; let last = $last) {
               <div class="flex align-items-start p-4 rounded"
                 [class.border-bottom]="!last"
@@ -155,7 +155,7 @@
 
               <!-- Subtotal -->
               <div class="flex justify-content-between align-items-center mb-3">
-                <span class="text-color-secondary text-base">Subtotal</span>
+                <span class="text-color-secondary text-base">{{ 'QUOTES.DETAIL.SUBTOTAL' | translate }}</span>
                 <span class="font-semibold text-color text-base">
                   {{ quote()!.subtotal | currency: quote()!.currency }}
                 </span>
@@ -165,7 +165,7 @@
               @if (quote()!.taxRate > 0) {
                 <div class="flex justify-content-between align-items-center mb-3">
                   <span class="text-color-secondary text-base">
-                    Impuestos
+                    {{ 'QUOTES.DETAIL.TAXES' | translate }}
                     <span class="public-badge ml-1">{{ quote()!.taxRate }}%</span>
                   </span>
                   <span class="font-semibold text-color text-base">
@@ -179,7 +179,7 @@
                 <div class="flex justify-content-between align-items-center mb-3">
                   <span class="text-color-secondary text-base">
                     <i class="pi pi-circle text-base mr-1 text-color-secondary"></i>
-                    Envío a Domicilio
+                    {{ 'PUBLIC.QUOTE.HOME_DELIVERY' | translate }}
                   </span>
                   <span class="font-semibold text-color text-base">
                     {{ quote()!.deliveryFee | currency: quote()!.currency }}
@@ -193,7 +193,7 @@
                   <div class="flex justify-content-between align-items-center">
                     <span class="text-color-secondary text-base">
                       <i class="pi pi-circle text-base mr-1 text-color-secondary"></i>
-                      Cargos Adicionales
+                      {{ 'PUBLIC.QUOTE.EXTRA_CHARGES' | translate }}
                     </span>
                     <span class="font-semibold text-color text-base">
                       {{ quote()!.extraFee | currency: quote()!.currency }}
@@ -228,8 +228,8 @@
 
       <!-- Footer text -->
       <div class="text-center mt-8 text-color-secondary text-sm no-print">
-        <p class="mb-1">Esta cotización es válida hasta el <strong>{{ formatDate(quote()!.validUntil) }}</strong>.</p>
-        <p class="mb-0">Contacta al vendedor para confirmar tu pedido.</p>
+        <p class="mb-1">{{ 'PUBLIC.QUOTE.FOOTER_VALID_UNTIL' | translate }} <strong>{{ formatDate(quote()!.validUntil) }}</strong>.</p>
+        <p class="mb-0">{{ 'PUBLIC.QUOTE.FOOTER_CONFIRM' | translate }}</p>
       </div>
     }
   </div>

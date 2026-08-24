@@ -8,18 +8,28 @@ import {
 } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { PasswordModule } from 'primeng/password';
 
 import { AuthService } from 'src/app/core/services/auth.service';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
 
 @Component({
   selector: 'app-register',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, ButtonModule, InputTextModule, MessageModule, PasswordModule],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    TranslatePipe,
+    ButtonModule,
+    InputTextModule,
+    MessageModule,
+    PasswordModule,
+  ],
   templateUrl: './register.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -28,6 +38,7 @@ export class RegisterComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
+  private readonly language = inject(LanguageService);
 
   readonly isLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
@@ -76,13 +87,19 @@ export class RegisterComponent {
       .subscribe({
         next: () => {
           this.isLoading.set(false);
-          this.toastService.success('Registro exitoso', 'Tu cuenta ha sido creada. Inicia sesión.');
+          this.toastService.success(
+            this.language.t('AUTH.REGISTER.SUCCESS_TITLE'),
+            this.language.t('AUTH.REGISTER.SUCCESS_MESSAGE'),
+          );
           this.router.navigate(['/auth/login']);
         },
         error: (err) => {
           this.isLoading.set(false);
-          this.errorMessage.set(err?.message || 'Error al registrar');
-          this.toastService.error('Error', err?.message || 'No se pudo completar el registro');
+          this.errorMessage.set(err?.message || this.language.t('AUTH.REGISTER.FAILED'));
+          this.toastService.error(
+            this.language.t('COMMON.TOAST.ERROR'),
+            err?.message || this.language.t('AUTH.REGISTER.FAILED_DETAIL'),
+          );
         },
       });
   }

@@ -20,8 +20,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
       (urlPath.length === urlPath.lastIndexOf(publicUrl) + publicUrl.length);
   });
 
-  console.log(`URL: ${urlPath} | Es Publica: ${isPublic} | Token: ${!!tokenService.getAccessToken()}`);
-
   if (isPublic) {
     return next(modifiedReq);
   }

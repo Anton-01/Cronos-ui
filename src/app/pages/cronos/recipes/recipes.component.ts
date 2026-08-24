@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { IconFieldModule } from 'primeng/iconfield';
@@ -14,20 +15,18 @@ import { TooltipModule } from 'primeng/tooltip';
 
 import { RecipeService } from 'src/app/core/services/domain/recipe.service';
 import { RecipeResponse } from 'src/app/core/models/domain.model';
+import { LanguageService } from 'src/app/core/services/language.service';
+import { SelectOption, EntityStatus, statusOptions } from 'src/app/shared/i18n/catalog-options';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
 import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skeleton-row/table-skeleton-row.component';
 
-const STATUS_FILTER_OPTIONS = [
-  { label: 'Activa', value: 'ACTIVE' },
-  { label: 'Borrador', value: 'DRAFT' },
-];
-
 @Component({
   selector: 'app-recipes',
   standalone: true,
   imports: [
+    TranslatePipe,
     FormsModule,
     ButtonModule,
     CardModule,
@@ -48,6 +47,7 @@ export class RecipesComponent implements OnInit {
   private readonly alertService = inject(AlertService);
   private readonly confirmService = inject(ConfirmService);
   private readonly pageInfoService = inject(PageInfoService);
+  private readonly language = inject(LanguageService);
   private readonly router = inject(Router);
 
   readonly items = signal<RecipeResponse[]>([]);
@@ -55,15 +55,24 @@ export class RecipesComponent implements OnInit {
   protected readonly skeletonRows = Array.from({ length: 6 });
   selectedItems: RecipeResponse[] = [];
 
-  readonly statusFilterOptions = STATUS_FILTER_OPTIONS;
+  readonly statusFilterOptions = computed<SelectOption<EntityStatus>[]>(() =>
+    statusOptions((key) => this.language.t(key)),
+  );
+
+  constructor() {
+    // Page chrome re-renders on a language switch; the fetch stays in ngOnInit.
+    effect(() => {
+      this.pageInfoService.updateTitle(this.language.t('RECIPES.TITLE'));
+      this.pageInfoService.updateDescription(this.language.t('RECIPES.DESCRIPTION'));
+      this.pageInfoService.updateBreadcrumbs([
+        { title: this.language.t('BREADCRUMB.HOME'), path: '/dashboard', isActive: false },
+        { title: this.language.t('BREADCRUMB.OPERATIONS'), path: '', isActive: false },
+        { title: this.language.t('RECIPES.TITLE'), path: '', isActive: true },
+      ]);
+    });
+  }
 
   ngOnInit(): void {
-    this.pageInfoService.updateTitle('Recetas');
-    this.pageInfoService.updateDescription('Gestión de tus recetas con costos calculados');
-    this.pageInfoService.updateBreadcrumbs([
-      { title: 'Inicio', path: '/dashboard', isActive: false },
-      { title: 'Recetas', path: '', isActive: true },
-    ]);
     this.load();
   }
 
@@ -76,7 +85,9 @@ export class RecipesComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.alertService.error(err?.error?.message || err?.message || 'Error al cargar recetas');
+        this.alertService.error(
+          err?.error?.message || err?.message || this.language.t('RECIPES.TOAST.LOAD_FAILED'),
+        );
       },
     });
   }
@@ -105,10 +116,12 @@ export class RecipesComponent implements OnInit {
     this.recipeService.delete(item.id).subscribe({
       next: () => {
         this.load();
-        this.alertService.success('Receta eliminada correctamente');
+        this.alertService.success(this.language.t('RECIPES.TOAST.DELETED'));
       },
       error: (err) => {
-        this.alertService.error(err?.error?.message || err?.message || 'Error al eliminar');
+        this.alertService.error(
+          err?.error?.message || err?.message || this.language.t('COMMON.TOAST.DELETE_FAILED'),
+        );
       },
     });
   }

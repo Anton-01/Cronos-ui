@@ -15,7 +15,7 @@
     [sortOrder]="1"
     [rowHover]="true"
     [showCurrentPageReport]="true"
-    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
+    [currentPageReportTemplate]="'COMMON.TABLE.PAGE_REPORT' | translate"
   >
     <ng-template pTemplate="caption">
       <div class="flex align-items-center justify-content-between flex-wrap gap-2">
@@ -24,12 +24,12 @@
           <input
             pInputText
             type="text"
-            placeholder="Buscar unidad de medida..."
+            [placeholder]="'MEASUREMENT_UNITS.SEARCH_PLACEHOLDER' | translate"
             (input)="table.filterGlobal($any($event.target).value, 'contains')"
           />
         </p-iconfield>
         <div class="flex align-items-center gap-3">
-          <p-button label="Nueva Unidad" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
+          <p-button [label]="'MEASUREMENT_UNITS.CREATE' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
         </div>
       </div>
     </ng-template>
@@ -37,47 +37,47 @@
     <ng-template pTemplate="header">
       <tr>
         <th pSortableColumn="codeIdentity" style="min-width: 7rem">
-          Código
+          {{ 'COMMON.TABLE.CODE' | translate }}
           <p-sortIcon field="codeIdentity" />
-          <p-columnFilter type="text" field="codeIdentity" display="menu" placeholder="Filtrar" />
+          <p-columnFilter type="text" field="codeIdentity" display="menu" [placeholder]="'COMMON.TABLE.FILTER' | translate" />
         </th>
         <th pSortableColumn="name" style="min-width: 10rem">
-          Nombre
+          {{ 'COMMON.TABLE.NAME' | translate }}
           <p-sortIcon field="name" />
-          <p-columnFilter type="text" field="name" display="menu" placeholder="Filtrar" />
+          <p-columnFilter type="text" field="name" display="menu" [placeholder]="'COMMON.TABLE.FILTER' | translate" />
         </th>
         <th pSortableColumn="namePlural" style="min-width: 10rem">
-          Plural
+          {{ 'MEASUREMENT_UNITS.FIELDS.PLURAL' | translate }}
           <p-sortIcon field="namePlural" />
-          <p-columnFilter type="text" field="namePlural" display="menu" placeholder="Filtrar" />
+          <p-columnFilter type="text" field="namePlural" display="menu" [placeholder]="'COMMON.TABLE.FILTER' | translate" />
         </th>
         <th pSortableColumn="unitType" style="min-width: 9rem">
-          Tipo de Unidad
+          {{ 'MEASUREMENT_UNITS.FIELDS.UNIT_TYPE' | translate }}
           <p-sortIcon field="unitType" />
-          <p-columnFilter type="text" field="unitType" display="menu" placeholder="Filtrar" />
+          <p-columnFilter type="text" field="unitType" display="menu" [placeholder]="'COMMON.TABLE.FILTER' | translate" />
         </th>
         <th pSortableColumn="multiplierToBase" style="min-width: 8rem">
-          Factor Base
+          {{ 'MEASUREMENT_UNITS.FIELDS.BASE_FACTOR_SHORT' | translate }}
           <p-sortIcon field="multiplierToBase" />
         </th>
-        <th style="width: 7rem">Base</th>
+        <th style="width: 7rem">{{ 'MEASUREMENT_UNITS.FIELDS.BASE' | translate }}</th>
         <th style="width: 10rem">
-          Estado
+          {{ 'COMMON.TABLE.STATUS' | translate }}
           <p-columnFilter field="status" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
             <ng-template pTemplate="filter" let-value let-filter="filterCallback">
               <p-select
                 [ngModel]="value"
-                [options]="statusFilterOptions"
+                [options]="statusFilterOptions()"
                 optionLabel="label"
                 optionValue="value"
-                placeholder="Todos"
+                [placeholder]="'COMMON.ALL' | translate"
                 [showClear]="true"
                 (onChange)="filter($event.value)"
               />
             </ng-template>
           </p-columnFilter>
         </th>
-        <th style="width: 8rem" class="text-right">Acciones</th>
+        <th style="width: 8rem" class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>
     </ng-template>
 
@@ -90,9 +90,9 @@
         <td>{{ item.multiplierToBase }}</td>
         <td>
           @if (item.isBaseUnit) {
-            <p-tag value="Base" severity="info" />
+            <p-tag [value]="'MEASUREMENT_UNITS.FIELDS.BASE' | translate" severity="info" />
           } @else {
-            <span class="text-color-secondary">-</span>
+            <span class="text-color-secondary">{{ 'COMMON.EMPTY_VALUE' | translate }}</span>
           }
         </td>
         <td>
@@ -109,7 +109,7 @@
             severity="info"
             [text]="true"
             [rounded]="true"
-            pTooltip="Editar"
+            [pTooltip]="'COMMON.EDIT' | translate"
             (onClick)="openEdit(item)"
           />
           <p-button
@@ -117,7 +117,7 @@
             severity="danger"
             [text]="true"
             [rounded]="true"
-            pTooltip="Eliminar"
+            [pTooltip]="'COMMON.DELETE' | translate"
             (onClick)="confirmDelete(item)"
           />
         </td>
@@ -132,14 +132,14 @@
 
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="8" class="text-center text-color-secondary py-5">No hay unidades de medida registradas</td>
+        <td colspan="8" class="text-center text-color-secondary py-5">{{ 'MEASUREMENT_UNITS.EMPTY' | translate }}</td>
       </tr>
     </ng-template>
   </p-table>
 </p-card>
 
 <p-dialog
-  [header]="selectedItem() ? 'Editar Unidad de Medida' : 'Nueva Unidad de Medida'"
+  [header]="(selectedItem() ? 'MEASUREMENT_UNITS.EDIT' : 'MEASUREMENT_UNITS.CREATE') | translate"
   [visible]="showForm()"
   (visibleChange)="!$event && closeForm()"
   [modal]="true"
@@ -149,35 +149,65 @@
   <form [formGroup]="form" (ngSubmit)="saveForm()" id="measurementUnitForm" class="flex flex-column gap-3">
     <div class="grid">
       <div class="col-12 md:col-4 flex flex-column gap-1">
-        <label for="unitCode" class="font-medium">Código <span class="text-red-500">*</span></label>
-        <input pInputText id="unitCode" formControlName="code" placeholder="Ej. kg" />
+        <label for="unitCode" class="font-medium">
+          {{ 'COMMON.TABLE.CODE' | translate }} <span class="text-red-500">*</span>
+        </label>
+        <input
+          pInputText
+          id="unitCode"
+          formControlName="code"
+          [placeholder]="'MEASUREMENT_UNITS.PLACEHOLDERS.CODE' | translate"
+        />
         @if (form.controls.code.hasError('required') && form.controls.code.touched) {
-          <small class="text-red-500">El código es requerido</small>
+          <small class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.CODE_REQUIRED' | translate }}</small>
         }
       </div>
       <div class="col-12 md:col-8 flex flex-column gap-1">
-        <label for="unitName" class="font-medium">Nombre <span class="text-red-500">*</span></label>
-        <input pInputText id="unitName" formControlName="name" placeholder="Ej. kilogramo" />
+        <label for="unitName" class="font-medium">
+          {{ 'COMMON.TABLE.NAME' | translate }} <span class="text-red-500">*</span>
+        </label>
+        <input
+          pInputText
+          id="unitName"
+          formControlName="name"
+          [placeholder]="'MEASUREMENT_UNITS.PLACEHOLDERS.NAME' | translate"
+        />
         @if (form.controls.name.hasError('required') && form.controls.name.touched) {
-          <small class="text-red-500">El nombre es requerido</small>
+          <small class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.NAME_REQUIRED' | translate }}</small>
         }
       </div>
       <div class="col-12 md:col-6 flex flex-column gap-1">
-        <label for="unitPluralName" class="font-medium">Plural <span class="text-red-500">*</span></label>
-        <input pInputText id="unitPluralName" formControlName="pluralName" placeholder="Ej. kilogramos" />
+        <label for="unitPluralName" class="font-medium">
+          {{ 'MEASUREMENT_UNITS.FIELDS.PLURAL' | translate }} <span class="text-red-500">*</span>
+        </label>
+        <input
+          pInputText
+          id="unitPluralName"
+          formControlName="pluralName"
+          [placeholder]="'MEASUREMENT_UNITS.PLACEHOLDERS.PLURAL' | translate"
+        />
         @if (form.controls.pluralName.hasError('required') && form.controls.pluralName.touched) {
-          <small class="text-red-500">El plural es requerido</small>
+          <small class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.PLURAL_REQUIRED' | translate }}</small>
         }
       </div>
       <div class="col-12 md:col-6 flex flex-column gap-1">
-        <label for="unitDimension" class="font-medium">Tipo de Unidad <span class="text-red-500">*</span></label>
-        <input pInputText id="unitDimension" formControlName="dimensionName" placeholder="Ej. masa" />
+        <label for="unitDimension" class="font-medium">
+          {{ 'MEASUREMENT_UNITS.FIELDS.UNIT_TYPE' | translate }} <span class="text-red-500">*</span>
+        </label>
+        <input
+          pInputText
+          id="unitDimension"
+          formControlName="dimensionName"
+          [placeholder]="'MEASUREMENT_UNITS.PLACEHOLDERS.UNIT_TYPE' | translate"
+        />
         @if (form.controls.dimensionName.hasError('required') && form.controls.dimensionName.touched) {
-          <small class="text-red-500">El tipo de unidad es requerido</small>
+          <small class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.UNIT_TYPE_REQUIRED' | translate }}</small>
         }
       </div>
       <div class="col-12 md:col-6 flex flex-column gap-1">
-        <label for="unitBaseFactor" class="font-medium">Factor a unidad base <span class="text-red-500">*</span></label>
+        <label for="unitBaseFactor" class="font-medium">
+          {{ 'MEASUREMENT_UNITS.FIELDS.BASE_FACTOR' | translate }} <span class="text-red-500">*</span>
+        </label>
         <p-inputnumber
           inputId="unitBaseFactor"
           formControlName="baseFactor"
@@ -186,23 +216,22 @@
           [min]="0.000001"
         />
         @if (form.controls.baseFactor.hasError('required') && form.controls.baseFactor.touched) {
-          <small class="text-red-500">El factor es requerido</small>
+          <small class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.BASE_FACTOR_REQUIRED' | translate }}</small>
         }
       </div>
       <div class="col-12 md:col-6 flex align-items-end gap-2 pb-2">
         <p-checkbox inputId="unitIsBase" formControlName="isBase" [binary]="true" />
-        <label for="unitIsBase" class="font-medium">Es unidad base</label>
+        <label for="unitIsBase" class="font-medium">{{ 'MEASUREMENT_UNITS.FIELDS.IS_BASE' | translate }}</label>
       </div>
     </div>
   </form>
   <ng-template pTemplate="footer">
-    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="closeForm()" />
+    <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="closeForm()" />
     <p-button
-      [label]="selectedItem() ? 'Actualizar' : 'Crear'"
-      type="submit"
-      form="measurementUnitForm"
-      [disabled]="form.invalid"
+      [label]="(selectedItem() ? 'COMMON.UPDATE' : 'COMMON.CREATE') | translate"
+      [disabled]="form.invalid || isSaving()"
       [loading]="isSaving()"
+      (onClick)="saveForm()"
     />
   </ng-template>
 </p-dialog>

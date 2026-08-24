@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { TokenService } from '../services/token.service';
 import { ToastService } from '../../shared/services/toast.service';
+import { LanguageService } from '../services/language.service';
 
 const ROLE_LEVEL: Record<string, number> = {
   SUPER_ADMIN: 4,
@@ -14,6 +15,7 @@ export const roleGuard: CanActivateFn = (route) => {
   const tokenService = inject(TokenService);
   const router = inject(Router);
   const toast = inject(ToastService);
+  const language = inject(LanguageService);
 
   if (!tokenService.isLoggedIn()) {
     return router.createUrlTree(['/auth/login']);
@@ -27,6 +29,6 @@ export const roleGuard: CanActivateFn = (route) => {
     return true;
   }
 
-  toast.error('Acceso restringido', 'No tienes permisos suficientes para acceder a esta sección.');
+  toast.error(language.t('ERRORS.RESTRICTED_TITLE'), language.t('ERRORS.RESTRICTED'));
   return router.createUrlTree(['/cronos/dashboard']);
 };

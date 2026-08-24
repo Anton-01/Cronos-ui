@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { IconFieldModule } from 'primeng/iconfield';
@@ -14,21 +15,19 @@ import { TooltipModule } from 'primeng/tooltip';
 
 import { IngredientService } from 'src/app/core/services/domain/ingredient.service';
 import { IngredientResponse } from 'src/app/core/models/domain.model';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
 import { StatusToggleComponent } from 'src/app/shared/components/status-toggle/status-toggle.component';
+import { SelectOption, EntityStatus, statusOptions } from 'src/app/shared/i18n/catalog-options';
 import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skeleton-row/table-skeleton-row.component';
-
-const STATUS_FILTER_OPTIONS = [
-  { label: 'Activo', value: 'ACTIVE' },
-  { label: 'Inactivo', value: 'INACTIVE' },
-];
 
 @Component({
   selector: 'app-ingredients',
   standalone: true,
   imports: [
+    TranslatePipe,
     FormsModule,
     ButtonModule,
     CardModule,
@@ -50,6 +49,7 @@ export class IngredientsComponent implements OnInit {
   private readonly alertService = inject(AlertService);
   private readonly confirmService = inject(ConfirmService);
   private readonly pageInfoService = inject(PageInfoService);
+  private readonly language = inject(LanguageService);
   private readonly router = inject(Router);
 
   readonly items = signal<IngredientResponse[]>([]);
@@ -57,16 +57,24 @@ export class IngredientsComponent implements OnInit {
   protected readonly skeletonRows = Array.from({ length: 6 });
   selectedItems: IngredientResponse[] = [];
 
-  readonly statusFilterOptions = STATUS_FILTER_OPTIONS;
+  readonly statusFilterOptions = computed<SelectOption<EntityStatus>[]>(() =>
+    statusOptions((key) => this.language.t(key)),
+  );
+
+  constructor() {
+    // Page chrome re-renders on a language switch; the fetch stays in ngOnInit.
+    effect(() => {
+      this.pageInfoService.updateTitle(this.language.t('INGREDIENTS.TITLE'));
+      this.pageInfoService.updateDescription(this.language.t('INGREDIENTS.DESCRIPTION'));
+      this.pageInfoService.updateBreadcrumbs([
+        { title: this.language.t('BREADCRUMB.HOME'), path: '/dashboard', isActive: false },
+        { title: this.language.t('BREADCRUMB.CATALOGS'), path: '', isActive: false },
+        { title: this.language.t('INGREDIENTS.TITLE'), path: '', isActive: true },
+      ]);
+    });
+  }
 
   ngOnInit(): void {
-    this.pageInfoService.updateTitle('Ingredientes');
-    this.pageInfoService.updateDescription('Gestión del catálogo de ingredientes y sus costos');
-    this.pageInfoService.updateBreadcrumbs([
-      { title: 'Inicio', path: '/dashboard', isActive: false },
-      { title: 'Catálogos', path: '', isActive: false },
-      { title: 'Ingredientes', path: '', isActive: true },
-    ]);
     this.load();
   }
 
@@ -79,7 +87,7 @@ export class IngredientsComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.alertService.error(err?.message || 'Error al cargar ingredientes');
+        this.alertService.error(err?.message || this.language.t('INGREDIENTS.TOAST.LOAD_FAILED'));
       },
     });
   }
@@ -100,10 +108,10 @@ export class IngredientsComponent implements OnInit {
     this.ingredientService.delete(item.id).subscribe({
       next: () => {
         this.load();
-        this.alertService.success('Ingrediente eliminado correctamente');
+        this.alertService.success(this.language.t('INGREDIENTS.TOAST.DELETED'));
       },
       error: (err) => {
-        this.alertService.error(err?.message || 'Error al eliminar');
+        this.alertService.error(err?.message || this.language.t('COMMON.TOAST.DELETE_FAILED'));
       },
     });
   }

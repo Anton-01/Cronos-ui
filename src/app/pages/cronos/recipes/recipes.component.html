@@ -15,7 +15,7 @@
     [sortOrder]="1"
     [rowHover]="true"
     [showCurrentPageReport]="true"
-    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
+    [currentPageReportTemplate]="'COMMON.TABLE.PAGE_REPORT' | translate"
   >
     <ng-template pTemplate="caption">
       <div class="flex align-items-center justify-content-between flex-wrap gap-2">
@@ -24,12 +24,12 @@
           <input
             pInputText
             type="text"
-            placeholder="Buscar receta..."
+            [placeholder]="'RECIPES.SEARCH_PLACEHOLDER' | translate"
             (input)="table.filterGlobal($any($event.target).value, 'contains')"
           />
         </p-iconfield>
         <div class="flex align-items-center gap-3">
-          <p-button label="Nueva Receta" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
+          <p-button [label]="'RECIPES.CREATE' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
         </div>
       </div>
     </ng-template>
@@ -37,24 +37,29 @@
     <ng-template pTemplate="header">
       <tr>
         <th pSortableColumn="name" style="min-width: 14rem">
-          Nombre
+          {{ 'COMMON.TABLE.NAME' | translate }}
           <p-sortIcon field="name" />
-          <p-columnFilter type="text" field="name" display="menu" placeholder="Filtrar por nombre" />
+          <p-columnFilter
+            type="text"
+            field="name"
+            display="menu"
+            [placeholder]="'COMMON.TABLE.FILTER_BY_NAME' | translate"
+          />
         </th>
         <th pSortableColumn="yieldQuantity" style="min-width: 9rem">
-          Rendimiento
+          {{ 'RECIPES.FIELDS.YIELD' | translate }}
           <p-sortIcon field="yieldQuantity" />
         </th>
         <th style="width: 10rem">
-          Estado
+          {{ 'COMMON.TABLE.STATUS' | translate }}
           <p-columnFilter field="status" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
             <ng-template pTemplate="filter" let-value let-filter="filterCallback">
               <p-select
                 [ngModel]="value"
-                [options]="statusFilterOptions"
+                [options]="statusFilterOptions()"
                 optionLabel="label"
                 optionValue="value"
-                placeholder="Todos"
+                [placeholder]="'COMMON.ALL' | translate"
                 [showClear]="true"
                 (onChange)="filter($event.value)"
               />
@@ -62,14 +67,14 @@
           </p-columnFilter>
         </th>
         <th pSortableColumn="currentVersion" style="width: 7rem">
-          Versión
+          {{ 'RECIPES.FIELDS.VERSION' | translate }}
           <p-sortIcon field="currentVersion" />
         </th>
         <th pSortableColumn="updatedAt" style="min-width: 9rem">
-          Actualizado
+          {{ 'COMMON.TABLE.UPDATED_AT' | translate }}
           <p-sortIcon field="updatedAt" />
         </th>
-        <th style="width: 10rem" class="text-right">Acciones</th>
+        <th style="width: 10rem" class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>
     </ng-template>
 
@@ -94,7 +99,7 @@
               [severity]="item.status === 'ACTIVE' ? 'success' : 'warn'"
             />
             @if (item.needsRecalculation) {
-              <i class="pi pi-exclamation-circle text-red-500" pTooltip="Necesita recálculo"></i>
+              <i class="pi pi-exclamation-circle text-red-500" [pTooltip]="'RECIPES.NEEDS_RECALC' | translate"></i>
             }
           </div>
         </td>
@@ -108,7 +113,7 @@
             severity="help"
             [text]="true"
             [rounded]="true"
-            pTooltip="Ver Detalle"
+            [pTooltip]="'COMMON.VIEW_DETAIL' | translate"
             (onClick)="openDetail(item)"
           />
           <p-button
@@ -116,7 +121,7 @@
             severity="info"
             [text]="true"
             [rounded]="true"
-            pTooltip="Editar"
+            [pTooltip]="'COMMON.EDIT' | translate"
             (onClick)="openEdit(item)"
           />
           <p-button
@@ -124,7 +129,7 @@
             severity="danger"
             [text]="true"
             [rounded]="true"
-            pTooltip="Eliminar"
+            [pTooltip]="'COMMON.DELETE' | translate"
             (onClick)="confirmDelete(item)"
           />
         </td>
@@ -139,7 +144,7 @@
 
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="6" class="text-center text-color-secondary py-5">No hay recetas registradas</td>
+        <td colspan="6" class="text-center text-color-secondary py-5">{{ 'RECIPES.EMPTY' | translate }}</td>
       </tr>
     </ng-template>
   </p-table>

@@ -15,7 +15,7 @@
     [sortOrder]="-1"
     [rowHover]="true"
     [showCurrentPageReport]="true"
-    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
+    [currentPageReportTemplate]="'COMMON.TABLE.PAGE_REPORT' | translate"
   >
     <ng-template pTemplate="caption">
       <div class="flex align-items-center justify-content-between flex-wrap gap-2">
@@ -24,12 +24,12 @@
           <input
             pInputText
             type="text"
-            placeholder="Buscar cotización..."
+            [placeholder]="'QUOTES.SEARCH_PLACEHOLDER' | translate"
             (input)="table.filterGlobal($any($event.target).value, 'contains')"
           />
         </p-iconfield>
         <div class="flex align-items-center gap-3">
-          <p-button label="Nueva Cotización" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
+          <p-button [label]="'QUOTES.CREATE' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
         </div>
       </div>
     </ng-template>
@@ -37,29 +37,29 @@
     <ng-template pTemplate="header">
       <tr>
         <th pSortableColumn="quoteNumber" style="min-width: 10rem">
-          N° Cotización
+          {{ 'QUOTES.FIELDS.NUMBER' | translate }}
           <p-sortIcon field="quoteNumber" />
-          <p-columnFilter type="text" field="quoteNumber" display="menu" placeholder="Filtrar" />
+          <p-columnFilter type="text" field="quoteNumber" display="menu" [placeholder]="'COMMON.TABLE.FILTER' | translate" />
         </th>
         <th pSortableColumn="clientName" style="min-width: 12rem">
-          Cliente
+          {{ 'QUOTES.FIELDS.CLIENT' | translate }}
           <p-sortIcon field="clientName" />
-          <p-columnFilter type="text" field="clientName" display="menu" placeholder="Filtrar por cliente" />
+          <p-columnFilter type="text" field="clientName" display="menu" [placeholder]="'QUOTES.FILTER_BY_CLIENT' | translate" />
         </th>
         <th pSortableColumn="total" style="min-width: 8rem" class="text-right">
-          Total
+          {{ 'QUOTES.FIELDS.TOTAL' | translate }}
           <p-sortIcon field="total" />
         </th>
         <th style="width: 9rem">
-          Estado
+          {{ 'COMMON.TABLE.STATUS' | translate }}
           <p-columnFilter field="status" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
             <ng-template pTemplate="filter" let-value let-filter="filterCallback">
               <p-select
                 [ngModel]="value"
-                [options]="statusFilterOptions"
+                [options]="statusFilterOptions()"
                 optionLabel="label"
                 optionValue="value"
-                placeholder="Todos"
+                [placeholder]="'COMMON.ALL' | translate"
                 [showClear]="true"
                 (onChange)="filter($event.value)"
               />
@@ -67,10 +67,10 @@
           </p-columnFilter>
         </th>
         <th pSortableColumn="createdAt" style="min-width: 8rem">
-          Fecha
+          {{ 'COMMON.TABLE.DATE' | translate }}
           <p-sortIcon field="createdAt" />
         </th>
-        <th style="width: 11rem" class="text-right">Acciones</th>
+        <th style="width: 11rem" class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>
     </ng-template>
 
@@ -98,7 +98,7 @@
             severity="help"
             [text]="true"
             [rounded]="true"
-            pTooltip="Ver Detalles"
+            [pTooltip]="'COMMON.VIEW_DETAIL' | translate"
             (onClick)="viewQuoteDetails(item)"
           />
           <p-button
@@ -106,7 +106,7 @@
             severity="info"
             [text]="true"
             [rounded]="true"
-            pTooltip="Editar"
+            [pTooltip]="'COMMON.EDIT' | translate"
             (onClick)="editQuote(item)"
           />
           <p-button
@@ -114,7 +114,7 @@
             severity="secondary"
             [text]="true"
             [rounded]="true"
-            pTooltip="Compartir / más acciones"
+            [pTooltip]="'QUOTES.SHARE_ACTIONS' | translate"
             [loading]="sendingEmailId() === item.id"
             (onClick)="buildActionMenu(item); actionsMenu.toggle($event)"
           />
@@ -130,7 +130,7 @@
 
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="6" class="text-center text-color-secondary py-5">No hay cotizaciones registradas</td>
+        <td colspan="6" class="text-center text-color-secondary py-5">{{ 'QUOTES.EMPTY' | translate }}</td>
       </tr>
     </ng-template>
   </p-table>

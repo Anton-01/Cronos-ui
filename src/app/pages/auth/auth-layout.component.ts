@@ -1,22 +1,23 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-auth-layout',
   standalone: true,
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, TranslatePipe],
   template: `
     <div class="auth-wrapper">
       <div class="auth-card">
         <div class="flex flex-column align-items-center gap-2 mb-4">
           <img src="./assets/media/logos/favicon.svg" alt="Cronos" class="auth-logo" />
           <span class="text-2xl font-bold text-color">Cronos</span>
-          <span class="text-color-secondary text-sm">Sistema de Gestión para Repostería Especializada</span>
+          <span class="text-color-secondary text-sm">{{ 'APP.TAGLINE' | translate }}</span>
         </div>
         <router-outlet />
       </div>
       <footer class="auth-footer">
-        <span>Cronos — Control total de tus recetas, costos y cotizaciones</span>
+        <span>{{ 'APP.FOOTER' | translate }}</span>
       </footer>
     </div>
   `,

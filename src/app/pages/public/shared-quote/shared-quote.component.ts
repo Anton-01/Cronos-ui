@@ -1,13 +1,15 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Subject, takeUntil } from 'rxjs';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { PublicQuoteService } from 'src/app/core/services/domain/public-quote.service';
 import { PublicQuoteResponse } from 'src/app/core/models/domain.model';
 
 @Component({
     selector: 'app-shared-quote',
-    imports: [CommonModule],
+    imports: [TranslatePipe, CommonModule],
     templateUrl: './shared-quote.component.html',
     styleUrl: './shared-quote.component.scss',
     styles: [`
@@ -56,6 +58,7 @@ import { PublicQuoteResponse } from 'src/app/core/models/domain.model';
 })
 export class SharedQuoteComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
+  private readonly language = inject(LanguageService);
   private publicQuoteService = inject(PublicQuoteService);
   private destroy$ = new Subject<void>();
 
@@ -72,15 +75,15 @@ export class SharedQuoteComponent implements OnInit, OnDestroy {
   blockedReason = computed(() => {
     const q = this.quote();
     if (!q) return '';
-    if (q.status === 'REVOKED') return 'Esta cotización ha sido revocada por el vendedor.';
-    if (q.isExpired) return 'Esta cotización ha expirado y ya no es válida.';
+    if (q.status === 'REVOKED') return this.language.t('PUBLIC.QUOTE.REVOKED_REASON');
+    if (q.isExpired) return this.language.t('PUBLIC.QUOTE.EXPIRED_REASON');
     return '';
   });
 
   ngOnInit(): void {
     const token = this.route.snapshot.paramMap.get('token');
     if (!token) {
-      this.error.set('Enlace inválido.');
+      this.error.set(this.language.t('PUBLIC.INVALID_LINK'));
       this.loading.set(false);
       return;
     }
@@ -93,7 +96,7 @@ export class SharedQuoteComponent implements OnInit, OnDestroy {
           this.loading.set(false);
         },
         error: () => {
-          this.error.set('No se pudo cargar la cotización. El enlace puede haber expirado o no ser válido.');
+          this.error.set(this.language.t('PUBLIC.QUOTE.LOAD_FAILED'));
           this.loading.set(false);
         },
       });
@@ -114,7 +117,7 @@ export class SharedQuoteComponent implements OnInit, OnDestroy {
 
   formatCurrency(amount: number): string {
     const q = this.quote();
-    return new Intl.NumberFormat('es-MX', {
+    return new Intl.NumberFormat(this.language.current(), {
       style: 'currency',
       currency: q?.currency || 'MXN',
       minimumFractionDigits: 2,
@@ -125,12 +128,18 @@ export class SharedQuoteComponent implements OnInit, OnDestroy {
     const q = this.quote();
     if (!q) return { class: 'public-badge', label: '' };
     switch (q.status) {
-      case 'SENT': return { class: 'public-badge public-badge-info', label: 'Pendiente' };
-      case 'ACCEPTED': return { class: 'public-badge public-badge-success', label: 'Aceptada' };
-      case 'REJECTED': return { class: 'public-badge public-badge-danger', label: 'Rechazada' };
-      case 'REVOKED': return { class: 'public-badge public-badge-dark', label: 'Revocada' };
-      case 'EXPIRED': return { class: 'public-badge public-badge-warn', label: 'Expirada' };
-      default: return { class: 'public-badge public-badge-info', label: 'Cotización' };
+      case 'SENT':
+        return { class: 'public-badge public-badge-info', label: this.language.t('PUBLIC.QUOTE.PENDING') };
+      case 'ACCEPTED':
+        return { class: 'public-badge public-badge-success', label: this.language.t('QUOTES.STATUS.ACCEPTED') };
+      case 'REJECTED':
+        return { class: 'public-badge public-badge-danger', label: this.language.t('QUOTES.STATUS.REJECTED') };
+      case 'REVOKED':
+        return { class: 'public-badge public-badge-dark', label: this.language.t('QUOTES.STATUS.REVOKED') };
+      case 'EXPIRED':
+        return { class: 'public-badge public-badge-warn', label: this.language.t('QUOTES.STATUS.EXPIRED') };
+      default:
+        return { class: 'public-badge public-badge-info', label: this.language.t('PUBLIC.QUOTE.BADGE_DEFAULT') };
     }
   }
 

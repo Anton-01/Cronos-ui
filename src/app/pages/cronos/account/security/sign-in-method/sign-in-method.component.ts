@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { DividerModule } from 'primeng/divider';
@@ -11,12 +12,14 @@ import { TagModule } from 'primeng/tag';
 
 import { AuthService } from 'src/app/core/services/auth.service';
 import { ProfileStateService } from 'src/app/core/services/profile/ProfileStateService';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
 
 @Component({
   selector: 'app-sign-in-method',
   standalone: true,
   imports: [
+    TranslatePipe,
     ReactiveFormsModule,
     ButtonModule,
     DialogModule,
@@ -33,6 +36,7 @@ export class SignInMethodComponent implements OnInit {
   readonly profileState = inject(ProfileStateService);
   private readonly authService = inject(AuthService);
   private readonly toastService = inject(ToastService);
+  private readonly language = inject(LanguageService);
   private readonly fb = inject(FormBuilder);
 
   readonly showChangePasswordForm = signal(false);
@@ -67,7 +71,7 @@ export class SignInMethodComponent implements OnInit {
       return;
     }
     if (this.passwordForm.value.newPassword !== this.passwordForm.value.confirmPassword) {
-      this.toastService.error('Error', 'Las contraseñas no coinciden');
+      this.toastService.error('Error', this.language.t('AUTH.ERRORS.PASSWORD_MISMATCH'));
       return;
     }
     this.isChangingPassword.set(true);
@@ -82,11 +86,11 @@ export class SignInMethodComponent implements OnInit {
           this.isChangingPassword.set(false);
           this.passwordForm.reset();
           this.showChangePasswordForm.set(false);
-          this.toastService.success('Contraseña actualizada correctamente');
+          this.toastService.success(this.language.t('ACCOUNT.SIGN_IN.TOAST.PASSWORD_UPDATED'));
         },
         error: (err) => {
           this.isChangingPassword.set(false);
-          this.toastService.error('Error', err?.message);
+          this.toastService.error(this.language.t('COMMON.TOAST.ERROR'), err?.message);
         },
       });
   }
@@ -112,7 +116,7 @@ export class SignInMethodComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading2FA.set(false);
-        this.toastService.error('Error', err?.message);
+        this.toastService.error(this.language.t('COMMON.TOAST.ERROR'), err?.message);
       },
     });
   }
@@ -130,9 +134,9 @@ export class SignInMethodComponent implements OnInit {
         if (currentUser) {
           this.profileState.updateUserSignal({ ...currentUser, twoFactorEnabled: true });
         }
-        this.toastService.success('2FA activado correctamente');
+        this.toastService.success(this.language.t('ACCOUNT.SIGN_IN.TOAST.TWO_FACTOR_ENABLED'));
       },
-      error: (err) => this.toastService.error('Error', err?.message),
+      error: (err) => this.toastService.error(this.language.t('COMMON.TOAST.ERROR'), err?.message),
     });
   }
 
@@ -148,9 +152,9 @@ export class SignInMethodComponent implements OnInit {
         if (currentUser) {
           this.profileState.updateUserSignal({ ...currentUser, twoFactorEnabled: false });
         }
-        this.toastService.success('2FA desactivado correctamente');
+        this.toastService.success(this.language.t('ACCOUNT.SIGN_IN.TOAST.TWO_FACTOR_DISABLED'));
       },
-      error: (err) => this.toastService.error('Error', err?.message),
+      error: (err) => this.toastService.error(this.language.t('COMMON.TOAST.ERROR'), err?.message),
     });
   }
 }

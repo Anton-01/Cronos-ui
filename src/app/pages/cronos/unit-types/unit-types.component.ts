@@ -1,6 +1,7 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DialogModule } from 'primeng/dialog';
@@ -12,17 +13,14 @@ import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
 
 import { UnitTypeService } from 'src/app/core/services/domain/unit-type.service';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { UnitTypeResponse } from 'src/app/core/models/domain.model';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
 import { StatusToggleComponent } from 'src/app/shared/components/status-toggle/status-toggle.component';
+import { SelectOption, EntityStatus, statusOptions } from 'src/app/shared/i18n/catalog-options';
 import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skeleton-row/table-skeleton-row.component';
-
-const STATUS_FILTER_OPTIONS = [
-  { label: 'Activo', value: 'ACTIVE' },
-  { label: 'Inactivo', value: 'INACTIVE' },
-];
 
 @Component({
   selector: 'app-unit-types',
@@ -30,6 +28,7 @@ const STATUS_FILTER_OPTIONS = [
   imports: [
     FormsModule,
     ReactiveFormsModule,
+    TranslatePipe,
     ButtonModule,
     CardModule,
     DialogModule,
@@ -50,6 +49,7 @@ export class UnitTypesComponent implements OnInit {
   private readonly alertService = inject(AlertService);
   private readonly confirmService = inject(ConfirmService);
   private readonly pageInfoService = inject(PageInfoService);
+  private readonly language = inject(LanguageService);
   private readonly fb = inject(FormBuilder);
 
   readonly items = signal<UnitTypeResponse[]>([]);
@@ -60,7 +60,9 @@ export class UnitTypesComponent implements OnInit {
   readonly selectedItem = signal<UnitTypeResponse | null>(null);
   readonly isSaving = signal(false);
 
-  readonly statusFilterOptions = STATUS_FILTER_OPTIONS;
+  readonly statusFilterOptions = computed<SelectOption<EntityStatus>[]>(() =>
+    statusOptions((key) => this.language.t(key)),
+  );
 
   readonly form = this.fb.group({
     codeIdentity: ['', [Validators.required, Validators.minLength(2)]],
@@ -68,14 +70,20 @@ export class UnitTypesComponent implements OnInit {
     dimension: ['', [Validators.required, Validators.minLength(2)]],
   });
 
+  constructor() {
+    // Page chrome re-renders on a language switch; the fetch stays in ngOnInit.
+    effect(() => {
+      this.pageInfoService.updateTitle(this.language.t('UNIT_TYPES.TITLE'));
+      this.pageInfoService.updateDescription(this.language.t('UNIT_TYPES.DESCRIPTION'));
+      this.pageInfoService.updateBreadcrumbs([
+        { title: this.language.t('BREADCRUMB.HOME'), path: '/dashboard', isActive: false },
+        { title: this.language.t('BREADCRUMB.CATALOGS'), path: '', isActive: false },
+        { title: this.language.t('UNIT_TYPES.TITLE'), path: '', isActive: true },
+      ]);
+    });
+  }
+
   ngOnInit(): void {
-    this.pageInfoService.updateTitle('Tipos de Unidad');
-    this.pageInfoService.updateDescription('Gestión del catálogo de tipos de unidad del sistema');
-    this.pageInfoService.updateBreadcrumbs([
-      { title: 'Inicio', path: '/dashboard', isActive: false },
-      { title: 'Catálogos', path: '', isActive: false },
-      { title: 'Tipos de Unidad', path: '', isActive: true },
-    ]);
     this.load();
   }
 
@@ -88,7 +96,7 @@ export class UnitTypesComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.alertService.error(err?.message || 'Error al cargar tipos de unidad');
+        this.alertService.error(err?.message || this.language.t('UNIT_TYPES.TOAST.LOAD_FAILED'));
       },
     });
   }
@@ -115,7 +123,8 @@ export class UnitTypesComponent implements OnInit {
   }
 
   saveForm(): void {
-    if (this.form.invalid) {
+    if (this.form.invalid || this.isSaving()) {
+      this.form.markAllAsTouched();
       return;
     }
     this.isSaving.set(true);
@@ -135,11 +144,13 @@ export class UnitTypesComponent implements OnInit {
         this.isSaving.set(false);
         this.closeForm();
         this.load();
-        this.alertService.success(isEdit ? 'Tipo de unidad actualizado correctamente' : 'Tipo de unidad creado correctamente');
+        this.alertService.success(
+          this.language.t(isEdit ? 'UNIT_TYPES.TOAST.UPDATED' : 'UNIT_TYPES.TOAST.CREATED'),
+        );
       },
       error: (err) => {
         this.isSaving.set(false);
-        this.alertService.error(err?.message || 'Error al guardar');
+        this.alertService.error(err?.message || this.language.t('COMMON.TOAST.SAVE_FAILED'));
       },
     });
   }
@@ -152,10 +163,10 @@ export class UnitTypesComponent implements OnInit {
     this.unitTypeService.delete(item.id).subscribe({
       next: () => {
         this.load();
-        this.alertService.success('Tipo de unidad eliminado correctamente');
+        this.alertService.success(this.language.t('UNIT_TYPES.TOAST.DELETED'));
       },
       error: (err) => {
-        this.alertService.error(err?.message || 'Error al eliminar');
+        this.alertService.error(err?.message || this.language.t('COMMON.TOAST.DELETE_FAILED'));
       },
     });
   }

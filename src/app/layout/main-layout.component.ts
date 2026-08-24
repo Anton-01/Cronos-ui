@@ -12,6 +12,7 @@ import { NavigationEnd, Router, RouterLink, RouterOutlet } from '@angular/router
 import { toSignal } from '@angular/core/rxjs-interop';
 import { filter, map, startWith } from 'rxjs';
 import { FormsModule } from '@angular/forms';
+import { TranslatePipe } from '@ngx-translate/core';
 import { MenuItem } from 'primeng/api';
 import { AvatarModule } from 'primeng/avatar';
 import { BreadcrumbModule } from 'primeng/breadcrumb';
@@ -32,6 +33,9 @@ import { TokenService } from 'src/app/core/services/token.service';
 import { NavItem, NavSection, activePrefixesOf, buildNavSections, buildUserMenu } from './app-menu';
 
 const SLIM_STORAGE_KEY = 'cronos_sidebar_slim';
+
+/** Shown in the sidebar footer. */
+const APP_VERSION = '1.0';
 const DESKTOP_BREAKPOINT = 992;
 
 /**
@@ -53,6 +57,7 @@ const DESKTOP_BREAKPOINT = 992;
     RouterOutlet,
     RouterLink,
     FormsModule,
+    TranslatePipe,
     AvatarModule,
     BreadcrumbModule,
     ButtonModule,
@@ -95,11 +100,15 @@ export class MainLayoutComponent implements OnInit {
     this.tokenService.hasRole('SUPER_ADMIN'),
   );
 
-  readonly userMenuItems: MenuItem[] = buildUserMenu(() => this.logout());
+  readonly userMenuItems = computed<MenuItem[]>(() =>
+    buildUserMenu((key) => this.language.t(key), () => this.logout()),
+  );
 
   /**
-   * Per-group open/closed state, keyed by label, holding only the groups the
-   * user has clicked. Absent means "follow the active route".
+   * Per-group open/closed state, keyed by the group's translation key, holding
+   * only the groups the user has clicked. Absent means "follow the active
+   * route" — and the key is locale-independent, so a language switch does not
+   * reset which groups the user had open.
    */
   private readonly groupOverrides = signal<Readonly<Record<string, boolean>>>({});
 
@@ -121,6 +130,14 @@ export class MainLayoutComponent implements OnInit {
   );
 
   readonly breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: '/dashboard' };
+
+  /** Interpolated into the sidebar footer rather than baked into the copy. */
+  readonly appVersion = APP_VERSION;
+
+  /** Section headers and item labels are translation keys; resolve them here. */
+  navLabel(key: string): string {
+    return this.language.t(key);
+  }
 
   /**
    * Locale rows for the topbar switcher. The flag lives in the label rather
@@ -191,12 +208,12 @@ export class MainLayoutComponent implements OnInit {
     if (this.slim()) {
       return true;
     }
-    return this.groupOverrides()[item.label] ?? this.isActive(item);
+    return this.groupOverrides()[item.labelKey] ?? this.isActive(item);
   }
 
   toggleGroup(item: NavItem): void {
     const open = this.isGroupOpen(item);
-    this.groupOverrides.update((current) => ({ ...current, [item.label]: !open }));
+    this.groupOverrides.update((current) => ({ ...current, [item.labelKey]: !open }));
   }
 
   /** Below `lg` the button opens the off-canvas sidebar; above it toggles slim mode. */

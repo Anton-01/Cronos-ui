@@ -1,0 +1,1027 @@
+{
+  "COMMON": {
+    "ACTIONS": "Actions",
+    "ALL": "All",
+    "CANCEL": "Cancel",
+    "CLOSE": "Close",
+    "CREATE": "Create",
+    "UPDATE": "Update",
+    "EDIT": "Edit",
+    "DELETE": "Delete",
+    "EMPTY_VALUE": "-",
+    "REQUIRED_MARK": "*",
+    "STATUS": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive"
+    },
+    "TOAST": {
+      "SUCCESS": "Success",
+      "ERROR": "Error",
+      "WARNING": "Warning",
+      "INFO": "Information",
+      "SAVE_FAILED": "Could not save",
+      "DELETE_FAILED": "Could not delete"
+    },
+    "CONFIRM": {
+      "DELETE_TITLE": "Delete record?",
+      "DELETE_MESSAGE": "\"{{ name }}\" will be deleted. This action cannot be undone.",
+      "ACCEPT": "Yes, continue",
+      "ACCEPT_DELETE": "Yes, delete"
+    },
+    "STATUS_TOGGLE": {
+      "CONFIRM_TITLE": "Update status?",
+      "CONFIRM_MESSAGE": "\"{{ name }}\" will become {{ status }}.",
+      "ACCEPT": "Yes, change it",
+      "SUCCESS": "Status updated",
+      "FAILED": "The status could not be updated"
+    },
+    "EMPTY_VALUE_DASH": "—",
+    "TABLE": {
+      "PAGE_REPORT": "Showing {first} to {last} of {totalRecords} records",
+      "NAME": "Name",
+      "DESCRIPTION": "Description",
+      "CODE": "Code",
+      "STATUS": "Status",
+      "FILTER_BY_NAME": "Filter by name",
+      "FILTER_BY_CODE": "Filter by code",
+      "FILTER": "Filter",
+      "UPDATED_AT": "Updated",
+      "DATE": "Date"
+    },
+    "OPTIONAL_DESCRIPTION": "Optional description",
+    "BACK": "Back",
+    "SAVE": "Save",
+    "NEW": "New",
+    "VIEW_DETAIL": "View Detail",
+    "DETAIL": "Detail",
+    "OPTIONAL": "Optional",
+    "REMOVE": "Remove",
+    "SAVE_CHANGES": "Save changes",
+    "FILE_SIZE": {
+      "B": "{{ size }} B",
+      "KB": "{{ size }} KB",
+      "MB": "{{ size }} MB"
+    },
+    "REFRESH": "Refresh",
+    "TRY_AGAIN": "Please try again"
+  },
+  "NAV": {
+    "SECTIONS": {
+      "DASHBOARDS": "Dashboards",
+      "OPERATIONS": "Operations",
+      "CATALOGS": "Catalogs",
+      "ACCOUNT": "Account",
+      "ADMINISTRATION": "Administration"
+    },
+    "ITEMS": {
+      "DASHBOARD": "Dashboard",
+      "MY_RECIPES": "My Recipes",
+      "MY_QUOTES": "My Quotes",
+      "INGREDIENTS": "Ingredients",
+      "FIXED_COSTS": "Fixed Costs",
+      "UNIT_TYPES": "Unit Types",
+      "MEASUREMENT_UNITS": "Measurement Units",
+      "CATEGORIES": "Categories",
+      "PRODUCT_CATEGORIES": "Product Categories",
+      "INGREDIENT_CATEGORIES": "Ingredient Categories",
+      "ALLERGENS": "Allergens",
+      "MY_ACCOUNT": "My Account",
+      "SECURITY": "Security",
+      "USER_MANAGEMENT": "User Management",
+      "ROLE_MANAGEMENT": "Role Management",
+      "SIGN_OUT": "Sign Out"
+    }
+  },
+  "BREADCRUMB": {
+    "HOME": "Home",
+    "CATALOGS": "Catalogs",
+    "OPERATIONS": "Operations"
+  },
+  "CATEGORIES": {
+    "TYPE": {
+      "PRODUCT": "Product",
+      "INGREDIENT": "Ingredient"
+    },
+    "SCOPE": {
+      "SYSTEM": "System",
+      "USER": "Custom"
+    },
+    "BREADCRUMB": {
+      "ROOT": "Categories",
+      "PRODUCT": "Products",
+      "INGREDIENT": "Ingredients"
+    },
+    "PAGE": {
+      "CREATE": "New Category",
+      "IMPORT_CSV": "Import CSV",
+      "SYSTEM_COUNT": "{{ count }} system",
+      "CUSTOM_COUNT": "{{ count }} custom",
+      "PRODUCT": {
+        "TITLE": "Product Categories",
+        "DESCRIPTION": "Classify what you sell: breads, cakes, seasonal and special editions",
+        "EMPTY": "No product categories registered yet",
+        "SEARCH_PLACEHOLDER": "Search product category..."
+      },
+      "INGREDIENT": {
+        "TITLE": "Ingredient Categories",
+        "DESCRIPTION": "Classify what you buy: flours, dairy, sweeteners and more",
+        "EMPTY": "No ingredient categories registered yet",
+        "SEARCH_PLACEHOLDER": "Search ingredient category..."
+      }
+    },
+    "TABLE": {
+      "NAME": "Name",
+      "DESCRIPTION": "Description",
+      "ORIGIN": "Origin",
+      "STATUS": "Status",
+      "FILTER_BY_NAME": "Filter by name",
+      "FILTER_BY_DESCRIPTION": "Filter by description",
+      "PAGE_REPORT": "Showing {first} to {last} of {totalRecords} records",
+      "VIEW_SYSTEM_DETAIL": "View detail (system category)"
+    },
+    "MODAL": {
+      "TITLE": "New category",
+      "TITLE_EDIT": "Edit category",
+      "TITLE_VIEW": "Category detail",
+      "TYPE_LABEL": "Type",
+      "TYPE_LOCKED_HINT": "The type is set by the section you are in and cannot be changed.",
+      "NAME_LABEL": "Name",
+      "NAME_PLACEHOLDER": "e.g. Artisan bakery",
+      "DESCRIPTION_LABEL": "Description",
+      "DESCRIPTION_PLACEHOLDER": "Optional description",
+      "SYSTEM_NOTICE": "This is a system category: it can be viewed, but not edited or deleted.",
+      "ERRORS": {
+        "NAME_REQUIRED": "Name is required",
+        "NAME_MIN": "Name must be at least 2 characters long",
+        "NAME_MAX": "Name cannot exceed {{ max }} characters",
+        "NAME_SURROUNDING_WHITESPACE": "Name cannot start or end with spaces",
+        "NAME_REPEATED_WHITESPACE": "Name cannot contain consecutive spaces",
+        "NAME_PATTERN": "Only letters, numbers and the signs . , & ' ( ) / - are allowed",
+        "DESCRIPTION_MAX": "Description cannot exceed {{ max }} characters",
+        "INVALID_VALUE": "Invalid value"
+      }
+    },
+    "DELETE": {
+      "MESSAGE": "\"{{ name }}\" will be moved to the trash. Recipes and ingredients using it will no longer be classified."
+    },
+    "TOAST": {
+      "CREATED": "Category created successfully",
+      "UPDATED": "Category updated successfully",
+      "DELETED": "Category deleted successfully",
+      "CREATE_FAILED": "The category could not be created",
+      "UPDATE_FAILED": "The category could not be updated",
+      "DELETE_FAILED": "The category could not be deleted",
+      "LOAD_FAILED": "Categories could not be loaded",
+      "DUPLICATE_NAME": "A category with this name already exists",
+      "PROTECTED_TITLE": "Protected category",
+      "PROTECTED_DELETE": "System categories cannot be deleted",
+      "PROTECTED_EDIT": "System categories cannot be modified",
+      "NOT_ALLOWED_TITLE": "Action not allowed",
+      "NOT_OWNER": "This category belongs to another user"
+    },
+    "IMPORT": {
+      "TITLE": "Import categories from CSV",
+      "HINT": "The file must include the columns name, description and type (PRODUCT or INGREDIENT). Maximum {{ maxSize }}.",
+      "CHOOSE_FILE": "Choose CSV file",
+      "REMOVE_FILE": "Remove file",
+      "SUBMIT": "Import",
+      "ROWS_READ": "{{ count }} rows read",
+      "ROWS_IMPORTED": "{{ count }} imported",
+      "ROWS_FAILED": "{{ count }} with errors",
+      "TABLE": {
+        "ROW": "Row",
+        "FIELD": "Field",
+        "DETAIL": "Detail"
+      },
+      "ERRORS": {
+        "NOT_CSV": "The file must have a .csv extension",
+        "TOO_LARGE": "The file exceeds the maximum size of {{ maxSize }}"
+      },
+      "TOAST": {
+        "SUCCESS": "{{ count }} of {{ total }} categories imported successfully",
+        "NONE_IMPORTED": "No category was imported. Check the error details.",
+        "FAILED": "The file could not be imported"
+      }
+    }
+  },
+  "ERRORS": {
+    "PAGE": {
+      "BACK_HOME": "Back to home",
+      "404": {
+        "TITLE": "Page not found",
+        "MESSAGE": "The page you are looking for does not exist or was moved."
+      },
+      "500": {
+        "TITLE": "Server error",
+        "MESSAGE": "Something went wrong. Please try again later."
+      }
+    },
+    "RESTRICTED_TITLE": "Restricted access",
+    "RESTRICTED": "You do not have sufficient permissions to access this section.",
+    "HTTP": {
+      "FORBIDDEN_TITLE": "Access denied",
+      "FORBIDDEN": "You do not have permission for this action",
+      "NOT_FOUND_TITLE": "Not found",
+      "NOT_FOUND": "The resource was not found",
+      "SERVER_TITLE": "Server error",
+      "SERVER": "An internal error occurred",
+      "NO_REFRESH_TOKEN": "No refresh token available",
+      "SESSION_EXPIRED": "The session has expired",
+      "SESSION_EXPIRED_TITLE": "Session expired",
+      "SESSION_EXPIRED_MESSAGE": "Your session has expired. Please sign in again."
+    }
+  },
+  "DASHBOARD": {
+    "TITLE": "Dashboard",
+    "GREETING": "Hi, {{ name }}!",
+    "GREETING_ANONYMOUS": "Welcome!",
+    "SUBTITLE": "What would you like to do today?",
+    "TILES": {
+      "RECIPES": {
+        "LABEL": "My Recipes",
+        "CAPTION": "Recipes with calculated costs"
+      },
+      "QUOTES": {
+        "LABEL": "My Quotes",
+        "CAPTION": "Quotes generated for clients"
+      },
+      "INGREDIENTS": {
+        "LABEL": "Ingredients",
+        "CAPTION": "Items in your catalog"
+      },
+      "FIXED_COSTS": {
+        "LABEL": "Fixed Costs",
+        "CAPTION": "Costs tracked for your operation"
+      }
+    }
+  },
+  "APP": {
+    "TAGLINE": "Specialty Bakery Management System",
+    "FOOTER": "Cronos — Full control of your recipes, costs and quotes",
+    "NAME_TAGLINE": "Cronos — Specialty Bakery Management System"
+  },
+  "AUTH": {
+    "FIELDS": {
+      "USERNAME": "Username",
+      "PASSWORD": "Password",
+      "CONFIRM_PASSWORD": "Confirm password",
+      "EMAIL": "Email address",
+      "FIRST_NAME": "First name",
+      "LAST_NAME": "Last name",
+      "PHONE": "Phone",
+      "TWO_FACTOR_CODE": "2FA code"
+    },
+    "ERRORS": {
+      "USERNAME_REQUIRED": "Username is required",
+      "USERNAME_MIN": "Username is required (minimum 3 characters)",
+      "PASSWORD_REQUIRED": "Password is required",
+      "PASSWORD_MIN": "Minimum 6 characters",
+      "PASSWORD_MISMATCH": "Passwords do not match",
+      "EMAIL_INVALID": "A valid email is required"
+    },
+    "LOGIN": {
+      "TITLE": "Sign In",
+      "SUBMIT": "Sign In",
+      "WITH_CREDENTIALS": "Or with credentials",
+      "USERNAME_PLACEHOLDER": "Your username",
+      "PASSWORD_PLACEHOLDER": "Your password",
+      "FORGOT_PASSWORD": "Forgot your password?",
+      "NO_ACCOUNT": "Don't have an account?",
+      "SIGN_UP_LINK": "Sign up",
+      "TWO_FACTOR_TITLE": "Verification required",
+      "TWO_FACTOR_MESSAGE": "Enter your two-factor authentication code.",
+      "FAILED": "Sign-in failed",
+      "BAD_CREDENTIALS": "Incorrect credentials"
+    },
+    "REGISTER": {
+      "TITLE": "Create Account",
+      "SUBMIT": "Create Account",
+      "USERNAME_PLACEHOLDER": "user123",
+      "EMAIL_PLACEHOLDER": "email@example.com",
+      "HAVE_ACCOUNT": "Already have an account?",
+      "SIGN_IN_LINK": "Sign in",
+      "SUCCESS_TITLE": "Registration successful",
+      "SUCCESS_MESSAGE": "Your account has been created. Please sign in.",
+      "FAILED": "Registration failed",
+      "FAILED_DETAIL": "The registration could not be completed"
+    },
+    "FORGOT_PASSWORD": {
+      "TITLE": "Recover Password",
+      "MESSAGE": "Password recovery is handled by the system administrator. Contact them to restore your access.",
+      "BACK_TO_LOGIN": "Back to sign in"
+    },
+    "OAUTH": {
+      "SUCCESS": "Signed in successfully.",
+      "FAILED": "Authentication could not be completed."
+    }
+  },
+  "LAYOUT": {
+    "NAV_ARIA": "Main navigation",
+    "TOGGLE_NAV": "Toggle navigation",
+    "SEARCH": "Search",
+    "CHANGE_LANGUAGE": "Change language",
+    "CHANGE_LANGUAGE_ARIA": "Change language, current: {{ language }}",
+    "TOGGLE_THEME": "Toggle theme",
+    "VERSION": "Cronos v{{ version }}"
+  },
+  "UNIT_TYPES": {
+    "TITLE": "Unit Types",
+    "DESCRIPTION": "Manage the system's unit type catalog",
+    "SEARCH_PLACEHOLDER": "Search unit type...",
+    "CREATE": "New Unit Type",
+    "EDIT": "Edit Unit Type",
+    "EMPTY": "No unit types registered yet",
+    "FIELDS": {
+      "DIMENSION": "Dimension"
+    },
+    "FILTER_BY_DIMENSION": "Filter by dimension",
+    "PLACEHOLDERS": {
+      "CODE": "Identifier code",
+      "NAME": "Unit type name",
+      "DIMENSION": "e.g. mass, volume, length"
+    },
+    "ERRORS": {
+      "CODE_REQUIRED": "Code is required",
+      "NAME_REQUIRED": "Name is required",
+      "DIMENSION_REQUIRED": "Dimension is required"
+    },
+    "TOAST": {
+      "CREATED": "Unit type created successfully",
+      "UPDATED": "Unit type updated successfully",
+      "DELETED": "Unit type deleted successfully",
+      "LOAD_FAILED": "Unit types could not be loaded"
+    }
+  },
+  "ALLERGENS": {
+    "TITLE": "Allergens",
+    "DESCRIPTION": "Manage the system's allergen catalog",
+    "SEARCH_PLACEHOLDER": "Search allergen...",
+    "CREATE": "New Allergen",
+    "EDIT": "Edit Allergen",
+    "EMPTY": "No allergens registered yet",
+    "FIELDS": {
+      "ALTERNATIVE_NAME": "Alternative Name"
+    },
+    "PLACEHOLDERS": {
+      "NAME": "Allergen name",
+      "ALTERNATIVE_NAME": "Optional alternative name"
+    },
+    "ERRORS": {
+      "NAME_REQUIRED": "Name is required"
+    },
+    "TOAST": {
+      "CREATED": "Allergen created successfully",
+      "UPDATED": "Allergen updated successfully",
+      "DELETED": "Allergen deleted successfully",
+      "LOAD_FAILED": "Allergens could not be loaded"
+    }
+  },
+  "MEASUREMENT_UNITS": {
+    "TITLE": "Measurement Units",
+    "DESCRIPTION": "Manage the system's measurement unit catalog",
+    "SEARCH_PLACEHOLDER": "Search measurement unit...",
+    "CREATE": "New Unit",
+    "EDIT": "Edit Measurement Unit",
+    "EMPTY": "No measurement units registered yet",
+    "FIELDS": {
+      "PLURAL": "Plural",
+      "UNIT_TYPE": "Unit Type",
+      "BASE": "Base",
+      "BASE_FACTOR_SHORT": "Base Factor",
+      "BASE_FACTOR": "Factor to base unit",
+      "IS_BASE": "Is base unit"
+    },
+    "PLACEHOLDERS": {
+      "CODE": "e.g. kg",
+      "NAME": "e.g. kilogram",
+      "PLURAL": "e.g. kilograms",
+      "UNIT_TYPE": "e.g. mass"
+    },
+    "ERRORS": {
+      "CODE_REQUIRED": "Code is required",
+      "NAME_REQUIRED": "Name is required",
+      "PLURAL_REQUIRED": "Plural is required",
+      "UNIT_TYPE_REQUIRED": "Unit type is required",
+      "BASE_FACTOR_REQUIRED": "Factor is required"
+    },
+    "TOAST": {
+      "CREATED": "Measurement unit created successfully",
+      "UPDATED": "Measurement unit updated successfully",
+      "DELETED": "Measurement unit deleted successfully",
+      "LOAD_FAILED": "Measurement units could not be loaded"
+    }
+  },
+  "FIXED_COSTS": {
+    "TITLE": "Fixed Costs",
+    "DESCRIPTION": "Manage the fixed costs of your operation",
+    "SEARCH_PLACEHOLDER": "Search fixed cost...",
+    "CREATE": "New Fixed Cost",
+    "EDIT": "Edit Fixed Cost",
+    "EMPTY": "No fixed costs registered yet",
+    "FIELDS": {
+      "TYPE": "Cost Type",
+      "AMOUNT": "Amount",
+      "METHOD": "Calculation Method",
+      "PERCENTAGE": "Percentage (%)"
+    },
+    "PLACEHOLDERS": {
+      "NAME": "e.g. Shop rent",
+      "TYPE": "Select a type",
+      "METHOD": "Select a method"
+    },
+    "TYPES": {
+      "LABOR": "Labor / Wages",
+      "UTILITY": "Utilities: Water, Power, Gas",
+      "RENT": "Premises / Space Rent",
+      "PACKAGING": "Boxes, Domes, Labels",
+      "OVERHEAD": "Administrative / Indirect Costs",
+      "MARKETING": "Advertising / Social"
+    },
+    "METHODS": {
+      "HOURLY_RATE": {
+        "LABEL": "Hourly Rate",
+        "HINT": "Best for LABOR or UTILITY"
+      },
+      "PER_UNIT": {
+        "LABEL": "Cost per Unit",
+        "HINT": "Best for PACKAGING"
+      },
+      "FIXED_PER_BATCH": {
+        "LABEL": "Fixed cost per batch produced",
+        "HINT": "Best for RENT or OVERHEAD"
+      },
+      "PERCENTAGE": {
+        "LABEL": "Percentage (%) of inputs",
+        "HINT": "Applies a global % to the recipe's total cost"
+      }
+    },
+    "ERRORS": {
+      "NAME_REQUIRED": "Name is required",
+      "TYPE_REQUIRED": "Type is required",
+      "METHOD_REQUIRED": "Calculation method is required",
+      "PERCENTAGE_REQUIRED": "Percentage is required",
+      "AMOUNT_REQUIRED": "Amount is required"
+    },
+    "TOAST": {
+      "CREATED": "Fixed cost created successfully",
+      "UPDATED": "Fixed cost updated successfully",
+      "DELETED": "Fixed cost deleted successfully",
+      "LOAD_FAILED": "Fixed costs could not be loaded"
+    }
+  },
+  "INGREDIENTS": {
+    "TITLE": "Ingredients",
+    "DESCRIPTION": "Manage the ingredient catalog and its costs",
+    "SEARCH_PLACEHOLDER": "Search ingredient...",
+    "CREATE": "New Ingredient",
+    "EDIT": "Edit Ingredient",
+    "EMPTY": "No ingredients registered yet",
+    "FILTER_BY_CATEGORY": "Filter by category",
+    "FIELDS": {
+      "CATEGORY": "Category",
+      "PURCHASE_UNIT": "Purch. Unit",
+      "PURCHASE_QTY": "Purch. Qty",
+      "UNIT_COST": "Unit Cost",
+      "YIELD": "Yield",
+      "BASE_COST": "Base Cost",
+      "BRAND": "Brand",
+      "SUPPLIER": "Supplier",
+      "CURRENCY": "Currency",
+      "PURCHASE_UNIT_FULL": "Purchase Unit",
+      "PURCHASE_QTY_FULL": "Purchase Quantity",
+      "PURCHASE_COST": "Purchase Cost",
+      "YIELD_PCT": "Yield (%)",
+      "MIN_STOCK": "Minimum stock"
+    },
+    "PLACEHOLDERS": {
+      "NAME": "e.g. Wheat flour",
+      "CATEGORY": "Select a category",
+      "BRAND": "Optional brand",
+      "SUPPLIER": "Optional supplier",
+      "UNIT": "Select a unit"
+    },
+    "FORM": {
+      "DESCRIPTION": "Record the ingredient's purchase and costing information",
+      "GENERAL": "General Information",
+      "GENERAL_SUBTITLE": "Main ingredient details",
+      "PURCHASE": "Purchase and Costing",
+      "PURCHASE_SUBTITLE": "Define how you buy it and at what cost",
+      "STOCK": "Stock and Status",
+      "STOCK_SUBTITLE": "Inventory control and availability",
+      "COST_SUMMARY": "Cost Summary",
+      "REAL_COST": "Real Usable Cost",
+      "USABLE_QTY": "Usable Quantity",
+      "UNIT_FALLBACK": "unit",
+      "REAL_COST_HINT": "The real cost accounts for the ingredient's yield (waste included)."
+    },
+    "DENSITY": {
+      "TITLE": "Density conversion",
+      "HINT": "Allows cups and spoons to be used in recipes",
+      "MODAL_HINT": "Enter how many grams one cup of this ingredient weighs.",
+      "GRAMS_PER_CUP": "Grams per cup",
+      "GRAMS_PER_TBSP": "Grams per tablespoon",
+      "GRAMS_PER_TSP": "Grams per teaspoon",
+      "GRAMS_PER_CUP_TAG": "{{ grams }} g/cup",
+      "VALUE_REQUIRED": "This value is required"
+    },
+    "YIELD": {
+      "EXCELLENT": "Excellent",
+      "GOOD": "Good",
+      "WARNING": "High waste"
+    },
+    "CURRENCIES": {
+      "MXN": "MXN – Mexican Peso",
+      "USD": "USD – US Dollar",
+      "EUR": "EUR – Euro"
+    },
+    "ERRORS": {
+      "NAME_REQUIRED": "Name is required",
+      "CATEGORY_REQUIRED": "Category is required",
+      "UNIT_REQUIRED": "Unit is required",
+      "QUANTITY_REQUIRED": "Quantity is required",
+      "COST_REQUIRED": "Cost is required",
+      "YIELD_REQUIRED": "Yield is required (1-100)"
+    },
+    "TOAST": {
+      "CREATED": "Ingredient created successfully",
+      "UPDATED": "Ingredient updated successfully",
+      "DELETED": "Ingredient deleted successfully",
+      "LOAD_FAILED": "Ingredients could not be loaded",
+      "LOAD_ONE_FAILED": "The ingredient could not be loaded"
+    }
+  },
+  "RECIPES": {
+    "TITLE": "Recipes",
+    "DESCRIPTION": "Manage your recipes with calculated costs",
+    "SEARCH_PLACEHOLDER": "Search recipe...",
+    "CREATE": "New Recipe",
+    "EMPTY": "No recipes registered yet",
+    "NEEDS_RECALC": "Needs recalculation",
+    "FIELDS": {
+      "YIELD": "Yield",
+      "VERSION": "Version",
+      "YIELD_QUANTITY": "Yield Quantity",
+      "YIELD_UNIT": "Yield Unit",
+      "PREP_TIME": "Preparation",
+      "BAKING_TIME": "Baking",
+      "COOLING_TIME": "Cooling"
+    },
+    "TOAST": {
+      "DELETED": "Recipe deleted successfully",
+      "LOAD_FAILED": "Recipes could not be loaded",
+      "CREATED": "Recipe created successfully",
+      "UPDATED": "Recipe updated successfully",
+      "LOAD_ONE_FAILED": "The recipe could not be loaded",
+      "SAVE_FAILED": "The recipe could not be saved"
+    },
+    "EDIT": "Edit Recipe",
+    "PLACEHOLDERS": {
+      "NAME": "e.g. Chocolate cake",
+      "YIELD_UNIT": "e.g. Servings"
+    },
+    "FORM": {
+      "TITLE": "Recipe Information",
+      "TIMES": "Times (minutes)",
+      "DESCRIPTION": "General details and yield of the recipe"
+    },
+    "YIELD_UNITS": {
+      "CAKES": "Cakes",
+      "SERVINGS": "Servings",
+      "PIECES": "Pieces",
+      "DOZENS": "Dozens",
+      "COOKIES": "Cookies",
+      "CUPCAKES": "Cupcakes",
+      "BARS": "Bars",
+      "LITERS": "Liters",
+      "KILOGRAMS": "Kilograms"
+    },
+    "ERRORS": {
+      "NAME_REQUIRED": "Name is required (2-150 characters)",
+      "QUANTITY_REQUIRED": "Quantity is required",
+      "UNIT_REQUIRED": "Unit is required"
+    },
+    "DETAIL": {
+      "TITLE": "Recipe Detail",
+      "SYNC_PRICES": "Sync Prices",
+      "PUBLISH": "Publish",
+      "STALE_WARNING": "The recipe changed since the last calculation. Recalculate the costs to see up-to-date figures.",
+      "TABS": {
+        "INGREDIENTS": "Ingredients",
+        "FIXED_COSTS": "Fixed Costs",
+        "INSTRUCTIONS": "Instructions",
+        "FILES": "Files",
+        "SHARES": "Share"
+      },
+      "INGREDIENTS": {
+        "SELECT": "Select an ingredient",
+        "UNIT": "Unit",
+        "ADD": "Add ingredient",
+        "SUBSTITUTE_TOOLTIP": "Substitute for allergen",
+        "INGREDIENT": "Ingredient",
+        "QUANTITY": "Quantity",
+        "ALLERGENS": "Allergens",
+        "NOTES": "Notes",
+        "EMPTY": "No ingredients in this recipe yet"
+      },
+      "COSTS": {
+        "SELECT": "Select a fixed cost",
+        "ADD": "Add fixed cost",
+        "FIXED_COST": "Fixed Cost",
+        "TIME_MINUTES": "Time (minutes)",
+        "PERCENTAGE": "Percentage",
+        "METHOD": "Method",
+        "PARAMETER": "Parameter",
+        "CALCULATED": "Calculated Cost",
+        "EMPTY": "No fixed costs assigned yet"
+      },
+      "INSTRUCTIONS": {
+        "PREP": "Preparation instructions",
+        "PREP_PLACEHOLDER": "Describe the recipe step by step...",
+        "STORAGE": "Storage instructions",
+        "STORAGE_PLACEHOLDER": "Refrigeration, temperature, etc.",
+        "SHELF_LIFE": "Shelf life (days)",
+        "SAVE": "Save Instructions"
+      },
+      "FILES": {
+        "DROP_HINT": "Drag a file here or",
+        "CHOOSE": "Choose file",
+        "EMPTY": "No attached files",
+        "DETAIL_TITLE": "File detail",
+        "OPEN_PDF": "Open PDF",
+        "REPLACE": "Replace file"
+      },
+      "SHARES": {
+        "EXPIRES_IN": "Expires in (days)",
+        "RECIPIENT_EMAIL": "Recipient email (optional)",
+        "GENERATE": "Generate Link",
+        "LINK": "Link",
+        "VIEWS": "Views",
+        "EXPIRES": "Expires",
+        "REVOKED": "Revoked",
+        "EXPIRED": "Expired",
+        "COPY": "Copy link",
+        "ANALYTICS": "Analytics",
+        "REVOKE": "Revoke",
+        "EMPTY": "No links generated",
+        "ANALYTICS_TITLE": "Link analytics",
+        "ACCESS_DATE": "Access date",
+        "BROWSER": "Browser",
+        "NO_ACCESS": "No accesses recorded"
+      },
+      "FINANCE": {
+        "TITLE": "Financial Panel",
+        "CALCULATE": "Calculate",
+        "TARGET_YIELD": "Target yield",
+        "SUB_RECIPES": "Sub-recipes",
+        "FIXED_COSTS": "Fixed costs",
+        "TOTAL_COST": "Total cost",
+        "UNIT_COST": "Cost per unit",
+        "SIMULATE": "Simulate another yield",
+        "SIMULATE_TOOLTIP": "Simulate",
+        "RESET": "Reset",
+        "EMPTY_HINT": "Press «Calculate» to get the cost breakdown."
+      },
+      "SUBSTITUTE": {
+        "TITLE": "Substitute ingredient",
+        "REPLACEMENT": "Replacement ingredient",
+        "SELECT": "Select a replacement",
+        "SUBMIT": "Substitute"
+      },
+      "CONFIRM": {
+        "PUBLISH_TITLE": "Publish recipe?",
+        "PUBLISH_MESSAGE": "Recipe \"{{ name }}\" will become Active and available for production.",
+        "PUBLISH_ACCEPT": "Yes, publish",
+        "REMOVE_INGREDIENT_TITLE": "Remove ingredient?",
+        "REMOVE_COST_TITLE": "Remove fixed cost?",
+        "REMOVE_MESSAGE": "\"{{ name }}\" will be removed from the recipe.",
+        "REMOVE_ACCEPT": "Yes, remove",
+        "REVOKE_TITLE": "Revoke link?",
+        "REVOKE_MESSAGE": "The link will stop working immediately.",
+        "REVOKE_ACCEPT": "Yes, revoke"
+      },
+      "TOAST": {
+        "PRICES_SYNCED": "Prices synced successfully",
+        "SYNC_FAILED": "Prices could not be synced",
+        "PUBLISHED": "Recipe published successfully",
+        "PUBLISH_FAILED": "The recipe could not be published",
+        "INGREDIENT_ADDED": "Ingredient added",
+        "INGREDIENT_ADD_FAILED": "The ingredient could not be added",
+        "INGREDIENT_REMOVED": "Ingredient removed",
+        "INGREDIENT_REMOVE_FAILED": "The ingredient could not be removed",
+        "INGREDIENT_SUBSTITUTED": "Ingredient substituted successfully",
+        "INGREDIENT_SUBSTITUTE_FAILED": "The ingredient could not be substituted",
+        "COST_ADDED": "Fixed cost added",
+        "COST_ADD_FAILED": "The fixed cost could not be added",
+        "COST_REMOVED": "Fixed cost removed",
+        "COST_REMOVE_FAILED": "The fixed cost could not be removed",
+        "INSTRUCTIONS_SAVED": "Instructions saved",
+        "INSTRUCTIONS_FAILED": "The instructions could not be saved",
+        "FILES_LOAD_FAILED": "Files could not be loaded",
+        "FILE_UPLOADED": "File uploaded successfully",
+        "FILE_UPLOAD_FAILED": "The file could not be uploaded",
+        "FILE_DELETED": "File deleted",
+        "FILE_DELETE_FAILED": "The file could not be deleted",
+        "FILE_UPDATED": "File updated successfully",
+        "FILE_UPDATE_FAILED": "The file could not be updated",
+        "SHARES_LOAD_FAILED": "Links could not be loaded",
+        "SHARE_CREATED": "Link generated successfully",
+        "SHARE_CREATE_FAILED": "The link could not be generated",
+        "SHARE_COPIED": "Link copied to clipboard",
+        "SHARE_REVOKED": "Link revoked",
+        "SHARE_REVOKE_FAILED": "The link could not be revoked",
+        "ANALYTICS_FAILED": "Analytics could not be loaded",
+        "COSTS_FAILED": "Costs could not be calculated"
+      }
+    }
+  },
+  "QUOTES": {
+    "TITLE": "Quotes",
+    "DESCRIPTION": "Generate and share quotes with your clients",
+    "SEARCH_PLACEHOLDER": "Search quote...",
+    "CREATE": "New Quote",
+    "EMPTY": "No quotes registered yet",
+    "FILTER_BY_CLIENT": "Filter by client",
+    "SHARE_ACTIONS": "Share / more actions",
+    "FIELDS": {
+      "NUMBER": "Quote No.",
+      "CLIENT": "Client",
+      "TOTAL": "Total"
+    },
+    "STATUS": {
+      "DRAFT": "Draft",
+      "SENT": "Sent",
+      "ACCEPTED": "Accepted",
+      "REJECTED": "Rejected",
+      "REVOKED": "Revoked",
+      "EXPIRED": "Expired"
+    },
+    "ACTIONS": {
+      "COPY_LINK": "Copy link",
+      "SEND_WHATSAPP": "Send via WhatsApp",
+      "SEND_EMAIL": "Send by email",
+      "REVOKE_LINK": "Revoke link"
+    },
+    "WHATSAPP_MESSAGE": "Hi! Here is the quote for your order. You can see the details and photos here: {{ url }}",
+    "CONFIRM": {
+      "REVOKE_TITLE": "Revoke link?",
+      "REVOKE_MESSAGE": "The public link for quote \"{{ number }}\" will stop working. This action cannot be undone.",
+      "REVOKE_ACCEPT": "Yes, revoke"
+    },
+    "TOAST": {
+      "LOAD_FAILED": "Quotes could not be loaded",
+      "DELETED": "Quote deleted successfully",
+      "LINK_COPIED_TITLE": "Link copied",
+      "LINK_COPIED": "The quote link was copied to the clipboard.",
+      "COPY_FAILED": "The link could not be copied. Copy it manually: {{ url }}",
+      "EMAIL_SENT_TITLE": "Email sent!",
+      "EMAIL_SENT": "Quote {{ number }} was sent to the client.",
+      "NO_EMAIL_TITLE": "No email address",
+      "NO_EMAIL": "This client has no registered email. Edit the quote to add one before sending.",
+      "EMAIL_FAILED_TITLE": "Send failed",
+      "EMAIL_FAILED": "The email could not be sent. Please try again.",
+      "LINK_REVOKED_TITLE": "Link revoked",
+      "LINK_REVOKED": "The public link has been disabled.",
+      "REVOKE_FAILED": "The link could not be revoked"
+    },
+    "DETAIL": {
+      "TITLE": "Quote Detail",
+      "TITLE_NUMBERED": "Quote {{ number }}",
+      "NO_ID": "No quote identifier was provided.",
+      "LOAD_FAILED": "The quote could not be loaded.",
+      "LINK_REVOKED": "Link revoked",
+      "SHARE": "Share",
+      "EMAIL": "Email",
+      "PHONE": "Phone",
+      "PRODUCTS": "Products",
+      "PRODUCT": "Product",
+      "QUANTITY": "Quantity",
+      "UNIT_PRICE": "Unit Price",
+      "SUBTOTAL": "Subtotal",
+      "ACCESS_HISTORY": "Access History",
+      "BROWSER": "Browser",
+      "NO_ACCESS": "The client has not opened the quote yet",
+      "FINANCIAL_SUMMARY": "Financial Summary",
+      "TAXES": "Taxes",
+      "SHIPPING": "Shipping",
+      "EXTRAS": "Extras",
+      "CLIENT_TOTAL": "Client Total",
+      "PRODUCTION_COST": "Production cost",
+      "ESTIMATED_PROFIT": "Estimated profit",
+      "WHATSAPP_MESSAGE": "Hi! Here is the quote for your order. You can see the details here: {{ url }}",
+      "LINK_COPIED": "The link was copied to the clipboard.",
+      "COPY_FAILED": "The link could not be copied.",
+      "EMAIL_FAILED": "The email could not be sent.",
+      "UNKNOWN_BROWSER": "Unknown browser",
+      "MOBILE_BROWSER": "Mobile Browser"
+    },
+    "FORM": {
+      "DESCRIPTION_CREATE": "Capture the client details and the products to quote",
+      "CLIENT_SECTION": "Client Details",
+      "CLIENT_NAME_PLACEHOLDER": "Client name",
+      "CLIENT_PHONE_PLACEHOLDER": "Client phone",
+      "ADDRESS": "Address",
+      "ADDRESS_PLACEHOLDER": "Delivery address",
+      "NOTES": "Notes",
+      "NOTES_PLACEHOLDER": "Notes for the client (optional)",
+      "ADD_PRODUCT": "Add product",
+      "REMOVE_PRODUCT": "Remove product",
+      "SEARCH_RECIPE": "Search recipe (optional)",
+      "SEARCH_RECIPE_PLACEHOLDER": "Type to search for a recipe...",
+      "PRODUCT_NAME": "Product name",
+      "PRODUCT_NAME_PLACEHOLDER": "e.g. Tres leches cake",
+      "SIZE": "Size",
+      "SIZE_PLACEHOLDER": "e.g. 20 cm",
+      "UNIT_COST": "Unit cost",
+      "MARGIN": "Margin (%)",
+      "UNIT_PRICE": "Unit price",
+      "PRODUCT_NOTES": "Product notes",
+      "PRODUCT_NOTES_PLACEHOLDER": "Optional notes",
+      "SUMMARY": "Summary",
+      "TAX": "VAT (%)",
+      "VALIDITY_DAYS": "Validity (days)",
+      "SHIPPING_COST": "Shipping cost",
+      "EXTRA_CHARGE": "Extra charge",
+      "EXTRA_CONCEPT": "Charge concept",
+      "SUBMIT_CREATE": "Create Quote",
+      "CHECK_FIELDS": "Check the highlighted fields before saving.",
+      "CREATED_TITLE": "Quote created",
+      "CREATED_MESSAGE": "The quote was generated successfully.",
+      "CREATE_FAILED": "The quote could not be created",
+      "COUNTRIES": {
+        "MX": "Mexico",
+        "US": "United States"
+      },
+      "ERRORS": {
+        "CLIENT_NAME_REQUIRED": "Client name is required",
+        "EMAIL_INVALID": "Enter a valid email",
+        "NAME_REQUIRED": "Name is required"
+      }
+    },
+    "EDIT": {
+      "TITLE": "Edit Quote",
+      "DESCRIPTION": "Modify the client details and the quoted products",
+      "LOCKED": "This quote is in a terminal state and cannot be edited (audit).",
+      "LOAD_FAILED": "The quote could not be loaded. Please try again.",
+      "UPDATED_TITLE": "Quote updated!",
+      "UPDATED_MESSAGE": "Quote {{ number }} was updated successfully.",
+      "UPDATE_FAILED": "The quote could not be updated."
+    }
+  },
+  "ACCOUNT": {
+    "ROLES": "Roles",
+    "MY_ACCOUNT_DESCRIPTION": "Your profile details",
+    "TOAST": {
+      "PROFILE_UPDATED": "Profile updated"
+    },
+    "SECURITY": {
+      "SIGN_IN_METHOD": "Sign-In Method",
+      "ACTIVE_SESSIONS": "Active Sessions",
+      "CURRENT_SESSION": "Current session",
+      "DEVICE": "Device",
+      "LAST_ACTIVITY": "Last activity",
+      "NO_SESSIONS": "No active sessions",
+      "LOGIN_HISTORY": "Sign-In History",
+      "FAILURE_REASON": "Failure reason",
+      "NO_RECORDS": "No records",
+      "BROWSER": "Browser",
+      "OS": "System",
+      "LOCATION": "Location",
+      "SESSION_DETAIL": "Session detail",
+      "REVOKE": "Revoke",
+      "REVOKE_TITLE": "Revoke session",
+      "REVOKE_MESSAGE": "Are you sure you want to close the {{ browser }} session on {{ os }} (IP: {{ ip }})?",
+      "REVOKE_ACCEPT": "Yes, revoke",
+      "SESSION_REVOKED": "Session revoked"
+    },
+    "SIGN_IN": {
+      "CHANGE_PASSWORD": "Change password",
+      "UPDATE_PASSWORD": "Update password",
+      "PASSWORD_HINT": "Update your password regularly to keep your account secure.",
+      "CURRENT_PASSWORD": "Current password",
+      "NEW_PASSWORD": "New password",
+      "TWO_FACTOR": "Two-factor authentication (2FA)",
+      "TWO_FACTOR_HINT": "Add an extra layer of security with temporary codes.",
+      "ENABLED": "Enabled",
+      "DISABLED": "Disabled",
+      "QR_HINT": "Generate a QR code to link your authenticator app (Google Authenticator, Authy, etc.).",
+      "GENERATE_QR": "Generate QR code",
+      "QR_ALT": "2FA QR code",
+      "MANUAL_KEY": "Manual key:",
+      "DISABLE_HINT": "Enter a current code from your app to disable 2FA.",
+      "DISABLE": "Disable",
+      "VERIFY_ENABLE": "Verify and enable",
+      "VERIFICATION_CODE": "Verification code",
+      "TOAST": {
+        "PASSWORD_UPDATED": "Password updated successfully",
+        "TWO_FACTOR_ENABLED": "2FA enabled successfully",
+        "TWO_FACTOR_DISABLED": "2FA disabled successfully"
+      }
+    }
+  },
+  "ADMIN": {
+    "USERS": {
+      "DESCRIPTION": "Manage system users, their roles and access",
+      "SEARCH_PLACEHOLDER": "Search user...",
+      "ALL_ROLES": "All roles",
+      "ALL_STATUSES": "All statuses",
+      "CREATE": "New User",
+      "BLOCKED": "Blocked",
+      "SAVE_ROLES": "Save Roles",
+      "LAST_ACCESS": "Last access",
+      "EMPTY": "No users registered yet",
+      "FAILED_ATTEMPTS": "Failed attempts",
+      "CREATED_AT": "Created",
+      "LOAD_FAILED": "Users could not be loaded",
+      "ACTIONS": {
+        "VIEW_DETAILS": "View details",
+        "ASSIGN_ROLES": "Assign roles",
+        "BLOCK": "Block user",
+        "UNBLOCK": "Unblock user"
+      },
+      "TOAST": {
+        "ROLES_UPDATED": "Roles updated",
+        "BLOCKED": "User blocked",
+        "UNBLOCKED": "User unblocked",
+        "CREATED": "User created",
+        "CREATED_DETAIL": "\"{{ username }}\" was registered successfully",
+        "CREATE_FAILED": "The user could not be created"
+      },
+      "MODAL": {
+        "SUBTITLE": "Register a new system user and assign them a role.",
+        "PHOTO": "Profile photo",
+        "PHOTO_FORMATS": "JPG, PNG or WEBP",
+        "UPLOAD_IMAGE": "Upload image",
+        "PREVIEW_ALT": "Preview",
+        "CHANGE_IMAGE": "Change image",
+        "REMOVE_IMAGE": "Remove image",
+        "SUBMIT": "Create User",
+        "ROLES_LOAD_FAILED": "The available roles could not be loaded",
+        "INVALID_FORMAT": "Invalid format",
+        "INVALID_FORMAT_DETAIL": "Use a JPG, PNG or WEBP image",
+        "ERRORS": {
+          "USERNAME": "Username required (3-50 characters)",
+          "ROLE_REQUIRED": "Select at least one role"
+        }
+      }
+    },
+    "ROLES": {
+      "DESCRIPTION": "Define the system roles and their permissions",
+      "CREATE": "New Role",
+      "ROLE": "Role",
+      "PERMISSIONS": "Permissions",
+      "EMPTY": "No roles registered yet",
+      "NAME_PLACEHOLDER": "e.g. MANAGER",
+      "DESCRIPTION_PLACEHOLDER": "Role description",
+      "TOTAL_PERMISSIONS": "{{ count }} permissions in total",
+      "LOAD_FAILED": "Roles could not be loaded",
+      "PERMISSIONS_LOAD_FAILED": "Permissions could not be loaded",
+      "ERRORS": {
+        "NAME_REQUIRED": "Name is required"
+      },
+      "TOAST": {
+        "CREATED": "Role created",
+        "CREATED_DETAIL": "\"{{ name }}\" was created successfully",
+        "CREATE_FAILED": "The role could not be created",
+        "UPDATED": "Role updated",
+        "UPDATED_DETAIL": "\"{{ name }}\" was updated",
+        "UPDATE_FAILED": "The role could not be updated"
+      }
+    }
+  },
+  "PUBLIC": {
+    "GO_HOME": "Go to home",
+    "PRINT": "Print",
+    "INVALID_LINK": "Invalid link.",
+    "QUOTE": {
+      "LOADING": "Loading quote...",
+      "UNAVAILABLE": "Quote unavailable",
+      "CONTACT_SELLER": "Contact the seller to request a new quote.",
+      "HEADING": "QUOTE",
+      "GENERATED_WITH": "Quote generated with Cronos",
+      "QUOTED_FOR": "Quoted for",
+      "VALID_UNTIL": "Valid until",
+      "SELLER_NOTES": "Seller notes",
+      "PRODUCT_DETAILS": "Product Details",
+      "HOME_DELIVERY": "Home Delivery",
+      "EXTRA_CHARGES": "Additional Charges",
+      "FOOTER_VALID_UNTIL": "This quote is valid until",
+      "FOOTER_CONFIRM": "Contact the seller to confirm your order.",
+      "REVOKED_REASON": "This quote has been revoked by the seller.",
+      "EXPIRED_REASON": "This quote has expired and is no longer valid.",
+      "LOAD_FAILED": "The quote could not be loaded. The link may have expired or be invalid.",
+      "PENDING": "Pending",
+      "BADGE_DEFAULT": "Quote"
+    },
+    "RECIPE": {
+      "LOADING": "Loading recipe...",
+      "UNAVAILABLE": "Link unavailable",
+      "EXPIRED": "Link expired",
+      "OPTIONAL": "(optional)",
+      "NO_INGREDIENTS": "No ingredients listed",
+      "PREPARATION": "Preparation",
+      "NO_INSTRUCTIONS": "No instructions available",
+      "STORAGE": "Storage",
+      "LOAD_FAILED": "This link has expired or is invalid."
+    }
+  }
+}

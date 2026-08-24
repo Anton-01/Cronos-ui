@@ -9,7 +9,7 @@
       }
     </div>
   </div>
-  <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="cancel()" />
+  <p-button [label]="'COMMON.BACK' | translate" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="cancel()" />
 </div>
 
 @if (isLoading()) {
@@ -20,7 +20,7 @@
   @if (isReadOnly()) {
     <p-message
       severity="warn"
-      text="Esta cotización tiene un estado terminal y no puede editarse (auditoría)."
+      [text]="'QUOTES.EDIT.LOCKED' | translate"
       styleClass="mb-3 w-full"
     />
   }
@@ -33,35 +33,35 @@
           <ng-template pTemplate="title">
             <div class="flex align-items-center gap-2">
               <i class="pi pi-user text-primary"></i>
-              <span>Datos del Cliente</span>
+              <span>{{ 'QUOTES.FORM.CLIENT_SECTION' | translate }}</span>
             </div>
           </ng-template>
           <div class="grid mt-1">
             <div class="col-12 md:col-6 flex flex-column gap-1">
-              <label for="editClientName" class="font-medium">Nombre <span class="text-red-500">*</span></label>
-              <input pInputText id="editClientName" formControlName="clientName" placeholder="Nombre del cliente" />
+              <label for="editClientName" class="font-medium">{{ 'COMMON.TABLE.NAME' | translate }} <span class="text-red-500">*</span></label>
+              <input pInputText id="editClientName" formControlName="clientName" [placeholder]="'QUOTES.FORM.CLIENT_NAME_PLACEHOLDER' | translate" />
               @if (isFieldInvalid('clientName')) {
-                <small class="text-red-500">El nombre del cliente es requerido</small>
+                <small class="text-red-500">{{ 'QUOTES.FORM.ERRORS.CLIENT_NAME_REQUIRED' | translate }}</small>
               }
             </div>
             <div class="col-12 md:col-6 flex flex-column gap-1">
-              <label for="editClientEmail" class="font-medium">Correo electrónico</label>
-              <input pInputText id="editClientEmail" formControlName="clientEmail" placeholder="correo@ejemplo.com" />
+              <label for="editClientEmail" class="font-medium">{{ 'AUTH.FIELDS.EMAIL' | translate }}</label>
+              <input pInputText id="editClientEmail" formControlName="clientEmail" [placeholder]="'AUTH.REGISTER.EMAIL_PLACEHOLDER' | translate" />
               @if (isFieldInvalid('clientEmail')) {
-                <small class="text-red-500">Ingresa un correo válido</small>
+                <small class="text-red-500">{{ 'QUOTES.FORM.ERRORS.EMAIL_INVALID' | translate }}</small>
               }
             </div>
             <div class="col-12 md:col-6 flex flex-column gap-1">
-              <label for="editClientPhone" class="font-medium">Teléfono</label>
-              <input pInputText id="editClientPhone" formControlName="clientPhone" placeholder="Teléfono del cliente" />
+              <label for="editClientPhone" class="font-medium">{{ 'QUOTES.DETAIL.PHONE' | translate }}</label>
+              <input pInputText id="editClientPhone" formControlName="clientPhone" [placeholder]="'QUOTES.FORM.CLIENT_PHONE_PLACEHOLDER' | translate" />
             </div>
             <div class="col-12 md:col-6 flex flex-column gap-1">
-              <label for="editClientAddress" class="font-medium">Dirección</label>
-              <input pInputText id="editClientAddress" formControlName="clientAddress" placeholder="Dirección de entrega" />
+              <label for="editClientAddress" class="font-medium">{{ 'QUOTES.FORM.ADDRESS' | translate }}</label>
+              <input pInputText id="editClientAddress" formControlName="clientAddress" [placeholder]="'QUOTES.FORM.ADDRESS_PLACEHOLDER' | translate" />
             </div>
             <div class="col-12 flex flex-column gap-1">
-              <label for="editNotes" class="font-medium">Notas</label>
-              <textarea pTextarea id="editNotes" formControlName="notes" rows="2" placeholder="Notas para el cliente (opcional)"></textarea>
+              <label for="editNotes" class="font-medium">{{ 'QUOTES.FORM.NOTES' | translate }}</label>
+              <textarea pTextarea id="editNotes" formControlName="notes" rows="2" [placeholder]="'QUOTES.FORM.NOTES_PLACEHOLDER' | translate"></textarea>
             </div>
           </div>
         </p-card>
@@ -72,10 +72,10 @@
             <div class="flex align-items-center justify-content-between">
               <div class="flex align-items-center gap-2">
                 <i class="pi pi-shopping-cart text-primary"></i>
-                <span>Productos</span>
+                <span>{{ 'QUOTES.DETAIL.PRODUCTS' | translate }}</span>
               </div>
               @if (!isReadOnly()) {
-                <p-button label="Agregar producto" icon="pi pi-plus" size="small" [outlined]="true" (onClick)="addItem()" />
+                <p-button [label]="'QUOTES.FORM.ADD_PRODUCT' | translate" icon="pi pi-plus" size="small" [outlined]="true" (onClick)="addItem()" />
               }
             </div>
           </ng-template>
@@ -86,48 +86,48 @@
                 <div class="flex align-items-center justify-content-between mb-2">
                   <span class="font-semibold text-color">Producto {{ i + 1 }}</span>
                   @if (!isReadOnly() && items.length > 1) {
-                    <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" pTooltip="Quitar producto" (onClick)="removeItem(i)" />
+                    <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" [pTooltip]="'QUOTES.FORM.REMOVE_PRODUCT' | translate" (onClick)="removeItem(i)" />
                   }
                 </div>
                 <div class="grid">
                   <div class="col-12 md:col-6 flex flex-column gap-1">
-                    <label class="font-medium text-sm">Nombre del producto <span class="text-red-500">*</span></label>
-                    <input pInputText formControlName="productName" placeholder="Ej. Pastel de 3 leches" />
+                    <label class="font-medium text-sm">{{ 'QUOTES.FORM.PRODUCT_NAME' | translate }} <span class="text-red-500">*</span></label>
+                    <input pInputText formControlName="productName" [placeholder]="'QUOTES.FORM.PRODUCT_NAME_PLACEHOLDER' | translate" />
                     @if (isItemFieldInvalid(i, 'productName')) {
-                      <small class="text-red-500">El nombre es requerido</small>
+                      <small class="text-red-500">{{ 'QUOTES.FORM.ERRORS.NAME_REQUIRED' | translate }}</small>
                     }
                   </div>
                   <div class="col-12 md:col-6 flex flex-column gap-1">
-                    <label class="font-medium text-sm">Descripción</label>
-                    <input pInputText formControlName="productDescription" placeholder="Descripción opcional" />
+                    <label class="font-medium text-sm">{{ 'COMMON.TABLE.DESCRIPTION' | translate }}</label>
+                    <input pInputText formControlName="productDescription" [placeholder]="'COMMON.OPTIONAL_DESCRIPTION' | translate" />
                   </div>
                   <div class="col-6 md:col-3 flex flex-column gap-1">
-                    <label class="font-medium text-sm">Tamaño</label>
-                    <input pInputText formControlName="productSize" placeholder="Ej. 20 cm" />
+                    <label class="font-medium text-sm">{{ 'QUOTES.FORM.SIZE' | translate }}</label>
+                    <input pInputText formControlName="productSize" [placeholder]="'QUOTES.FORM.SIZE_PLACEHOLDER' | translate" />
                   </div>
                   <div class="col-6 md:col-3 flex flex-column gap-1">
-                    <label class="font-medium text-sm">Cantidad <span class="text-red-500">*</span></label>
+                    <label class="font-medium text-sm">{{ 'QUOTES.DETAIL.QUANTITY' | translate }} <span class="text-red-500">*</span></label>
                     <p-inputnumber formControlName="quantity" [min]="1" [showButtons]="true" />
                   </div>
                   <div class="col-6 md:col-3 flex flex-column gap-1">
-                    <label class="font-medium text-sm">Costo unitario</label>
+                    <label class="font-medium text-sm">{{ 'QUOTES.FORM.UNIT_COST' | translate }}</label>
                     <p-inputnumber formControlName="unitCost" [min]="0" mode="decimal" [maxFractionDigits]="2" prefix="$ " (onInput)="onCostOrProfitChange(i)" />
                   </div>
                   <div class="col-6 md:col-3 flex flex-column gap-1">
-                    <label class="font-medium text-sm">Ganancia (%)</label>
+                    <label class="font-medium text-sm">{{ 'QUOTES.FORM.MARGIN' | translate }}</label>
                     <p-inputnumber formControlName="profitPercentage" [min]="0" [max]="1000" suffix=" %" (onInput)="onCostOrProfitChange(i)" />
                   </div>
                   <div class="col-6 md:col-3 flex flex-column gap-1">
-                    <label class="font-medium text-sm">Precio unitario <span class="text-red-500">*</span></label>
+                    <label class="font-medium text-sm">{{ 'QUOTES.FORM.UNIT_PRICE' | translate }} <span class="text-red-500">*</span></label>
                     <p-inputnumber formControlName="unitPrice" [min]="0" mode="decimal" [maxFractionDigits]="2" prefix="$ " (onInput)="onUnitPriceChange(i)" />
                   </div>
                   <div class="col-6 md:col-3 flex flex-column gap-1 justify-content-end">
-                    <label class="font-medium text-sm">Subtotal</label>
+                    <label class="font-medium text-sm">{{ 'QUOTES.DETAIL.SUBTOTAL' | translate }}</label>
                     <span class="text-lg font-bold text-color py-2">$ {{ getItemSubtotal(i).toFixed(2) }}</span>
                   </div>
                   <div class="col-12 flex flex-column gap-1">
-                    <label class="font-medium text-sm">Notas del producto</label>
-                    <input pInputText formControlName="notes" placeholder="Notas opcionales" />
+                    <label class="font-medium text-sm">{{ 'QUOTES.FORM.PRODUCT_NOTES' | translate }}</label>
+                    <input pInputText formControlName="notes" [placeholder]="'QUOTES.FORM.PRODUCT_NOTES_PLACEHOLDER' | translate" />
                   </div>
                 </div>
               </div>
@@ -142,41 +142,41 @@
           <ng-template pTemplate="title">
             <div class="flex align-items-center gap-2">
               <i class="pi pi-calculator text-primary"></i>
-              <span>Resumen</span>
+              <span>{{ 'QUOTES.FORM.SUMMARY' | translate }}</span>
             </div>
           </ng-template>
           <div class="flex flex-column gap-3 mt-2">
             <div class="grid">
               <div class="col-6 flex flex-column gap-1">
-                <label for="editTaxRate" class="font-medium text-sm">IVA (%)</label>
+                <label for="editTaxRate" class="font-medium text-sm">{{ 'QUOTES.FORM.TAX' | translate }}</label>
                 <p-inputnumber inputId="editTaxRate" formControlName="taxRate" [min]="0" [max]="100" suffix=" %" />
               </div>
               <div class="col-6 flex flex-column gap-1">
-                <label for="editCurrency" class="font-medium text-sm">Moneda</label>
+                <label for="editCurrency" class="font-medium text-sm">{{ 'INGREDIENTS.FIELDS.CURRENCY' | translate }}</label>
                 <p-select inputId="editCurrency" formControlName="currency" [options]="currencies" />
               </div>
               <div class="col-6 flex flex-column gap-1">
-                <label for="editValidDays" class="font-medium text-sm">Vigencia (días)</label>
+                <label for="editValidDays" class="font-medium text-sm">{{ 'QUOTES.FORM.VALIDITY_DAYS' | translate }}</label>
                 <p-inputnumber inputId="editValidDays" formControlName="validDays" [min]="1" [max]="365" />
               </div>
               <div class="col-6 flex flex-column gap-1">
-                <label for="editDeliveryFee" class="font-medium text-sm">Costo de envío</label>
+                <label for="editDeliveryFee" class="font-medium text-sm">{{ 'QUOTES.FORM.SHIPPING_COST' | translate }}</label>
                 <p-inputnumber inputId="editDeliveryFee" formControlName="deliveryFee" [min]="0" mode="decimal" [maxFractionDigits]="2" prefix="$ " />
               </div>
               <div class="col-6 flex flex-column gap-1">
-                <label for="editExtraFee" class="font-medium text-sm">Cargo extra</label>
+                <label for="editExtraFee" class="font-medium text-sm">{{ 'QUOTES.FORM.EXTRA_CHARGE' | translate }}</label>
                 <p-inputnumber inputId="editExtraFee" formControlName="extraFee" [min]="0" mode="decimal" [maxFractionDigits]="2" prefix="$ " />
               </div>
               <div class="col-6 flex flex-column gap-1">
-                <label for="editExtraFeeDescription" class="font-medium text-sm">Concepto del cargo</label>
-                <input pInputText id="editExtraFeeDescription" formControlName="extraFeeDescription" placeholder="Opcional" />
+                <label for="editExtraFeeDescription" class="font-medium text-sm">{{ 'QUOTES.FORM.EXTRA_CONCEPT' | translate }}</label>
+                <input pInputText id="editExtraFeeDescription" formControlName="extraFeeDescription" [placeholder]="'COMMON.OPTIONAL' | translate" />
               </div>
             </div>
 
             <p-divider styleClass="my-0" />
             <div class="flex flex-column gap-2">
               <div class="flex justify-content-between">
-                <span class="text-color-secondary">Subtotal</span>
+                <span class="text-color-secondary">{{ 'QUOTES.DETAIL.SUBTOTAL' | translate }}</span>
                 <span class="font-medium">$ {{ subtotal().toFixed(2) }}</span>
               </div>
               <div class="flex justify-content-between">
@@ -184,23 +184,23 @@
                 <span class="font-medium">$ {{ taxAmount().toFixed(2) }}</span>
               </div>
               <div class="flex justify-content-between">
-                <span class="text-color-secondary">Envío</span>
+                <span class="text-color-secondary">{{ 'QUOTES.DETAIL.SHIPPING' | translate }}</span>
                 <span class="font-medium">$ {{ deliveryFeeValue().toFixed(2) }}</span>
               </div>
               <div class="flex justify-content-between">
-                <span class="text-color-secondary">Extras</span>
+                <span class="text-color-secondary">{{ 'QUOTES.DETAIL.EXTRAS' | translate }}</span>
                 <span class="font-medium">$ {{ extraFeeValue().toFixed(2) }}</span>
               </div>
               <div class="flex justify-content-between align-items-center summary-highlight">
-                <span class="font-bold">Total</span>
+                <span class="font-bold">{{ 'QUOTES.FIELDS.TOTAL' | translate }}</span>
                 <span class="text-2xl font-bold">$ {{ total().toFixed(2) }}</span>
               </div>
             </div>
 
             <div class="flex justify-content-end gap-2">
-              <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="cancel()" />
+              <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="cancel()" />
               @if (!isReadOnly()) {
-                <p-button label="Guardar Cambios" type="submit" icon="pi pi-check" [loading]="isSaving()" />
+                <p-button [label]="'COMMON.SAVE_CHANGES' | translate" type="submit" icon="pi pi-check" [loading]="isSaving()" />
               }
             </div>
           </div>

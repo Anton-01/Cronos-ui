@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, output, signal, viewChild } from '@angular/core';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
 import { MessageModule } from 'primeng/message';
@@ -10,6 +11,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { CategoryService } from 'src/app/core/services/domain/category.service';
 import { CsvImportResponse, CsvImportRowError } from 'src/app/core/models/category.model';
 import { apiErrorMessage } from 'src/app/core/utils/api-error.util';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 
 /** Anything larger is a pasted spreadsheet, not a category list. */
@@ -27,13 +29,14 @@ const ACCEPTED_EXTENSION = '.csv';
 @Component({
   selector: 'app-category-import-dialog',
   standalone: true,
-  imports: [ButtonModule, DialogModule, MessageModule, TableModule, TagModule, TooltipModule],
+  imports: [TranslatePipe, ButtonModule, DialogModule, MessageModule, TableModule, TagModule, TooltipModule],
   templateUrl: './category-import-dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CategoryImportDialogComponent {
   private readonly categoryService = inject(CategoryService);
   private readonly alertService = inject(AlertService);
+  private readonly language = inject(LanguageService);
 
   /** Emitted when the run created at least one category — refetch the grid. */
   readonly imported = output<CsvImportResponse>();
@@ -73,12 +76,14 @@ export class CategoryImportDialogComponent {
     }
     if (!file.name.toLowerCase().endsWith(ACCEPTED_EXTENSION)) {
       this.selectedFile.set(null);
-      this.validationError.set('El archivo debe tener extensión .csv');
+      this.validationError.set(this.language.t('CATEGORIES.IMPORT.ERRORS.NOT_CSV'));
       return;
     }
     if (file.size > MAX_FILE_SIZE_BYTES) {
       this.selectedFile.set(null);
-      this.validationError.set(`El archivo supera el tamaño máximo de ${this.maxFileSizeLabel}`);
+      this.validationError.set(
+        this.language.t('CATEGORIES.IMPORT.ERRORS.TOO_LARGE', { maxSize: this.maxFileSizeLabel }),
+      );
       return;
     }
     this.selectedFile.set(file);
@@ -108,15 +113,18 @@ export class CategoryImportDialogComponent {
         this.result.set(res.data);
         if (res.data.successCount > 0) {
           this.alertService.success(
-            `${res.data.successCount} de ${res.data.totalRows} categorías importadas correctamente`,
+            this.language.t('CATEGORIES.IMPORT.TOAST.SUCCESS', {
+              count: res.data.successCount,
+              total: res.data.totalRows,
+            }),
           );
         } else {
-          this.alertService.warning('No se importó ninguna categoría. Revisa el detalle de errores.');
+          this.alertService.warning(this.language.t('CATEGORIES.IMPORT.TOAST.NONE_IMPORTED'));
         }
       },
       error: (err: unknown) => {
         this.isImporting.set(false);
-        this.alertService.error(apiErrorMessage(err, 'No se pudo importar el archivo'));
+        this.alertService.error(apiErrorMessage(err, this.language.t('CATEGORIES.IMPORT.TOAST.FAILED')));
       },
     });
   }

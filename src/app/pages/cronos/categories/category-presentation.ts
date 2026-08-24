@@ -1,22 +1,19 @@
 import { CategoryScope, CategoryStatus, CategoryType } from 'src/app/core/models/category.model';
+import { SelectOption, Translator, statusLabelKey, statusOptions } from 'src/app/shared/i18n/catalog-options';
 
-/** A `p-select` / `p-columnFilter` option with a typed value. */
-export interface SelectOption<T> {
-  label: string;
-  value: T;
-}
+export type { SelectOption, Translator };
 
 /** PrimeNG's `p-tag` severities, narrowed to the ones this module uses. */
 export type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast';
 
-const TYPE_LABELS: Readonly<Record<CategoryType, string>> = {
-  PRODUCT: 'Producto',
-  INGREDIENT: 'Ingrediente',
+const TYPE_LABEL_KEYS: Readonly<Record<CategoryType, string>> = {
+  PRODUCT: 'CATEGORIES.TYPE.PRODUCT',
+  INGREDIENT: 'CATEGORIES.TYPE.INGREDIENT',
 };
 
-const SCOPE_LABELS: Readonly<Record<CategoryScope, string>> = {
-  SYSTEM: 'Sistema',
-  USER: 'Personalizada',
+const SCOPE_LABEL_KEYS: Readonly<Record<CategoryScope, string>> = {
+  SYSTEM: 'CATEGORIES.SCOPE.SYSTEM',
+  USER: 'CATEGORIES.SCOPE.USER',
 };
 
 /**
@@ -34,27 +31,31 @@ const SCOPE_ICONS: Readonly<Record<CategoryScope, string>> = {
   USER: 'pi pi-user-edit',
 };
 
-export const CATEGORY_TYPE_OPTIONS: SelectOption<CategoryType>[] = [
-  { label: TYPE_LABELS.PRODUCT, value: 'PRODUCT' },
-  { label: TYPE_LABELS.INGREDIENT, value: 'INGREDIENT' },
-];
+/** Display order for the type selector — also the order the API documents. */
+const TYPE_VALUES: readonly CategoryType[] = ['PRODUCT', 'INGREDIENT'];
+const SCOPE_VALUES: readonly CategoryScope[] = ['SYSTEM', 'USER'];
 
-export const CATEGORY_SCOPE_OPTIONS: SelectOption<CategoryScope>[] = [
-  { label: SCOPE_LABELS.SYSTEM, value: 'SYSTEM' },
-  { label: SCOPE_LABELS.USER, value: 'USER' },
-];
-
-export const CATEGORY_STATUS_OPTIONS: SelectOption<CategoryStatus>[] = [
-  { label: 'Activo', value: 'ACTIVE' },
-  { label: 'Inactivo', value: 'INACTIVE' },
-];
-
-export function categoryTypeLabel(type: CategoryType): string {
-  return TYPE_LABELS[type];
+export function categoryTypeOptions(t: Translator): SelectOption<CategoryType>[] {
+  return TYPE_VALUES.map((value) => ({ label: t(TYPE_LABEL_KEYS[value]), value }));
 }
 
-export function categoryScopeLabel(scope: CategoryScope): string {
-  return SCOPE_LABELS[scope];
+export function categoryScopeOptions(t: Translator): SelectOption<CategoryScope>[] {
+  return SCOPE_VALUES.map((value) => ({ label: t(SCOPE_LABEL_KEYS[value]), value }));
+}
+
+/** Status is common to every catalog entity, so it comes from the shared map. */
+export const categoryStatusOptions = statusOptions;
+
+export function categoryTypeLabelKey(type: CategoryType): string {
+  return TYPE_LABEL_KEYS[type];
+}
+
+export function categoryScopeLabelKey(scope: CategoryScope): string {
+  return SCOPE_LABEL_KEYS[scope];
+}
+
+export function categoryStatusLabelKey(status: CategoryStatus): string {
+  return statusLabelKey(status);
 }
 
 export function categoryScopeSeverity(scope: CategoryScope): TagSeverity {

@@ -15,7 +15,7 @@
     [sortOrder]="1"
     [rowHover]="true"
     [showCurrentPageReport]="true"
-    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
+    [currentPageReportTemplate]="'COMMON.TABLE.PAGE_REPORT' | translate"
   >
     <ng-template pTemplate="caption">
       <div class="flex align-items-center justify-content-between flex-wrap gap-2">
@@ -24,12 +24,12 @@
           <input
             pInputText
             type="text"
-            placeholder="Buscar ingrediente..."
+            [placeholder]="'INGREDIENTS.SEARCH_PLACEHOLDER' | translate"
             (input)="table.filterGlobal($any($event.target).value, 'contains')"
           />
         </p-iconfield>
         <div class="flex align-items-center gap-3">
-          <p-button label="Nuevo Ingrediente" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
+          <p-button [label]="'INGREDIENTS.CREATE' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
         </div>
       </div>
     </ng-template>
@@ -37,56 +37,66 @@
     <ng-template pTemplate="header">
       <tr>
         <th pSortableColumn="name" style="min-width: 11rem">
-          Nombre
+          {{ 'COMMON.TABLE.NAME' | translate }}
           <p-sortIcon field="name" />
-          <p-columnFilter type="text" field="name" display="menu" placeholder="Filtrar por nombre" />
+          <p-columnFilter
+            type="text"
+            field="name"
+            display="menu"
+            [placeholder]="'COMMON.TABLE.FILTER_BY_NAME' | translate"
+          />
         </th>
         <th pSortableColumn="categoryName" style="min-width: 9rem">
-          Categoría
+          {{ 'INGREDIENTS.FIELDS.CATEGORY' | translate }}
           <p-sortIcon field="categoryName" />
-          <p-columnFilter type="text" field="categoryName" display="menu" placeholder="Filtrar por categoría" />
+          <p-columnFilter
+            type="text"
+            field="categoryName"
+            display="menu"
+            [placeholder]="'INGREDIENTS.FILTER_BY_CATEGORY' | translate"
+          />
         </th>
-        <th style="min-width: 8rem">Unid. Compra</th>
+        <th style="min-width: 8rem">{{ 'INGREDIENTS.FIELDS.PURCHASE_UNIT' | translate }}</th>
         <th pSortableColumn="purchaseQuantity" style="min-width: 8rem">
-          Cant. Compra
+          {{ 'INGREDIENTS.FIELDS.PURCHASE_QTY' | translate }}
           <p-sortIcon field="purchaseQuantity" />
         </th>
         <th pSortableColumn="unitCost" style="min-width: 8rem">
-          Costo Unitario
+          {{ 'INGREDIENTS.FIELDS.UNIT_COST' | translate }}
           <p-sortIcon field="unitCost" />
         </th>
         <th pSortableColumn="yieldPercentage" style="min-width: 8rem">
-          Rendimiento
+          {{ 'INGREDIENTS.FIELDS.YIELD' | translate }}
           <p-sortIcon field="yieldPercentage" />
         </th>
         <th pSortableColumn="baseUnitCost" style="min-width: 8rem">
-          Costo Base
+          {{ 'INGREDIENTS.FIELDS.BASE_COST' | translate }}
           <p-sortIcon field="baseUnitCost" />
         </th>
         <th style="width: 10rem">
-          Estado
+          {{ 'COMMON.TABLE.STATUS' | translate }}
           <p-columnFilter field="status" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
             <ng-template pTemplate="filter" let-value let-filter="filterCallback">
               <p-select
                 [ngModel]="value"
-                [options]="statusFilterOptions"
+                [options]="statusFilterOptions()"
                 optionLabel="label"
                 optionValue="value"
-                placeholder="Todos"
+                [placeholder]="'COMMON.ALL' | translate"
                 [showClear]="true"
                 (onChange)="filter($event.value)"
               />
             </ng-template>
           </p-columnFilter>
         </th>
-        <th style="width: 8rem" class="text-right">Acciones</th>
+        <th style="width: 8rem" class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>
     </ng-template>
 
     <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
       <tr>
         <td class="font-semibold">{{ item.name }}</td>
-        <td>{{ item.categoryName || '-' }}</td>
+        <td>{{ item.categoryName || ('COMMON.EMPTY_VALUE' | translate) }}</td>
         <td>
           @if (item.purchaseUnitCode) {
             <p-tag [value]="item.purchaseUnitCode" severity="info" />
@@ -112,7 +122,7 @@
             severity="info"
             [text]="true"
             [rounded]="true"
-            pTooltip="Editar"
+            [pTooltip]="'COMMON.EDIT' | translate"
             (onClick)="openEdit(item)"
           />
           <p-button
@@ -120,7 +130,7 @@
             severity="danger"
             [text]="true"
             [rounded]="true"
-            pTooltip="Eliminar"
+            [pTooltip]="'COMMON.DELETE' | translate"
             (onClick)="confirmDelete(item)"
           />
         </td>
@@ -135,7 +145,7 @@
 
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="9" class="text-center text-color-secondary py-5">No hay ingredientes registrados</td>
+        <td colspan="9" class="text-center text-color-secondary py-5">{{ 'INGREDIENTS.EMPTY' | translate }}</td>
       </tr>
     </ng-template>
   </p-table>

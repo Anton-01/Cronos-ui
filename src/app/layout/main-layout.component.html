@@ -12,10 +12,10 @@
       </a>
     </div>
 
-    <nav class="layout-menu" aria-label="Main navigation">
-      @for (section of navSections; track section.label) {
+    <nav class="layout-menu" [attr.aria-label]="'LAYOUT.NAV_ARIA' | translate">
+      @for (section of navSections; track section.labelKey) {
         <div class="layout-menu-section">
-          <span class="layout-menu-section-title">{{ section.label }}</span>
+          <span class="layout-menu-section-title">{{ section.labelKey | translate }}</span>
           <ul class="list-none p-0 m-0">
             @for (item of section.items; track item.route) {
               <li>
@@ -29,13 +29,13 @@
                     class="layout-menu-item layout-menu-toggle flex align-items-center gap-2 border-round-md w-full"
                     [class.layout-menu-item-active]="isActive(item)"
                     [attr.aria-expanded]="isGroupOpen(item)"
-                    [pTooltip]="slim() ? item.label : ''"
+                    [pTooltip]="slim() ? navLabel(item.labelKey) : ''"
                     tooltipPosition="right"
                     (click)="toggleGroup(item)"
                     pRipple
                   >
                     <i class="layout-menu-item-icon" [class]="item.icon"></i>
-                    <span class="layout-menu-item-label">{{ item.label }}</span>
+                    <span class="layout-menu-item-label">{{ item.labelKey | translate }}</span>
                     <i
                       class="layout-menu-toggle-icon pi"
                       [class.pi-chevron-down]="isGroupOpen(item)"
@@ -52,12 +52,12 @@
                             [class.layout-menu-item-active]="isActive(child)"
                             [routerLink]="child.route"
                             [attr.aria-current]="isActive(child) ? 'page' : null"
-                            [pTooltip]="slim() ? child.label : ''"
+                            [pTooltip]="slim() ? navLabel(child.labelKey) : ''"
                             tooltipPosition="right"
                             pRipple
                           >
                             <i class="layout-menu-item-icon" [class]="child.icon"></i>
-                            <span class="layout-menu-item-label">{{ child.label }}</span>
+                            <span class="layout-menu-item-label">{{ child.labelKey | translate }}</span>
                           </a>
                         </li>
                       }
@@ -69,12 +69,12 @@
                     [class.layout-menu-item-active]="isActive(item)"
                     [routerLink]="item.route"
                     [attr.aria-current]="isActive(item) ? 'page' : null"
-                    [pTooltip]="slim() ? item.label : ''"
+                    [pTooltip]="slim() ? navLabel(item.labelKey) : ''"
                     tooltipPosition="right"
                     pRipple
                   >
                     <i class="layout-menu-item-icon" [class]="item.icon"></i>
-                    <span class="layout-menu-item-label">{{ item.label }}</span>
+                    <span class="layout-menu-item-label">{{ item.labelKey | translate }}</span>
                   </a>
                 }
               </li>
@@ -85,7 +85,7 @@
     </nav>
 
     <div class="layout-sidebar-footer">
-      <span class="layout-sidebar-version">Cronos v1.0</span>
+      <span class="layout-sidebar-version">{{ 'LAYOUT.VERSION' | translate: { version: appVersion } }}</span>
     </div>
   </aside>
 
@@ -102,7 +102,7 @@
           [text]="true"
           [rounded]="true"
           (onClick)="toggleSidebar()"
-          ariaLabel="Toggle navigation"
+          [ariaLabel]="'LAYOUT.TOGGLE_NAV' | translate"
         />
       </div>
 
@@ -112,8 +112,8 @@
           <input
             pInputText
             type="search"
-            placeholder="Search"
-            aria-label="Search"
+            [placeholder]="'LAYOUT.SEARCH' | translate"
+            [attr.aria-label]="'LAYOUT.SEARCH' | translate"
             [ngModel]="searchTerm()"
             (ngModelChange)="searchTerm.set($event)"
           />
@@ -125,8 +125,10 @@
           class="layout-lang-button flex align-items-center gap-2 border-round-xl"
           (click)="languageMenu.toggle($event)"
           aria-haspopup="true"
-          [attr.aria-label]="'Change language, current: ' + language.currentOption().label"
-          pTooltip="Change language"
+          [attr.aria-label]="
+            'LAYOUT.CHANGE_LANGUAGE_ARIA' | translate: { language: language.currentOption().label }
+          "
+          [pTooltip]="'LAYOUT.CHANGE_LANGUAGE' | translate"
           tooltipPosition="bottom"
         >
           <span class="layout-lang-flag" aria-hidden="true">{{ language.currentOption().flag }}</span>
@@ -141,9 +143,9 @@
           [text]="true"
           [rounded]="true"
           (onClick)="theme.toggle()"
-          pTooltip="Toggle theme"
+          [pTooltip]="'LAYOUT.TOGGLE_THEME' | translate"
           tooltipPosition="bottom"
-          ariaLabel="Toggle theme"
+          [ariaLabel]="'LAYOUT.TOGGLE_THEME' | translate"
         />
 
         <button
@@ -156,7 +158,7 @@
           <span class="layout-user-name hidden lg:inline">{{ userFullName() }}</span>
           <i class="pi pi-angle-down text-xs"></i>
         </button>
-        <p-menu #userMenu [model]="userMenuItems" [popup]="true" />
+        <p-menu #userMenu [model]="userMenuItems()" [popup]="true" />
       </div>
     </header>
 
@@ -183,7 +185,7 @@
       </div>
 
       <footer class="layout-footer">
-        <span>Cronos — Specialty Bakery Management System</span>
+        <span>{{ 'APP.NAME_TAGLINE' | translate }}</span>
       </footer>
     </main>
   </div>

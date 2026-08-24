@@ -2,7 +2,7 @@
 @if (loading()) {
   <div class="flex flex-column align-items-center justify-content-center py-8">
     <i class="pi pi-spinner pi-spin text-4xl text-primary mb-4"></i>
-    <span class="text-color-secondary text-base">Cargando receta...</span>
+    <span class="text-color-secondary text-base">{{ 'PUBLIC.RECIPE.LOADING' | translate }}</span>
   </div>
 }
 <!-- end::Loading State -->
@@ -13,11 +13,11 @@
     <div class="mb-8">
       <i class="pi pi-times-circle text-5xl text-danger"></i>
     </div>
-    <h2 class="text-4xl font-bold text-color mb-3">Enlace no disponible</h2>
+    <h2 class="text-4xl font-bold text-color mb-3">{{ 'PUBLIC.RECIPE.UNAVAILABLE' | translate }}</h2>
     <p class="text-color-secondary text-lg text-center mw-500">{{ error() }}</p>
     <a href="/" class="public-link-button mt-5">
       <i class="pi pi-arrow-left text-lg mr-1"></i>
-      Ir al inicio
+      {{ 'PUBLIC.GO_HOME' | translate }}
     </a>
   </div>
 }
@@ -65,7 +65,7 @@
                 }
                 <strong>{{ countdown().hours }}h {{ countdown().minutes }}m</strong>
               } @else {
-                <span class="text-danger font-semibold">Enlace expirado</span>
+                <span class="text-danger font-semibold">{{ 'PUBLIC.RECIPE.EXPIRED' | translate }}</span>
               }
             </span>
           </div>
@@ -84,7 +84,7 @@
             <div class="ingredients-panel">
               <h2 class="section-title">
                 <span class="section-title-ornament">&#9670;</span>
-                Ingredientes
+                {{ 'INGREDIENTS.TITLE' | translate }}
               </h2>
               @if (r.ingredients.length > 0) {
                 <ul class="ingredient-list">
@@ -94,7 +94,7 @@
                       <span class="ingredient-name">
                         {{ ing.name }}
                         @if (ing.isOptional) {
-                          <em class="ingredient-optional">(opcional)</em>
+                          <em class="ingredient-optional">{{ 'PUBLIC.RECIPE.OPTIONAL' | translate }}</em>
                         }
                       </span>
                     </li>
@@ -103,7 +103,7 @@
               }
               @if (r.ingredients.length === 0) {
                 <p class="text-color-secondary text-base text-center py-6">
-                  Sin ingredientes listados
+                  {{ 'PUBLIC.RECIPE.NO_INGREDIENTS' | translate }}
                 </p>
               }
             </div>
@@ -113,7 +113,7 @@
             <div class="instructions-panel">
               <h2 class="section-title">
                 <span class="section-title-ornament">&#9670;</span>
-                Preparación
+                {{ 'PUBLIC.RECIPE.PREPARATION' | translate }}
               </h2>
               @if (instructionSteps().length > 0) {
                 <ol class="instruction-list">
@@ -124,7 +124,7 @@
                   }
                 </ol>
               } @else {
-                <p class="text-color-secondary text-base text-center py-6">Sin instrucciones disponibles</p>
+                <p class="text-color-secondary text-base text-center py-6">{{ 'PUBLIC.RECIPE.NO_INSTRUCTIONS' | translate }}</p>
               }
               <!-- Storage -->
               @if (r.storageInstructions) {
@@ -133,7 +133,7 @@
                     <i class="pi pi-box text-xl"></i>
                   </div>
                   <div>
-                    <strong class="block mb-1">Conservación</strong>
+                    <strong class="block mb-1">{{ 'PUBLIC.RECIPE.STORAGE' | translate }}</strong>
                     <span>{{ r.storageInstructions }}</span>
                   </div>
                 </div>

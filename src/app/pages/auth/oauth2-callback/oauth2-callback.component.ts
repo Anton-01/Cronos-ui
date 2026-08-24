@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
+import { LanguageService } from 'src/app/core/services/language.service';
 import { TokenService } from 'src/app/core/services/token.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
 
@@ -17,6 +18,7 @@ import { ToastService } from 'src/app/shared/services/toast.service';
 })
 export class OAuth2CallbackComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
+  private readonly language = inject(LanguageService);
   private readonly router = inject(Router);
   private readonly tokenService = inject(TokenService);
   private readonly toastService = inject(ToastService);
@@ -34,10 +36,10 @@ export class OAuth2CallbackComponent implements OnInit {
         this.tokenService.saveUserInfo(payload.sub, payload.sub);
       }
 
-      this.toastService.success('Bienvenido', 'Inicio de sesión exitoso.');
+      this.toastService.success('Bienvenido', this.language.t('AUTH.OAUTH.SUCCESS'));
       this.router.navigate(['/dashboard']);
     } else {
-      this.toastService.error('Error', 'No se pudo completar la autenticación.');
+      this.toastService.error('Error', this.language.t('AUTH.OAUTH.FAILED'));
       this.router.navigate(['/auth/login']);
     }
   }
