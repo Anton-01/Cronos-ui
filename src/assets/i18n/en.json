@@ -1,0 +1,148 @@
+{
+  "COMMON": {
+    "ACTIONS": "Actions",
+    "ALL": "All",
+    "CANCEL": "Cancel",
+    "CLOSE": "Close",
+    "CREATE": "Create",
+    "UPDATE": "Update",
+    "EDIT": "Edit",
+    "DELETE": "Delete",
+    "EMPTY_VALUE": "-",
+    "REQUIRED_MARK": "*",
+    "STATUS": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive"
+    },
+    "TOAST": {
+      "SUCCESS": "Success",
+      "ERROR": "Error",
+      "WARNING": "Warning",
+      "INFO": "Information"
+    },
+    "CONFIRM": {
+      "DELETE_TITLE": "Delete record?",
+      "DELETE_MESSAGE": "\"{{ name }}\" will be deleted. This action cannot be undone.",
+      "ACCEPT": "Yes, continue",
+      "ACCEPT_DELETE": "Yes, delete"
+    }
+  },
+
+  "NAV": {
+    "SECTIONS": {
+      "DASHBOARDS": "Dashboards",
+      "OPERATIONS": "Operations",
+      "CATALOGS": "Catalogs",
+      "ACCOUNT": "Account",
+      "ADMINISTRATION": "Administration"
+    },
+    "ITEMS": {
+      "DASHBOARD": "Dashboard",
+      "MY_RECIPES": "My Recipes",
+      "MY_QUOTES": "My Quotes",
+      "INGREDIENTS": "Ingredients",
+      "FIXED_COSTS": "Fixed Costs",
+      "UNIT_TYPES": "Unit Types",
+      "MEASUREMENT_UNITS": "Measurement Units",
+      "CATEGORIES": "Categories",
+      "PRODUCT_CATEGORIES": "Product Categories",
+      "INGREDIENT_CATEGORIES": "Ingredient Categories",
+      "ALLERGENS": "Allergens",
+      "MY_ACCOUNT": "My Account",
+      "SECURITY": "Security",
+      "USER_MANAGEMENT": "User Management",
+      "ROLE_MANAGEMENT": "Role Management",
+      "SIGN_OUT": "Sign Out"
+    }
+  },
+
+  "BREADCRUMB": {
+    "HOME": "Home",
+    "CATALOGS": "Catalogs"
+  },
+
+  "CATEGORIES": {
+    "TYPE": {
+      "PRODUCT": "Product",
+      "INGREDIENT": "Ingredient"
+    },
+    "SCOPE": {
+      "SYSTEM": "System",
+      "USER": "Custom"
+    },
+    "BREADCRUMB": {
+      "ROOT": "Categories",
+      "PRODUCT": "Products",
+      "INGREDIENT": "Ingredients"
+    },
+    "PAGE": {
+      "CREATE": "New Category",
+      "IMPORT_CSV": "Import CSV",
+      "SYSTEM_COUNT": "{{ count }} system",
+      "CUSTOM_COUNT": "{{ count }} custom",
+      "PRODUCT": {
+        "TITLE": "Product Categories",
+        "DESCRIPTION": "Classify what you sell: breads, cakes, seasonal and special editions",
+        "EMPTY": "No product categories registered yet",
+        "SEARCH_PLACEHOLDER": "Search product category..."
+      },
+      "INGREDIENT": {
+        "TITLE": "Ingredient Categories",
+        "DESCRIPTION": "Classify what you buy: flours, dairy, sweeteners and more",
+        "EMPTY": "No ingredient categories registered yet",
+        "SEARCH_PLACEHOLDER": "Search ingredient category..."
+      }
+    },
+    "TABLE": {
+      "NAME": "Name",
+      "DESCRIPTION": "Description",
+      "ORIGIN": "Origin",
+      "STATUS": "Status",
+      "FILTER_BY_NAME": "Filter by name",
+      "FILTER_BY_DESCRIPTION": "Filter by description",
+      "PAGE_REPORT": "Showing {first} to {last} of {totalRecords} records",
+      "VIEW_SYSTEM_DETAIL": "View detail (system category)"
+    },
+    "MODAL": {
+      "TITLE": "New category",
+      "TITLE_EDIT": "Edit category",
+      "TITLE_VIEW": "Category detail",
+      "TYPE_LABEL": "Type",
+      "TYPE_LOCKED_HINT": "The type is set by the section you are in and cannot be changed.",
+      "NAME_LABEL": "Name",
+      "NAME_PLACEHOLDER": "e.g. Artisan bakery",
+      "DESCRIPTION_LABEL": "Description",
+      "DESCRIPTION_PLACEHOLDER": "Optional description",
+      "SYSTEM_NOTICE": "This is a system category: it can be viewed, but not edited or deleted.",
+      "ERRORS": {
+        "TYPE_REQUIRED": "Type is required",
+        "NAME_REQUIRED": "Name is required",
+        "NAME_MIN": "Name must be at least 2 characters long",
+        "NAME_MAX": "Name cannot exceed {{ max }} characters",
+        "NAME_SURROUNDING_WHITESPACE": "Name cannot start or end with spaces",
+        "NAME_REPEATED_WHITESPACE": "Name cannot contain consecutive spaces",
+        "NAME_PATTERN": "Only letters, numbers and the signs . , & ' ( ) / - are allowed",
+        "DESCRIPTION_MAX": "Description cannot exceed {{ max }} characters",
+        "INVALID_VALUE": "Invalid value"
+      }
+    },
+    "DELETE": {
+      "MESSAGE": "\"{{ name }}\" will be moved to the trash. Recipes and ingredients using it will no longer be classified."
+    },
+    "TOAST": {
+      "CREATED": "Category created successfully",
+      "UPDATED": "Category updated successfully",
+      "DELETED": "Category deleted successfully",
+      "CREATE_FAILED": "The category could not be created",
+      "UPDATE_FAILED": "The category could not be updated",
+      "DELETE_FAILED": "The category could not be deleted",
+      "LOAD_FAILED": "Categories could not be loaded",
+      "DUPLICATE_NAME": "A category with this name already exists",
+      "PROTECTED_TITLE": "Protected category",
+      "PROTECTED_DELETE": "System categories cannot be deleted",
+      "PROTECTED_EDIT": "System categories cannot be modified",
+      "NOT_ALLOWED_TITLE": "Action not allowed",
+      "NOT_OWNER": "This category belongs to another user"
+    }
+  }
+}

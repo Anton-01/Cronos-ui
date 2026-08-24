@@ -10,6 +10,8 @@ import {
   HTTP_INTERCEPTORS,
 } from '@angular/common/http';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { provideTranslateService } from '@ngx-translate/core';
+import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { providePrimeNG } from 'primeng/config';
 import { definePreset } from '@primeng/themes';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
@@ -75,7 +77,7 @@ import { AppComponent } from './app.component';
 import { ErrorInterceptorService } from './core/interceptors/error-interceptor.service';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { languageInterceptor } from './core/interceptors/language.interceptor';
-import { resolveStoredLanguage } from './core/services/language.service';
+import { DEFAULT_LANGUAGE, resolveStoredLanguage } from './core/services/language.service';
 
 // Angular ships `en` data in the framework but every other locale must be
 // registered explicitly, or `date`/`number`/`currency` throw at runtime.
@@ -118,6 +120,24 @@ registerLocaleData(localeEsMX, 'es-MX');
       provide: LOCALE_ID,
       useFactory: resolveStoredLanguage,
     },
+    /**
+     * UI string translation (Context.md §16.5).
+     *
+     * Bundle filenames are the BCP 47 tags themselves (`en.json`,
+     * `es-MX.json`), so one identifier drives the `Accept-Language` header,
+     * the `<html lang>` and the bundle lookup — there is deliberately no
+     * second locale enum for translation keys.
+     *
+     * `lang` is seeded from the same `resolveStoredLanguage()` that feeds
+     * `LOCALE_ID` above, so the first paint is already in the user's locale
+     * instead of flashing raw keys until `LanguageService.init()` runs.
+     * After bootstrap `LanguageService` is the only writer — see its `apply()`.
+     */
+    provideTranslateService({
+      loader: provideTranslateHttpLoader({ prefix: './assets/i18n/', suffix: '.json' }),
+      lang: resolveStoredLanguage(),
+      fallbackLang: DEFAULT_LANGUAGE,
+    }),
     provideHttpClient(
       // Order is the execution order on the way out: auth stamps identity,
       // language stamps the locale the backend answers in.

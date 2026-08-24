@@ -1,0 +1,148 @@
+{
+  "COMMON": {
+    "ACTIONS": "Acciones",
+    "ALL": "Todos",
+    "CANCEL": "Cancelar",
+    "CLOSE": "Cerrar",
+    "CREATE": "Crear",
+    "UPDATE": "Actualizar",
+    "EDIT": "Editar",
+    "DELETE": "Eliminar",
+    "EMPTY_VALUE": "-",
+    "REQUIRED_MARK": "*",
+    "STATUS": {
+      "ACTIVE": "Activo",
+      "INACTIVE": "Inactivo"
+    },
+    "TOAST": {
+      "SUCCESS": "Éxito",
+      "ERROR": "Error",
+      "WARNING": "Advertencia",
+      "INFO": "Información"
+    },
+    "CONFIRM": {
+      "DELETE_TITLE": "¿Eliminar registro?",
+      "DELETE_MESSAGE": "Se eliminará \"{{ name }}\". Esta acción no se puede deshacer.",
+      "ACCEPT": "Sí, continuar",
+      "ACCEPT_DELETE": "Sí, eliminar"
+    }
+  },
+
+  "NAV": {
+    "SECTIONS": {
+      "DASHBOARDS": "Tableros",
+      "OPERATIONS": "Operación",
+      "CATALOGS": "Catálogos",
+      "ACCOUNT": "Cuenta",
+      "ADMINISTRATION": "Administración"
+    },
+    "ITEMS": {
+      "DASHBOARD": "Tablero",
+      "MY_RECIPES": "Mis Recetas",
+      "MY_QUOTES": "Mis Cotizaciones",
+      "INGREDIENTS": "Ingredientes",
+      "FIXED_COSTS": "Costos Fijos",
+      "UNIT_TYPES": "Tipos de Unidad",
+      "MEASUREMENT_UNITS": "Unidades de Medida",
+      "CATEGORIES": "Categorías",
+      "PRODUCT_CATEGORIES": "Categorías de Productos",
+      "INGREDIENT_CATEGORIES": "Categorías de Ingredientes",
+      "ALLERGENS": "Alérgenos",
+      "MY_ACCOUNT": "Mi Cuenta",
+      "SECURITY": "Seguridad",
+      "USER_MANAGEMENT": "Gestión de Usuarios",
+      "ROLE_MANAGEMENT": "Gestión de Roles",
+      "SIGN_OUT": "Cerrar Sesión"
+    }
+  },
+
+  "BREADCRUMB": {
+    "HOME": "Inicio",
+    "CATALOGS": "Catálogos"
+  },
+
+  "CATEGORIES": {
+    "TYPE": {
+      "PRODUCT": "Producto",
+      "INGREDIENT": "Ingrediente"
+    },
+    "SCOPE": {
+      "SYSTEM": "Sistema",
+      "USER": "Personalizada"
+    },
+    "BREADCRUMB": {
+      "ROOT": "Categorías",
+      "PRODUCT": "Productos",
+      "INGREDIENT": "Ingredientes"
+    },
+    "PAGE": {
+      "CREATE": "Nueva Categoría",
+      "IMPORT_CSV": "Importar CSV",
+      "SYSTEM_COUNT": "{{ count }} del sistema",
+      "CUSTOM_COUNT": "{{ count }} personalizadas",
+      "PRODUCT": {
+        "TITLE": "Categorías de Productos",
+        "DESCRIPTION": "Clasifica lo que vendes: panes, pasteles, temporada y ediciones especiales",
+        "EMPTY": "No hay categorías de productos registradas",
+        "SEARCH_PLACEHOLDER": "Buscar categoría de producto..."
+      },
+      "INGREDIENT": {
+        "TITLE": "Categorías de Ingredientes",
+        "DESCRIPTION": "Clasifica lo que compras: harinas, lácteos, endulzantes y más",
+        "EMPTY": "No hay categorías de ingredientes registradas",
+        "SEARCH_PLACEHOLDER": "Buscar categoría de ingrediente..."
+      }
+    },
+    "TABLE": {
+      "NAME": "Nombre",
+      "DESCRIPTION": "Descripción",
+      "ORIGIN": "Origen",
+      "STATUS": "Estado",
+      "FILTER_BY_NAME": "Filtrar por nombre",
+      "FILTER_BY_DESCRIPTION": "Filtrar por descripción",
+      "PAGE_REPORT": "Mostrando {first} a {last} de {totalRecords} registros",
+      "VIEW_SYSTEM_DETAIL": "Ver detalle (categoría del sistema)"
+    },
+    "MODAL": {
+      "TITLE": "Nueva categoría",
+      "TITLE_EDIT": "Editar categoría",
+      "TITLE_VIEW": "Detalle de categoría",
+      "TYPE_LABEL": "Tipo",
+      "TYPE_LOCKED_HINT": "El tipo lo define la sección en la que estás y no se puede cambiar.",
+      "NAME_LABEL": "Nombre",
+      "NAME_PLACEHOLDER": "Ej. Panadería artesanal",
+      "DESCRIPTION_LABEL": "Descripción",
+      "DESCRIPTION_PLACEHOLDER": "Descripción opcional",
+      "SYSTEM_NOTICE": "Esta es una categoría del sistema: se puede consultar, pero no editar ni eliminar.",
+      "ERRORS": {
+        "TYPE_REQUIRED": "El tipo es requerido",
+        "NAME_REQUIRED": "El nombre es requerido",
+        "NAME_MIN": "El nombre debe tener al menos 2 caracteres",
+        "NAME_MAX": "El nombre no puede superar los {{ max }} caracteres",
+        "NAME_SURROUNDING_WHITESPACE": "El nombre no puede empezar ni terminar con espacios",
+        "NAME_REPEATED_WHITESPACE": "El nombre no puede contener espacios consecutivos",
+        "NAME_PATTERN": "Solo se permiten letras, números y los signos . , & ' ( ) / -",
+        "DESCRIPTION_MAX": "La descripción no puede superar los {{ max }} caracteres",
+        "INVALID_VALUE": "Valor no válido"
+      }
+    },
+    "DELETE": {
+      "MESSAGE": "Se enviará \"{{ name }}\" a la papelera. Las recetas e ingredientes que la usen dejarán de estar clasificados."
+    },
+    "TOAST": {
+      "CREATED": "Categoría creada correctamente",
+      "UPDATED": "Categoría actualizada correctamente",
+      "DELETED": "Categoría eliminada correctamente",
+      "CREATE_FAILED": "No se pudo crear la categoría",
+      "UPDATE_FAILED": "No se pudo actualizar la categoría",
+      "DELETE_FAILED": "No se pudo eliminar la categoría",
+      "LOAD_FAILED": "No se pudieron cargar las categorías",
+      "DUPLICATE_NAME": "Ya existe una categoría con este nombre",
+      "PROTECTED_TITLE": "Categoría protegida",
+      "PROTECTED_DELETE": "Las categorías del sistema no se pueden eliminar",
+      "PROTECTED_EDIT": "Las categorías del sistema no se pueden modificar",
+      "NOT_ALLOWED_TITLE": "Acción no permitida",
+      "NOT_OWNER": "Esta categoría pertenece a otro usuario"
+    }
+  }
+}

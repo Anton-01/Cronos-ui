@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { map } from 'rxjs';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { IconFieldModule } from 'primeng/iconfield';
@@ -22,6 +23,7 @@ import {
   CategoryType,
 } from 'src/app/core/models/category.model';
 import { apiErrorMessage, hasApiError } from 'src/app/core/utils/api-error.util';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
@@ -30,12 +32,14 @@ import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skele
 import { CategoryFormDialogComponent } from './category-form-dialog/category-form-dialog.component';
 import { CategoryImportDialogComponent } from './category-import-dialog/category-import-dialog.component';
 import {
-  CATEGORY_SCOPE_OPTIONS,
-  CATEGORY_STATUS_OPTIONS,
+  SelectOption,
   TagSeverity,
   categoryScopeIcon,
-  categoryScopeLabel,
+  categoryScopeLabelKey,
+  categoryScopeOptions,
   categoryScopeSeverity,
+  categoryStatusLabelKey,
+  categoryStatusOptions,
   isCategoryEditable,
 } from './category-presentation';
 
@@ -54,27 +58,25 @@ interface CategoryPageCopy {
   title: string;
   description: string;
   breadcrumb: string;
-  createLabel: string;
   emptyMessage: string;
   searchPlaceholder: string;
 }
 
-const PAGE_COPY: Readonly<Record<CategoryType, CategoryPageCopy>> = {
+/** Translation keys behind `CategoryPageCopy`, one set per route. */
+const PAGE_COPY_KEYS: Readonly<Record<CategoryType, Readonly<Record<keyof CategoryPageCopy, string>>>> = {
   PRODUCT: {
-    title: 'Categorías de Productos',
-    description: 'Clasifica lo que vendes: panes, pasteles, temporada y ediciones especiales',
-    breadcrumb: 'Productos',
-    createLabel: 'Nueva Categoría',
-    emptyMessage: 'No hay categorías de productos registradas',
-    searchPlaceholder: 'Buscar categoría de producto...',
+    title: 'CATEGORIES.PAGE.PRODUCT.TITLE',
+    description: 'CATEGORIES.PAGE.PRODUCT.DESCRIPTION',
+    breadcrumb: 'CATEGORIES.BREADCRUMB.PRODUCT',
+    emptyMessage: 'CATEGORIES.PAGE.PRODUCT.EMPTY',
+    searchPlaceholder: 'CATEGORIES.PAGE.PRODUCT.SEARCH_PLACEHOLDER',
   },
   INGREDIENT: {
-    title: 'Categorías de Ingredientes',
-    description: 'Clasifica lo que compras: harinas, lácteos, endulzantes y más',
-    breadcrumb: 'Ingredientes',
-    createLabel: 'Nueva Categoría',
-    emptyMessage: 'No hay categorías de ingredientes registradas',
-    searchPlaceholder: 'Buscar categoría de ingrediente...',
+    title: 'CATEGORIES.PAGE.INGREDIENT.TITLE',
+    description: 'CATEGORIES.PAGE.INGREDIENT.DESCRIPTION',
+    breadcrumb: 'CATEGORIES.BREADCRUMB.INGREDIENT',
+    emptyMessage: 'CATEGORIES.PAGE.INGREDIENT.EMPTY',
+    searchPlaceholder: 'CATEGORIES.PAGE.INGREDIENT.SEARCH_PLACEHOLDER',
   },
 };
 
@@ -84,8 +86,9 @@ type OpenDialog = 'none' | 'form' | 'import';
 /**
  * One grid for both category routes.
  *
- * The route's `data.type` decides which slice of `/category` is fetched and
- * which copy is shown, so `/cronos/categorias/productos` and
+ * The route's `data.type` decides which slice of `/category` is fetched, which
+ * copy is shown, and — through the form dialog — what type a newly created
+ * category is filed under, so `/cronos/categorias/productos` and
  * `/cronos/categorias/ingredientes` share this component instead of
  * duplicating a table. SYSTEM rows arrive mixed in with the caller's own USER
  * rows; `scope` alone decides whether a row is actionable.
@@ -95,6 +98,7 @@ type OpenDialog = 'none' | 'form' | 'import';
   standalone: true,
   imports: [
     FormsModule,
+    TranslatePipe,
     ButtonModule,
     CardModule,
     IconFieldModule,
@@ -117,6 +121,7 @@ export class CategoryListComponent {
   private readonly alertService = inject(AlertService);
   private readonly confirmService = inject(ConfirmService);
   private readonly pageInfoService = inject(PageInfoService);
+  private readonly language = inject(LanguageService);
   private readonly route = inject(ActivatedRoute);
 
   /**
@@ -138,28 +143,47 @@ export class CategoryListComponent {
 
   protected readonly skeletonRows = Array.from({ length: 6 });
 
-  readonly scopeFilterOptions = CATEGORY_SCOPE_OPTIONS;
-  readonly statusFilterOptions = CATEGORY_STATUS_OPTIONS;
+  readonly scopeFilterOptions = computed<SelectOption<CategoryScope>[]>(() =>
+    categoryScopeOptions((key) => this.language.t(key)),
+  );
 
-  readonly copy = computed<CategoryPageCopy>(() => PAGE_COPY[this.type()]);
+  readonly statusFilterOptions = computed<SelectOption<CategoryStatus>[]>(() =>
+    categoryStatusOptions((key) => this.language.t(key)),
+  );
+
+  readonly copy = computed<CategoryPageCopy>(() => {
+    const keys = PAGE_COPY_KEYS[this.type()];
+    return {
+      title: this.language.t(keys.title),
+      description: this.language.t(keys.description),
+      breadcrumb: this.language.t(keys.breadcrumb),
+      emptyMessage: this.language.t(keys.emptyMessage),
+      searchPlaceholder: this.language.t(keys.searchPlaceholder),
+    };
+  });
 
   readonly customCount = computed(() => this.items().filter((item) => item.scope === 'USER').length);
   readonly systemCount = computed(() => this.items().length - this.customCount());
 
   constructor() {
-    // The route type drives both the page chrome and the fetch, so one effect
-    // owns both — navigating between the two routes re-runs it.
+    // Page chrome depends on both the route and the active locale, so it lives
+    // apart from the fetch below — switching language must re-title the page
+    // without re-issuing the request.
     effect(() => {
-      const type = this.type();
-      const copy = PAGE_COPY[type];
+      const copy = this.copy();
       this.pageInfoService.updateTitle(copy.title);
       this.pageInfoService.updateDescription(copy.description);
       this.pageInfoService.updateBreadcrumbs([
-        { title: 'Inicio', path: '/dashboard', isActive: false },
-        { title: 'Catálogos', path: '', isActive: false },
-        { title: 'Categorías', path: '', isActive: false },
+        { title: this.language.t('BREADCRUMB.HOME'), path: '/dashboard', isActive: false },
+        { title: this.language.t('BREADCRUMB.CATALOGS'), path: '', isActive: false },
+        { title: this.language.t('CATEGORIES.BREADCRUMB.ROOT'), path: '', isActive: false },
         { title: copy.breadcrumb, path: '', isActive: true },
       ]);
+    });
+
+    // The fetch keys off the route type alone.
+    effect(() => {
+      const type = this.type();
       this.closeDialog();
       this.load(type);
     });
@@ -183,7 +207,7 @@ export class CategoryListComponent {
         }
         this.isLoading.set(false);
         this.items.set([]);
-        this.alertService.error(apiErrorMessage(err, 'No se pudieron cargar las categorías'));
+        this.alertService.error(apiErrorMessage(err, this.language.t('CATEGORIES.TOAST.LOAD_FAILED')));
       },
     });
   }
@@ -191,7 +215,11 @@ export class CategoryListComponent {
   // ─── Row presentation ───
 
   scopeLabel(scope: CategoryScope): string {
-    return categoryScopeLabel(scope);
+    return this.language.t(categoryScopeLabelKey(scope));
+  }
+
+  statusLabel(status: CategoryStatus): string {
+    return this.language.t(categoryStatusLabelKey(status));
   }
 
   scopeSeverity(scope: CategoryScope): TagSeverity {
@@ -245,8 +273,9 @@ export class CategoryListComponent {
     this.closeDialog();
 
     if (saved.type !== this.type()) {
-      // Created from this page but classified as the other type — it belongs
-      // to the sibling route, so it must not linger in this grid.
+      // The dialog locks `type` to this route, so this is unreachable through
+      // the UI — it stays as a guard against a server that classified the row
+      // differently from what was posted.
       return;
     }
 
@@ -270,7 +299,7 @@ export class CategoryListComponent {
     }
     const confirmed = await this.confirmService.confirmDelete(
       item.name,
-      `Se enviará "${item.name}" a la papelera. Las recetas e ingredientes que la usen dejarán de estar clasificados.`,
+      this.language.t('CATEGORIES.DELETE.MESSAGE', { name: item.name }),
     );
     if (!confirmed) {
       return;
@@ -281,7 +310,7 @@ export class CategoryListComponent {
         // Soft delete with no restore endpoint: drop the row locally rather
         // than paying for a refetch of a list that only shrank by one.
         this.items.update((current) => current.filter((row) => row.id !== item.id));
-        this.alertService.success('Categoría eliminada correctamente');
+        this.alertService.success(this.language.t('CATEGORIES.TOAST.DELETED'));
       },
       error: (err: unknown) => this.onDeleteError(err),
     });
@@ -293,16 +322,22 @@ export class CategoryListComponent {
    */
   private onDeleteError(error: unknown): void {
     if (hasApiError(error, 'SYSTEM_RESOURCE_CONFLICT')) {
-      this.alertService.error('Las categorías del sistema no se pueden eliminar', 'Categoría protegida');
+      this.alertService.error(
+        this.language.t('CATEGORIES.TOAST.PROTECTED_DELETE'),
+        this.language.t('CATEGORIES.TOAST.PROTECTED_TITLE'),
+      );
       this.load();
       return;
     }
     if (hasApiError(error, 'UNAUTHORIZED_MODIFICATION')) {
-      this.alertService.error('Esta categoría pertenece a otro usuario', 'Acción no permitida');
+      this.alertService.error(
+        this.language.t('CATEGORIES.TOAST.NOT_OWNER'),
+        this.language.t('CATEGORIES.TOAST.NOT_ALLOWED_TITLE'),
+      );
       this.load();
       return;
     }
-    this.alertService.error(apiErrorMessage(error, 'No se pudo eliminar la categoría'));
+    this.alertService.error(apiErrorMessage(error, this.language.t('CATEGORIES.TOAST.DELETE_FAILED')));
   }
 
   updateItemStatus(id: number, status: CategoryStatus): void {
