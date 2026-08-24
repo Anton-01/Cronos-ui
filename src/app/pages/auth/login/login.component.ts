@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
 import { InputTextModule } from 'primeng/inputtext';
@@ -9,6 +10,7 @@ import { MessageModule } from 'primeng/message';
 import { PasswordModule } from 'primeng/password';
 
 import { AuthService } from 'src/app/core/services/auth.service';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { TokenService } from 'src/app/core/services/token.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
 import { LoginRequest } from 'src/app/core/models/auth.model';
@@ -16,7 +18,16 @@ import { LoginRequest } from 'src/app/core/models/auth.model';
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, ButtonModule, DividerModule, InputTextModule, MessageModule, PasswordModule],
+  imports: [
+    ReactiveFormsModule,
+    RouterLink,
+    TranslatePipe,
+    ButtonModule,
+    DividerModule,
+    InputTextModule,
+    MessageModule,
+    PasswordModule,
+  ],
   templateUrl: './login.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -26,6 +37,7 @@ export class LoginComponent {
   private readonly tokenService = inject(TokenService);
   private readonly router = inject(Router);
   private readonly toastService = inject(ToastService);
+  private readonly language = inject(LanguageService);
 
   readonly isLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
@@ -59,7 +71,10 @@ export class LoginComponent {
         this.isLoading.set(false);
         if (res.data.requiresTwoFactor) {
           this.showTwoFactor.set(true);
-          this.toastService.success('Verificación requerida', 'Ingresa el código de autenticación de dos factores.');
+          this.toastService.success(
+            this.language.t('AUTH.LOGIN.TWO_FACTOR_TITLE'),
+            this.language.t('AUTH.LOGIN.TWO_FACTOR_MESSAGE'),
+          );
         } else {
           this.tokenService.saveTokens(res.data.accessToken, res.data.refreshToken);
           this.tokenService.saveUserInfo(res.data.username, res.data.email);
@@ -68,8 +83,11 @@ export class LoginComponent {
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.errorMessage.set(err?.message || 'Error al iniciar sesión');
-        this.toastService.error('Error', err?.message || 'Credenciales incorrectas');
+        this.errorMessage.set(err?.message || this.language.t('AUTH.LOGIN.FAILED'));
+        this.toastService.error(
+          this.language.t('COMMON.TOAST.ERROR'),
+          err?.message || this.language.t('AUTH.LOGIN.BAD_CREDENTIALS'),
+        );
       },
     });
   }

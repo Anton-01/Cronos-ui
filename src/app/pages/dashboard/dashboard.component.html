@@ -1,11 +1,11 @@
 <div class="mb-4">
   <h2 class="dashboard-greeting m-0">{{ greeting() }}</h2>
-  <p class="mt-1 mb-0 text-color-secondary">What would you like to do today?</p>
+  <p class="mt-1 mb-0 text-color-secondary">{{ subtitle() }}</p>
 </div>
 
 <!-- Metric row — the four accents of Context.md §12.2, in fixed order. -->
 <div class="grid">
-  @for (metric of metrics; track metric.key) {
+  @for (metric of metrics(); track metric.key) {
     <div class="col-12 md:col-6 xl:col-3">
       <app-stat-card
         [label]="metric.label"

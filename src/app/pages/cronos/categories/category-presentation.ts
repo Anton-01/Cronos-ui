@@ -1,24 +1,10 @@
 import { CategoryScope, CategoryStatus, CategoryType } from 'src/app/core/models/category.model';
+import { SelectOption, Translator, statusLabelKey, statusOptions } from 'src/app/shared/i18n/catalog-options';
 
-/** A `p-select` / `p-columnFilter` option with a typed value. */
-export interface SelectOption<T> {
-  label: string;
-  value: T;
-}
+export type { SelectOption, Translator };
 
 /** PrimeNG's `p-tag` severities, narrowed to the ones this module uses. */
 export type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast';
-
-/**
- * Resolves a translation key to display text — `LanguageService.t` bound to a
- * component.
- *
- * The option builders below take one instead of injecting `LanguageService`
- * themselves so this file stays a pure presentation map with no Angular DI,
- * and so every caller re-runs them inside a `computed` that already tracks the
- * active locale.
- */
-export type Translator = (key: string) => string;
 
 const TYPE_LABEL_KEYS: Readonly<Record<CategoryType, string>> = {
   PRODUCT: 'CATEGORIES.TYPE.PRODUCT',
@@ -28,11 +14,6 @@ const TYPE_LABEL_KEYS: Readonly<Record<CategoryType, string>> = {
 const SCOPE_LABEL_KEYS: Readonly<Record<CategoryScope, string>> = {
   SYSTEM: 'CATEGORIES.SCOPE.SYSTEM',
   USER: 'CATEGORIES.SCOPE.USER',
-};
-
-const STATUS_LABEL_KEYS: Readonly<Record<CategoryStatus, string>> = {
-  ACTIVE: 'COMMON.STATUS.ACTIVE',
-  INACTIVE: 'COMMON.STATUS.INACTIVE',
 };
 
 /**
@@ -53,7 +34,6 @@ const SCOPE_ICONS: Readonly<Record<CategoryScope, string>> = {
 /** Display order for the type selector — also the order the API documents. */
 const TYPE_VALUES: readonly CategoryType[] = ['PRODUCT', 'INGREDIENT'];
 const SCOPE_VALUES: readonly CategoryScope[] = ['SYSTEM', 'USER'];
-const STATUS_VALUES: readonly CategoryStatus[] = ['ACTIVE', 'INACTIVE'];
 
 export function categoryTypeOptions(t: Translator): SelectOption<CategoryType>[] {
   return TYPE_VALUES.map((value) => ({ label: t(TYPE_LABEL_KEYS[value]), value }));
@@ -63,9 +43,8 @@ export function categoryScopeOptions(t: Translator): SelectOption<CategoryScope>
   return SCOPE_VALUES.map((value) => ({ label: t(SCOPE_LABEL_KEYS[value]), value }));
 }
 
-export function categoryStatusOptions(t: Translator): SelectOption<CategoryStatus>[] {
-  return STATUS_VALUES.map((value) => ({ label: t(STATUS_LABEL_KEYS[value]), value }));
-}
+/** Status is common to every catalog entity, so it comes from the shared map. */
+export const categoryStatusOptions = statusOptions;
 
 export function categoryTypeLabelKey(type: CategoryType): string {
   return TYPE_LABEL_KEYS[type];
@@ -76,7 +55,7 @@ export function categoryScopeLabelKey(scope: CategoryScope): string {
 }
 
 export function categoryStatusLabelKey(status: CategoryStatus): string {
-  return STATUS_LABEL_KEYS[status];
+  return statusLabelKey(status);
 }
 
 export function categoryScopeSeverity(scope: CategoryScope): TagSeverity {

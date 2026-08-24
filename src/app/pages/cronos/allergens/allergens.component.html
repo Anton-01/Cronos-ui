@@ -15,7 +15,7 @@
     [sortOrder]="1"
     [rowHover]="true"
     [showCurrentPageReport]="true"
-    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
+    [currentPageReportTemplate]="'COMMON.TABLE.PAGE_REPORT' | translate"
   >
     <ng-template pTemplate="caption">
       <div class="flex align-items-center justify-content-between flex-wrap gap-2">
@@ -24,12 +24,12 @@
           <input
             pInputText
             type="text"
-            placeholder="Buscar alérgeno..."
+            [placeholder]="'ALLERGENS.SEARCH_PLACEHOLDER' | translate"
             (input)="table.filterGlobal($any($event.target).value, 'contains')"
           />
         </p-iconfield>
         <div class="flex align-items-center gap-3">
-          <p-button label="Nuevo Alérgeno" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
+          <p-button [label]="'ALLERGENS.CREATE' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
         </div>
       </div>
     </ng-template>
@@ -37,45 +37,60 @@
     <ng-template pTemplate="header">
       <tr>
         <th pSortableColumn="name" style="min-width: 11rem">
-          Nombre
+          {{ 'COMMON.TABLE.NAME' | translate }}
           <p-sortIcon field="name" />
-          <p-columnFilter type="text" field="name" display="menu" placeholder="Filtrar por nombre" />
+          <p-columnFilter
+            type="text"
+            field="name"
+            display="menu"
+            [placeholder]="'COMMON.TABLE.FILTER_BY_NAME' | translate"
+          />
         </th>
         <th pSortableColumn="alternativeName" style="min-width: 11rem">
-          Nombre Alternativo
+          {{ 'ALLERGENS.FIELDS.ALTERNATIVE_NAME' | translate }}
           <p-sortIcon field="alternativeName" />
-          <p-columnFilter type="text" field="alternativeName" display="menu" placeholder="Filtrar" />
+          <p-columnFilter
+            type="text"
+            field="alternativeName"
+            display="menu"
+            [placeholder]="'COMMON.TABLE.FILTER' | translate"
+          />
         </th>
         <th pSortableColumn="description" style="min-width: 14rem">
-          Descripción
+          {{ 'COMMON.TABLE.DESCRIPTION' | translate }}
           <p-sortIcon field="description" />
-          <p-columnFilter type="text" field="description" display="menu" placeholder="Filtrar" />
+          <p-columnFilter
+            type="text"
+            field="description"
+            display="menu"
+            [placeholder]="'COMMON.TABLE.FILTER' | translate"
+          />
         </th>
         <th style="width: 10rem">
-          Estado
+          {{ 'COMMON.TABLE.STATUS' | translate }}
           <p-columnFilter field="status" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
             <ng-template pTemplate="filter" let-value let-filter="filterCallback">
               <p-select
                 [ngModel]="value"
-                [options]="statusFilterOptions"
+                [options]="statusFilterOptions()"
                 optionLabel="label"
                 optionValue="value"
-                placeholder="Todos"
+                [placeholder]="'COMMON.ALL' | translate"
                 [showClear]="true"
                 (onChange)="filter($event.value)"
               />
             </ng-template>
           </p-columnFilter>
         </th>
-        <th style="width: 8rem" class="text-right">Acciones</th>
+        <th style="width: 8rem" class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>
     </ng-template>
 
     <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
       <tr>
         <td class="font-semibold">{{ item.name }}</td>
-        <td>{{ item.alternativeName || '-' }}</td>
-        <td>{{ item.description || '-' }}</td>
+        <td>{{ item.alternativeName || ('COMMON.EMPTY_VALUE' | translate) }}</td>
+        <td>{{ item.description || ('COMMON.EMPTY_VALUE' | translate) }}</td>
         <td>
           <app-status-toggle
             [item]="item"
@@ -90,7 +105,7 @@
             severity="info"
             [text]="true"
             [rounded]="true"
-            pTooltip="Editar"
+            [pTooltip]="'COMMON.EDIT' | translate"
             (onClick)="openEdit(item)"
           />
           <p-button
@@ -98,7 +113,7 @@
             severity="danger"
             [text]="true"
             [rounded]="true"
-            pTooltip="Eliminar"
+            [pTooltip]="'COMMON.DELETE' | translate"
             (onClick)="confirmDelete(item)"
           />
         </td>
@@ -113,14 +128,14 @@
 
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="5" class="text-center text-color-secondary py-5">No hay alérgenos registrados</td>
+        <td colspan="5" class="text-center text-color-secondary py-5">{{ 'ALLERGENS.EMPTY' | translate }}</td>
       </tr>
     </ng-template>
   </p-table>
 </p-card>
 
 <p-dialog
-  [header]="selectedItem() ? 'Editar Alérgeno' : 'Nuevo Alérgeno'"
+  [header]="(selectedItem() ? 'ALLERGENS.EDIT' : 'ALLERGENS.CREATE') | translate"
   [visible]="showForm()"
   (visibleChange)="!$event && closeForm()"
   [modal]="true"
@@ -129,29 +144,48 @@
 >
   <form [formGroup]="form" (ngSubmit)="saveForm()" id="allergenForm" class="flex flex-column gap-3">
     <div class="flex flex-column gap-1">
-      <label for="allergenName" class="font-medium">Nombre <span class="text-red-500">*</span></label>
-      <input pInputText id="allergenName" formControlName="name" placeholder="Nombre del alérgeno" />
+      <label for="allergenName" class="font-medium">
+        {{ 'COMMON.TABLE.NAME' | translate }} <span class="text-red-500">*</span>
+      </label>
+      <input
+        pInputText
+        id="allergenName"
+        formControlName="name"
+        [placeholder]="'ALLERGENS.PLACEHOLDERS.NAME' | translate"
+      />
       @if (form.controls.name.hasError('required') && form.controls.name.touched) {
-        <small class="text-red-500">El nombre es requerido</small>
+        <small class="text-red-500">{{ 'ALLERGENS.ERRORS.NAME_REQUIRED' | translate }}</small>
       }
     </div>
     <div class="flex flex-column gap-1">
-      <label for="allergenAlternativeName" class="font-medium">Nombre Alternativo</label>
-      <input pInputText id="allergenAlternativeName" formControlName="alternativeName" placeholder="Nombre alternativo opcional" />
+      <label for="allergenAlternativeName" class="font-medium">
+        {{ 'ALLERGENS.FIELDS.ALTERNATIVE_NAME' | translate }}
+      </label>
+      <input
+        pInputText
+        id="allergenAlternativeName"
+        formControlName="alternativeName"
+        [placeholder]="'ALLERGENS.PLACEHOLDERS.ALTERNATIVE_NAME' | translate"
+      />
     </div>
     <div class="flex flex-column gap-1">
-      <label for="allergenDescription" class="font-medium">Descripción</label>
-      <textarea pTextarea id="allergenDescription" formControlName="description" rows="3" placeholder="Descripción opcional"></textarea>
+      <label for="allergenDescription" class="font-medium">{{ 'COMMON.TABLE.DESCRIPTION' | translate }}</label>
+      <textarea
+        pTextarea
+        id="allergenDescription"
+        formControlName="description"
+        rows="3"
+        [placeholder]="'COMMON.OPTIONAL_DESCRIPTION' | translate"
+      ></textarea>
     </div>
   </form>
   <ng-template pTemplate="footer">
-    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="closeForm()" />
+    <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="closeForm()" />
     <p-button
-      [label]="selectedItem() ? 'Actualizar' : 'Crear'"
-      type="submit"
-      form="allergenForm"
-      [disabled]="form.invalid"
+      [label]="(selectedItem() ? 'COMMON.UPDATE' : 'COMMON.CREATE') | translate"
+      [disabled]="form.invalid || isSaving()"
       [loading]="isSaving()"
+      (onClick)="saveForm()"
     />
   </ng-template>
 </p-dialog>

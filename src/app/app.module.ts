@@ -134,7 +134,20 @@ registerLocaleData(localeEsMX, 'es-MX');
      * After bootstrap `LanguageService` is the only writer — see its `apply()`.
      */
     provideTranslateService({
-      loader: provideTranslateHttpLoader({ prefix: './assets/i18n/', suffix: '.json' }),
+      // `useHttpBackend` puts the bundle fetch on `HttpBackend`, skipping the
+      // interceptor chain. That is required, not cosmetic: `TranslateService`
+      // calls `use(lang)` from its own constructor, which runs while
+      // `LanguageService` is still being constructed. Going through
+      // `HttpClient` would build the interceptor chain there and construct
+      // `ErrorInterceptorService` → `AlertService` → `LanguageService`, a
+      // circular dependency at first paint. It also keeps a static asset from
+      // carrying `Authorization` or tripping the 401-refresh flow, which is
+      // what `languageInterceptor` already says about these bundles.
+      loader: provideTranslateHttpLoader({
+        prefix: './assets/i18n/',
+        suffix: '.json',
+        useHttpBackend: true,
+      }),
       lang: resolveStoredLanguage(),
       fallbackLang: DEFAULT_LANGUAGE,
     }),

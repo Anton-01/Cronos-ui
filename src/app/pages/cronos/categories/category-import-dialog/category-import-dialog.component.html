@@ -1,5 +1,5 @@
 <p-dialog
-  header="Importar categorías desde CSV"
+  [header]="'CATEGORIES.IMPORT.TITLE' | translate"
   [visible]="true"
   (visibleChange)="!$event && close()"
   [modal]="true"
@@ -8,8 +8,7 @@
 >
   <div class="flex flex-column gap-3">
     <p class="m-0 text-color-secondary">
-      El archivo debe incluir las columnas <strong>name</strong>, <strong>description</strong> y
-      <strong>type</strong> (<code>PRODUCT</code> o <code>INGREDIENT</code>). Máximo {{ maxFileSizeLabel }}.
+      {{ 'CATEGORIES.IMPORT.HINT' | translate: { maxSize: maxFileSizeLabel } }}
     </p>
 
     <input
@@ -34,14 +33,14 @@
           severity="secondary"
           [text]="true"
           [rounded]="true"
-          pTooltip="Quitar archivo"
+          [pTooltip]="'CATEGORIES.IMPORT.REMOVE_FILE' | translate"
           [disabled]="isImporting()"
           (onClick)="clearFile()"
         />
       </div>
     } @else {
       <p-button
-        label="Seleccionar archivo CSV"
+        [label]="'CATEGORIES.IMPORT.CHOOSE_FILE' | translate"
         icon="pi pi-upload"
         severity="secondary"
         [outlined]="true"
@@ -56,10 +55,22 @@
 
     @if (result(); as summary) {
       <div class="flex flex-wrap align-items-center gap-2">
-        <p-tag icon="pi pi-list" [value]="summary.totalRows + ' filas leídas'" severity="secondary" />
-        <p-tag icon="pi pi-check" [value]="summary.successCount + ' importadas'" severity="success" />
+        <p-tag
+          icon="pi pi-list"
+          [value]="'CATEGORIES.IMPORT.ROWS_READ' | translate: { count: summary.totalRows }"
+          severity="secondary"
+        />
+        <p-tag
+          icon="pi pi-check"
+          [value]="'CATEGORIES.IMPORT.ROWS_IMPORTED' | translate: { count: summary.successCount }"
+          severity="success"
+        />
         @if (hasFailures()) {
-          <p-tag icon="pi pi-times" [value]="summary.failureCount + ' con error'" severity="danger" />
+          <p-tag
+            icon="pi pi-times"
+            [value]="'CATEGORIES.IMPORT.ROWS_FAILED' | translate: { count: summary.failureCount }"
+            severity="danger"
+          />
         }
       </div>
 
@@ -67,15 +78,15 @@
         <p-table [value]="rowErrors()" [scrollable]="true" scrollHeight="14rem" styleClass="p-datatable-sm">
           <ng-template pTemplate="header">
             <tr>
-              <th style="width: 5rem">Fila</th>
-              <th style="width: 9rem">Campo</th>
-              <th>Detalle</th>
+              <th style="width: 5rem">{{ 'CATEGORIES.IMPORT.TABLE.ROW' | translate }}</th>
+              <th style="width: 9rem">{{ 'CATEGORIES.IMPORT.TABLE.FIELD' | translate }}</th>
+              <th>{{ 'CATEGORIES.IMPORT.TABLE.DETAIL' | translate }}</th>
             </tr>
           </ng-template>
           <ng-template pTemplate="body" let-rowError>
             <tr>
               <td>{{ rowError.row }}</td>
-              <td>{{ rowError.field || '—' }}</td>
+              <td>{{ rowError.field || ('COMMON.EMPTY_VALUE_DASH' | translate) }}</td>
               <td>{{ rowError.message }}</td>
             </tr>
           </ng-template>
@@ -86,14 +97,14 @@
 
   <ng-template pTemplate="footer">
     <p-button
-      [label]="result() ? 'Cerrar' : 'Cancelar'"
+      [label]="(result() ? 'COMMON.CLOSE' : 'COMMON.CANCEL') | translate"
       severity="secondary"
       [outlined]="true"
       [disabled]="isImporting()"
       (onClick)="close()"
     />
     <p-button
-      label="Importar"
+      [label]="'CATEGORIES.IMPORT.SUBMIT' | translate"
       icon="pi pi-cloud-upload"
       [disabled]="!canImport()"
       [loading]="isImporting()"

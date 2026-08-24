@@ -18,16 +18,39 @@
       "SUCCESS": "Success",
       "ERROR": "Error",
       "WARNING": "Warning",
-      "INFO": "Information"
+      "INFO": "Information",
+      "SAVE_FAILED": "Could not save",
+      "DELETE_FAILED": "Could not delete",
+      "LOAD_FAILED": "The information could not be loaded"
     },
     "CONFIRM": {
       "DELETE_TITLE": "Delete record?",
       "DELETE_MESSAGE": "\"{{ name }}\" will be deleted. This action cannot be undone.",
       "ACCEPT": "Yes, continue",
       "ACCEPT_DELETE": "Yes, delete"
-    }
+    },
+    "STATUS_TOGGLE": {
+      "CONFIRM_TITLE": "Update status?",
+      "CONFIRM_MESSAGE": "\"{{ name }}\" will become {{ status }}.",
+      "ACCEPT": "Yes, change it",
+      "SUCCESS": "Status updated",
+      "FAILED": "The status could not be updated"
+    },
+    "EMPTY_VALUE_DASH": "—",
+    "TABLE": {
+      "PAGE_REPORT": "Showing {first} to {last} of {totalRecords} records",
+      "NAME": "Name",
+      "DESCRIPTION": "Description",
+      "CODE": "Code",
+      "STATUS": "Status",
+      "ACTIONS": "Actions",
+      "FILTER_BY_NAME": "Filter by name",
+      "FILTER_BY_DESCRIPTION": "Filter by description",
+      "FILTER_BY_CODE": "Filter by code",
+      "FILTER": "Filter"
+    },
+    "OPTIONAL_DESCRIPTION": "Optional description"
   },
-
   "NAV": {
     "SECTIONS": {
       "DASHBOARDS": "Dashboards",
@@ -55,12 +78,10 @@
       "SIGN_OUT": "Sign Out"
     }
   },
-
   "BREADCRUMB": {
     "HOME": "Home",
     "CATALOGS": "Catalogs"
   },
-
   "CATEGORIES": {
     "TYPE": {
       "PRODUCT": "Product",
@@ -143,6 +164,219 @@
       "PROTECTED_EDIT": "System categories cannot be modified",
       "NOT_ALLOWED_TITLE": "Action not allowed",
       "NOT_OWNER": "This category belongs to another user"
+    },
+    "IMPORT": {
+      "TITLE": "Import categories from CSV",
+      "HINT": "The file must include the columns name, description and type (PRODUCT or INGREDIENT). Maximum {{ maxSize }}.",
+      "CHOOSE_FILE": "Choose CSV file",
+      "REMOVE_FILE": "Remove file",
+      "SUBMIT": "Import",
+      "ROWS_READ": "{{ count }} rows read",
+      "ROWS_IMPORTED": "{{ count }} imported",
+      "ROWS_FAILED": "{{ count }} with errors",
+      "TABLE": {
+        "ROW": "Row",
+        "FIELD": "Field",
+        "DETAIL": "Detail"
+      },
+      "ERRORS": {
+        "NOT_CSV": "The file must have a .csv extension",
+        "TOO_LARGE": "The file exceeds the maximum size of {{ maxSize }}"
+      },
+      "TOAST": {
+        "SUCCESS": "{{ count }} of {{ total }} categories imported successfully",
+        "NONE_IMPORTED": "No category was imported. Check the error details.",
+        "FAILED": "The file could not be imported"
+      }
+    }
+  },
+  "ERRORS": {
+    "PAGE": {
+      "BACK_HOME": "Back to home",
+      "404": {
+        "TITLE": "Page not found",
+        "MESSAGE": "The page you are looking for does not exist or was moved."
+      },
+      "500": {
+        "TITLE": "Server error",
+        "MESSAGE": "Something went wrong. Please try again later."
+      }
+    }
+  },
+  "DASHBOARD": {
+    "TITLE": "Dashboard",
+    "GREETING": "Hi, {{ name }}!",
+    "GREETING_ANONYMOUS": "Welcome!",
+    "SUBTITLE": "What would you like to do today?",
+    "TILES": {
+      "RECIPES": {
+        "LABEL": "My Recipes",
+        "CAPTION": "Recipes with calculated costs"
+      },
+      "QUOTES": {
+        "LABEL": "My Quotes",
+        "CAPTION": "Quotes generated for clients"
+      },
+      "INGREDIENTS": {
+        "LABEL": "Ingredients",
+        "CAPTION": "Items in your catalog"
+      },
+      "FIXED_COSTS": {
+        "LABEL": "Fixed Costs",
+        "CAPTION": "Costs tracked for your operation"
+      }
+    }
+  },
+  "APP": {
+    "TAGLINE": "Specialty Bakery Management System",
+    "FOOTER": "Cronos — Full control of your recipes, costs and quotes",
+    "NAME_TAGLINE": "Cronos — Specialty Bakery Management System"
+  },
+  "AUTH": {
+    "FIELDS": {
+      "USERNAME": "Username",
+      "PASSWORD": "Password",
+      "CONFIRM_PASSWORD": "Confirm password",
+      "EMAIL": "Email address",
+      "FIRST_NAME": "First name",
+      "LAST_NAME": "Last name",
+      "PHONE": "Phone",
+      "TWO_FACTOR_CODE": "2FA code"
+    },
+    "ERRORS": {
+      "USERNAME_REQUIRED": "Username is required",
+      "USERNAME_MIN": "Username is required (minimum 3 characters)",
+      "PASSWORD_REQUIRED": "Password is required",
+      "PASSWORD_MIN": "Minimum 6 characters",
+      "PASSWORD_MISMATCH": "Passwords do not match",
+      "EMAIL_INVALID": "A valid email is required"
+    },
+    "LOGIN": {
+      "TITLE": "Sign In",
+      "SUBMIT": "Sign In",
+      "WITH_CREDENTIALS": "Or with credentials",
+      "USERNAME_PLACEHOLDER": "Your username",
+      "PASSWORD_PLACEHOLDER": "Your password",
+      "FORGOT_PASSWORD": "Forgot your password?",
+      "NO_ACCOUNT": "Don't have an account?",
+      "SIGN_UP_LINK": "Sign up",
+      "TWO_FACTOR_TITLE": "Verification required",
+      "TWO_FACTOR_MESSAGE": "Enter your two-factor authentication code.",
+      "FAILED": "Sign-in failed",
+      "BAD_CREDENTIALS": "Incorrect credentials"
+    },
+    "REGISTER": {
+      "TITLE": "Create Account",
+      "SUBMIT": "Create Account",
+      "USERNAME_PLACEHOLDER": "user123",
+      "EMAIL_PLACEHOLDER": "email@example.com",
+      "HAVE_ACCOUNT": "Already have an account?",
+      "SIGN_IN_LINK": "Sign in",
+      "SUCCESS_TITLE": "Registration successful",
+      "SUCCESS_MESSAGE": "Your account has been created. Please sign in.",
+      "FAILED": "Registration failed",
+      "FAILED_DETAIL": "The registration could not be completed"
+    },
+    "FORGOT_PASSWORD": {
+      "TITLE": "Recover Password",
+      "MESSAGE": "Password recovery is handled by the system administrator. Contact them to restore your access.",
+      "BACK_TO_LOGIN": "Back to sign in"
+    }
+  },
+  "LAYOUT": {
+    "NAV_ARIA": "Main navigation",
+    "TOGGLE_NAV": "Toggle navigation",
+    "SEARCH": "Search",
+    "CHANGE_LANGUAGE": "Change language",
+    "CHANGE_LANGUAGE_ARIA": "Change language, current: {{ language }}",
+    "TOGGLE_THEME": "Toggle theme",
+    "VERSION": "Cronos v{{ version }}"
+  },
+  "UNIT_TYPES": {
+    "TITLE": "Unit Types",
+    "DESCRIPTION": "Manage the system's unit type catalog",
+    "SEARCH_PLACEHOLDER": "Search unit type...",
+    "CREATE": "New Unit Type",
+    "EDIT": "Edit Unit Type",
+    "EMPTY": "No unit types registered yet",
+    "FIELDS": {
+      "DIMENSION": "Dimension"
+    },
+    "FILTER_BY_DIMENSION": "Filter by dimension",
+    "PLACEHOLDERS": {
+      "CODE": "Identifier code",
+      "NAME": "Unit type name",
+      "DIMENSION": "e.g. mass, volume, length"
+    },
+    "ERRORS": {
+      "CODE_REQUIRED": "Code is required",
+      "NAME_REQUIRED": "Name is required",
+      "DIMENSION_REQUIRED": "Dimension is required"
+    },
+    "TOAST": {
+      "CREATED": "Unit type created successfully",
+      "UPDATED": "Unit type updated successfully",
+      "DELETED": "Unit type deleted successfully",
+      "LOAD_FAILED": "Unit types could not be loaded"
+    }
+  },
+  "ALLERGENS": {
+    "TITLE": "Allergens",
+    "DESCRIPTION": "Manage the system's allergen catalog",
+    "SEARCH_PLACEHOLDER": "Search allergen...",
+    "CREATE": "New Allergen",
+    "EDIT": "Edit Allergen",
+    "EMPTY": "No allergens registered yet",
+    "FIELDS": {
+      "ALTERNATIVE_NAME": "Alternative Name"
+    },
+    "PLACEHOLDERS": {
+      "NAME": "Allergen name",
+      "ALTERNATIVE_NAME": "Optional alternative name"
+    },
+    "ERRORS": {
+      "NAME_REQUIRED": "Name is required"
+    },
+    "TOAST": {
+      "CREATED": "Allergen created successfully",
+      "UPDATED": "Allergen updated successfully",
+      "DELETED": "Allergen deleted successfully",
+      "LOAD_FAILED": "Allergens could not be loaded"
+    }
+  },
+  "MEASUREMENT_UNITS": {
+    "TITLE": "Measurement Units",
+    "DESCRIPTION": "Manage the system's measurement unit catalog",
+    "SEARCH_PLACEHOLDER": "Search measurement unit...",
+    "CREATE": "New Unit",
+    "EDIT": "Edit Measurement Unit",
+    "EMPTY": "No measurement units registered yet",
+    "FIELDS": {
+      "PLURAL": "Plural",
+      "UNIT_TYPE": "Unit Type",
+      "BASE": "Base",
+      "BASE_FACTOR_SHORT": "Base Factor",
+      "BASE_FACTOR": "Factor to base unit",
+      "IS_BASE": "Is base unit"
+    },
+    "PLACEHOLDERS": {
+      "CODE": "e.g. kg",
+      "NAME": "e.g. kilogram",
+      "PLURAL": "e.g. kilograms",
+      "UNIT_TYPE": "e.g. mass"
+    },
+    "ERRORS": {
+      "CODE_REQUIRED": "Code is required",
+      "NAME_REQUIRED": "Name is required",
+      "PLURAL_REQUIRED": "Plural is required",
+      "UNIT_TYPE_REQUIRED": "Unit type is required",
+      "BASE_FACTOR_REQUIRED": "Factor is required"
+    },
+    "TOAST": {
+      "CREATED": "Measurement unit created successfully",
+      "UPDATED": "Measurement unit updated successfully",
+      "DELETED": "Measurement unit deleted successfully",
+      "LOAD_FAILED": "Measurement units could not be loaded"
     }
   }
 }

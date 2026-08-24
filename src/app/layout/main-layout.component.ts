@@ -33,6 +33,9 @@ import { TokenService } from 'src/app/core/services/token.service';
 import { NavItem, NavSection, activePrefixesOf, buildNavSections, buildUserMenu } from './app-menu';
 
 const SLIM_STORAGE_KEY = 'cronos_sidebar_slim';
+
+/** Shown in the sidebar footer. */
+const APP_VERSION = '1.0';
 const DESKTOP_BREAKPOINT = 992;
 
 /**
@@ -127,6 +130,9 @@ export class MainLayoutComponent implements OnInit {
   );
 
   readonly breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: '/dashboard' };
+
+  /** Interpolated into the sidebar footer rather than baked into the copy. */
+  readonly appVersion = APP_VERSION;
 
   /** Section headers and item labels are translation keys; resolve them here. */
   navLabel(key: string): string {

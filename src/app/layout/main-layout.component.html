@@ -12,7 +12,7 @@
       </a>
     </div>
 
-    <nav class="layout-menu" aria-label="Main navigation">
+    <nav class="layout-menu" [attr.aria-label]="'LAYOUT.NAV_ARIA' | translate">
       @for (section of navSections; track section.labelKey) {
         <div class="layout-menu-section">
           <span class="layout-menu-section-title">{{ section.labelKey | translate }}</span>
@@ -85,7 +85,7 @@
     </nav>
 
     <div class="layout-sidebar-footer">
-      <span class="layout-sidebar-version">Cronos v1.0</span>
+      <span class="layout-sidebar-version">{{ 'LAYOUT.VERSION' | translate: { version: appVersion } }}</span>
     </div>
   </aside>
 
@@ -102,7 +102,7 @@
           [text]="true"
           [rounded]="true"
           (onClick)="toggleSidebar()"
-          ariaLabel="Toggle navigation"
+          [ariaLabel]="'LAYOUT.TOGGLE_NAV' | translate"
         />
       </div>
 
@@ -112,8 +112,8 @@
           <input
             pInputText
             type="search"
-            placeholder="Search"
-            aria-label="Search"
+            [placeholder]="'LAYOUT.SEARCH' | translate"
+            [attr.aria-label]="'LAYOUT.SEARCH' | translate"
             [ngModel]="searchTerm()"
             (ngModelChange)="searchTerm.set($event)"
           />
@@ -125,8 +125,10 @@
           class="layout-lang-button flex align-items-center gap-2 border-round-xl"
           (click)="languageMenu.toggle($event)"
           aria-haspopup="true"
-          [attr.aria-label]="'Change language, current: ' + language.currentOption().label"
-          pTooltip="Change language"
+          [attr.aria-label]="
+            'LAYOUT.CHANGE_LANGUAGE_ARIA' | translate: { language: language.currentOption().label }
+          "
+          [pTooltip]="'LAYOUT.CHANGE_LANGUAGE' | translate"
           tooltipPosition="bottom"
         >
           <span class="layout-lang-flag" aria-hidden="true">{{ language.currentOption().flag }}</span>
@@ -141,9 +143,9 @@
           [text]="true"
           [rounded]="true"
           (onClick)="theme.toggle()"
-          pTooltip="Toggle theme"
+          [pTooltip]="'LAYOUT.TOGGLE_THEME' | translate"
           tooltipPosition="bottom"
-          ariaLabel="Toggle theme"
+          [ariaLabel]="'LAYOUT.TOGGLE_THEME' | translate"
         />
 
         <button
@@ -183,7 +185,7 @@
       </div>
 
       <footer class="layout-footer">
-        <span>Cronos — Specialty Bakery Management System</span>
+        <span>{{ 'APP.NAME_TAGLINE' | translate }}</span>
       </footer>
     </main>
   </div>

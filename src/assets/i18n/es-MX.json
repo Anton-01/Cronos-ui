@@ -18,16 +18,39 @@
       "SUCCESS": "Éxito",
       "ERROR": "Error",
       "WARNING": "Advertencia",
-      "INFO": "Información"
+      "INFO": "Información",
+      "SAVE_FAILED": "No se pudo guardar",
+      "DELETE_FAILED": "No se pudo eliminar",
+      "LOAD_FAILED": "No se pudo cargar la información"
     },
     "CONFIRM": {
       "DELETE_TITLE": "¿Eliminar registro?",
       "DELETE_MESSAGE": "Se eliminará \"{{ name }}\". Esta acción no se puede deshacer.",
       "ACCEPT": "Sí, continuar",
       "ACCEPT_DELETE": "Sí, eliminar"
-    }
+    },
+    "STATUS_TOGGLE": {
+      "CONFIRM_TITLE": "¿Actualizar estatus?",
+      "CONFIRM_MESSAGE": "\"{{ name }}\" pasará a estar {{ status }}.",
+      "ACCEPT": "Sí, cambiar",
+      "SUCCESS": "Estatus actualizado",
+      "FAILED": "No se pudo actualizar el estatus"
+    },
+    "EMPTY_VALUE_DASH": "—",
+    "TABLE": {
+      "PAGE_REPORT": "Mostrando {first} a {last} de {totalRecords} registros",
+      "NAME": "Nombre",
+      "DESCRIPTION": "Descripción",
+      "CODE": "Código",
+      "STATUS": "Estado",
+      "ACTIONS": "Acciones",
+      "FILTER_BY_NAME": "Filtrar por nombre",
+      "FILTER_BY_DESCRIPTION": "Filtrar por descripción",
+      "FILTER_BY_CODE": "Filtrar por código",
+      "FILTER": "Filtrar"
+    },
+    "OPTIONAL_DESCRIPTION": "Descripción opcional"
   },
-
   "NAV": {
     "SECTIONS": {
       "DASHBOARDS": "Tableros",
@@ -55,12 +78,10 @@
       "SIGN_OUT": "Cerrar Sesión"
     }
   },
-
   "BREADCRUMB": {
     "HOME": "Inicio",
     "CATALOGS": "Catálogos"
   },
-
   "CATEGORIES": {
     "TYPE": {
       "PRODUCT": "Producto",
@@ -143,6 +164,219 @@
       "PROTECTED_EDIT": "Las categorías del sistema no se pueden modificar",
       "NOT_ALLOWED_TITLE": "Acción no permitida",
       "NOT_OWNER": "Esta categoría pertenece a otro usuario"
+    },
+    "IMPORT": {
+      "TITLE": "Importar categorías desde CSV",
+      "HINT": "El archivo debe incluir las columnas name, description y type (PRODUCT o INGREDIENT). Máximo {{ maxSize }}.",
+      "CHOOSE_FILE": "Seleccionar archivo CSV",
+      "REMOVE_FILE": "Quitar archivo",
+      "SUBMIT": "Importar",
+      "ROWS_READ": "{{ count }} filas leídas",
+      "ROWS_IMPORTED": "{{ count }} importadas",
+      "ROWS_FAILED": "{{ count }} con error",
+      "TABLE": {
+        "ROW": "Fila",
+        "FIELD": "Campo",
+        "DETAIL": "Detalle"
+      },
+      "ERRORS": {
+        "NOT_CSV": "El archivo debe tener extensión .csv",
+        "TOO_LARGE": "El archivo supera el tamaño máximo de {{ maxSize }}"
+      },
+      "TOAST": {
+        "SUCCESS": "{{ count }} de {{ total }} categorías importadas correctamente",
+        "NONE_IMPORTED": "No se importó ninguna categoría. Revisa el detalle de errores.",
+        "FAILED": "No se pudo importar el archivo"
+      }
+    }
+  },
+  "ERRORS": {
+    "PAGE": {
+      "BACK_HOME": "Volver al inicio",
+      "404": {
+        "TITLE": "Página no encontrada",
+        "MESSAGE": "La página que buscas no existe o fue movida."
+      },
+      "500": {
+        "TITLE": "Error del servidor",
+        "MESSAGE": "Algo salió mal. Por favor intenta de nuevo más tarde."
+      }
+    }
+  },
+  "DASHBOARD": {
+    "TITLE": "Tablero",
+    "GREETING": "¡Hola, {{ name }}!",
+    "GREETING_ANONYMOUS": "¡Bienvenido!",
+    "SUBTITLE": "¿Qué te gustaría hacer hoy?",
+    "TILES": {
+      "RECIPES": {
+        "LABEL": "Mis Recetas",
+        "CAPTION": "Recetas con costos calculados"
+      },
+      "QUOTES": {
+        "LABEL": "Mis Cotizaciones",
+        "CAPTION": "Cotizaciones generadas para clientes"
+      },
+      "INGREDIENTS": {
+        "LABEL": "Ingredientes",
+        "CAPTION": "Artículos en tu catálogo"
+      },
+      "FIXED_COSTS": {
+        "LABEL": "Costos Fijos",
+        "CAPTION": "Costos registrados de tu operación"
+      }
+    }
+  },
+  "APP": {
+    "TAGLINE": "Sistema de Gestión para Repostería Especializada",
+    "FOOTER": "Cronos — Control total de tus recetas, costos y cotizaciones",
+    "NAME_TAGLINE": "Cronos — Sistema de Gestión para Repostería Especializada"
+  },
+  "AUTH": {
+    "FIELDS": {
+      "USERNAME": "Usuario",
+      "PASSWORD": "Contraseña",
+      "CONFIRM_PASSWORD": "Confirmar contraseña",
+      "EMAIL": "Correo electrónico",
+      "FIRST_NAME": "Nombre",
+      "LAST_NAME": "Apellido",
+      "PHONE": "Teléfono",
+      "TWO_FACTOR_CODE": "Código 2FA"
+    },
+    "ERRORS": {
+      "USERNAME_REQUIRED": "El usuario es requerido",
+      "USERNAME_MIN": "Usuario requerido (mínimo 3 caracteres)",
+      "PASSWORD_REQUIRED": "La contraseña es requerida",
+      "PASSWORD_MIN": "Mínimo 6 caracteres",
+      "PASSWORD_MISMATCH": "Las contraseñas no coinciden",
+      "EMAIL_INVALID": "Correo válido requerido"
+    },
+    "LOGIN": {
+      "TITLE": "Iniciar Sesión",
+      "SUBMIT": "Iniciar Sesión",
+      "WITH_CREDENTIALS": "O con credenciales",
+      "USERNAME_PLACEHOLDER": "Tu usuario",
+      "PASSWORD_PLACEHOLDER": "Tu contraseña",
+      "FORGOT_PASSWORD": "¿Olvidaste tu contraseña?",
+      "NO_ACCOUNT": "¿No tienes cuenta?",
+      "SIGN_UP_LINK": "Regístrate",
+      "TWO_FACTOR_TITLE": "Verificación requerida",
+      "TWO_FACTOR_MESSAGE": "Ingresa el código de autenticación de dos factores.",
+      "FAILED": "Error al iniciar sesión",
+      "BAD_CREDENTIALS": "Credenciales incorrectas"
+    },
+    "REGISTER": {
+      "TITLE": "Crear Cuenta",
+      "SUBMIT": "Crear Cuenta",
+      "USERNAME_PLACEHOLDER": "usuario123",
+      "EMAIL_PLACEHOLDER": "correo@ejemplo.com",
+      "HAVE_ACCOUNT": "¿Ya tienes cuenta?",
+      "SIGN_IN_LINK": "Inicia sesión",
+      "SUCCESS_TITLE": "Registro exitoso",
+      "SUCCESS_MESSAGE": "Tu cuenta ha sido creada. Inicia sesión.",
+      "FAILED": "Error al registrar",
+      "FAILED_DETAIL": "No se pudo completar el registro"
+    },
+    "FORGOT_PASSWORD": {
+      "TITLE": "Recuperar Contraseña",
+      "MESSAGE": "La recuperación de contraseña se gestiona con el administrador del sistema. Contáctalo para restablecer tu acceso.",
+      "BACK_TO_LOGIN": "Volver al inicio de sesión"
+    }
+  },
+  "LAYOUT": {
+    "NAV_ARIA": "Navegación principal",
+    "TOGGLE_NAV": "Alternar navegación",
+    "SEARCH": "Buscar",
+    "CHANGE_LANGUAGE": "Cambiar idioma",
+    "CHANGE_LANGUAGE_ARIA": "Cambiar idioma, actual: {{ language }}",
+    "TOGGLE_THEME": "Alternar tema",
+    "VERSION": "Cronos v{{ version }}"
+  },
+  "UNIT_TYPES": {
+    "TITLE": "Tipos de Unidad",
+    "DESCRIPTION": "Gestión del catálogo de tipos de unidad del sistema",
+    "SEARCH_PLACEHOLDER": "Buscar tipo de unidad...",
+    "CREATE": "Nuevo Tipo de Unidad",
+    "EDIT": "Editar Tipo de Unidad",
+    "EMPTY": "No hay tipos de unidad registrados",
+    "FIELDS": {
+      "DIMENSION": "Dimensión"
+    },
+    "FILTER_BY_DIMENSION": "Filtrar por dimensión",
+    "PLACEHOLDERS": {
+      "CODE": "Código identificador",
+      "NAME": "Nombre del tipo de unidad",
+      "DIMENSION": "Ej. masa, volumen, longitud"
+    },
+    "ERRORS": {
+      "CODE_REQUIRED": "El código es requerido",
+      "NAME_REQUIRED": "El nombre es requerido",
+      "DIMENSION_REQUIRED": "La dimensión es requerida"
+    },
+    "TOAST": {
+      "CREATED": "Tipo de unidad creado correctamente",
+      "UPDATED": "Tipo de unidad actualizado correctamente",
+      "DELETED": "Tipo de unidad eliminado correctamente",
+      "LOAD_FAILED": "Error al cargar tipos de unidad"
+    }
+  },
+  "ALLERGENS": {
+    "TITLE": "Alérgenos",
+    "DESCRIPTION": "Gestión del catálogo de alérgenos del sistema",
+    "SEARCH_PLACEHOLDER": "Buscar alérgeno...",
+    "CREATE": "Nuevo Alérgeno",
+    "EDIT": "Editar Alérgeno",
+    "EMPTY": "No hay alérgenos registrados",
+    "FIELDS": {
+      "ALTERNATIVE_NAME": "Nombre Alternativo"
+    },
+    "PLACEHOLDERS": {
+      "NAME": "Nombre del alérgeno",
+      "ALTERNATIVE_NAME": "Nombre alternativo opcional"
+    },
+    "ERRORS": {
+      "NAME_REQUIRED": "El nombre es requerido"
+    },
+    "TOAST": {
+      "CREATED": "Alérgeno creado correctamente",
+      "UPDATED": "Alérgeno actualizado correctamente",
+      "DELETED": "Alérgeno eliminado correctamente",
+      "LOAD_FAILED": "Error al cargar alérgenos"
+    }
+  },
+  "MEASUREMENT_UNITS": {
+    "TITLE": "Unidades de Medida",
+    "DESCRIPTION": "Gestión del catálogo de unidades de medida del sistema",
+    "SEARCH_PLACEHOLDER": "Buscar unidad de medida...",
+    "CREATE": "Nueva Unidad",
+    "EDIT": "Editar Unidad de Medida",
+    "EMPTY": "No hay unidades de medida registradas",
+    "FIELDS": {
+      "PLURAL": "Plural",
+      "UNIT_TYPE": "Tipo de Unidad",
+      "BASE": "Base",
+      "BASE_FACTOR_SHORT": "Factor Base",
+      "BASE_FACTOR": "Factor a unidad base",
+      "IS_BASE": "Es unidad base"
+    },
+    "PLACEHOLDERS": {
+      "CODE": "Ej. kg",
+      "NAME": "Ej. kilogramo",
+      "PLURAL": "Ej. kilogramos",
+      "UNIT_TYPE": "Ej. masa"
+    },
+    "ERRORS": {
+      "CODE_REQUIRED": "El código es requerido",
+      "NAME_REQUIRED": "El nombre es requerido",
+      "PLURAL_REQUIRED": "El plural es requerido",
+      "UNIT_TYPE_REQUIRED": "El tipo de unidad es requerido",
+      "BASE_FACTOR_REQUIRED": "El factor es requerido"
+    },
+    "TOAST": {
+      "CREATED": "Unidad de medida creada correctamente",
+      "UPDATED": "Unidad de medida actualizada correctamente",
+      "DELETED": "Unidad de medida eliminada correctamente",
+      "LOAD_FAILED": "Error al cargar unidades de medida"
     }
   }
 }
