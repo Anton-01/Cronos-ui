@@ -1,26 +1,26 @@
 <p-dialog
-  header="Nuevo Usuario"
+  [header]="'ADMIN.USERS.CREATE' | translate"
   [visible]="true"
   (visibleChange)="!$event && close()"
   [modal]="true"
   [draggable]="false"
   [style]="{ width: '56rem', maxWidth: '95vw' }"
 >
-  <p class="mt-0 mb-3 text-color-secondary">Registra un nuevo usuario en el sistema y asígnale un rol.</p>
+  <p class="mt-0 mb-3 text-color-secondary">{{ 'ADMIN.USERS.MODAL.SUBTITLE' | translate }}</p>
 
   <form [formGroup]="form" (ngSubmit)="onSubmit()" id="createUserForm" novalidate>
     <div class="grid">
       <!-- Profile photo -->
       <div class="col-12 md:col-4">
         <div class="photo-panel">
-          <span class="font-semibold text-color mb-2">Foto de perfil</span>
+          <span class="font-semibold text-color mb-2">{{ 'ADMIN.USERS.MODAL.PHOTO' | translate }}</span>
           <input #fileInput type="file" accept="image/jpeg,image/png,image/webp" class="hidden" (change)="onFileSelected($event)" />
 
           @if (!hasCropperImage() && !croppedPreview) {
             <div class="flex flex-column align-items-center gap-2 py-3">
               <p-avatar icon="pi pi-user" size="xlarge" shape="circle" />
-              <p-button label="Subir imagen" icon="pi pi-upload" size="small" [outlined]="true" (onClick)="triggerFileInput()" />
-              <small class="text-color-secondary text-center">JPG, PNG o WEBP</small>
+              <p-button [label]="'ADMIN.USERS.MODAL.UPLOAD_IMAGE' | translate" icon="pi pi-upload" size="small" [outlined]="true" (onClick)="triggerFileInput()" />
+              <small class="text-color-secondary text-center">{{ 'ADMIN.USERS.MODAL.PHOTO_FORMATS' | translate }}</small>
             </div>
           } @else {
             <image-cropper
@@ -35,10 +35,10 @@
             ></image-cropper>
             <div class="flex align-items-center justify-content-center gap-2 mt-2">
               @if (croppedPreview) {
-                <img [src]="croppedPreview" alt="Vista previa" class="cropped-preview" />
+                <img [src]="croppedPreview" [alt]="'ADMIN.USERS.MODAL.PREVIEW_ALT' | translate" class="cropped-preview" />
               }
-              <p-button icon="pi pi-refresh" size="small" [outlined]="true" pTooltip="Cambiar imagen" (onClick)="triggerFileInput()" />
-              <p-button icon="pi pi-trash" size="small" severity="danger" [outlined]="true" pTooltip="Quitar imagen" (onClick)="removeImage()" />
+              <p-button icon="pi pi-refresh" size="small" [outlined]="true" [pTooltip]="'ADMIN.USERS.MODAL.CHANGE_IMAGE' | translate" (onClick)="triggerFileInput()" />
+              <p-button icon="pi pi-trash" size="small" severity="danger" [outlined]="true" [pTooltip]="'ADMIN.USERS.MODAL.REMOVE_IMAGE' | translate" (onClick)="removeImage()" />
             </div>
           }
         </div>
@@ -48,35 +48,35 @@
       <div class="col-12 md:col-8">
         <div class="grid">
           <div class="col-12 md:col-6 flex flex-column gap-1">
-            <label for="newUserUsername" class="font-medium">Username <span class="text-red-500">*</span></label>
-            <input pInputText id="newUserUsername" formControlName="username" placeholder="usuario123" />
+            <label for="newUserUsername" class="font-medium">{{ 'AUTH.FIELDS.USERNAME' | translate }} <span class="text-red-500">*</span></label>
+            <input pInputText id="newUserUsername" formControlName="username" [placeholder]="'AUTH.REGISTER.USERNAME_PLACEHOLDER' | translate" />
             @if (form.controls.username.invalid && form.controls.username.touched) {
-              <small class="text-red-500">Username requerido (3-50 caracteres)</small>
+              <small class="text-red-500">{{ 'ADMIN.USERS.MODAL.ERRORS.USERNAME' | translate }}</small>
             }
           </div>
           <div class="col-12 md:col-6 flex flex-column gap-1">
-            <label for="newUserEmail" class="font-medium">Email <span class="text-red-500">*</span></label>
-            <input pInputText id="newUserEmail" formControlName="email" placeholder="correo@ejemplo.com" />
+            <label for="newUserEmail" class="font-medium">{{ 'AUTH.FIELDS.EMAIL' | translate }} <span class="text-red-500">*</span></label>
+            <input pInputText id="newUserEmail" formControlName="email" [placeholder]="'AUTH.REGISTER.EMAIL_PLACEHOLDER' | translate" />
             @if (form.controls.email.invalid && form.controls.email.touched) {
-              <small class="text-red-500">Correo válido requerido</small>
+              <small class="text-red-500">{{ 'AUTH.ERRORS.EMAIL_INVALID' | translate }}</small>
             }
           </div>
           <div class="col-12 md:col-6 flex flex-column gap-1">
-            <label for="newUserFirstName" class="font-medium">Nombre</label>
+            <label for="newUserFirstName" class="font-medium">{{ 'AUTH.FIELDS.FIRST_NAME' | translate }}</label>
             <input pInputText id="newUserFirstName" formControlName="firstName" />
           </div>
           <div class="col-12 md:col-6 flex flex-column gap-1">
-            <label for="newUserLastName" class="font-medium">Apellido</label>
+            <label for="newUserLastName" class="font-medium">{{ 'AUTH.FIELDS.LAST_NAME' | translate }}</label>
             <input pInputText id="newUserLastName" formControlName="lastName" />
           </div>
           <div class="col-12 md:col-6 flex flex-column gap-1">
-            <label for="newUserPhone" class="font-medium">Teléfono</label>
+            <label for="newUserPhone" class="font-medium">{{ 'AUTH.FIELDS.PHONE' | translate }}</label>
             <input pInputText id="newUserPhone" formControlName="phoneNumber" />
           </div>
 
           <!-- Roles -->
           <div class="col-12 flex flex-column gap-2">
-            <label class="font-medium">Roles <span class="text-red-500">*</span></label>
+            <label class="font-medium">{{ 'ACCOUNT.ROLES' | translate }} <span class="text-red-500">*</span></label>
             @if (isLoadingRoles()) {
               <i class="pi pi-spinner pi-spin text-primary"></i>
             } @else {
@@ -95,7 +95,7 @@
                 }
               </div>
               @if (selectedRoleIds().size === 0) {
-                <small class="text-color-secondary">Selecciona al menos un rol</small>
+                <small class="text-color-secondary">{{ 'ADMIN.USERS.MODAL.ERRORS.ROLE_REQUIRED' | translate }}</small>
               }
             }
           </div>
@@ -105,9 +105,9 @@
   </form>
 
   <ng-template pTemplate="footer">
-    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="close()" />
+    <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="close()" />
     <p-button
-      label="Crear Usuario"
+      [label]="'ADMIN.USERS.MODAL.SUBMIT' | translate"
       type="submit"
       form="createUserForm"
       icon="pi pi-check"

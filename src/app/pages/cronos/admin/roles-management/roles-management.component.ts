@@ -7,6 +7,7 @@ import {
 } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { CheckboxModule } from 'primeng/checkbox';
@@ -20,6 +21,7 @@ import { RoleService } from 'src/app/core/services/role.service';
 import { PermissionService } from 'src/app/core/services/permission.service';
 import { RoleResponse, PermissionResponse } from 'src/app/core/models';
 import { ToastService } from 'src/app/shared/services/toast.service';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skeleton-row/table-skeleton-row.component';
 
@@ -30,6 +32,7 @@ const MAX_BADGE_PREVIEW = 4;
   selector: 'app-roles-management',
   standalone: true,
   imports: [
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     ButtonModule,
@@ -49,6 +52,7 @@ export class RolesManagementComponent implements OnInit {
   private permissionService = inject(PermissionService);
   private toast = inject(ToastService);
   private pageInfoService = inject(PageInfoService);
+  private language = inject(LanguageService);
   private fb = inject(FormBuilder);
 
   // ─── State ───────────────────────────────────────────────────────────────────
@@ -148,11 +152,11 @@ export class RolesManagementComponent implements OnInit {
   // ─── Lifecycle ────────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
-    this.pageInfoService.updateTitle('Gestión de Roles');
-    this.pageInfoService.updateDescription('Define los roles del sistema y sus permisos');
+    this.pageInfoService.updateTitle(this.language.t('NAV.ITEMS.ROLE_MANAGEMENT'));
+    this.pageInfoService.updateDescription(this.language.t('ADMIN.ROLES.DESCRIPTION'));
     this.pageInfoService.updateBreadcrumbs([
-      { title: 'Inicio', path: '/dashboard', isActive: false },
-      { title: 'Administración', path: '', isActive: false },
+      { title: this.language.t('BREADCRUMB.HOME'), path: '/dashboard', isActive: false },
+      { title: this.language.t('NAV.SECTIONS.ADMINISTRATION'), path: '', isActive: false },
       { title: 'Roles', path: '', isActive: true },
     ]);
     this.loadRoles();
@@ -169,7 +173,7 @@ export class RolesManagementComponent implements OnInit {
         this.isLoadingRoles.set(false);
       },
       error: err => {
-        this.toast.error('Error', err?.error?.message || 'No se pudieron cargar los roles');
+        this.toast.error(this.language.t('COMMON.TOAST.ERROR'), err?.error?.message || this.language.t('ADMIN.ROLES.LOAD_FAILED'));
         this.isLoadingRoles.set(false);
       },
     });
@@ -183,7 +187,7 @@ export class RolesManagementComponent implements OnInit {
         this.isLoadingPermissions.set(false);
       },
       error: err => {
-        this.toast.error('Error', err?.error?.message || 'No se pudieron cargar los permisos');
+        this.toast.error(this.language.t('COMMON.TOAST.ERROR'), err?.error?.message || this.language.t('ADMIN.ROLES.PERMISSIONS_LOAD_FAILED'));
         this.isLoadingPermissions.set(false);
       },
     });
@@ -284,12 +288,12 @@ export class RolesManagementComponent implements OnInit {
       this.roleService.create(payload).subscribe({
         next: res => {
           this.roles.update(list => [...list, res.data]);
-          this.toast.success('Rol creado', `"${res.data.name}" fue creado exitosamente`);
+          this.toast.success(this.language.t('ADMIN.ROLES.TOAST.CREATED'), this.language.t('ADMIN.ROLES.TOAST.CREATED_DETAIL', { name: res.data.name }));
           this.isSaving.set(false);
           this.closePanel();
         },
         error: err => {
-          this.toast.error('Error', err?.error?.message || 'No se pudo crear el rol');
+          this.toast.error(this.language.t('COMMON.TOAST.ERROR'), err?.error?.message || this.language.t('ADMIN.ROLES.TOAST.CREATE_FAILED'));
           this.isSaving.set(false);
         },
       });
@@ -298,12 +302,12 @@ export class RolesManagementComponent implements OnInit {
       this.roleService.update(id, payload).subscribe({
         next: res => {
           this.roles.update(list => list.map(r => r.id === id ? res.data : r));
-          this.toast.success('Rol actualizado', `"${res.data.name}" fue actualizado`);
+          this.toast.success(this.language.t('ADMIN.ROLES.TOAST.UPDATED'), this.language.t('ADMIN.ROLES.TOAST.UPDATED_DETAIL', { name: res.data.name }));
           this.isSaving.set(false);
           this.closePanel();
         },
         error: err => {
-          this.toast.error('Error', err?.error?.message || 'No se pudo actualizar el rol');
+          this.toast.error(this.language.t('COMMON.TOAST.ERROR'), err?.error?.message || this.language.t('ADMIN.ROLES.TOAST.UPDATE_FAILED'));
           this.isSaving.set(false);
         },
       });

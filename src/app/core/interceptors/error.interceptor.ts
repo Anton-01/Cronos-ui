@@ -5,6 +5,7 @@ import { BehaviorSubject, Observable, catchError, filter, switchMap, take, throw
 import { TokenService } from '../services/token.service';
 import { AuthService } from '../services/auth.service';
 import { AlertService } from '../../shared/services/alert.service';
+import { LanguageService } from '../services/language.service';
 
 /**
  * Functional HTTP interceptor for automatic JWT refresh on 401 errors.
@@ -35,6 +36,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const router = inject(Router);
   const alertService = inject(AlertService);
+  const language = inject(LanguageService);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
@@ -55,11 +57,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
       // Case 3: 403/404/500 → alert error, do NOT logout
       if (error.status === 403) {
-        alertService.error(error.error?.message || 'No tienes permisos para esta acción', 'Acceso denegado');
+        alertService.error(error.error?.message || language.t('ERRORS.HTTP.FORBIDDEN'), language.t('ERRORS.HTTP.FORBIDDEN_TITLE'));
       } else if (error.status === 404) {
-        alertService.error(error.error?.message || 'El recurso no fue encontrado', 'No encontrado');
+        alertService.error(error.error?.message || language.t('ERRORS.HTTP.NOT_FOUND'), language.t('ERRORS.HTTP.NOT_FOUND_TITLE'));
       } else if (error.status >= 500) {
-        alertService.error(error.error?.message || 'Ocurrió un error interno', 'Error del servidor');
+        alertService.error(error.error?.message || language.t('ERRORS.HTTP.SERVER'), language.t('ERRORS.HTTP.SERVER_TITLE'));
       }
 
       // Case 4: propagate error
@@ -85,7 +87,7 @@ function handle401(
       isRefreshing = false;
       refreshTokenSubject.next(REFRESH_FAILED);
       performLogoutAndRedirect(tokenService, router, alertService);
-      return throwError(() => ({ message: 'No refresh token available' }));
+      return throwError(() => ({ message: language.t('ERRORS.HTTP.NO_REFRESH_TOKEN') }));
     }
 
     return authService.refreshToken(rt).pipe(
@@ -112,7 +114,7 @@ function handle401(
     switchMap(token => {
       // If refresh failed, reject the queued request instead of retrying
       if (token === REFRESH_FAILED) {
-        return throwError(() => ({ message: 'Session expired' }));
+        return throwError(() => ({ message: language.t('ERRORS.HTTP.SESSION_EXPIRED') }));
       }
       return next(cloneWithToken(req, token!));
     })
@@ -124,7 +126,7 @@ function performLogoutAndRedirect(
   router: Router,
   alertService: AlertService
 ): void {
-  alertService.error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', 'Sesión expirada');
+  alertService.error(language.t('ERRORS.HTTP.SESSION_EXPIRED_MESSAGE'), language.t('ERRORS.HTTP.SESSION_EXPIRED_TITLE'));
   tokenService.clearTokens();
   router.navigate(['/auth/login']);
 }

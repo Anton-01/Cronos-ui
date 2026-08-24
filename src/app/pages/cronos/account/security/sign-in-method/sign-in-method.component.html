@@ -2,34 +2,34 @@
   <!-- Password -->
   <div class="flex align-items-start justify-content-between flex-wrap gap-3">
     <div>
-      <div class="font-semibold text-color">Contraseña</div>
-      <div class="text-color-secondary text-sm">Actualiza tu contraseña periódicamente para mantener tu cuenta segura.</div>
+      <div class="font-semibold text-color">{{ 'AUTH.FIELDS.PASSWORD' | translate }}</div>
+      <div class="text-color-secondary text-sm">{{ 'ACCOUNT.SIGN_IN.PASSWORD_HINT' | translate }}</div>
     </div>
     @if (!showChangePasswordForm()) {
-      <p-button label="Cambiar contraseña" severity="secondary" [outlined]="true" icon="pi pi-key" (onClick)="togglePasswordForm(true)" />
+      <p-button [label]="'ACCOUNT.SIGN_IN.CHANGE_PASSWORD' | translate" severity="secondary" [outlined]="true" icon="pi pi-key" (onClick)="togglePasswordForm(true)" />
     }
   </div>
 
   @if (showChangePasswordForm()) {
     <form [formGroup]="passwordForm" (ngSubmit)="savePassword()" class="grid">
       <div class="col-12 md:col-4 flex flex-column gap-1">
-        <label for="currentPassword" class="font-medium text-sm">Contraseña actual</label>
+        <label for="currentPassword" class="font-medium text-sm">{{ 'ACCOUNT.SIGN_IN.CURRENT_PASSWORD' | translate }}</label>
         <p-password inputId="currentPassword" formControlName="currentPassword" [feedback]="false" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full" />
       </div>
       <div class="col-12 md:col-4 flex flex-column gap-1">
-        <label for="newPassword" class="font-medium text-sm">Nueva contraseña</label>
+        <label for="newPassword" class="font-medium text-sm">{{ 'ACCOUNT.SIGN_IN.NEW_PASSWORD' | translate }}</label>
         <p-password inputId="newPassword" formControlName="newPassword" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full" />
         @if (passwordForm.controls.newPassword.hasError('minlength')) {
-          <small class="text-red-500">Mínimo 6 caracteres</small>
+          <small class="text-red-500">{{ 'AUTH.ERRORS.PASSWORD_MIN' | translate }}</small>
         }
       </div>
       <div class="col-12 md:col-4 flex flex-column gap-1">
-        <label for="confirmPassword" class="font-medium text-sm">Confirmar contraseña</label>
+        <label for="confirmPassword" class="font-medium text-sm">{{ 'AUTH.FIELDS.CONFIRM_PASSWORD' | translate }}</label>
         <p-password inputId="confirmPassword" formControlName="confirmPassword" [feedback]="false" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full" />
       </div>
       <div class="col-12 flex justify-content-end gap-2">
-        <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="togglePasswordForm(false)" />
-        <p-button label="Actualizar contraseña" type="submit" [disabled]="passwordForm.invalid" [loading]="isChangingPassword()" />
+        <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="togglePasswordForm(false)" />
+        <p-button [label]="'ACCOUNT.SIGN_IN.UPDATE_PASSWORD' | translate" type="submit" [disabled]="passwordForm.invalid" [loading]="isChangingPassword()" />
       </div>
     </form>
   }
@@ -40,14 +40,14 @@
   <div class="flex align-items-start justify-content-between flex-wrap gap-3">
     <div>
       <div class="flex align-items-center gap-2">
-        <span class="font-semibold text-color">Autenticación de dos factores (2FA)</span>
+        <span class="font-semibold text-color">{{ 'ACCOUNT.SIGN_IN.TWO_FACTOR' | translate }}</span>
         @if (profileState.user()?.twoFactorEnabled) {
-          <p-tag value="Activado" severity="success" />
+          <p-tag [value]="'ACCOUNT.SIGN_IN.ENABLED' | translate" severity="success" />
         } @else {
-          <p-tag value="Desactivado" severity="secondary" />
+          <p-tag [value]="'ACCOUNT.SIGN_IN.DISABLED' | translate" severity="secondary" />
         }
       </div>
-      <div class="text-color-secondary text-sm">Agrega una capa extra de seguridad con códigos temporales.</div>
+      <div class="text-color-secondary text-sm">{{ 'ACCOUNT.SIGN_IN.TWO_FACTOR_HINT' | translate }}</div>
     </div>
     <p-button
       [label]="profileState.user()?.twoFactorEnabled ? 'Desactivar 2FA' : 'Activar 2FA'"
@@ -71,31 +71,31 @@
   <div class="flex flex-column gap-3">
     @if (!profileState.user()?.twoFactorEnabled) {
       @if (!twoFactorSetup()) {
-        <p-message severity="info" text="Genera un código QR para vincular tu aplicación de autenticación (Google Authenticator, Authy, etc.)." />
-        <p-button label="Generar código QR" icon="pi pi-qrcode" [loading]="isLoading2FA()" (onClick)="setup2FA()" />
+        <p-message severity="info" [text]="'ACCOUNT.SIGN_IN.QR_HINT' | translate" />
+        <p-button [label]="'ACCOUNT.SIGN_IN.GENERATE_QR' | translate" icon="pi pi-qrcode" [loading]="isLoading2FA()" (onClick)="setup2FA()" />
       } @else {
         <div class="flex flex-column align-items-center gap-2">
-          <img [src]="twoFactorSetup()!.qrCodeUrl" alt="Código QR 2FA" class="w-12rem h-12rem" />
-          <small class="text-color-secondary">Clave manual: <code>{{ twoFactorSetup()!.secret }}</code></small>
+          <img [src]="twoFactorSetup()!.qrCodeUrl" [alt]="'ACCOUNT.SIGN_IN.QR_ALT' | translate" class="w-12rem h-12rem" />
+          <small class="text-color-secondary">{{ 'ACCOUNT.SIGN_IN.MANUAL_KEY' | translate }} <code>{{ twoFactorSetup()!.secret }}</code></small>
         </div>
       }
     } @else {
-      <p-message severity="warn" text="Ingresa un código vigente de tu aplicación para desactivar 2FA." />
+      <p-message severity="warn" [text]="'ACCOUNT.SIGN_IN.DISABLE_HINT' | translate" />
     }
 
     @if (twoFactorSetup() || profileState.user()?.twoFactorEnabled) {
       <form [formGroup]="twoFactorCode" class="flex flex-column gap-1">
-        <label for="twoFactorCodeInput" class="font-medium text-sm">Código de verificación</label>
+        <label for="twoFactorCodeInput" class="font-medium text-sm">{{ 'ACCOUNT.SIGN_IN.VERIFICATION_CODE' | translate }}</label>
         <input pInputText id="twoFactorCodeInput" formControlName="code" placeholder="123456" maxlength="6" autocomplete="one-time-code" />
       </form>
     }
   </div>
   <ng-template pTemplate="footer">
-    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="close2FAModal()" />
+    <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="close2FAModal()" />
     @if (profileState.user()?.twoFactorEnabled) {
-      <p-button label="Desactivar" severity="danger" [disabled]="twoFactorCode.invalid" (onClick)="disable2FA()" />
+      <p-button [label]="'ACCOUNT.SIGN_IN.DISABLE' | translate" severity="danger" [disabled]="twoFactorCode.invalid" (onClick)="disable2FA()" />
     } @else if (twoFactorSetup()) {
-      <p-button label="Verificar y activar" [disabled]="twoFactorCode.invalid" (onClick)="verify2FA()" />
+      <p-button [label]="'ACCOUNT.SIGN_IN.VERIFY_ENABLE' | translate" [disabled]="twoFactorCode.invalid" (onClick)="verify2FA()" />
     }
   </ng-template>
 </p-dialog>

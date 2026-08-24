@@ -1,7 +1,9 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed, HostListener } from '@angular/core';
 
 import { ActivatedRoute } from '@angular/router';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Subject, takeUntil, interval } from 'rxjs';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { PublicRecipeService } from 'src/app/core/services/domain/public-recipe.service';
 import {
   PublicSharedRecipeResponse,
@@ -10,12 +12,13 @@ import {
 
 @Component({
     selector: 'app-shared-recipe',
-    imports: [],
+    imports: [TranslatePipe],
     templateUrl: './shared-recipe.component.html',
     styleUrls: ['./shared-recipe.component.scss']
 })
 export class SharedRecipeComponent implements OnInit, OnDestroy {
   private route = inject(ActivatedRoute);
+  private readonly language = inject(LanguageService);
   private publicRecipeService = inject(PublicRecipeService);
   private destroy$ = new Subject<void>();
 
@@ -53,7 +56,7 @@ export class SharedRecipeComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const token = this.route.snapshot.paramMap.get('token');
     if (!token) {
-      this.error.set('Enlace inválido.');
+      this.error.set(this.language.t('PUBLIC.INVALID_LINK'));
       this.loading.set(false);
       return;
     }
@@ -67,7 +70,7 @@ export class SharedRecipeComponent implements OnInit, OnDestroy {
           this.startCountdown(res.data.expiresAt);
         },
         error: (err) => {
-          const message = err?.message || 'Este enlace ha expirado o no es válido.';
+          const message = err?.message || this.language.t('PUBLIC.RECIPE.LOAD_FAILED');
           this.error.set(message);
           this.loading.set(false);
         },

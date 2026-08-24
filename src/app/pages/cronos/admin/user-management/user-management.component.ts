@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { FormsModule, ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { MenuItem } from 'primeng/api';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { AvatarModule } from 'primeng/avatar';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
@@ -18,6 +19,7 @@ import { TooltipModule } from 'primeng/tooltip';
 
 import { UserService, UserFilterRequest } from 'src/app/core/services/user.service';
 import { UserResponse } from 'src/app/core/models/user.model';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
 import { CreateUserModalComponent } from './create-user-modal/create-user-modal.component';
@@ -36,6 +38,7 @@ const ROLE_SEVERITY: Record<string, TagSeverity> = {
   selector: 'app-user-management',
   standalone: true,
   imports: [
+    TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
     AvatarModule,
@@ -61,6 +64,7 @@ export class UserManagementComponent implements OnInit {
   private readonly userService = inject(UserService);
   private readonly toastService = inject(ToastService);
   private readonly pageInfoService = inject(PageInfoService);
+  private readonly language = inject(LanguageService);
   private readonly fb = inject(FormBuilder);
 
   readonly users = signal<UserResponse[]>([]);
@@ -88,11 +92,11 @@ export class UserManagementComponent implements OnInit {
   ];
 
   ngOnInit(): void {
-    this.pageInfoService.updateTitle('Gestión de Usuarios');
-    this.pageInfoService.updateDescription('Administra los usuarios del sistema, sus roles y accesos');
+    this.pageInfoService.updateTitle(this.language.t('NAV.ITEMS.USER_MANAGEMENT'));
+    this.pageInfoService.updateDescription(this.language.t('ADMIN.USERS.DESCRIPTION'));
     this.pageInfoService.updateBreadcrumbs([
-      { title: 'Inicio', path: '/dashboard', isActive: false },
-      { title: 'Administración', path: '', isActive: false },
+      { title: this.language.t('BREADCRUMB.HOME'), path: '/dashboard', isActive: false },
+      { title: this.language.t('NAV.SECTIONS.ADMINISTRATION'), path: '', isActive: false },
       { title: 'Usuarios', path: '', isActive: true },
     ]);
     this.load();
@@ -115,7 +119,7 @@ export class UserManagementComponent implements OnInit {
       },
       error: (err) => {
         this.isLoading.set(false);
-        this.toastService.error('Error', err?.message || 'Error al cargar usuarios');
+        this.toastService.error('Error', err?.message || this.language.t('ADMIN.USERS.LOAD_FAILED'));
       },
     });
   }
@@ -149,11 +153,21 @@ export class UserManagementComponent implements OnInit {
 
   buildActionMenu(user: UserResponse): void {
     this.actionMenuItems.set([
-      { label: 'Ver detalles', icon: 'pi pi-eye', command: () => this.viewDetails(user) },
-      { label: 'Asignar roles', icon: 'pi pi-shield', command: () => this.openAssignRoles(user) },
+      {
+        label: this.language.t('ADMIN.USERS.ACTIONS.VIEW_DETAILS'),
+        icon: 'pi pi-eye',
+        command: () => this.viewDetails(user),
+      },
+      {
+        label: this.language.t('ADMIN.USERS.ACTIONS.ASSIGN_ROLES'),
+        icon: 'pi pi-shield',
+        command: () => this.openAssignRoles(user),
+      },
       { separator: true },
       {
-        label: user.accountNonLocked ? 'Bloquear usuario' : 'Desbloquear usuario',
+        label: this.language.t(
+          user.accountNonLocked ? 'ADMIN.USERS.ACTIONS.BLOCK' : 'ADMIN.USERS.ACTIONS.UNBLOCK',
+        ),
         icon: user.accountNonLocked ? 'pi pi-lock' : 'pi pi-lock-open',
         command: () => this.toggleBlock(user),
       },
@@ -199,10 +213,10 @@ export class UserManagementComponent implements OnInit {
     this.userService.assignRoles(user.id, { roles }).subscribe({
       next: (res) => {
         this.users.update((list) => list.map((u) => (u.id === res.data.id ? res.data : u)));
-        this.toastService.success('Roles actualizados');
+        this.toastService.success(this.language.t('ADMIN.USERS.TOAST.ROLES_UPDATED'));
         this.closePanel();
       },
-      error: (err) => this.toastService.error('Error', err?.message),
+      error: (err) => this.toastService.error(this.language.t('COMMON.TOAST.ERROR'), err?.message),
     });
   }
 
@@ -214,9 +228,13 @@ export class UserManagementComponent implements OnInit {
     request$.subscribe({
       next: (res) => {
         this.users.update((list) => list.map((u) => (u.id === res.data.id ? res.data : u)));
-        this.toastService.success(res.data.accountNonLocked ? 'Usuario desbloqueado' : 'Usuario bloqueado');
+        this.toastService.success(
+          this.language.t(
+            res.data.accountNonLocked ? 'ADMIN.USERS.TOAST.UNBLOCKED' : 'ADMIN.USERS.TOAST.BLOCKED',
+          ),
+        );
       },
-      error: (err) => this.toastService.error('Error', err?.message),
+      error: (err) => this.toastService.error(this.language.t('COMMON.TOAST.ERROR'), err?.message),
     });
   }
 
@@ -224,7 +242,7 @@ export class UserManagementComponent implements OnInit {
     if (!date) {
       return '-';
     }
-    return new Date(date).toLocaleDateString('es-MX', {
+    return new Date(date).toLocaleDateString(this.language.current(), {
       day: 'numeric',
       month: 'short',
       year: 'numeric',

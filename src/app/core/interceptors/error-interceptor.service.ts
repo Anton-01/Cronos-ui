@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   HttpInterceptor,
   HttpRequest,
@@ -11,6 +11,7 @@ import { BehaviorSubject, Observable, catchError, filter, switchMap, take, throw
 import { TokenService } from '../services/token.service';
 import { AuthService } from '../services/auth.service';
 import { AlertService } from '../../shared/services/alert.service';
+import { LanguageService } from '../services/language.service';
 
 /**
  * HTTP interceptor that handles 401 errors with automatic JWT refresh.
@@ -37,12 +38,11 @@ export class ErrorInterceptorService implements HttpInterceptor {
   /** Sentinel value emitted when refresh fails, so queued requests can unblock. */
   private static readonly REFRESH_FAILED = '__REFRESH_FAILED__';
 
-  constructor(
-    private tokenService: TokenService,
-    private authService: AuthService,
-    private router: Router,
-    private alertService: AlertService
-  ) {}
+  private readonly tokenService = inject(TokenService);
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly alertService = inject(AlertService);
+  private readonly language = inject(LanguageService);
 
   intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     return next.handle(req).pipe(
@@ -64,11 +64,20 @@ export class ErrorInterceptorService implements HttpInterceptor {
 
         // Case 3: 403/404/500 → toast error, do NOT logout
         if (error.status === 403) {
-          this.alertService.error(error.error?.message || 'No tienes permisos para esta acción', 'Acceso denegado');
+          this.alertService.error(
+            error.error?.message || this.language.t('ERRORS.HTTP.FORBIDDEN'),
+            this.language.t('ERRORS.HTTP.FORBIDDEN_TITLE'),
+          );
         } else if (error.status === 404) {
-          this.alertService.error(error.error?.message || 'El recurso no fue encontrado', 'No encontrado');
+          this.alertService.error(
+            error.error?.message || this.language.t('ERRORS.HTTP.NOT_FOUND'),
+            this.language.t('ERRORS.HTTP.NOT_FOUND_TITLE'),
+          );
         } else if (error.status >= 500) {
-          this.alertService.error(error.error?.message || 'Ocurrió un error interno', 'Error del servidor');
+          this.alertService.error(
+            error.error?.message || this.language.t('ERRORS.HTTP.SERVER'),
+            this.language.t('ERRORS.HTTP.SERVER_TITLE'),
+          );
         }
 
         return throwError(() => error.error || error);
@@ -86,7 +95,7 @@ export class ErrorInterceptorService implements HttpInterceptor {
         this.isRefreshing = false;
         this.refreshTokenSubject.next(ErrorInterceptorService.REFRESH_FAILED);
         this.performLogoutAndRedirect();
-        return throwError(() => ({ message: 'No refresh token available' }));
+        return throwError(() => ({ message: this.language.t('ERRORS.HTTP.NO_REFRESH_TOKEN') }));
       }
 
       return this.authService.refreshToken(rt).pipe(
@@ -113,7 +122,7 @@ export class ErrorInterceptorService implements HttpInterceptor {
       switchMap(token => {
         // If refresh failed, reject the queued request instead of retrying
         if (token === ErrorInterceptorService.REFRESH_FAILED) {
-          return throwError(() => ({ message: 'Session expired' }));
+          return throwError(() => ({ message: this.language.t('ERRORS.HTTP.SESSION_EXPIRED') }));
         }
         return next.handle(this.cloneWithToken(req, token!));
       })
@@ -127,7 +136,10 @@ export class ErrorInterceptorService implements HttpInterceptor {
   }
 
   private performLogoutAndRedirect(): void {
-    this.alertService.error('Tu sesión ha expirado. Por favor, inicia sesión nuevamente.', 'Sesión expirada');
+    this.alertService.error(
+      this.language.t('ERRORS.HTTP.SESSION_EXPIRED_MESSAGE'),
+      this.language.t('ERRORS.HTTP.SESSION_EXPIRED_TITLE'),
+    );
     this.tokenService.clearTokens();
     this.router.navigate(['/auth/login']);
   }

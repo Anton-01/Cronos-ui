@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DialogModule } from 'primeng/dialog';
@@ -10,6 +11,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { AuthService } from 'src/app/core/services/auth.service';
 import { UserService } from 'src/app/core/services/user.service';
 import { ActiveSession, LoginHistoryEntry, UserResponse } from 'src/app/core/models/user.model';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
@@ -20,6 +22,7 @@ import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skele
   selector: 'app-security',
   standalone: true,
   imports: [
+    TranslatePipe,
     ButtonModule,
     CardModule,
     DialogModule,
@@ -36,6 +39,7 @@ export class SecurityComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly userService = inject(UserService);
   private readonly toastService = inject(ToastService);
+  private readonly language = inject(LanguageService);
   private readonly confirmService = inject(ConfirmService);
   private readonly pageInfoService = inject(PageInfoService);
 
@@ -54,11 +58,11 @@ export class SecurityComponent implements OnInit {
   readonly loginHistory = signal<LoginHistoryEntry[]>([]);
 
   ngOnInit(): void {
-    this.pageInfoService.updateTitle('Seguridad');
+    this.pageInfoService.updateTitle(this.language.t('NAV.ITEMS.SECURITY'));
     this.pageInfoService.updateBreadcrumbs([
-      { title: 'Inicio', path: '/dashboard', isActive: false },
-      { title: 'Cuenta', path: '', isActive: false },
-      { title: 'Seguridad', path: '', isActive: true },
+      { title: this.language.t('BREADCRUMB.HOME'), path: '/dashboard', isActive: false },
+      { title: this.language.t('NAV.SECTIONS.ACCOUNT'), path: '', isActive: false },
+      { title: this.language.t('NAV.ITEMS.SECURITY'), path: '', isActive: true },
     ]);
     this.loadProfile();
     this.loadSessions();
@@ -85,16 +89,20 @@ export class SecurityComponent implements OnInit {
       },
       error: (err) => {
         this.isLoadingSessions.set(false);
-        this.toastService.error('Error', err?.message);
+        this.toastService.error(this.language.t('COMMON.TOAST.ERROR'), err?.message);
       },
     });
   }
 
   async confirmRevokeSession(session: ActiveSession): Promise<void> {
     const confirmed = await this.confirmService.confirm({
-      title: 'Revocar sesión',
-      message: `¿Estás seguro de cerrar la sesión de ${session.browser} en ${session.os} (IP: ${session.ipAddress})?`,
-      acceptLabel: 'Sí, revocar',
+      title: this.language.t('ACCOUNT.SECURITY.REVOKE_TITLE'),
+      message: this.language.t('ACCOUNT.SECURITY.REVOKE_MESSAGE', {
+        browser: session.browser,
+        os: session.os,
+        ip: session.ipAddress,
+      }),
+      acceptLabel: this.language.t('ACCOUNT.SECURITY.REVOKE_ACCEPT'),
       severity: 'danger',
       icon: 'pi pi-sign-out',
     });
@@ -108,9 +116,9 @@ export class SecurityComponent implements OnInit {
     this.authService.revokeSession(session.id).subscribe({
       next: () => {
         this.sessions.update((list) => list.filter((s) => s.id !== session.id));
-        this.toastService.success('Sesión revocada');
+        this.toastService.success(this.language.t('ACCOUNT.SECURITY.SESSION_REVOKED'));
       },
-      error: (err) => this.toastService.error('Error', err?.message),
+      error: (err) => this.toastService.error(this.language.t('COMMON.TOAST.ERROR'), err?.message),
     });
   }
 
@@ -131,13 +139,13 @@ export class SecurityComponent implements OnInit {
       },
       error: (err) => {
         this.isLoadingHistory.set(false);
-        this.toastService.error('Error', err?.message);
+        this.toastService.error(this.language.t('COMMON.TOAST.ERROR'), err?.message);
       },
     });
   }
 
   formatDate(date: Date | string): string {
-    return new Date(date).toLocaleDateString('es-MX', {
+    return new Date(date).toLocaleDateString(this.language.current(), {
       day: 'numeric',
       month: 'short',
       year: 'numeric',

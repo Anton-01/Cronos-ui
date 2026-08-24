@@ -20,8 +20,7 @@
       "WARNING": "Advertencia",
       "INFO": "Información",
       "SAVE_FAILED": "No se pudo guardar",
-      "DELETE_FAILED": "No se pudo eliminar",
-      "LOAD_FAILED": "No se pudo cargar la información"
+      "DELETE_FAILED": "No se pudo eliminar"
     },
     "CONFIRM": {
       "DELETE_TITLE": "¿Eliminar registro?",
@@ -43,9 +42,7 @@
       "DESCRIPTION": "Descripción",
       "CODE": "Código",
       "STATUS": "Estado",
-      "ACTIONS": "Acciones",
       "FILTER_BY_NAME": "Filtrar por nombre",
-      "FILTER_BY_DESCRIPTION": "Filtrar por descripción",
       "FILTER_BY_CODE": "Filtrar por código",
       "FILTER": "Filtrar",
       "UPDATED_AT": "Actualizado",
@@ -64,7 +61,9 @@
       "B": "{{ size }} B",
       "KB": "{{ size }} KB",
       "MB": "{{ size }} MB"
-    }
+    },
+    "REFRESH": "Actualizar",
+    "TRY_AGAIN": "Inténtalo de nuevo"
   },
   "NAV": {
     "SECTIONS": {
@@ -152,7 +151,6 @@
       "DESCRIPTION_PLACEHOLDER": "Descripción opcional",
       "SYSTEM_NOTICE": "Esta es una categoría del sistema: se puede consultar, pero no editar ni eliminar.",
       "ERRORS": {
-        "TYPE_REQUIRED": "El tipo es requerido",
         "NAME_REQUIRED": "El nombre es requerido",
         "NAME_MIN": "El nombre debe tener al menos 2 caracteres",
         "NAME_MAX": "El nombre no puede superar los {{ max }} caracteres",
@@ -217,6 +215,20 @@
         "TITLE": "Error del servidor",
         "MESSAGE": "Algo salió mal. Por favor intenta de nuevo más tarde."
       }
+    },
+    "RESTRICTED_TITLE": "Acceso restringido",
+    "RESTRICTED": "No tienes permisos suficientes para acceder a esta sección.",
+    "HTTP": {
+      "FORBIDDEN_TITLE": "Acceso denegado",
+      "FORBIDDEN": "No tienes permisos para esta acción",
+      "NOT_FOUND_TITLE": "No encontrado",
+      "NOT_FOUND": "El recurso no fue encontrado",
+      "SERVER_TITLE": "Error del servidor",
+      "SERVER": "Ocurrió un error interno",
+      "NO_REFRESH_TOKEN": "No hay un token de actualización disponible",
+      "SESSION_EXPIRED": "La sesión ha expirado",
+      "SESSION_EXPIRED_TITLE": "Sesión expirada",
+      "SESSION_EXPIRED_MESSAGE": "Tu sesión ha expirado. Por favor, inicia sesión nuevamente."
     }
   },
   "DASHBOARD": {
@@ -297,6 +309,10 @@
       "TITLE": "Recuperar Contraseña",
       "MESSAGE": "La recuperación de contraseña se gestiona con el administrador del sistema. Contáctalo para restablecer tu acceso.",
       "BACK_TO_LOGIN": "Volver al inicio de sesión"
+    },
+    "OAUTH": {
+      "SUCCESS": "Inicio de sesión exitoso.",
+      "FAILED": "No se pudo completar la autenticación."
     }
   },
   "LAYOUT": {
@@ -849,6 +865,163 @@
       "UPDATED_TITLE": "¡Cotización actualizada!",
       "UPDATED_MESSAGE": "La cotización {{ number }} fue actualizada exitosamente.",
       "UPDATE_FAILED": "No se pudo actualizar la cotización."
+    }
+  },
+  "ACCOUNT": {
+    "ROLES": "Roles",
+    "MY_ACCOUNT_DESCRIPTION": "Datos de tu perfil",
+    "TOAST": {
+      "PROFILE_UPDATED": "Perfil actualizado"
+    },
+    "SECURITY": {
+      "SIGN_IN_METHOD": "Método de Inicio de Sesión",
+      "ACTIVE_SESSIONS": "Sesiones Activas",
+      "CURRENT_SESSION": "Sesión actual",
+      "DEVICE": "Dispositivo",
+      "LAST_ACTIVITY": "Última actividad",
+      "NO_SESSIONS": "Sin sesiones activas",
+      "LOGIN_HISTORY": "Historial de Inicios de Sesión",
+      "FAILURE_REASON": "Motivo de falla",
+      "NO_RECORDS": "Sin registros",
+      "BROWSER": "Navegador",
+      "OS": "Sistema",
+      "LOCATION": "Ubicación",
+      "SESSION_DETAIL": "Detalle de sesión",
+      "REVOKE": "Revocar",
+      "REVOKE_TITLE": "Revocar sesión",
+      "REVOKE_MESSAGE": "¿Estás seguro de cerrar la sesión de {{ browser }} en {{ os }} (IP: {{ ip }})?",
+      "REVOKE_ACCEPT": "Sí, revocar",
+      "SESSION_REVOKED": "Sesión revocada"
+    },
+    "SIGN_IN": {
+      "CHANGE_PASSWORD": "Cambiar contraseña",
+      "UPDATE_PASSWORD": "Actualizar contraseña",
+      "PASSWORD_HINT": "Actualiza tu contraseña periódicamente para mantener tu cuenta segura.",
+      "CURRENT_PASSWORD": "Contraseña actual",
+      "NEW_PASSWORD": "Nueva contraseña",
+      "TWO_FACTOR": "Autenticación de dos factores (2FA)",
+      "TWO_FACTOR_HINT": "Agrega una capa extra de seguridad con códigos temporales.",
+      "ENABLED": "Activado",
+      "DISABLED": "Desactivado",
+      "QR_HINT": "Genera un código QR para vincular tu aplicación de autenticación (Google Authenticator, Authy, etc.).",
+      "GENERATE_QR": "Generar código QR",
+      "QR_ALT": "Código QR 2FA",
+      "MANUAL_KEY": "Clave manual:",
+      "DISABLE_HINT": "Ingresa un código vigente de tu aplicación para desactivar 2FA.",
+      "DISABLE": "Desactivar",
+      "VERIFY_ENABLE": "Verificar y activar",
+      "VERIFICATION_CODE": "Código de verificación",
+      "TOAST": {
+        "PASSWORD_UPDATED": "Contraseña actualizada correctamente",
+        "TWO_FACTOR_ENABLED": "2FA activado correctamente",
+        "TWO_FACTOR_DISABLED": "2FA desactivado correctamente"
+      }
+    }
+  },
+  "ADMIN": {
+    "USERS": {
+      "DESCRIPTION": "Administra los usuarios del sistema, sus roles y accesos",
+      "SEARCH_PLACEHOLDER": "Buscar usuario...",
+      "ALL_ROLES": "Todos los roles",
+      "ALL_STATUSES": "Todos los estados",
+      "CREATE": "Nuevo Usuario",
+      "BLOCKED": "Bloqueado",
+      "SAVE_ROLES": "Guardar Roles",
+      "LAST_ACCESS": "Último acceso",
+      "EMPTY": "No hay usuarios registrados",
+      "FAILED_ATTEMPTS": "Intentos fallidos",
+      "CREATED_AT": "Creado",
+      "LOAD_FAILED": "Error al cargar usuarios",
+      "ACTIONS": {
+        "VIEW_DETAILS": "Ver detalles",
+        "ASSIGN_ROLES": "Asignar roles",
+        "BLOCK": "Bloquear usuario",
+        "UNBLOCK": "Desbloquear usuario"
+      },
+      "TOAST": {
+        "ROLES_UPDATED": "Roles actualizados",
+        "BLOCKED": "Usuario bloqueado",
+        "UNBLOCKED": "Usuario desbloqueado",
+        "CREATED": "Usuario creado",
+        "CREATED_DETAIL": "\"{{ username }}\" fue registrado exitosamente",
+        "CREATE_FAILED": "Error al crear usuario"
+      },
+      "MODAL": {
+        "SUBTITLE": "Registra un nuevo usuario en el sistema y asígnale un rol.",
+        "PHOTO": "Foto de perfil",
+        "PHOTO_FORMATS": "JPG, PNG o WEBP",
+        "UPLOAD_IMAGE": "Subir imagen",
+        "PREVIEW_ALT": "Vista previa",
+        "CHANGE_IMAGE": "Cambiar imagen",
+        "REMOVE_IMAGE": "Quitar imagen",
+        "SUBMIT": "Crear Usuario",
+        "ROLES_LOAD_FAILED": "No se pudieron cargar los roles disponibles",
+        "INVALID_FORMAT": "Formato inválido",
+        "INVALID_FORMAT_DETAIL": "Usa una imagen JPG, PNG o WEBP",
+        "ERRORS": {
+          "USERNAME": "Username requerido (3-50 caracteres)",
+          "ROLE_REQUIRED": "Selecciona al menos un rol"
+        }
+      }
+    },
+    "ROLES": {
+      "DESCRIPTION": "Define los roles del sistema y sus permisos",
+      "CREATE": "Nuevo Rol",
+      "ROLE": "Rol",
+      "PERMISSIONS": "Permisos",
+      "EMPTY": "No hay roles registrados",
+      "NAME_PLACEHOLDER": "Ej. MANAGER",
+      "DESCRIPTION_PLACEHOLDER": "Descripción del rol",
+      "TOTAL_PERMISSIONS": "{{ count }} permisos en total",
+      "LOAD_FAILED": "No se pudieron cargar los roles",
+      "PERMISSIONS_LOAD_FAILED": "No se pudieron cargar los permisos",
+      "ERRORS": {
+        "NAME_REQUIRED": "El nombre es requerido"
+      },
+      "TOAST": {
+        "CREATED": "Rol creado",
+        "CREATED_DETAIL": "\"{{ name }}\" fue creado exitosamente",
+        "CREATE_FAILED": "No se pudo crear el rol",
+        "UPDATED": "Rol actualizado",
+        "UPDATED_DETAIL": "\"{{ name }}\" fue actualizado",
+        "UPDATE_FAILED": "No se pudo actualizar el rol"
+      }
+    }
+  },
+  "PUBLIC": {
+    "GO_HOME": "Ir al inicio",
+    "PRINT": "Imprimir",
+    "INVALID_LINK": "Enlace inválido.",
+    "QUOTE": {
+      "LOADING": "Cargando cotización...",
+      "UNAVAILABLE": "Cotización no disponible",
+      "CONTACT_SELLER": "Contacta al vendedor para solicitar una nueva cotización.",
+      "HEADING": "COTIZACIÓN",
+      "GENERATED_WITH": "Cotización generada con Cronos",
+      "QUOTED_FOR": "Cotizado para",
+      "VALID_UNTIL": "Válida hasta",
+      "SELLER_NOTES": "Notas del vendedor",
+      "PRODUCT_DETAILS": "Detalle de Productos",
+      "HOME_DELIVERY": "Envío a Domicilio",
+      "EXTRA_CHARGES": "Cargos Adicionales",
+      "FOOTER_VALID_UNTIL": "Esta cotización es válida hasta el",
+      "FOOTER_CONFIRM": "Contacta al vendedor para confirmar tu pedido.",
+      "REVOKED_REASON": "Esta cotización ha sido revocada por el vendedor.",
+      "EXPIRED_REASON": "Esta cotización ha expirado y ya no es válida.",
+      "LOAD_FAILED": "No se pudo cargar la cotización. El enlace puede haber expirado o no ser válido.",
+      "PENDING": "Pendiente",
+      "BADGE_DEFAULT": "Cotización"
+    },
+    "RECIPE": {
+      "LOADING": "Cargando receta...",
+      "UNAVAILABLE": "Enlace no disponible",
+      "EXPIRED": "Enlace expirado",
+      "OPTIONAL": "(opcional)",
+      "NO_INGREDIENTS": "Sin ingredientes listados",
+      "PREPARATION": "Preparación",
+      "NO_INSTRUCTIONS": "Sin instrucciones disponibles",
+      "STORAGE": "Conservación",
+      "LOAD_FAILED": "Este enlace ha expirado o no es válido."
     }
   }
 }
