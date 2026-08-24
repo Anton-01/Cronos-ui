@@ -48,7 +48,8 @@
       "FILTER_BY_DESCRIPTION": "Filtrar por descripción",
       "FILTER_BY_CODE": "Filtrar por código",
       "FILTER": "Filtrar",
-      "UPDATED_AT": "Actualizado"
+      "UPDATED_AT": "Actualizado",
+      "DATE": "Fecha"
     },
     "OPTIONAL_DESCRIPTION": "Descripción opcional",
     "BACK": "Volver",
@@ -715,6 +716,139 @@
         "ANALYTICS_FAILED": "Error al cargar analíticas",
         "COSTS_FAILED": "Error al calcular costos"
       }
+    }
+  },
+  "QUOTES": {
+    "TITLE": "Cotizaciones",
+    "DESCRIPTION": "Genera y comparte cotizaciones con tus clientes",
+    "SEARCH_PLACEHOLDER": "Buscar cotización...",
+    "CREATE": "Nueva Cotización",
+    "EMPTY": "No hay cotizaciones registradas",
+    "FILTER_BY_CLIENT": "Filtrar por cliente",
+    "SHARE_ACTIONS": "Compartir / más acciones",
+    "FIELDS": {
+      "NUMBER": "N° Cotización",
+      "CLIENT": "Cliente",
+      "TOTAL": "Total"
+    },
+    "STATUS": {
+      "DRAFT": "Borrador",
+      "SENT": "Enviada",
+      "ACCEPTED": "Aceptada",
+      "REJECTED": "Rechazada",
+      "REVOKED": "Revocada",
+      "EXPIRED": "Expirada"
+    },
+    "ACTIONS": {
+      "COPY_LINK": "Copiar enlace",
+      "SEND_WHATSAPP": "Enviar por WhatsApp",
+      "SEND_EMAIL": "Enviar por correo",
+      "REVOKE_LINK": "Revocar enlace"
+    },
+    "WHATSAPP_MESSAGE": "¡Hola! Te comparto la cotización de tu pedido. Puedes ver los detalles y fotos aquí: {{ url }}",
+    "CONFIRM": {
+      "REVOKE_TITLE": "¿Revocar enlace?",
+      "REVOKE_MESSAGE": "El enlace público de la cotización \"{{ number }}\" dejará de funcionar. Esta acción no se puede deshacer.",
+      "REVOKE_ACCEPT": "Sí, revocar"
+    },
+    "TOAST": {
+      "LOAD_FAILED": "Error al cargar cotizaciones",
+      "DELETED": "Cotización eliminada correctamente",
+      "LINK_COPIED_TITLE": "Enlace copiado",
+      "LINK_COPIED": "El enlace de la cotización se copió al portapapeles.",
+      "COPY_FAILED": "No se pudo copiar el enlace. Copia manualmente: {{ url }}",
+      "EMAIL_SENT_TITLE": "¡Correo enviado!",
+      "EMAIL_SENT": "La cotización {{ number }} fue enviada al cliente.",
+      "NO_EMAIL_TITLE": "Sin correo electrónico",
+      "NO_EMAIL": "Este cliente no tiene un correo registrado. Edita la cotización para agregar uno antes de enviar.",
+      "EMAIL_FAILED_TITLE": "Error al enviar",
+      "EMAIL_FAILED": "No se pudo enviar el correo. Intenta de nuevo.",
+      "LINK_REVOKED_TITLE": "Enlace revocado",
+      "LINK_REVOKED": "El enlace público ha sido desactivado.",
+      "REVOKE_FAILED": "Error al revocar el enlace"
+    },
+    "DETAIL": {
+      "TITLE": "Detalle de Cotización",
+      "TITLE_NUMBERED": "Cotización {{ number }}",
+      "NO_ID": "No se recibió un identificador de cotización.",
+      "LOAD_FAILED": "No se pudo cargar la cotización.",
+      "LINK_REVOKED": "Enlace revocado",
+      "SHARE": "Compartir",
+      "EMAIL": "Correo",
+      "PHONE": "Teléfono",
+      "PRODUCTS": "Productos",
+      "PRODUCT": "Producto",
+      "QUANTITY": "Cantidad",
+      "UNIT_PRICE": "Precio Unit.",
+      "SUBTOTAL": "Subtotal",
+      "ACCESS_HISTORY": "Historial de Accesos",
+      "BROWSER": "Navegador",
+      "NO_ACCESS": "El cliente aún no ha abierto la cotización",
+      "FINANCIAL_SUMMARY": "Resumen Financiero",
+      "TAXES": "Impuestos",
+      "SHIPPING": "Envío",
+      "EXTRAS": "Extras",
+      "CLIENT_TOTAL": "Total al Cliente",
+      "PRODUCTION_COST": "Costo de producción",
+      "ESTIMATED_PROFIT": "Ganancia estimada",
+      "WHATSAPP_MESSAGE": "¡Hola! Te comparto la cotización de tu pedido. Puedes ver los detalles aquí: {{ url }}",
+      "LINK_COPIED": "El enlace se copió al portapapeles.",
+      "COPY_FAILED": "No se pudo copiar el enlace.",
+      "EMAIL_FAILED": "No se pudo enviar el correo.",
+      "UNKNOWN_BROWSER": "Navegador desconocido",
+      "MOBILE_BROWSER": "Navegador Móvil"
+    },
+    "FORM": {
+      "DESCRIPTION_CREATE": "Captura los datos del cliente y los productos a cotizar",
+      "CLIENT_SECTION": "Datos del Cliente",
+      "CLIENT_NAME_PLACEHOLDER": "Nombre del cliente",
+      "CLIENT_PHONE_PLACEHOLDER": "Teléfono del cliente",
+      "ADDRESS": "Dirección",
+      "ADDRESS_PLACEHOLDER": "Dirección de entrega",
+      "NOTES": "Notas",
+      "NOTES_PLACEHOLDER": "Notas para el cliente (opcional)",
+      "ADD_PRODUCT": "Agregar producto",
+      "REMOVE_PRODUCT": "Quitar producto",
+      "SEARCH_RECIPE": "Buscar receta (opcional)",
+      "SEARCH_RECIPE_PLACEHOLDER": "Escribe para buscar una receta...",
+      "PRODUCT_NAME": "Nombre del producto",
+      "PRODUCT_NAME_PLACEHOLDER": "Ej. Pastel de 3 leches",
+      "SIZE": "Tamaño",
+      "SIZE_PLACEHOLDER": "Ej. 20 cm",
+      "UNIT_COST": "Costo unitario",
+      "MARGIN": "Ganancia (%)",
+      "UNIT_PRICE": "Precio unitario",
+      "PRODUCT_NOTES": "Notas del producto",
+      "PRODUCT_NOTES_PLACEHOLDER": "Notas opcionales",
+      "SUMMARY": "Resumen",
+      "TAX": "IVA (%)",
+      "VALIDITY_DAYS": "Vigencia (días)",
+      "SHIPPING_COST": "Costo de envío",
+      "EXTRA_CHARGE": "Cargo extra",
+      "EXTRA_CONCEPT": "Concepto del cargo",
+      "SUBMIT_CREATE": "Crear Cotización",
+      "CHECK_FIELDS": "Revisa los campos marcados antes de guardar.",
+      "CREATED_TITLE": "Cotización creada",
+      "CREATED_MESSAGE": "Se ha generado la cotización exitosamente.",
+      "CREATE_FAILED": "Error al crear la cotización",
+      "COUNTRIES": {
+        "MX": "México",
+        "US": "Estados Unidos"
+      },
+      "ERRORS": {
+        "CLIENT_NAME_REQUIRED": "El nombre del cliente es requerido",
+        "EMAIL_INVALID": "Ingresa un correo válido",
+        "NAME_REQUIRED": "El nombre es requerido"
+      }
+    },
+    "EDIT": {
+      "TITLE": "Editar Cotización",
+      "DESCRIPTION": "Modifica los datos del cliente y los productos cotizados",
+      "LOCKED": "Esta cotización tiene un estado terminal y no puede editarse (auditoría).",
+      "LOAD_FAILED": "No se pudo cargar la cotización. Inténtalo de nuevo.",
+      "UPDATED_TITLE": "¡Cotización actualizada!",
+      "UPDATED_MESSAGE": "La cotización {{ number }} fue actualizada exitosamente.",
+      "UPDATE_FAILED": "No se pudo actualizar la cotización."
     }
   }
 }

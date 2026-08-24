@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { MenuItem } from 'primeng/api';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { MenuModule } from 'primeng/menu';
@@ -13,6 +14,7 @@ import { TooltipModule } from 'primeng/tooltip';
 
 import { QuoteService } from 'src/app/core/services/domain/quote.service';
 import { BakerQuoteDetailResponse, InternalQuoteItemResponse } from 'src/app/core/models/domain.model';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
@@ -20,14 +22,8 @@ import { DetailSkeletonComponent } from 'src/app/shared/components/detail-skelet
 
 type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary' | 'contrast';
 
-const STATUS_LABELS: Record<string, string> = {
-  DRAFT: 'Borrador',
-  SENT: 'Enviada',
-  ACCEPTED: 'Aceptada',
-  REJECTED: 'Rechazada',
-  REVOKED: 'Revocada',
-  EXPIRED: 'Expirada',
-};
+/** Quote lifecycle values the API returns; labels live under `QUOTES.STATUS`. */
+const STATUS_VALUES: readonly string[] = ['DRAFT', 'SENT', 'ACCEPTED', 'REJECTED', 'REVOKED', 'EXPIRED'];
 
 const STATUS_SEVERITIES: Record<string, TagSeverity> = {
   DRAFT: 'warn',
@@ -42,6 +38,7 @@ const STATUS_SEVERITIES: Record<string, TagSeverity> = {
   selector: 'app-quote-detail',
   standalone: true,
   imports: [
+    TranslatePipe,
     ButtonModule,
     CardModule,
     MenuModule,
@@ -60,6 +57,7 @@ export class QuoteDetailComponent implements OnInit, OnDestroy {
   private readonly alertService = inject(AlertService);
   private readonly toastService = inject(ToastService);
   private readonly pageInfoService = inject(PageInfoService);
+  private readonly language = inject(LanguageService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly destroy$ = new Subject<void>();
@@ -69,25 +67,37 @@ export class QuoteDetailComponent implements OnInit, OnDestroy {
   readonly loadError = signal<string | null>(null);
   readonly sendingEmail = signal(false);
 
-  readonly shareMenuItems: MenuItem[] = [
-    { label: 'Copiar enlace', icon: 'pi pi-copy', command: () => this.copyLink() },
-    { label: 'Enviar por WhatsApp', icon: 'pi pi-whatsapp', command: () => this.sendWhatsApp() },
-    { label: 'Enviar por correo', icon: 'pi pi-envelope', command: () => this.sendEmail() },
-  ];
+  readonly shareMenuItems = computed<MenuItem[]>(() => [
+    {
+      label: this.language.t('QUOTES.ACTIONS.COPY_LINK'),
+      icon: 'pi pi-copy',
+      command: () => this.copyLink(),
+    },
+    {
+      label: this.language.t('QUOTES.ACTIONS.SEND_WHATSAPP'),
+      icon: 'pi pi-whatsapp',
+      command: () => this.sendWhatsApp(),
+    },
+    {
+      label: this.language.t('QUOTES.ACTIONS.SEND_EMAIL'),
+      icon: 'pi pi-envelope',
+      command: () => this.sendEmail(),
+    },
+  ]);
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
-      this.loadError.set('No se recibió un identificador de cotización.');
+      this.loadError.set(this.language.t('QUOTES.DETAIL.NO_ID'));
       this.isLoading.set(false);
       return;
     }
 
-    this.pageInfoService.updateTitle('Detalle de Cotización');
+    this.pageInfoService.updateTitle(this.language.t('QUOTES.DETAIL.TITLE'));
     this.pageInfoService.updateBreadcrumbs([
-      { title: 'Inicio', path: '/dashboard', isActive: false },
-      { title: 'Cotizaciones', path: '/cronos/cotizaciones', isActive: false },
-      { title: 'Detalle', path: '', isActive: true },
+      { title: this.language.t('BREADCRUMB.HOME'), path: '/dashboard', isActive: false },
+      { title: this.language.t('QUOTES.TITLE'), path: '/cronos/cotizaciones', isActive: false },
+      { title: this.language.t('COMMON.DETAIL'), path: '', isActive: true },
     ]);
 
     this.loadQuote(id);
@@ -106,10 +116,12 @@ export class QuoteDetailComponent implements OnInit, OnDestroy {
         next: (res) => {
           this.quote.set(res.data);
           this.isLoading.set(false);
-          this.pageInfoService.updateTitle(`Cotización ${res.data.quoteNumber}`);
+          this.pageInfoService.updateTitle(
+            this.language.t('QUOTES.DETAIL.TITLE_NUMBERED', { number: res.data.quoteNumber }),
+          );
         },
         error: (err) => {
-          this.loadError.set(err?.error?.message || 'No se pudo cargar la cotización.');
+          this.loadError.set(err?.error?.message || this.language.t('QUOTES.DETAIL.LOAD_FAILED'));
           this.isLoading.set(false);
         },
       });
@@ -141,8 +153,12 @@ export class QuoteDetailComponent implements OnInit, OnDestroy {
   copyLink(): void {
     const url = this.getPublicUrl();
     navigator.clipboard.writeText(url).then(
-      () => this.toastService.success('Enlace copiado', 'El enlace se copió al portapapeles.'),
-      () => this.alertService.error('No se pudo copiar el enlace.')
+      () =>
+        this.toastService.success(
+          this.language.t('QUOTES.TOAST.LINK_COPIED_TITLE'),
+          this.language.t('QUOTES.DETAIL.LINK_COPIED'),
+        ),
+      () => this.alertService.error(this.language.t('QUOTES.DETAIL.COPY_FAILED')),
     );
   }
 
@@ -152,7 +168,7 @@ export class QuoteDetailComponent implements OnInit, OnDestroy {
       return;
     }
     const url = this.getPublicUrl();
-    const message = `¡Hola! Te comparto la cotización de tu pedido. Puedes ver los detalles aquí: ${url}`;
+    const message = this.language.t('QUOTES.DETAIL.WHATSAPP_MESSAGE', { url });
     let whatsAppUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
     if (quote.clientPhone) {
       whatsAppUrl += `&phone=${quote.clientPhone.replace(/[^0-9]/g, '')}`;
@@ -172,11 +188,17 @@ export class QuoteDetailComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.sendingEmail.set(false);
-          this.alertService.success(`La cotización ${quote.quoteNumber} fue enviada al cliente.`, '¡Correo enviado!');
+          this.alertService.success(
+            this.language.t('QUOTES.TOAST.EMAIL_SENT', { number: quote.quoteNumber }),
+            this.language.t('QUOTES.TOAST.EMAIL_SENT_TITLE'),
+          );
         },
         error: (err) => {
           this.sendingEmail.set(false);
-          this.alertService.error(err?.error?.message || 'No se pudo enviar el correo.', 'Error al enviar');
+          this.alertService.error(
+            err?.error?.message || this.language.t('QUOTES.DETAIL.EMAIL_FAILED'),
+            this.language.t('QUOTES.TOAST.EMAIL_FAILED_TITLE'),
+          );
         },
       });
   }
@@ -188,7 +210,7 @@ export class QuoteDetailComponent implements OnInit, OnDestroy {
   }
 
   getStatusLabel(status: string): string {
-    return STATUS_LABELS[status] ?? status;
+    return STATUS_VALUES.includes(status) ? this.language.t(`QUOTES.STATUS.${status}`) : status;
   }
 
   getItemSubtotal(item: InternalQuoteItemResponse): number {
@@ -196,15 +218,23 @@ export class QuoteDetailComponent implements OnInit, OnDestroy {
   }
 
   formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', minimumFractionDigits: 2 }).format(amount);
+    return new Intl.NumberFormat(this.language.current(), {
+      style: 'currency',
+      currency: 'MXN',
+      minimumFractionDigits: 2,
+    }).format(amount);
   }
 
   formatDate(date: Date | string): string {
-    return new Date(date).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' });
+    return new Date(date).toLocaleDateString(this.language.current(), {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
   }
 
   formatAccessDate(date: Date | string): string {
-    return new Date(date).toLocaleDateString('es-MX', {
+    return new Date(date).toLocaleDateString(this.language.current(), {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
@@ -215,14 +245,14 @@ export class QuoteDetailComponent implements OnInit, OnDestroy {
 
   parseBrowser(browserInfo: string): string {
     if (!browserInfo) {
-      return 'Navegador desconocido';
+      return this.language.t('QUOTES.DETAIL.UNKNOWN_BROWSER');
     }
     const match = browserInfo.match(/(Chrome|Firefox|Safari|Edge|Opera|MSIE|Trident)[\/\s]?(\d+)/i);
     if (match) {
       return `${match[1]} ${match[2]}`;
     }
     if (/mobile/i.test(browserInfo)) {
-      return 'Navegador Móvil';
+      return this.language.t('QUOTES.DETAIL.MOBILE_BROWSER');
     }
     return browserInfo.length > 40 ? browserInfo.substring(0, 40) + '…' : browserInfo;
   }

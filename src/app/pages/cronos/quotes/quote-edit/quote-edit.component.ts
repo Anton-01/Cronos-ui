@@ -9,6 +9,7 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 
+import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { DividerModule } from 'primeng/divider';
@@ -27,6 +28,7 @@ import {
   QuoteItemDetailResponse,
   QuoteItemRequest,
 } from 'src/app/core/models/domain.model';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { DetailSkeletonComponent } from 'src/app/shared/components/detail-skeleton/detail-skeleton.component';
@@ -40,6 +42,7 @@ type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary';
   selector: 'app-quote-edit',
   standalone: true,
   imports: [
+    TranslatePipe,
     ReactiveFormsModule,
     ButtonModule,
     CardModule,
@@ -62,6 +65,7 @@ export class QuoteEditComponent implements OnInit, OnDestroy {
   private readonly quoteService = inject(QuoteService);
   private readonly alertService = inject(AlertService);
   private readonly pageInfoService = inject(PageInfoService);
+  private readonly language = inject(LanguageService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly destroy$ = new Subject<void>();
@@ -106,14 +110,14 @@ export class QuoteEditComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (!id) {
-      this.loadError.set('No se recibió un identificador de cotización.');
+      this.loadError.set(this.language.t('QUOTES.DETAIL.NO_ID'));
       this.isLoading.set(false);
       return;
     }
     this.quoteId.set(id);
 
-    this.pageInfoService.updateTitle('Editar Cotización');
-    this.pageInfoService.updateDescription('Modifica los datos del cliente y los productos cotizados');
+    this.pageInfoService.updateTitle(this.language.t('QUOTES.EDIT.TITLE'));
+    this.pageInfoService.updateDescription(this.language.t('QUOTES.EDIT.DESCRIPTION'));
     this.pageInfoService.updateBreadcrumbs([
       { title: 'Inicio', path: '/dashboard', isActive: false },
       { title: 'Cotizaciones', path: '/cronos/cotizaciones', isActive: false },
@@ -144,7 +148,7 @@ export class QuoteEditComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           this.isLoading.set(false);
-          this.loadError.set(err?.error?.message || 'No se pudo cargar la cotización. Inténtalo de nuevo.');
+          this.loadError.set(err?.error?.message || this.language.t('QUOTES.EDIT.LOAD_FAILED'));
         },
       });
   }
@@ -278,7 +282,7 @@ export class QuoteEditComponent implements OnInit, OnDestroy {
     if (this.form.invalid || this.items.length === 0) {
       this.form.markAllAsTouched();
       this.items.controls.forEach((control) => (control as FormGroup).markAllAsTouched());
-      this.alertService.warning('Revisa los campos marcados antes de guardar.');
+      this.alertService.warning(this.language.t('QUOTES.FORM.CHECK_FIELDS'));
       return;
     }
 
@@ -295,12 +299,12 @@ export class QuoteEditComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.isSaving.set(false);
-          this.alertService.success(`La cotización ${this.quoteNumber()} fue actualizada exitosamente.`, '¡Cotización actualizada!');
+          this.alertService.success(this.language.t('QUOTES.EDIT.UPDATED_MESSAGE', { number: this.quoteNumber() }), this.language.t('QUOTES.EDIT.UPDATED_TITLE'));
           this.router.navigate(['/cronos/cotizaciones']);
         },
         error: (err) => {
           this.isSaving.set(false);
-          this.alertService.error(err?.error?.message || 'No se pudo actualizar la cotización.', 'Error al guardar');
+          this.alertService.error(err?.error?.message || this.language.t('QUOTES.EDIT.UPDATE_FAILED'), this.language.t('COMMON.TOAST.SAVE_FAILED'));
         },
       });
   }

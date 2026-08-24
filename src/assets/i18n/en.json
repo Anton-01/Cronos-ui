@@ -48,7 +48,8 @@
       "FILTER_BY_DESCRIPTION": "Filter by description",
       "FILTER_BY_CODE": "Filter by code",
       "FILTER": "Filter",
-      "UPDATED_AT": "Updated"
+      "UPDATED_AT": "Updated",
+      "DATE": "Date"
     },
     "OPTIONAL_DESCRIPTION": "Optional description",
     "BACK": "Back",
@@ -715,6 +716,139 @@
         "ANALYTICS_FAILED": "Analytics could not be loaded",
         "COSTS_FAILED": "Costs could not be calculated"
       }
+    }
+  },
+  "QUOTES": {
+    "TITLE": "Quotes",
+    "DESCRIPTION": "Generate and share quotes with your clients",
+    "SEARCH_PLACEHOLDER": "Search quote...",
+    "CREATE": "New Quote",
+    "EMPTY": "No quotes registered yet",
+    "FILTER_BY_CLIENT": "Filter by client",
+    "SHARE_ACTIONS": "Share / more actions",
+    "FIELDS": {
+      "NUMBER": "Quote No.",
+      "CLIENT": "Client",
+      "TOTAL": "Total"
+    },
+    "STATUS": {
+      "DRAFT": "Draft",
+      "SENT": "Sent",
+      "ACCEPTED": "Accepted",
+      "REJECTED": "Rejected",
+      "REVOKED": "Revoked",
+      "EXPIRED": "Expired"
+    },
+    "ACTIONS": {
+      "COPY_LINK": "Copy link",
+      "SEND_WHATSAPP": "Send via WhatsApp",
+      "SEND_EMAIL": "Send by email",
+      "REVOKE_LINK": "Revoke link"
+    },
+    "WHATSAPP_MESSAGE": "Hi! Here is the quote for your order. You can see the details and photos here: {{ url }}",
+    "CONFIRM": {
+      "REVOKE_TITLE": "Revoke link?",
+      "REVOKE_MESSAGE": "The public link for quote \"{{ number }}\" will stop working. This action cannot be undone.",
+      "REVOKE_ACCEPT": "Yes, revoke"
+    },
+    "TOAST": {
+      "LOAD_FAILED": "Quotes could not be loaded",
+      "DELETED": "Quote deleted successfully",
+      "LINK_COPIED_TITLE": "Link copied",
+      "LINK_COPIED": "The quote link was copied to the clipboard.",
+      "COPY_FAILED": "The link could not be copied. Copy it manually: {{ url }}",
+      "EMAIL_SENT_TITLE": "Email sent!",
+      "EMAIL_SENT": "Quote {{ number }} was sent to the client.",
+      "NO_EMAIL_TITLE": "No email address",
+      "NO_EMAIL": "This client has no registered email. Edit the quote to add one before sending.",
+      "EMAIL_FAILED_TITLE": "Send failed",
+      "EMAIL_FAILED": "The email could not be sent. Please try again.",
+      "LINK_REVOKED_TITLE": "Link revoked",
+      "LINK_REVOKED": "The public link has been disabled.",
+      "REVOKE_FAILED": "The link could not be revoked"
+    },
+    "DETAIL": {
+      "TITLE": "Quote Detail",
+      "TITLE_NUMBERED": "Quote {{ number }}",
+      "NO_ID": "No quote identifier was provided.",
+      "LOAD_FAILED": "The quote could not be loaded.",
+      "LINK_REVOKED": "Link revoked",
+      "SHARE": "Share",
+      "EMAIL": "Email",
+      "PHONE": "Phone",
+      "PRODUCTS": "Products",
+      "PRODUCT": "Product",
+      "QUANTITY": "Quantity",
+      "UNIT_PRICE": "Unit Price",
+      "SUBTOTAL": "Subtotal",
+      "ACCESS_HISTORY": "Access History",
+      "BROWSER": "Browser",
+      "NO_ACCESS": "The client has not opened the quote yet",
+      "FINANCIAL_SUMMARY": "Financial Summary",
+      "TAXES": "Taxes",
+      "SHIPPING": "Shipping",
+      "EXTRAS": "Extras",
+      "CLIENT_TOTAL": "Client Total",
+      "PRODUCTION_COST": "Production cost",
+      "ESTIMATED_PROFIT": "Estimated profit",
+      "WHATSAPP_MESSAGE": "Hi! Here is the quote for your order. You can see the details here: {{ url }}",
+      "LINK_COPIED": "The link was copied to the clipboard.",
+      "COPY_FAILED": "The link could not be copied.",
+      "EMAIL_FAILED": "The email could not be sent.",
+      "UNKNOWN_BROWSER": "Unknown browser",
+      "MOBILE_BROWSER": "Mobile Browser"
+    },
+    "FORM": {
+      "DESCRIPTION_CREATE": "Capture the client details and the products to quote",
+      "CLIENT_SECTION": "Client Details",
+      "CLIENT_NAME_PLACEHOLDER": "Client name",
+      "CLIENT_PHONE_PLACEHOLDER": "Client phone",
+      "ADDRESS": "Address",
+      "ADDRESS_PLACEHOLDER": "Delivery address",
+      "NOTES": "Notes",
+      "NOTES_PLACEHOLDER": "Notes for the client (optional)",
+      "ADD_PRODUCT": "Add product",
+      "REMOVE_PRODUCT": "Remove product",
+      "SEARCH_RECIPE": "Search recipe (optional)",
+      "SEARCH_RECIPE_PLACEHOLDER": "Type to search for a recipe...",
+      "PRODUCT_NAME": "Product name",
+      "PRODUCT_NAME_PLACEHOLDER": "e.g. Tres leches cake",
+      "SIZE": "Size",
+      "SIZE_PLACEHOLDER": "e.g. 20 cm",
+      "UNIT_COST": "Unit cost",
+      "MARGIN": "Margin (%)",
+      "UNIT_PRICE": "Unit price",
+      "PRODUCT_NOTES": "Product notes",
+      "PRODUCT_NOTES_PLACEHOLDER": "Optional notes",
+      "SUMMARY": "Summary",
+      "TAX": "VAT (%)",
+      "VALIDITY_DAYS": "Validity (days)",
+      "SHIPPING_COST": "Shipping cost",
+      "EXTRA_CHARGE": "Extra charge",
+      "EXTRA_CONCEPT": "Charge concept",
+      "SUBMIT_CREATE": "Create Quote",
+      "CHECK_FIELDS": "Check the highlighted fields before saving.",
+      "CREATED_TITLE": "Quote created",
+      "CREATED_MESSAGE": "The quote was generated successfully.",
+      "CREATE_FAILED": "The quote could not be created",
+      "COUNTRIES": {
+        "MX": "Mexico",
+        "US": "United States"
+      },
+      "ERRORS": {
+        "CLIENT_NAME_REQUIRED": "Client name is required",
+        "EMAIL_INVALID": "Enter a valid email",
+        "NAME_REQUIRED": "Name is required"
+      }
+    },
+    "EDIT": {
+      "TITLE": "Edit Quote",
+      "DESCRIPTION": "Modify the client details and the quoted products",
+      "LOCKED": "This quote is in a terminal state and cannot be edited (audit).",
+      "LOAD_FAILED": "The quote could not be loaded. Please try again.",
+      "UPDATED_TITLE": "Quote updated!",
+      "UPDATED_MESSAGE": "Quote {{ number }} was updated successfully.",
+      "UPDATE_FAILED": "The quote could not be updated."
     }
   }
 }
