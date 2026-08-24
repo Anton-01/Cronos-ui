@@ -108,11 +108,10 @@
     <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="close()" />
     <p-button
       [label]="'ADMIN.USERS.MODAL.SUBMIT' | translate"
-      type="submit"
-      form="createUserForm"
       icon="pi pi-check"
-      [disabled]="!canSubmit()"
+      [disabled]="!canSubmit() || isSaving()"
       [loading]="isSaving()"
+      (onClick)="onSubmit()"
     />
   </ng-template>
 </p-dialog>
