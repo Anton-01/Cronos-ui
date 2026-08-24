@@ -1,0 +1,103 @@
+<p-dialog
+  header="Importar categorías desde CSV"
+  [visible]="true"
+  (visibleChange)="!$event && close()"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '40rem', maxWidth: '95vw' }"
+>
+  <div class="flex flex-column gap-3">
+    <p class="m-0 text-color-secondary">
+      El archivo debe incluir las columnas <strong>name</strong>, <strong>description</strong> y
+      <strong>type</strong> (<code>PRODUCT</code> o <code>INGREDIENT</code>). Máximo {{ maxFileSizeLabel }}.
+    </p>
+
+    <input
+      #fileInput
+      type="file"
+      [accept]="acceptedExtension"
+      class="hidden"
+      (change)="onFileSelected($event)"
+    />
+
+    @if (selectedFile(); as file) {
+      <div class="flex align-items-center justify-content-between gap-3 p-3 border-round-md surface-100">
+        <div class="flex align-items-center gap-2 overflow-hidden">
+          <i class="pi pi-file text-xl text-color-secondary"></i>
+          <div class="flex flex-column overflow-hidden">
+            <span class="font-medium white-space-nowrap overflow-hidden text-overflow-ellipsis">{{ file.name }}</span>
+            <small class="text-color-secondary">{{ fileSizeLabel(file) }}</small>
+          </div>
+        </div>
+        <p-button
+          icon="pi pi-times"
+          severity="secondary"
+          [text]="true"
+          [rounded]="true"
+          pTooltip="Quitar archivo"
+          [disabled]="isImporting()"
+          (onClick)="clearFile()"
+        />
+      </div>
+    } @else {
+      <p-button
+        label="Seleccionar archivo CSV"
+        icon="pi pi-upload"
+        severity="secondary"
+        [outlined]="true"
+        styleClass="w-full"
+        (onClick)="triggerFileInput()"
+      />
+    }
+
+    @if (validationError(); as message) {
+      <p-message severity="error" [text]="message" styleClass="w-full" />
+    }
+
+    @if (result(); as summary) {
+      <div class="flex flex-wrap align-items-center gap-2">
+        <p-tag icon="pi pi-list" [value]="summary.totalRows + ' filas leídas'" severity="secondary" />
+        <p-tag icon="pi pi-check" [value]="summary.successCount + ' importadas'" severity="success" />
+        @if (hasFailures()) {
+          <p-tag icon="pi pi-times" [value]="summary.failureCount + ' con error'" severity="danger" />
+        }
+      </div>
+
+      @if (rowErrors().length > 0) {
+        <p-table [value]="rowErrors()" [scrollable]="true" scrollHeight="14rem" styleClass="p-datatable-sm">
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="width: 5rem">Fila</th>
+              <th style="width: 9rem">Campo</th>
+              <th>Detalle</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-rowError>
+            <tr>
+              <td>{{ rowError.row }}</td>
+              <td>{{ rowError.field || '—' }}</td>
+              <td>{{ rowError.message }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      }
+    }
+  </div>
+
+  <ng-template pTemplate="footer">
+    <p-button
+      [label]="result() ? 'Cerrar' : 'Cancelar'"
+      severity="secondary"
+      [outlined]="true"
+      [disabled]="isImporting()"
+      (onClick)="close()"
+    />
+    <p-button
+      label="Importar"
+      icon="pi pi-cloud-upload"
+      [disabled]="!canImport()"
+      [loading]="isImporting()"
+      (onClick)="onImport()"
+    />
+  </ng-template>
+</p-dialog>

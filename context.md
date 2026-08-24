@@ -547,3 +547,128 @@ preset, not here.
 
 Per Part I §10, cite the section you are satisfying: e.g. "per §13.3, the
 interactive card uses `--shadow-hover` with a 2px lift".
+
+---
+
+## 16. Internationalization & Headers
+
+> Added 2026-08-22. Supersedes nothing in §9 — that rule governs the
+> *codebase* (identifiers, comments, commit messages stay English). This
+> section governs *user-facing locale*, which is a runtime concern.
+
+### 16.1 Supported locales
+
+| Locale | BCP 47 tag | Display | Notes |
+|---|---|---|---|
+| Spanish (Mexico) | `es-MX` | `🇲🇽 ES` | **Default.** Primary market. |
+| English | `en` | `🇺🇸 EN` | |
+
+The tag is the contract. `es-MX` is never abbreviated to `es` on the wire, and
+`en` is never sent as `en-US` — the backend resolves its message bundles from
+these two exact tags, so a mismatch silently degrades to the server default.
+Adding a third locale means adding it to `AppLanguage` **and** shipping the
+matching backend bundle in the same PR.
+
+### 16.2 The header — `Accept-Language`
+
+Every request to `environment.apiUrl` carries the active locale:
+
+```
+Accept-Language: es-MX
+```
+
+- The value is the tag alone, not a weighted list (`es-MX,es;q=0.9`). The
+  backend negotiates on two known tags; a q-list adds parsing surface for no
+  behavioural gain.
+- It is set **globally in an interceptor, never per service**. A service that
+  forgot it would return English validation errors into a Spanish form, and
+  that failure is invisible until a user hits a 400.
+- Only calls to our own API are tagged. Static assets — including the
+  `/assets/i18n/*.json` bundles a future translation loader fetches — keep
+  their own content negotiation and must not inherit ours.
+
+### 16.3 Ownership
+
+| Concern | Owner |
+|---|---|
+| Active locale, persistence, `<html lang>`, `<title>` | `core/services/language.service.ts` |
+| Stamping the header | `core/interceptors/language.interceptor.ts` |
+| Locale catalog (`code`, labels, flag, document title) | `core/models/language.model.ts` |
+| `LOCALE_ID` + `registerLocaleData` | `app.module.ts` |
+| Static default (`<html lang>`, first-paint `<title>`) | `src/index.html` |
+| Switcher UI | `layout/main-layout.component.*` |
+
+`LanguageService` is the deliberate twin of `ThemeService`: a signal for
+readers, `localStorage` for persistence (`cronos_language`), exactly one DOM
+side effect (`<html lang>`), and an `init()` the shell calls on bootstrap.
+Read `language.current()`; write only through `language.use()`.
+
+The switcher sits in the topbar's right cluster **immediately left of the
+theme toggle**, as a `p-menu` popup behind a `.layout-lang-button` — the same
+quiet chrome as `.layout-user-button`, so the three controls read as one row
+(§11.4). Flags are regional-indicator emoji: no icon font, no SVG sprite, no
+request. Note `p-dropdown` no longer exists in PrimeNG 19+ (it is `p-select`);
+`p-menu` is the native fit for a topbar popup and is already the pattern the
+account menu uses.
+
+### 16.4 Enterprise compliance — pipes, titles and the static shell
+
+Three rules beyond the header, all of them a11y/SEO obligations rather than
+polish:
+
+- **`LOCALE_ID` is `es-MX`.** `registerLocaleData(localeEsMX, 'es-MX')` runs at
+  module load in `app.module.ts` — Angular bundles only `en` data, and an
+  unregistered locale makes `date`/`number`/`currency` throw at runtime, not
+  fall back. Cronos prices ingredients and issues quotes in Mexico, so the
+  native pipes are built around `es-MX`. The provider reads the persisted
+  choice via `resolveStoredLanguage()` and returns `es-MX` when nothing is
+  stored: `LOCALE_ID` is resolved once at bootstrap and **cannot change
+  without a reload**, so an in-session switch moves the header, the
+  `<html lang>` and the `<title>` immediately while the pipes follow on the
+  next load. Never try to "fix" that by re-providing `LOCALE_ID` at runtime —
+  reload, or format through an explicit locale argument.
+- **The `<title>` is dynamic, and `Title` is the only way it is written.**
+  `LanguageService` injects `@angular/platform-browser`'s `Title` and sets it
+  from `LanguageOption.documentTitle` inside `apply()`. No component writes
+  `document.title`; `PageInfoService` drives the in-page heading only, which
+  is a different surface with a different lifetime.
+- **`index.html` carries the real default, not a generic one.**
+  `<html lang="es-MX">` and the Spanish `<title>` are hardcoded, so a screen
+  reader or a pre-hydration crawler reads the intended locale from the first
+  byte instead of a generic `es` for the few milliseconds before Angular
+  boots. That file and `LANGUAGE_OPTIONS` must be changed together.
+
+### 16.5 Not yet done — UI string translation
+
+The header contract above makes the **backend** speak the user's language.
+Cronos' own UI copy is still hardcoded Spanish (§9 tracks that migration).
+When UI translation lands, `@ngx-translate/core` is the intended library, and
+it consumes `LanguageService` rather than holding a second copy of the state:
+
+```bash
+npm install @ngx-translate/core @ngx-translate/http-loader
+```
+
+```ts
+// app.module.ts — providers
+provideTranslateService({
+  loader: provideTranslateHttpLoader({ prefix: './assets/i18n/', suffix: '.json' }),
+  fallbackLang: 'es-MX',
+}),
+```
+
+```ts
+// language.service.ts — the one new side effect, inside apply()
+private readonly translate = inject(TranslateService);
+
+private apply(language: AppLanguage): void {
+  this.current.set(language);
+  localStorage.setItem(LANGUAGE_STORAGE_KEY, language);
+  document.documentElement.lang = language;
+  this.translate.use(language);   // ← added; bundle files are en.json / es-MX.json
+}
+```
+
+Bundle filenames must match the tag exactly (`en.json`, `es-MX.json`) so one
+identifier drives the header, the `<html lang>` and the bundle lookup. Do not
+introduce a second locale enum for translation keys.

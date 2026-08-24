@@ -1,4 +1,6 @@
-import { NgModule } from '@angular/core';
+import { LOCALE_ID, NgModule } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeEsMX from '@angular/common/locales/es-MX';
 import { BrowserModule } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import {
@@ -72,6 +74,14 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ErrorInterceptorService } from './core/interceptors/error-interceptor.service';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { languageInterceptor } from './core/interceptors/language.interceptor';
+import { resolveStoredLanguage } from './core/services/language.service';
+
+// Angular ships `en` data in the framework but every other locale must be
+// registered explicitly, or `date`/`number`/`currency` throw at runtime.
+// Cronos prices ingredients and issues quotes in Mexico, so `es-MX` is the
+// locale the native pipes are built around.
+registerLocaleData(localeEsMX, 'es-MX');
 
 @NgModule({
   declarations: [AppComponent],
@@ -99,8 +109,19 @@ import { authInterceptor } from './core/interceptors/auth.interceptor';
     }),
     MessageService,
     ConfirmationService,
+    {
+      // `LOCALE_ID` is resolved once at bootstrap and cannot change without a
+      // reload, so it reads the persisted choice rather than being pinned to a
+      // literal: a user who picked English gets English pipes on their next
+      // load instead of Mexican date order under an English UI. With nothing
+      // persisted this returns 'es-MX', which is the product default.
+      provide: LOCALE_ID,
+      useFactory: resolveStoredLanguage,
+    },
     provideHttpClient(
-      withInterceptors([authInterceptor]),
+      // Order is the execution order on the way out: auth stamps identity,
+      // language stamps the locale the backend answers in.
+      withInterceptors([authInterceptor, languageInterceptor]),
       withInterceptorsFromDi()
     ),
     {

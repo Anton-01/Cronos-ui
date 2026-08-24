@@ -1,20 +1,5 @@
-// Categorías
-export interface CategoryResponse {
-  id: number;
-  name: string;
-  description: string | null;
-  isSystemDefault: boolean;
-  status: 'ACTIVE' | 'INACTIVE';
-}
-export interface CreateCategoryRequest {
-  name: string;
-  description?: string;
-}
-export interface UpdateCategoryRequest {
-  id: number;
-  name: string;
-  description?: string;
-}
+// Categorías — see ./category.model.ts (typed by CategoryType + CategoryScope).
+export * from './category.model';
 
 export interface AllergenResponse {
   id: string;

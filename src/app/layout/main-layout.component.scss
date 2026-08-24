@@ -117,6 +117,35 @@
   text-overflow: ellipsis;
 }
 
+// Group parent renders as a <button>, so it needs the chrome reset that an
+// <a> gets for free. Everything else about it is a .layout-menu-item.
+.layout-menu-toggle {
+  appearance: none;
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  text-align: left;
+}
+
+.layout-menu-toggle-icon {
+  margin-left: auto;
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+// Children are indented behind a hairline guide that ties them to the parent
+// without drawing a second box (§11.3: grouping reads through spacing).
+.layout-submenu {
+  margin: 0.15rem 0 0.35rem 1.5rem !important;
+  padding-left: 0.5rem !important;
+  border-left: 1px solid var(--surface-border);
+
+  .layout-menu-item {
+    height: 2.25rem;
+    font-size: 0.85rem;
+  }
+}
+
 // Active = 12% primary tint + primary text. No accent bar, no filled pill.
 .layout-menu-item-active {
   background: color-mix(in srgb, var(--primary-color) 12%, transparent);
@@ -158,6 +187,51 @@
   padding: 0 1.5rem;
   // No border, no shadow: the topbar is part of the ground, not a bar.
   background: var(--surface-ground);
+}
+
+// ── Language switcher ───────────────────────────────────────────────────
+// Same quiet chrome as the account button so the topbar right cluster reads
+// as one row of controls rather than three competing widgets (§11.4).
+.layout-lang-button {
+  height: 2.5rem;
+  padding: 0 0.65rem;
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background: var(--surface-hover);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+}
+
+// Emoji flags render from the system font; the explicit stack keeps Linux
+// and Windows from falling back to the two-letter box glyph.
+.layout-lang-flag {
+  font-size: 1.05rem;
+  line-height: 1;
+  font-family: 'Apple Color Emoji', 'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+}
+
+.layout-lang-code {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+:host ::ng-deep .layout-lang-menu {
+  min-width: 14rem;
+
+  .layout-lang-item-active .p-menu-item-link {
+    color: var(--primary-color);
+    font-weight: 600;
+  }
 }
 
 .layout-user-button {
@@ -259,6 +333,27 @@
     .layout-menu-item {
       justify-content: center;
       padding: 0;
+    }
+
+    // No room for a chevron, and no room to hide children behind one: the
+    // group stays open and its children sit flush as plain icon rows.
+    .layout-menu-toggle-icon {
+      display: none;
+    }
+
+    .layout-submenu {
+      margin: 0 !important;
+      padding-left: 0 !important;
+      border-left: none;
+
+      .layout-menu-item {
+        height: 2.35rem;
+      }
+
+      .layout-menu-item-icon {
+        font-size: 0.95rem;
+        opacity: 0.85;
+      }
     }
   }
 }

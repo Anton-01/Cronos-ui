@@ -1,0 +1,212 @@
+<p-card>
+  <p-table
+    #table
+    [value]="items()"
+    dataKey="id"
+    paginatorPosition="bottom"
+    [stripedRows]="true"
+    [loading]="isLoading()"
+    [showLoader]="false"
+    [paginator]="true"
+    [rows]="10"
+    [rowsPerPageOptions]="[10, 25, 50]"
+    [globalFilterFields]="['name', 'description']"
+    sortField="name"
+    [sortOrder]="1"
+    [rowHover]="true"
+    [showCurrentPageReport]="true"
+    currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} registros"
+  >
+    <ng-template pTemplate="caption">
+      <div class="flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="flex align-items-center gap-3 flex-wrap">
+          <p-iconfield iconPosition="left">
+            <p-inputicon styleClass="pi pi-search" />
+            <input
+              pInputText
+              type="text"
+              [placeholder]="copy().searchPlaceholder"
+              (input)="table.filterGlobal($any($event.target).value, 'contains')"
+            />
+          </p-iconfield>
+          <div class="flex align-items-center gap-2">
+            <p-tag [value]="systemCount() + ' del sistema'" severity="contrast" icon="pi pi-lock" />
+            <p-tag [value]="customCount() + ' personalizadas'" severity="info" icon="pi pi-user-edit" />
+          </div>
+        </div>
+        <div class="flex align-items-center gap-2">
+          <p-button
+            label="Importar CSV"
+            icon="pi pi-upload"
+            severity="secondary"
+            [outlined]="true"
+            (onClick)="openImport()"
+          />
+          <p-button
+            [label]="copy().createLabel"
+            icon="pi pi-plus"
+            severity="contrast"
+            styleClass="p-button-page-action"
+            (onClick)="openCreate()"
+          />
+        </div>
+      </div>
+    </ng-template>
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="name" style="min-width: 14rem">
+          Nombre
+          <p-sortIcon field="name" />
+          <p-columnFilter type="text" field="name" display="menu" placeholder="Filtrar por nombre" />
+        </th>
+        <th pSortableColumn="description" style="min-width: 18rem">
+          Descripción
+          <p-sortIcon field="description" />
+          <p-columnFilter type="text" field="description" display="menu" placeholder="Filtrar por descripción" />
+        </th>
+        <th pSortableColumn="scope" style="width: 12rem">
+          Origen
+          <p-sortIcon field="scope" />
+          <p-columnFilter
+            field="scope"
+            matchMode="equals"
+            display="menu"
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+          >
+            <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+              <p-select
+                [ngModel]="value"
+                [options]="scopeFilterOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Todos"
+                [showClear]="true"
+                (onChange)="filter($event.value)"
+              />
+            </ng-template>
+          </p-columnFilter>
+        </th>
+        <th style="width: 11rem">
+          Estado
+          <p-columnFilter
+            field="status"
+            matchMode="equals"
+            display="menu"
+            [showMatchModes]="false"
+            [showOperator]="false"
+            [showAddButton]="false"
+          >
+            <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+              <p-select
+                [ngModel]="value"
+                [options]="statusFilterOptions"
+                optionLabel="label"
+                optionValue="value"
+                placeholder="Todos"
+                [showClear]="true"
+                (onChange)="filter($event.value)"
+              />
+            </ng-template>
+          </p-columnFilter>
+        </th>
+        <th style="width: 9rem" class="text-right">Acciones</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-item>
+      <tr>
+        <td class="font-semibold">{{ item.name }}</td>
+        <td>{{ item.description || '-' }}</td>
+        <td>
+          <p-tag
+            [value]="scopeLabel(item.scope)"
+            [severity]="scopeSeverity(item.scope)"
+            [icon]="scopeIcon(item.scope)"
+          />
+        </td>
+        <td>
+          <!-- SYSTEM rows are read-only for everyone, so they get the pill
+               without the switch that would offer an edit they cannot make. -->
+          @if (isEditable(item)) {
+            <app-status-toggle
+              [item]="item"
+              endpoint="category"
+              [nameEntity]="item.name"
+              (statusChanged)="updateItemStatus(item.id, $event)"
+            />
+          } @else {
+            <span
+              class="status-pill"
+              [class.status-pill-active]="item.status === 'ACTIVE'"
+              [class.status-pill-inactive]="item.status !== 'ACTIVE'"
+            >
+              {{ item.status === 'ACTIVE' ? 'Activo' : 'Inactivo' }}
+            </span>
+          }
+        </td>
+        <td class="text-right">
+          @if (isEditable(item)) {
+            <p-button
+              icon="pi pi-pencil"
+              severity="info"
+              [text]="true"
+              [rounded]="true"
+              pTooltip="Editar"
+              tooltipPosition="top"
+              (onClick)="openEdit(item)"
+            />
+            <p-button
+              icon="pi pi-trash"
+              severity="danger"
+              [text]="true"
+              [rounded]="true"
+              pTooltip="Eliminar"
+              tooltipPosition="top"
+              (onClick)="confirmDelete(item)"
+            />
+          } @else {
+            <p-button
+              icon="pi pi-eye"
+              severity="secondary"
+              [text]="true"
+              [rounded]="true"
+              pTooltip="Ver detalle (categoría del sistema)"
+              tooltipPosition="top"
+              (onClick)="openView(item)"
+            />
+          }
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="loadingbody">
+      @for (row of skeletonRows; track $index) {
+        <tr appTableSkeletonRow [columns]="5"></tr>
+      }
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="5" class="text-center text-color-secondary py-5">{{ copy().emptyMessage }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+@if (openDialog() === 'form') {
+  <app-category-form-dialog
+    [type]="type()"
+    [category]="selectedItem()"
+    [readOnly]="isReadOnlyDialog()"
+    (saved)="onSaved($event)"
+    (desynced)="load()"
+    (closed)="closeDialog()"
+  />
+}
+
+@if (openDialog() === 'import') {
+  <app-category-import-dialog (imported)="onImported()" (closed)="closeDialog()" />
+}

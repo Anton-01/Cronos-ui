@@ -24,6 +24,7 @@ import { RippleModule } from 'primeng/ripple';
 import { TooltipModule } from 'primeng/tooltip';
 
 import { AuthService } from 'src/app/core/services/auth.service';
+import { LanguageService } from 'src/app/core/services/language.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { ProfileStateService } from 'src/app/core/services/profile/ProfileStateService';
 import { ThemeService } from 'src/app/core/services/theme.service';
@@ -74,6 +75,7 @@ export class MainLayoutComponent implements OnInit {
   readonly profileState = inject(ProfileStateService);
   readonly pageInfo = inject(PageInfoService);
   readonly theme = inject(ThemeService);
+  readonly language = inject(LanguageService);
 
   /** Desktop: sidebar collapsed to icons only. Persisted across sessions. */
   readonly slim = signal(localStorage.getItem(SLIM_STORAGE_KEY) === 'true');
@@ -95,6 +97,12 @@ export class MainLayoutComponent implements OnInit {
 
   readonly userMenuItems: MenuItem[] = buildUserMenu(() => this.logout());
 
+  /**
+   * Per-group open/closed state, keyed by label, holding only the groups the
+   * user has clicked. Absent means "follow the active route".
+   */
+  private readonly groupOverrides = signal<Readonly<Record<string, boolean>>>({});
+
   private readonly currentUrl = toSignal(
     this.router.events.pipe(
       filter((event) => event instanceof NavigationEnd),
@@ -113,6 +121,26 @@ export class MainLayoutComponent implements OnInit {
   );
 
   readonly breadcrumbHome: MenuItem = { icon: 'pi pi-home', routerLink: '/dashboard' };
+
+  /**
+   * Locale rows for the topbar switcher. The flag lives in the label rather
+   * than in `icon` — `MenuItem.icon` takes a PrimeIcons class, and a
+   * regional-indicator emoji needs no icon font, no SVG and no request. A
+   * check marks the active row.
+   */
+  readonly languageMenuItems = computed<MenuItem[]>(() =>
+    this.language.options.map((option) => {
+      const isActive = option.code === this.language.current();
+      return {
+        label: `${option.flag}  ${option.shortLabel} — ${option.label}`,
+        // `pi-fw` on the inactive rows reserves the same fixed-width icon slot
+        // as the check, so both flags stay on one vertical line.
+        icon: isActive ? 'pi pi-check' : 'pi pi-fw',
+        styleClass: isActive ? 'layout-lang-item-active' : undefined,
+        command: () => this.language.use(option.code),
+      };
+    }),
+  );
 
   readonly userInitials = computed(() => {
     const user = this.profileState.user();
@@ -148,6 +176,27 @@ export class MainLayoutComponent implements OnInit {
   isActive(item: NavItem): boolean {
     const url = this.currentUrl();
     return activePrefixesOf(item).some((prefix) => url === prefix || url.startsWith(`${prefix}/`));
+  }
+
+  /**
+   * Whether a group's children are visible.
+   *
+   * A group opens by itself when the current URL is inside it, and the user's
+   * click is recorded as an override so an explicitly collapsed group stays
+   * collapsed while they are still on one of its pages. Slim mode ignores
+   * both: labels are hidden there, so a closed group would leave its routes
+   * unreachable behind an icon with no flyout.
+   */
+  isGroupOpen(item: NavItem): boolean {
+    if (this.slim()) {
+      return true;
+    }
+    return this.groupOverrides()[item.label] ?? this.isActive(item);
+  }
+
+  toggleGroup(item: NavItem): void {
+    const open = this.isGroupOpen(item);
+    this.groupOverrides.update((current) => ({ ...current, [item.label]: !open }));
   }
 
   /** Below `lg` the button opens the off-canvas sidebar; above it toggles slim mode. */

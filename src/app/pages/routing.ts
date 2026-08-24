@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { roleGuard } from '../core/guards/role.guard';
+import { CategoryType } from '../core/models/category.model';
 
 const Routing: Routes = [
   {
@@ -11,9 +12,21 @@ const Routing: Routes = [
     path: 'cronos/tipos-unidad',
     loadComponent: () => import('./cronos/unit-types/unit-types.component').then(m => m.UnitTypesComponent),
   },
+  // ─── Categorías: one grid component, one route per CategoryType ───
   {
     path: 'cronos/categorias',
-    loadComponent: () => import('./cronos/categories/categories.component').then(m => m.CategoriesComponent),
+    redirectTo: 'cronos/categorias/productos',
+    pathMatch: 'full',
+  },
+  {
+    path: 'cronos/categorias/productos',
+    loadComponent: () => import('./cronos/categories/category-list.component').then(m => m.CategoryListComponent),
+    data: { type: 'PRODUCT' satisfies CategoryType },
+  },
+  {
+    path: 'cronos/categorias/ingredientes',
+    loadComponent: () => import('./cronos/categories/category-list.component').then(m => m.CategoryListComponent),
+    data: { type: 'INGREDIENT' satisfies CategoryType },
   },
   {
     path: 'cronos/alergenos',
