@@ -272,7 +272,7 @@ export class CategoryFormDialogComponent implements OnInit {
       // `UpdateCategoryRequest` has no field for it.
       const payload: UpdateCategoryRequest = {
         name: name.trim(),
-        description: trimmedDescription.length > 0 ? trimmedDescription : undefined,
+        description: trimmedDescription,
       };
       this.categoryService.update(current.id, payload).subscribe({
         next: (res) => this.onWriteSuccess(res.data, 'CATEGORIES.TOAST.UPDATED'),
@@ -283,7 +283,7 @@ export class CategoryFormDialogComponent implements OnInit {
 
     const payload: CreateCategoryRequest = {
       name: name.trim(),
-      description: trimmedDescription.length > 0 ? trimmedDescription : undefined,
+      description: trimmedDescription,
       type,
     };
     this.categoryService.create(payload).subscribe({

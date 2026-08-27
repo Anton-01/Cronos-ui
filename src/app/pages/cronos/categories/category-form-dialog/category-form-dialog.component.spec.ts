@@ -108,6 +108,38 @@ describe('CategoryFormDialogComponent', () => {
     expect(saved).toEqual([row]);
   });
 
+  it('always sends `description` on create, even blank — never a dropped key', () => {
+    mountAsIngredientCreate();
+    component.form.controls.name.setValue('Azúcares y Edulcorantes');
+    // Left untouched: defaults to '' from the FormGroup initializer.
+
+    component.saveCategory();
+
+    const req = httpMock.expectOne(`${environment.apiUrl}/category`);
+    // `JSON.stringify` drops keys whose value is `undefined` — asserting
+    // the key's presence (not just its value) is the point of this test.
+    expect(Object.prototype.hasOwnProperty.call(req.request.body, 'description')).toBeTrue();
+    expect(req.request.body).toEqual({
+      name: 'Azúcares y Edulcorantes',
+      description: '',
+      type: 'INGREDIENT',
+    });
+
+    req.flush({
+      success: true,
+      message: null,
+      timestamp: '',
+      data: {
+        id: 9,
+        name: 'Azúcares y Edulcorantes',
+        description: '',
+        type: 'INGREDIENT',
+        scope: 'USER',
+        status: 'ACTIVE',
+      },
+    });
+  });
+
   it('does not call the API while the form is invalid', () => {
     mountAsIngredientCreate();
     component.form.controls.name.setValue('');
@@ -137,7 +169,7 @@ describe('CategoryFormDialogComponent', () => {
 
     const req = httpMock.expectOne(`${environment.apiUrl}/category/12`);
     expect(req.request.method).toBe('PUT');
-    expect(req.request.body).toEqual({ name: 'Lácteos y derivados', description: undefined });
+    expect(req.request.body).toEqual({ name: 'Lácteos y derivados', description: '' });
 
     req.flush({ success: true, message: null, data: null, timestamp: '' });
   });

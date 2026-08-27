@@ -26,17 +26,25 @@ export interface CategoryResponse {
   status: CategoryStatus;
 }
 
-/** POST /category — `type` is only ever sent on create. */
+/**
+ * POST /category — `type` is only ever sent on create.
+ *
+ * `description` is a plain `string`, not `string | undefined`: both write
+ * endpoints are full replacements (PUT/POST, never PATCH), and a `description`
+ * key dropped by `JSON.stringify(undefined)` reads on the backend exactly
+ * like an explicit `null` — this type exists so that ambiguity can't
+ * reappear here.
+ */
 export interface CreateCategoryRequest {
   name: string;
-  description?: string;
+  description: string;
   type: CategoryType;
 }
 
 /** PUT /category/{id} — deliberately has no `type`: it cannot be changed. */
 export interface UpdateCategoryRequest {
   name: string;
-  description?: string;
+  description: string;
 }
 
 /** Query string accepted by GET /category and GET /category/system. */
