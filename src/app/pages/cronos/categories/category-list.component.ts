@@ -267,23 +267,23 @@ export class CategoryListComponent {
     this.isReadOnlyDialog.set(false);
   }
 
-  /** Splice the persisted row into place so the grid updates without a refetch. */
-  onSaved(saved: CategoryResponse): void {
-    const wasEdit = this.selectedItem() !== null;
+  /**
+   * Closes the dialog immediately, then refetches so the grid shows exactly
+   * what the server persisted.
+   *
+   * This used to splice the row the dialog handed back straight into
+   * `items`, trusting it matched the route's `type`. That local
+   * reconstruction repeatedly failed to reflect real, successful saves for
+   * reasons that never showed up in a static read of this file — so rather
+   * than trust a client-side copy of server state, this now asks the server
+   * again. `load()` already drives `isLoading`, which `p-table` is bound to,
+   * so the grid shows its loading state during the round trip; pagination,
+   * sort and filters are `p-table`'s own local state and are untouched by a
+   * new `items` array landing under them.
+   */
+  onSaved(): void {
     this.closeDialog();
-
-    if (saved.type !== this.type()) {
-      // The dialog locks `type` to this route, so this is unreachable through
-      // the UI — it stays as a guard against a server that classified the row
-      // differently from what was posted.
-      return;
-    }
-
-    this.items.update((current) =>
-      wasEdit
-        ? current.map((item) => (item.id === saved.id ? saved : item))
-        : [...current, saved].sort((a, b) => a.name.localeCompare(b.name)),
-    );
+    this.load();
   }
 
   onImported(): void {
