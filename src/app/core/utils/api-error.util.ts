@@ -53,3 +53,13 @@ export function apiErrorMessage(error: unknown, fallback: string): string {
   const envelope = asRecord(error);
   return typeof envelope?.message === 'string' && envelope.message.length > 0 ? envelope.message : fallback;
 }
+
+/**
+ * The envelope's own `message` (e.g. "Validation Failed"), ignoring every
+ * per-detail message — for a toast that summarises the failure alongside
+ * inline field errors, rather than repeating one of them.
+ */
+export function apiRootMessage(error: unknown, fallback: string): string {
+  const envelope = asRecord(error);
+  return typeof envelope?.message === 'string' && envelope.message.length > 0 ? envelope.message : fallback;
+}

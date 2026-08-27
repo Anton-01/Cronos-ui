@@ -62,24 +62,13 @@ export class ErrorInterceptorService implements HttpInterceptor {
           return throwError(() => error.error);
         }
 
-        // Case 3: 403/404/500 → toast error, do NOT logout
-        if (error.status === 403) {
-          this.alertService.error(
-            error.error?.message || this.language.t('ERRORS.HTTP.FORBIDDEN'),
-            this.language.t('ERRORS.HTTP.FORBIDDEN_TITLE'),
-          );
-        } else if (error.status === 404) {
-          this.alertService.error(
-            error.error?.message || this.language.t('ERRORS.HTTP.NOT_FOUND'),
-            this.language.t('ERRORS.HTTP.NOT_FOUND_TITLE'),
-          );
-        } else if (error.status >= 500) {
-          this.alertService.error(
-            error.error?.message || this.language.t('ERRORS.HTTP.SERVER'),
-            this.language.t('ERRORS.HTTP.SERVER_TITLE'),
-          );
-        }
-
+        // Case 3: everything else (403/404/500/...) → do NOT logout, do NOT
+        // toast here. Every caller's `.subscribe({ error })` already toasts
+        // its own fallback message (see `apiErrorMessage()` and its uses),
+        // so toasting here as well produced two overlapping toasts for the
+        // same failure. The caller is better positioned anyway: it knows
+        // whether the failure was field-scoped (skip the generic toast) or
+        // needs a domain-specific fallback message.
         return throwError(() => error.error || error);
       })
     );

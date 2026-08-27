@@ -35,7 +35,7 @@ import {
   UpdateCategoryRequest,
 } from 'src/app/core/models/category.model';
 import { ApiErrorDetail } from 'src/app/core/models';
-import { apiErrorMessage, apiErrors } from 'src/app/core/utils/api-error.util';
+import { apiErrorMessage, apiErrors, apiRootMessage } from 'src/app/core/utils/api-error.util';
 import { LanguageService } from 'src/app/core/services/language.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { SelectOption, categoryTypeLabelKey, categoryTypeOptions } from '../category-presentation';
@@ -197,7 +197,7 @@ export class CategoryFormDialogComponent implements OnInit {
     // the synchronous validators speak for the field once more.
     for (const control of [this.form.controls.name, this.form.controls.description]) {
       control.valueChanges.pipe(takeUntilDestroyed()).subscribe(() => {
-        if (control.hasError('server') || control.hasError('duplicate')) {
+        if (control.hasError('serverValidation') || control.hasError('duplicate')) {
           control.updateValueAndValidity({ emitEvent: false });
         }
       });
@@ -310,6 +310,7 @@ export class CategoryFormDialogComponent implements OnInit {
 
     for (const detail of details) {
       switch (detail.code) {
+        case 'VALIDATION_ERROR':
         case 'VALIDATION_FIELD_ERROR':
           this.applyFieldError(detail, this.language.t('CATEGORIES.MODAL.ERRORS.INVALID_VALUE'));
           break;
@@ -338,11 +339,19 @@ export class CategoryFormDialogComponent implements OnInit {
       }
     }
 
-    const handledEveryDetail =
-      details.length > 0 &&
-      details.every(
-        (detail) => detail.code === 'VALIDATION_FIELD_ERROR' || detail.code === 'DUPLICATE_RESOURCE',
-      );
+    // A validation failure gets a summary toast — the envelope's own
+    // `message` ("Validation Failed") — on top of the per-field errors below
+    // each control, so the user notices the save was rejected even if every
+    // invalid field is scrolled out of view.
+    const hasValidationError = details.some(
+      (detail) => detail.code === 'VALIDATION_ERROR' || detail.code === 'VALIDATION_FIELD_ERROR',
+    );
+    if (hasValidationError) {
+      this.alertService.error(apiRootMessage(error, this.language.t(fallbackKey)));
+      return;
+    }
+
+    const handledEveryDetail = details.length > 0 && details.every((detail) => detail.code === 'DUPLICATE_RESOURCE');
     if (!handledEveryDetail) {
       this.alertService.error(apiErrorMessage(error, this.language.t(fallbackKey)));
     }
@@ -355,14 +364,14 @@ export class CategoryFormDialogComponent implements OnInit {
       return;
     }
     const control = this.form.controls[controlName];
-    control.setErrors({ server: detail.message ?? fallback });
+    control.setErrors({ serverValidation: detail.message ?? fallback });
     control.markAsTouched();
   }
 
   /** The server-supplied text pinned to a control, if any. */
   serverError(controlName: CategoryControlName): string | null {
     const errors = this.form.controls[controlName].errors;
-    const message: unknown = errors?.['server'] ?? errors?.['duplicate'];
+    const message: unknown = errors?.['serverValidation'] ?? errors?.['duplicate'];
     return typeof message === 'string' ? message : null;
   }
 

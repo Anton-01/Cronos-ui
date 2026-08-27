@@ -3,7 +3,7 @@ import { HttpErrorResponse, HttpInterceptorFn, provideHttpClient, withIntercepto
 import { catchError, throwError } from 'rxjs';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { provideTranslateService } from '@ngx-translate/core';
-import { MessageService } from 'primeng/api';
+import { MessageService, ToastMessageOptions } from 'primeng/api';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
 
 import { environment } from 'src/environments/environment';
@@ -155,5 +155,40 @@ describe('CategoryFormDialogComponent', () => {
 
     expect(component.isSaving()).toBeFalse();
     expect(component.form.controls.name.hasError('duplicate')).toBeTrue();
+  });
+
+  it('pins a VALIDATION_ERROR to its field and toasts the envelope message', () => {
+    mountAsIngredientCreate();
+    component.form.controls.name.setValue('Harinas');
+
+    const toasts: ToastMessageOptions[] = [];
+    TestBed.inject(MessageService).messageObserver.subscribe((message) =>
+      toasts.push(message as ToastMessageOptions),
+    );
+
+    component.saveCategory();
+
+    httpMock.expectOne(`${environment.apiUrl}/category`).flush(
+      {
+        meta: { traceId: 'abc-123', timestamp: '2026-08-26T00:00:00Z' },
+        status: 'ERROR',
+        message: 'Validation Failed',
+        errors: [
+          {
+            code: 'VALIDATION_ERROR',
+            message: 'La descripción no puede estar vacía',
+            field: 'description',
+            imageUrl: '/assets/errors/validation.svg',
+          },
+        ],
+      },
+      { status: 400, statusText: 'Bad Request' },
+    );
+
+    expect(component.isSaving()).toBeFalse();
+    expect(component.form.controls.description.hasError('serverValidation')).toBeTrue();
+    expect(component.serverError('description')).toBe('La descripción no puede estar vacía');
+    expect(component.isInvalid('description')).toBeTrue();
+    expect(toasts.some((m) => m.severity === 'error' && m.detail === 'Validation Failed')).toBeTrue();
   });
 });
