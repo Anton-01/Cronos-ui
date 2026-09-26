@@ -1,0 +1,347 @@
+<p-tabs
+  [value]="activeTab()"
+  (valueChange)="selectTab($event)"
+  [lazy]="true"
+  [scrollable]="true"
+  [dt]="{ tablist: { background: 'transparent' }, tabpanel: { background: 'transparent', padding: '1.5rem 0 0 0' } }"
+>
+  <p-tablist>
+    @for (tab of tabs; track tab.value) {
+      <p-tab [value]="tab.value" class="flex align-items-center gap-2">
+        <i [class]="tab.icon" aria-hidden="true"></i>
+        <span>{{ tab.labelKey | translate }}</span>
+        @if (dirtyTabs().has(tab.value)) {
+          <span class="settings-dirty-dot" [pTooltip]="'ACCOUNT.SETTINGS.UNSAVED_BADGE' | translate" [attr.aria-label]="'ACCOUNT.SETTINGS.UNSAVED_BADGE' | translate"></span>
+        }
+      </p-tab>
+    }
+  </p-tablist>
+
+  <p-tabpanels>
+    <!-- ═══════════════════════ Tab 1 · Profile details ═══════════════════════ -->
+    <p-tabpanel value="profile">
+      @switch (store.profile().status) {
+        @case ('error') {
+          <p-card>
+            <div class="flex flex-column align-items-center gap-3 py-5">
+              <p-message severity="error" [text]="'ACCOUNT.SETTINGS.LOAD_FAILED' | translate" />
+              <p-button [label]="'COMMON.TRY_AGAIN' | translate" icon="pi pi-refresh" [outlined]="true" (onClick)="loadProfile()" />
+            </div>
+          </p-card>
+        }
+        @case ('ready') {
+          @if (store.user(); as user) {
+            <div class="grid">
+              <!-- Identity card: avatar + read-only account facts -->
+              <div class="col-12 lg:col-4">
+                <p-card styleClass="h-full">
+                  <div class="flex flex-column align-items-center text-center gap-3">
+                    <div class="settings-avatar">
+                      @if (store.avatarUrl(); as url) {
+                        <img [src]="url" [alt]="'ACCOUNT.AVATAR.ALT' | translate" class="settings-avatar-image" (load)="onAvatarImageLoaded()" />
+                      } @else {
+                        <p-avatar [label]="store.initials()" shape="circle" styleClass="settings-avatar-initials" />
+                      }
+                      @if (store.isUploadingAvatar()) {
+                        <div class="settings-avatar-busy" role="status" [attr.aria-label]="'ACCOUNT.AVATAR.UPLOADING' | translate">
+                          <i class="pi pi-spin pi-spinner text-2xl" aria-hidden="true"></i>
+                        </div>
+                      }
+                      <p-button
+                        icon="pi pi-camera"
+                        [rounded]="true"
+                        size="small"
+                        styleClass="settings-avatar-edit"
+                        [disabled]="store.isUploadingAvatar()"
+                        [pTooltip]="'ACCOUNT.AVATAR.CHANGE' | translate"
+                        [ariaLabel]="'ACCOUNT.AVATAR.CHANGE' | translate"
+                        (onClick)="openCropper()"
+                      />
+                    </div>
+
+                    <div>
+                      <div class="text-xl font-semibold text-color">{{ store.displayName() }}</div>
+                      <div class="text-color-secondary text-sm">{{ user.email }}</div>
+                    </div>
+
+                    <div class="flex gap-2">
+                      <p-button [label]="'ACCOUNT.AVATAR.UPLOAD' | translate" icon="pi pi-upload" size="small" [outlined]="true" [disabled]="store.isUploadingAvatar()" (onClick)="openCropper()" />
+                      @if (user.avatarUrl) {
+                        <p-button [label]="'COMMON.REMOVE' | translate" icon="pi pi-trash" size="small" severity="danger" [text]="true" [disabled]="store.isUploadingAvatar()" (onClick)="confirmRemoveAvatar()" />
+                      }
+                    </div>
+                    <small class="text-color-secondary">{{ 'ACCOUNT.AVATAR.HINT' | translate }}</small>
+                  </div>
+
+                  <p-divider />
+
+                  <dl class="settings-facts m-0">
+                    <dt>{{ 'ACCOUNT.ROLES' | translate }}</dt>
+                    <dd class="flex flex-wrap gap-2 justify-content-end">
+                      @for (role of user.roles; track role) {
+                        <p-tag [value]="role" severity="info" />
+                      }
+                    </dd>
+                    <dt>{{ 'ACCOUNT.FACTS.MEMBER_SINCE' | translate }}</dt>
+                    <dd>{{ formatDate(user.createdAt) }}</dd>
+                    <dt>{{ 'ACCOUNT.FACTS.LAST_SIGN_IN' | translate }}</dt>
+                    <dd>{{ formatDate(user.lastLoginAt) }}</dd>
+                    <dt>{{ 'ACCOUNT.FACTS.TWO_FACTOR' | translate }}</dt>
+                    <dd>
+                      <p-tag
+                        [value]="(user.twoFactorEnabled ? 'ACCOUNT.SIGN_IN.ENABLED' : 'ACCOUNT.SIGN_IN.DISABLED') | translate"
+                        [severity]="user.twoFactorEnabled ? 'success' : 'secondary'"
+                      />
+                    </dd>
+                  </dl>
+                </p-card>
+              </div>
+
+              <!-- Personal information form -->
+              <div class="col-12 lg:col-8">
+                <p-card styleClass="h-full">
+                  <ng-template pTemplate="title">
+                    <div class="flex align-items-center gap-2">
+                      <i class="pi pi-id-card text-primary" aria-hidden="true"></i>
+                      <span>{{ 'ACCOUNT.PROFILE.TITLE' | translate }}</span>
+                    </div>
+                  </ng-template>
+                  <ng-template pTemplate="subtitle">{{ 'ACCOUNT.PROFILE.SUBTITLE' | translate }}</ng-template>
+
+                  <form [formGroup]="profileForm" (ngSubmit)="saveProfile()" class="grid mt-2" novalidate>
+                    <div class="col-12 md:col-6 flex flex-column gap-1">
+                      <label for="settingsUsername" class="font-medium">{{ 'AUTH.FIELDS.USERNAME' | translate }} <span class="text-red-500">*</span></label>
+                      <input pInputText class="w-full" id="settingsUsername" formControlName="username" autocomplete="username" [invalid]="showError(profileForm.controls.username)" aria-describedby="settingsUsernameError" />
+                      <app-field-error id="settingsUsernameError" [errors]="profileForm.controls.username.errors" [visible]="showError(profileForm.controls.username)" />
+                    </div>
+                    <div class="col-12 md:col-6 flex flex-column gap-1">
+                      <label for="settingsEmail" class="font-medium">{{ 'AUTH.FIELDS.EMAIL' | translate }}</label>
+                      <input pInputText class="w-full" id="settingsEmail" [value]="user.email" [disabled]="true" aria-describedby="settingsEmailHint" />
+                      <small id="settingsEmailHint" class="text-color-secondary">{{ 'ACCOUNT.PROFILE.EMAIL_LOCKED' | translate }}</small>
+                    </div>
+                    <div class="col-12 md:col-6 flex flex-column gap-1">
+                      <label for="settingsFirstName" class="font-medium">{{ 'AUTH.FIELDS.FIRST_NAME' | translate }}</label>
+                      <input pInputText class="w-full" id="settingsFirstName" formControlName="firstName" autocomplete="given-name" [invalid]="showError(profileForm.controls.firstName)" />
+                      <app-field-error [errors]="profileForm.controls.firstName.errors" [visible]="showError(profileForm.controls.firstName)" />
+                    </div>
+                    <div class="col-12 md:col-6 flex flex-column gap-1">
+                      <label for="settingsLastName" class="font-medium">{{ 'AUTH.FIELDS.LAST_NAME' | translate }}</label>
+                      <input pInputText class="w-full" id="settingsLastName" formControlName="lastName" autocomplete="family-name" [invalid]="showError(profileForm.controls.lastName)" />
+                      <app-field-error [errors]="profileForm.controls.lastName.errors" [visible]="showError(profileForm.controls.lastName)" />
+                    </div>
+                    <div class="col-12 md:col-6 flex flex-column gap-1">
+                      <label for="settingsPhone" class="font-medium">{{ 'AUTH.FIELDS.PHONE' | translate }}</label>
+                      <app-phone-input
+                        inputId="settingsPhone"
+                        formControlName="phoneNumber"
+                        [invalid]="showError(profileForm.controls.phoneNumber)"
+                      />
+                      <app-field-error [errors]="profileForm.controls.phoneNumber.errors" [visible]="showError(profileForm.controls.phoneNumber)" />
+                    </div>
+
+                    <div class="col-12">
+                      <p-divider styleClass="mt-0" />
+                      <div class="flex justify-content-end gap-2">
+                        <p-button
+                          [label]="'ACCOUNT.SETTINGS.DISCARD' | translate"
+                          severity="secondary"
+                          [outlined]="true"
+                          [disabled]="!profileState().dirty || store.profile().saving"
+                          (onClick)="discardProfile()"
+                        />
+                        <p-button
+                          type="submit"
+                          [label]="'COMMON.SAVE_CHANGES' | translate"
+                          icon="pi pi-check"
+                          [loading]="store.profile().saving"
+                          [disabled]="!profileState().dirty"
+                        />
+                      </div>
+                    </div>
+                  </form>
+                </p-card>
+              </div>
+            </div>
+          }
+        }
+        @default {
+          <p-card><app-detail-skeleton [fields]="5" [showTitle]="true" /></p-card>
+        }
+      }
+    </p-tabpanel>
+
+    <!-- ═══════════════════════ Tab 2 · Security ═══════════════════════ -->
+    <p-tabpanel value="security">
+      <app-security-panel />
+    </p-tabpanel>
+
+    <!-- ═══════════════════════ Tab 3 · Fiscal data ═══════════════════════ -->
+    <p-tabpanel value="fiscal">
+      @switch (store.fiscal().status) {
+        @case ('error') {
+          <p-card>
+            <div class="flex flex-column align-items-center gap-3 py-5">
+              <p-message severity="error" [text]="'ACCOUNT.SETTINGS.LOAD_FAILED' | translate" />
+              <p-button [label]="'COMMON.TRY_AGAIN' | translate" icon="pi pi-refresh" [outlined]="true" (onClick)="loadFiscal()" />
+            </div>
+          </p-card>
+        }
+        @case ('ready') {
+          <form [formGroup]="fiscalForm" (ngSubmit)="saveFiscal()" novalidate class="flex flex-column gap-4">
+            @if (!store.fiscal().data) {
+              <p-message severity="info" icon="pi pi-info-circle" [text]="'ACCOUNT.FISCAL.EMPTY_HINT' | translate" styleClass="w-full" />
+            }
+
+            <!-- Taxpayer identity -->
+            <p-card>
+              <ng-template pTemplate="title">
+                <div class="flex align-items-center justify-content-between flex-wrap gap-2">
+                  <div class="flex align-items-center gap-2">
+                    <i class="pi pi-building-columns text-primary" aria-hidden="true"></i>
+                    <span>{{ 'ACCOUNT.FISCAL.IDENTITY_TITLE' | translate }}</span>
+                  </div>
+                  @if (taxpayerType(); as type) {
+                    <p-tag [value]="'ACCOUNT.FISCAL.TAXPAYER_TYPE.' + type | translate" severity="info" icon="pi pi-verified" />
+                  }
+                </div>
+              </ng-template>
+              <ng-template pTemplate="subtitle">{{ 'ACCOUNT.FISCAL.IDENTITY_SUBTITLE' | translate }}</ng-template>
+
+              <div class="grid">
+                <div class="col-12 md:col-8 flex flex-column gap-1">
+                  <label for="fiscalLegalName" class="font-medium">{{ 'ACCOUNT.FISCAL.LEGAL_NAME' | translate }} <span class="text-red-500">*</span></label>
+                  <input pInputText class="w-full uppercase" id="fiscalLegalName" formControlName="legalName" autocomplete="organization" [invalid]="showError(fiscalForm.controls.legalName)" aria-describedby="fiscalLegalNameHint" />
+                  <app-field-error [errors]="fiscalForm.controls.legalName.errors" [visible]="showError(fiscalForm.controls.legalName)" />
+                  <small id="fiscalLegalNameHint" class="text-color-secondary">{{ 'ACCOUNT.FISCAL.LEGAL_NAME_HINT' | translate }}</small>
+                </div>
+                <div class="col-12 md:col-4 flex flex-column gap-1">
+                  <label for="fiscalTaxId" class="font-medium">{{ 'ACCOUNT.FISCAL.TAX_ID' | translate }} <span class="text-red-500">*</span></label>
+                  <input pInputText class="w-full uppercase" id="fiscalTaxId" formControlName="taxId" maxlength="13" autocomplete="off" spellcheck="false" [invalid]="showError(fiscalForm.controls.taxId)" />
+                  <app-field-error [errors]="fiscalForm.controls.taxId.errors" [visible]="showError(fiscalForm.controls.taxId)" />
+                  <small class="text-color-secondary">{{ 'ACCOUNT.FISCAL.TAX_ID_HINT' | translate }}</small>
+                </div>
+                <div class="col-12 flex flex-column gap-1">
+                  <label for="fiscalTaxRegime" class="font-medium">{{ 'ACCOUNT.FISCAL.TAX_REGIME' | translate }} <span class="text-red-500">*</span></label>
+                  <p-select
+                    inputId="fiscalTaxRegime"
+                    formControlName="taxRegime"
+                    [options]="taxRegimeOptions()"
+                    optionLabel="label"
+                    optionValue="value"
+                    [filter]="true"
+                    filterBy="label"
+                    [showClear]="true"
+                    styleClass="w-full"
+                    [invalid]="showError(fiscalForm.controls.taxRegime)"
+                    [placeholder]="'ACCOUNT.FISCAL.TAX_REGIME_PLACEHOLDER' | translate"
+                  />
+                  <app-field-error [errors]="fiscalForm.controls.taxRegime.errors" [visible]="showError(fiscalForm.controls.taxRegime)" />
+                </div>
+              </div>
+            </p-card>
+
+            <!-- Fiscal address -->
+            <p-card formGroupName="address">
+              <ng-template pTemplate="title">
+                <div class="flex align-items-center gap-2">
+                  <i class="pi pi-map-marker text-primary" aria-hidden="true"></i>
+                  <span>{{ 'ACCOUNT.FISCAL.ADDRESS_TITLE' | translate }}</span>
+                </div>
+              </ng-template>
+              <ng-template pTemplate="subtitle">{{ 'ACCOUNT.FISCAL.ADDRESS_SUBTITLE' | translate }}</ng-template>
+
+              @let address = fiscalForm.controls.address.controls;
+              <div class="grid">
+                <div class="col-12 md:col-6 flex flex-column gap-1">
+                  <label for="fiscalStreet" class="font-medium">{{ 'ACCOUNT.FISCAL.STREET' | translate }} <span class="text-red-500">*</span></label>
+                  <input pInputText class="w-full" id="fiscalStreet" formControlName="street" autocomplete="address-line1" [invalid]="showError(address.street)" />
+                  <app-field-error [errors]="address.street.errors" [visible]="showError(address.street)" />
+                </div>
+                <div class="col-6 md:col-3 flex flex-column gap-1">
+                  <label for="fiscalExteriorNumber" class="font-medium">{{ 'ACCOUNT.FISCAL.EXTERIOR_NUMBER' | translate }} <span class="text-red-500">*</span></label>
+                  <input pInputText class="w-full" id="fiscalExteriorNumber" formControlName="exteriorNumber" [invalid]="showError(address.exteriorNumber)" />
+                  <app-field-error [errors]="address.exteriorNumber.errors" [visible]="showError(address.exteriorNumber)" />
+                </div>
+                <div class="col-6 md:col-3 flex flex-column gap-1">
+                  <label for="fiscalInteriorNumber" class="font-medium">{{ 'ACCOUNT.FISCAL.INTERIOR_NUMBER' | translate }}</label>
+                  <input pInputText class="w-full" id="fiscalInteriorNumber" formControlName="interiorNumber" [invalid]="showError(address.interiorNumber)" />
+                  <app-field-error [errors]="address.interiorNumber.errors" [visible]="showError(address.interiorNumber)" />
+                </div>
+                <div class="col-12 md:col-6 flex flex-column gap-1">
+                  <label for="fiscalNeighborhood" class="font-medium">{{ 'ACCOUNT.FISCAL.NEIGHBORHOOD' | translate }} <span class="text-red-500">*</span></label>
+                  <input pInputText class="w-full" id="fiscalNeighborhood" formControlName="neighborhood" autocomplete="address-line2" [invalid]="showError(address.neighborhood)" />
+                  <app-field-error [errors]="address.neighborhood.errors" [visible]="showError(address.neighborhood)" />
+                </div>
+                <div class="col-12 md:col-6 flex flex-column gap-1">
+                  <label for="fiscalMunicipality" class="font-medium">{{ 'ACCOUNT.FISCAL.MUNICIPALITY' | translate }} <span class="text-red-500">*</span></label>
+                  <input pInputText class="w-full" id="fiscalMunicipality" formControlName="municipality" autocomplete="address-level2" [invalid]="showError(address.municipality)" />
+                  <app-field-error [errors]="address.municipality.errors" [visible]="showError(address.municipality)" />
+                </div>
+                <div class="col-12 md:col-6 flex flex-column gap-1">
+                  <label for="fiscalState" class="font-medium">{{ 'ACCOUNT.FISCAL.STATE' | translate }} <span class="text-red-500">*</span></label>
+                  <p-select
+                    inputId="fiscalState"
+                    formControlName="state"
+                    [options]="stateOptions"
+                    optionLabel="label"
+                    optionValue="value"
+                    [filter]="true"
+                    filterBy="label"
+                    styleClass="w-full"
+                    [invalid]="showError(address.state)"
+                    [placeholder]="'ACCOUNT.FISCAL.STATE_PLACEHOLDER' | translate"
+                  />
+                  <app-field-error [errors]="address.state.errors" [visible]="showError(address.state)" />
+                </div>
+                <div class="col-6 md:col-3 flex flex-column gap-1">
+                  <label for="fiscalZipCode" class="font-medium">{{ 'ACCOUNT.FISCAL.ZIP_CODE' | translate }} <span class="text-red-500">*</span></label>
+                  <input pInputText class="w-full" id="fiscalZipCode" formControlName="zipCode" inputmode="numeric" maxlength="5" autocomplete="postal-code" [invalid]="showError(address.zipCode)" />
+                  <app-field-error [errors]="address.zipCode.errors" [visible]="showError(address.zipCode)" />
+                </div>
+                <div class="col-6 md:col-3 flex flex-column gap-1">
+                  <label for="fiscalCountry" class="font-medium">{{ 'ACCOUNT.FISCAL.COUNTRY' | translate }}</label>
+                  <input pInputText class="w-full" id="fiscalCountry" [value]="'ACCOUNT.FISCAL.COUNTRY_MX' | translate" [disabled]="true" />
+                </div>
+              </div>
+            </p-card>
+
+            <!-- Section actions: this form's own saving state, nothing else's -->
+            <div class="flex align-items-center justify-content-between flex-wrap gap-3">
+              <small class="text-color-secondary">
+                @if (store.fiscal().data; as saved) {
+                  {{ 'ACCOUNT.FISCAL.LAST_UPDATED' | translate: { date: formatDate(saved.updatedAt) } }}
+                }
+              </small>
+              <div class="flex gap-2">
+                <p-button
+                  [label]="'ACCOUNT.SETTINGS.DISCARD' | translate"
+                  severity="secondary"
+                  [outlined]="true"
+                  [disabled]="!fiscalState().dirty || store.fiscal().saving"
+                  (onClick)="discardFiscal()"
+                />
+                <p-button
+                  type="submit"
+                  [label]="'ACCOUNT.FISCAL.SAVE' | translate"
+                  icon="pi pi-check"
+                  [loading]="store.fiscal().saving"
+                  [disabled]="!fiscalState().dirty"
+                />
+              </div>
+            </div>
+          </form>
+        }
+        @default {
+          <p-card><app-detail-skeleton [fields]="8" [showTitle]="true" /></p-card>
+        }
+      }
+    </p-tabpanel>
+  </p-tabpanels>
+</p-tabs>
+
+<!-- High-precision avatar cropper -->
+<app-avatar-cropper-dialog
+  [(visible)]="cropperVisible"
+  [saving]="store.isUploadingAvatar()"
+  (confirmed)="onAvatarCropped($event)"
+/>

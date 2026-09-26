@@ -99,8 +99,7 @@ export function buildNavSections(hasAdminRole: boolean, hasSuperAdminRole: boole
     {
       labelKey: 'NAV.SECTIONS.ACCOUNT',
       items: [
-        { labelKey: 'NAV.ITEMS.MY_ACCOUNT', icon: 'pi pi-user', route: '/cronos/cuenta/mi-cuenta' },
-        { labelKey: 'NAV.ITEMS.SECURITY', icon: 'pi pi-lock', route: '/cronos/cuenta/seguridad' },
+        { labelKey: 'NAV.ITEMS.ACCOUNT_SETTINGS', icon: 'pi pi-cog', route: '/cronos/cuenta/configuracion' },
       ],
     },
   ];
@@ -134,8 +133,9 @@ export function activePrefixesOf(item: NavItem): string[] {
  */
 export function buildUserMenu(t: (key: string) => string, onLogout: () => void): MenuItem[] {
   return [
-    { label: t('NAV.ITEMS.MY_ACCOUNT'), icon: 'pi pi-user', routerLink: '/cronos/cuenta/mi-cuenta' },
-    { label: t('NAV.ITEMS.SECURITY'), icon: 'pi pi-lock', routerLink: '/cronos/cuenta/seguridad' },
+    { label: t('NAV.ITEMS.MY_ACCOUNT'), icon: 'pi pi-user', routerLink: '/cronos/cuenta/configuracion' },
+    { label: t('NAV.ITEMS.SECURITY'), icon: 'pi pi-shield', routerLink: '/cronos/cuenta/configuracion', queryParams: { tab: 'security' } },
+    { label: t('NAV.ITEMS.FISCAL_DATA'), icon: 'pi pi-building-columns', routerLink: '/cronos/cuenta/configuracion', queryParams: { tab: 'fiscal' } },
     { separator: true },
     { label: t('NAV.ITEMS.SIGN_OUT'), icon: 'pi pi-sign-out', command: onLogout },
   ];

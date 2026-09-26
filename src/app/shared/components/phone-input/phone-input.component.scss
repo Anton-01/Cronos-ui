@@ -1,0 +1,14 @@
+:host {
+  display: block;
+}
+
+// Wide enough for the flag and a 4-digit dialing code (+1868) without the
+// value jumping when the country changes.
+:host ::ng-deep .phone-input-country {
+  flex: 0 0 8.5rem;
+}
+
+.phone-input-flag {
+  font-size: 1.15rem;
+  line-height: 1;
+}

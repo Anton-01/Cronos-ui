@@ -9,17 +9,20 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 
 import { AuthService } from 'src/app/core/services/auth.service';
-import { UserService } from 'src/app/core/services/user.service';
-import { ActiveSession, LoginHistoryEntry, UserResponse } from 'src/app/core/models/user.model';
+import { ActiveSession, LoginHistoryEntry } from 'src/app/core/models/user.model';
 import { LanguageService } from 'src/app/core/services/language.service';
-import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
 import { SignInMethodComponent } from './sign-in-method/sign-in-method.component';
 import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skeleton-row/table-skeleton-row.component';
 
+/**
+ * Security tab of Account Settings: sign-in method (password + 2FA), active
+ * sessions and sign-in history. Rendered lazily by the tab shell, so its
+ * requests fire the first time the tab is opened, not on page load.
+ */
 @Component({
-  selector: 'app-security',
+  selector: 'app-security-panel',
   standalone: true,
   imports: [
     TranslatePipe,
@@ -32,20 +35,14 @@ import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skele
     SignInMethodComponent,
     TableSkeletonRowComponent,
   ],
-  templateUrl: './security.component.html',
+  templateUrl: './security-panel.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SecurityComponent implements OnInit {
+export class SecurityPanelComponent implements OnInit {
   private readonly authService = inject(AuthService);
-  private readonly userService = inject(UserService);
   private readonly toastService = inject(ToastService);
   private readonly language = inject(LanguageService);
   private readonly confirmService = inject(ConfirmService);
-  private readonly pageInfoService = inject(PageInfoService);
-
-  // Overview
-  readonly user = signal<UserResponse | null>(null);
-  readonly isLoadingProfile = signal(false);
 
   // Sessions
   readonly isLoadingSessions = signal(false);
@@ -58,26 +55,8 @@ export class SecurityComponent implements OnInit {
   readonly loginHistory = signal<LoginHistoryEntry[]>([]);
 
   ngOnInit(): void {
-    this.pageInfoService.updateTitle(this.language.t('NAV.ITEMS.SECURITY'));
-    this.pageInfoService.updateBreadcrumbs([
-      { title: this.language.t('BREADCRUMB.HOME'), path: '/dashboard', isActive: false },
-      { title: this.language.t('NAV.SECTIONS.ACCOUNT'), path: '', isActive: false },
-      { title: this.language.t('NAV.ITEMS.SECURITY'), path: '', isActive: true },
-    ]);
-    this.loadProfile();
     this.loadSessions();
     this.loadLoginHistory();
-  }
-
-  loadProfile(): void {
-    this.isLoadingProfile.set(true);
-    this.userService.getProfile().subscribe({
-      next: (res) => {
-        this.user.set(res.data);
-        this.isLoadingProfile.set(false);
-      },
-      error: () => this.isLoadingProfile.set(false),
-    });
   }
 
   loadSessions(): void {

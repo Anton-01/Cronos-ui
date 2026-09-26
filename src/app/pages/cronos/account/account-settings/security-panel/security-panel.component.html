@@ -89,7 +89,7 @@
           <td>{{ entry.ipAddress }}</td>
           <td>
             <p-tag
-              [value]="entry.status === 'SUCCESS' ? 'Exitoso' : 'Fallido'"
+              [value]="(entry.status === 'SUCCESS' ? 'ACCOUNT.SECURITY.STATUS_SUCCESS' : 'ACCOUNT.SECURITY.STATUS_FAILED') | translate"
               [severity]="entry.status === 'SUCCESS' ? 'success' : 'danger'"
             />
           </td>

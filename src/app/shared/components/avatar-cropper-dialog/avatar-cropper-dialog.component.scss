@@ -1,0 +1,56 @@
+.avatar-dropzone {
+  min-height: 16rem;
+  background: var(--surface-ground);
+  border: 2px dashed var(--surface-border);
+  font: inherit;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+
+  &:hover,
+  &:focus-visible,
+  &.avatar-dropzone-active {
+    border-color: var(--primary-color);
+    outline: none;
+  }
+}
+
+// Fixed-height stage so the cropper does not reflow the dialog as images of
+// different aspect ratios load.
+.avatar-stage {
+  height: 22rem;
+  background: var(--surface-ground);
+
+  image-cropper {
+    height: 100%;
+    --cropper-outline-color: rgba(15, 23, 42, 0.55);
+  }
+}
+
+.avatar-preview {
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--surface-ground);
+  box-shadow: var(--shadow-card);
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+}
+
+// The three sizes the avatar actually renders at: settings card, topbar menu, table row.
+.avatar-preview-lg {
+  width: 8rem;
+  height: 8rem;
+}
+
+.avatar-preview-md {
+  width: 3rem;
+  height: 3rem;
+}
+
+.avatar-preview-sm {
+  width: 2rem;
+  height: 2rem;
+}
