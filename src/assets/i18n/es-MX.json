@@ -89,7 +89,9 @@
       "SECURITY": "Seguridad",
       "USER_MANAGEMENT": "Gestión de Usuarios",
       "ROLE_MANAGEMENT": "Gestión de Roles",
-      "SIGN_OUT": "Cerrar Sesión"
+      "SIGN_OUT": "Cerrar Sesión",
+      "ACCOUNT_SETTINGS": "Configuración de la cuenta",
+      "FISCAL_DATA": "Datos fiscales"
     }
   },
   "BREADCRUMB": {
@@ -869,9 +871,12 @@
   },
   "ACCOUNT": {
     "ROLES": "Roles",
-    "MY_ACCOUNT_DESCRIPTION": "Datos de tu perfil",
     "TOAST": {
-      "PROFILE_UPDATED": "Perfil actualizado"
+      "PROFILE_UPDATED": "Perfil actualizado",
+      "AVATAR_UPDATED": "Foto de perfil actualizada",
+      "AVATAR_FAILED": "No se pudo subir la foto de perfil",
+      "AVATAR_REMOVED": "Foto de perfil eliminada",
+      "FISCAL_UPDATED": "Datos fiscales guardados"
     },
     "SECURITY": {
       "SIGN_IN_METHOD": "Método de Inicio de Sesión",
@@ -891,7 +896,9 @@
       "REVOKE_TITLE": "Revocar sesión",
       "REVOKE_MESSAGE": "¿Estás seguro de cerrar la sesión de {{ browser }} en {{ os }} (IP: {{ ip }})?",
       "REVOKE_ACCEPT": "Sí, revocar",
-      "SESSION_REVOKED": "Sesión revocada"
+      "SESSION_REVOKED": "Sesión revocada",
+      "STATUS_SUCCESS": "Exitoso",
+      "STATUS_FAILED": "Fallido"
     },
     "SIGN_IN": {
       "CHANGE_PASSWORD": "Cambiar contraseña",
@@ -915,6 +922,96 @@
         "PASSWORD_UPDATED": "Contraseña actualizada correctamente",
         "TWO_FACTOR_ENABLED": "2FA activado correctamente",
         "TWO_FACTOR_DISABLED": "2FA desactivado correctamente"
+      },
+      "ENABLE_2FA": "Activar 2FA",
+      "DISABLE_2FA": "Desactivar 2FA",
+      "ERRORS": {
+        "PASSWORD_REUSE": "La nueva contraseña debe ser distinta de la actual"
+      }
+    },
+    "SETTINGS": {
+      "TITLE": "Configuración de la cuenta",
+      "DESCRIPTION": "Administra tu perfil, seguridad y datos de facturación",
+      "TABS": {
+        "PROFILE": "Datos del perfil",
+        "SECURITY": "Seguridad",
+        "FISCAL": "Datos fiscales"
+      },
+      "UNSAVED_BADGE": "Cambios sin guardar",
+      "UNSAVED_TITLE": "¿Descartar cambios sin guardar?",
+      "UNSAVED_MESSAGE": "Tienes cambios que no se han guardado. Si sales ahora se perderán.",
+      "UNSAVED_ACCEPT": "Salir sin guardar",
+      "LOAD_FAILED": "No se pudo cargar esta sección.",
+      "DISCARD": "Descartar cambios"
+    },
+    "AVATAR": {
+      "ALT": "Foto de perfil",
+      "UPLOADING": "Subiendo foto de perfil",
+      "CHANGE": "Cambiar foto de perfil",
+      "UPLOAD": "Subir foto",
+      "HINT": "JPG, PNG o WebP. Se recorta a un cuadrado de 512 × 512 px.",
+      "REMOVE_TITLE": "¿Eliminar foto de perfil?",
+      "REMOVE_MESSAGE": "En su lugar se mostrarán tus iniciales.",
+      "REMOVE_ACCEPT": "Sí, eliminar"
+    },
+    "FACTS": {
+      "MEMBER_SINCE": "Miembro desde",
+      "LAST_SIGN_IN": "Último acceso",
+      "TWO_FACTOR": "Doble factor"
+    },
+    "PROFILE": {
+      "TITLE": "Información personal",
+      "SUBTITLE": "Cómo apareces en Cronos y en las cotizaciones compartidas.",
+      "EMAIL_LOCKED": "Contacta a un administrador para cambiar tu correo electrónico."
+    },
+    "FISCAL": {
+      "EMPTY_HINT": "Aún no has registrado tus datos fiscales. Son necesarios para emitir facturas CFDI.",
+      "IDENTITY_TITLE": "Identidad del contribuyente",
+      "IDENTITY_SUBTITLE": "Tal como aparece en tu Constancia de Situación Fiscal del SAT.",
+      "TAXPAYER_TYPE": {
+        "INDIVIDUAL": "Persona física",
+        "LEGAL_ENTITY": "Persona moral"
+      },
+      "LEGAL_NAME": "Nombre o razón social",
+      "LEGAL_NAME_HINT": "En mayúsculas y sin el régimen societario (p. ej. omite \"S.A. de C.V.\").",
+      "TAX_ID": "RFC",
+      "TAX_ID_HINT": "13 caracteres para personas físicas, 12 para personas morales.",
+      "TAX_REGIME": "Régimen fiscal",
+      "TAX_REGIME_PLACEHOLDER": "Selecciona un régimen fiscal",
+      "ADDRESS_TITLE": "Domicilio fiscal",
+      "ADDRESS_SUBTITLE": "El código postal debe coincidir con el registrado ante el SAT.",
+      "STREET": "Calle",
+      "EXTERIOR_NUMBER": "No. exterior",
+      "INTERIOR_NUMBER": "No. interior",
+      "NEIGHBORHOOD": "Colonia",
+      "MUNICIPALITY": "Municipio / alcaldía",
+      "STATE": "Estado",
+      "STATE_PLACEHOLDER": "Selecciona un estado",
+      "ZIP_CODE": "Código postal",
+      "COUNTRY": "País",
+      "COUNTRY_MX": "México",
+      "LAST_UPDATED": "Última actualización: {{ date }}",
+      "SAVE": "Guardar datos fiscales",
+      "REGIMES": {
+        "601": "General de Ley Personas Morales",
+        "603": "Personas Morales con Fines no Lucrativos",
+        "605": "Sueldos y Salarios e Ingresos Asimilados a Salarios",
+        "606": "Arrendamiento",
+        "607": "Régimen de Enajenación o Adquisición de Bienes",
+        "608": "Demás ingresos",
+        "610": "Residentes en el Extranjero sin Establecimiento Permanente en México",
+        "611": "Ingresos por Dividendos (socios y accionistas)",
+        "612": "Personas Físicas con Actividades Empresariales y Profesionales",
+        "614": "Ingresos por intereses",
+        "615": "Régimen de los ingresos por obtención de premios",
+        "616": "Sin obligaciones fiscales",
+        "620": "Sociedades Cooperativas de Producción que optan por diferir sus ingresos",
+        "621": "Incorporación Fiscal",
+        "622": "Actividades Agrícolas, Ganaderas, Silvícolas y Pesqueras",
+        "623": "Opcional para Grupos de Sociedades",
+        "624": "Coordinados",
+        "625": "Régimen de las Actividades Empresariales con ingresos a través de Plataformas Tecnológicas",
+        "626": "Régimen Simplificado de Confianza"
       }
     }
   },
@@ -1022,6 +1119,55 @@
       "NO_INSTRUCTIONS": "Sin instrucciones disponibles",
       "STORAGE": "Conservación",
       "LOAD_FAILED": "Este enlace ha expirado o no es válido."
+    }
+  },
+  "FORM_ERRORS": {
+    "REQUIRED": "Este campo es obligatorio",
+    "MIN_LENGTH": "Debe tener al menos {{ length }} caracteres",
+    "MAX_LENGTH": "Debe tener como máximo {{ length }} caracteres",
+    "EMAIL": "Ingresa un correo electrónico válido",
+    "RFC_GENERIC": "Los RFC genéricos (XAXX010101000, XEXX010101000) no pueden usarse como RFC propio",
+    "RFC_FORMAT": "Ingresa un RFC válido (p. ej. GODE561231GR8 o ABC010203AB9)",
+    "CORPORATE_SUFFIX": "Quita el régimen societario (S.A. de C.V., S. de R.L., A.C., …): CFDI 4.0 lo rechaza",
+    "REGIME_MISMATCH": "Este régimen fiscal no aplica al tipo de contribuyente del RFC",
+    "ZIP_CODE": "Ingresa un código postal válido de 5 dígitos",
+    "DUPLICATE": "Este valor ya está en uso",
+    "INVALID": "Valor no válido"
+  },
+  "PHONE_INPUT": {
+    "COUNTRY": "Lada internacional",
+    "SEARCH_COUNTRY": "Buscar país o lada",
+    "ERRORS": {
+      "TOO_SHORT": "El número telefónico es demasiado corto",
+      "TOO_LONG": "El número telefónico es demasiado largo",
+      "INVALID_LENGTH": "El número telefónico tiene una longitud no válida",
+      "INVALID_COUNTRY": "Lada de país no soportada",
+      "NOT_A_NUMBER": "Ingresa solo dígitos",
+      "INVALID": "No es un número válido para el país seleccionado"
+    }
+  },
+  "AVATAR_CROPPER": {
+    "TITLE": "Actualizar foto de perfil",
+    "DROP_TITLE": "Arrastra una imagen aquí o haz clic para buscarla",
+    "DROP_HINT": "JPG, PNG o WebP · hasta {{ max }} MB · mínimo {{ min }} × {{ min }} px",
+    "FRAME_ARIA": "Marco de recorte. Usa las flechas del teclado para moverlo.",
+    "ZOOM": "Zoom",
+    "ZOOM_IN": "Acercar",
+    "ZOOM_OUT": "Alejar",
+    "ROTATE_LEFT": "Girar a la izquierda",
+    "ROTATE_RIGHT": "Girar a la derecha",
+    "FLIP": "Voltear horizontalmente",
+    "RESET": "Restablecer",
+    "GESTURE_HINT": "Arrastra la imagen para reubicarla. Usa la rueda del mouse o pellizca para hacer zoom.",
+    "PREVIEW": "Vista previa",
+    "OUTPUT_HINT": "Se guarda como JPEG de {{ size }} × {{ size }} px.",
+    "CHANGE_IMAGE": "Elegir otra imagen",
+    "APPLY": "Guardar foto",
+    "ERRORS": {
+      "TYPE": "Tipo de archivo no soportado. Usa JPG, PNG o WebP.",
+      "SIZE": "La imagen supera los {{ max }} MB.",
+      "DIMENSIONS": "La imagen es demasiado pequeña. Usa una de al menos {{ min }} × {{ min }} px.",
+      "LOAD": "No se pudo leer la imagen. Intenta con otro archivo."
     }
   }
 }

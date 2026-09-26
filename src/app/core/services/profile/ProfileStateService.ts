@@ -1,12 +1,12 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { UserService } from 'src/app/core/services/user.service';
+import { AccountService } from 'src/app/core/services/account.service';
 import { UserResponse } from 'src/app/core/models/user.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProfileStateService {
-  private userService = inject(UserService);
+  private accountService = inject(AccountService);
 
   user = signal<UserResponse | null>(null);
   isLoading = signal(false);
@@ -15,7 +15,7 @@ export class ProfileStateService {
     if (this.user()) return;
 
     this.isLoading.set(true);
-    this.userService.getProfile().subscribe({
+    this.accountService.getProfile().subscribe({
       next: (res) => {
         this.user.set(res.data);
         this.isLoading.set(false);

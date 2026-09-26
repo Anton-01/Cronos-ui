@@ -1,0 +1,174 @@
+<p-dialog
+  [header]="'AVATAR_CROPPER.TITLE' | translate"
+  [visible]="visible()"
+  (visibleChange)="onVisibleChange($event)"
+  (onHide)="onHide()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="!saving()"
+  [closeOnEscape]="!saving()"
+  [style]="{ width: '44rem' }"
+  [breakpoints]="{ '768px': '95vw' }"
+>
+  <input
+    #fileInput
+    type="file"
+    class="hidden"
+    [accept]="acceptedTypes"
+    (change)="onFileSelected($event)"
+  />
+
+  @if (fileError(); as error) {
+    <p-message
+      severity="error"
+      styleClass="mb-3 w-full"
+      [text]="'AVATAR_CROPPER.ERRORS.' + error | translate: { max: maxMegabytes, min: minEdge }"
+    />
+  }
+
+  @if (!sourceFile()) {
+    <!-- Empty state: drop zone -->
+    <button
+      type="button"
+      class="avatar-dropzone w-full flex flex-column align-items-center justify-content-center gap-2 p-5 border-round-xl cursor-pointer"
+      [class.avatar-dropzone-active]="isDragOver()"
+      (click)="browse()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave()"
+      (drop)="onDrop($event)"
+    >
+      <i class="pi pi-cloud-upload text-primary text-4xl" aria-hidden="true"></i>
+      <span class="font-semibold text-color">{{ 'AVATAR_CROPPER.DROP_TITLE' | translate }}</span>
+      <span class="text-color-secondary text-sm text-center">
+        {{ 'AVATAR_CROPPER.DROP_HINT' | translate: { max: maxMegabytes, min: minEdge } }}
+      </span>
+    </button>
+  } @else {
+    <div class="grid">
+      <!-- Cropper stage -->
+      <div class="col-12 md:col-8">
+        <div class="avatar-stage border-round-xl overflow-hidden" (wheel)="onWheel($event)">
+          <image-cropper
+            [imageFile]="sourceFile() ?? undefined"
+            [maintainAspectRatio]="true"
+            [aspectRatio]="1"
+            [roundCropper]="true"
+            [containWithinAspectRatio]="false"
+            [allowMoveImage]="true"
+            [onlyScaleDown]="true"
+            [resizeToWidth]="outputEdge"
+            [resizeToHeight]="outputEdge"
+            [imageQuality]="90"
+            [transform]="transform()"
+            [disabled]="saving()"
+            [cropperFrameAriaLabel]="'AVATAR_CROPPER.FRAME_ARIA' | translate"
+            backgroundColor="#ffffff"
+            format="jpeg"
+            output="blob"
+            (imageLoaded)="onImageLoaded($event)"
+            (cropperReady)="onCropperReady()"
+            (loadImageFailed)="onLoadFailed()"
+            (imageCropped)="onImageCropped($event)"
+            (transformChange)="onTransformChange($event)"
+          />
+        </div>
+
+        <!-- Zoom -->
+        <div class="flex align-items-center gap-3 mt-3">
+          <p-button
+            icon="pi pi-search-minus"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            [disabled]="saving() || zoom() <= zoomMin"
+            [ariaLabel]="'AVATAR_CROPPER.ZOOM_OUT' | translate"
+            (onClick)="zoomBy(-zoomStep * 2)"
+          />
+          <p-slider
+            class="flex-1"
+            [ngModel]="zoom()"
+            (ngModelChange)="setZoom($event)"
+            [min]="zoomMin"
+            [max]="zoomMax"
+            [step]="zoomStep"
+            [disabled]="saving()"
+            [ariaLabel]="'AVATAR_CROPPER.ZOOM' | translate"
+          />
+          <p-button
+            icon="pi pi-search-plus"
+            [text]="true"
+            [rounded]="true"
+            severity="secondary"
+            [disabled]="saving() || zoom() >= zoomMax"
+            [ariaLabel]="'AVATAR_CROPPER.ZOOM_IN' | translate"
+            (onClick)="zoomBy(zoomStep * 2)"
+          />
+          <span class="text-color-secondary text-sm w-3rem text-right">{{ zoomPercent() }}%</span>
+        </div>
+
+        <!-- Geometry -->
+        <div class="flex flex-wrap align-items-center gap-2 mt-2">
+          <p-button icon="pi pi-replay" [outlined]="true" severity="secondary" size="small" [disabled]="saving()" [pTooltip]="'AVATAR_CROPPER.ROTATE_LEFT' | translate" [ariaLabel]="'AVATAR_CROPPER.ROTATE_LEFT' | translate" (onClick)="rotate(-90)" />
+          <p-button icon="pi pi-refresh" [outlined]="true" severity="secondary" size="small" [disabled]="saving()" [pTooltip]="'AVATAR_CROPPER.ROTATE_RIGHT' | translate" [ariaLabel]="'AVATAR_CROPPER.ROTATE_RIGHT' | translate" (onClick)="rotate(90)" />
+          <p-button icon="pi pi-arrows-h" [outlined]="true" severity="secondary" size="small" [disabled]="saving()" [pTooltip]="'AVATAR_CROPPER.FLIP' | translate" [ariaLabel]="'AVATAR_CROPPER.FLIP' | translate" (onClick)="flipHorizontal()" />
+          <p-button icon="pi pi-undo" [text]="true" severity="secondary" size="small" [disabled]="saving()" [label]="'AVATAR_CROPPER.RESET' | translate" (onClick)="resetTransform()" />
+        </div>
+        <small class="block text-color-secondary mt-2">{{ 'AVATAR_CROPPER.GESTURE_HINT' | translate }}</small>
+      </div>
+
+      <!-- Preview -->
+      <div class="col-12 md:col-4 flex flex-column align-items-center gap-3">
+        <span class="text-sm font-semibold text-color-secondary uppercase">{{ 'AVATAR_CROPPER.PREVIEW' | translate }}</span>
+        <div class="avatar-preview avatar-preview-lg">
+          @if (previewUrl(); as url) {
+            <img [src]="url" [alt]="'AVATAR_CROPPER.PREVIEW' | translate" />
+          }
+        </div>
+        <div class="flex align-items-center gap-3">
+          <div class="avatar-preview avatar-preview-md">
+            @if (previewUrl(); as url) {
+              <img [src]="url" alt="" />
+            }
+          </div>
+          <div class="avatar-preview avatar-preview-sm">
+            @if (previewUrl(); as url) {
+              <img [src]="url" alt="" />
+            }
+          </div>
+        </div>
+        <small class="text-color-secondary text-center">
+          {{ 'AVATAR_CROPPER.OUTPUT_HINT' | translate: { size: outputEdge } }}
+        </small>
+      </div>
+    </div>
+  }
+
+  <ng-template pTemplate="footer">
+    @if (sourceFile()) {
+      <p-button
+        [label]="'AVATAR_CROPPER.CHANGE_IMAGE' | translate"
+        icon="pi pi-image"
+        [text]="true"
+        severity="secondary"
+        class="mr-auto"
+        [disabled]="saving()"
+        (onClick)="changeImage()"
+      />
+    }
+    <p-button
+      [label]="'COMMON.CANCEL' | translate"
+      severity="secondary"
+      [outlined]="true"
+      [disabled]="saving()"
+      (onClick)="visible.set(false)"
+    />
+    <p-button
+      [label]="'AVATAR_CROPPER.APPLY' | translate"
+      icon="pi pi-check"
+      [loading]="saving()"
+      [disabled]="!canConfirm()"
+      (onClick)="confirm()"
+    />
+  </ng-template>
+</p-dialog>

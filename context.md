@@ -750,3 +750,40 @@ harmless.
   `PHONE_COUNTRIES`, `CATEGORY_NAME_MAX_LENGTH`, …) are each used inside their
   own file. They are a wider API surface than needed, not dead code, so they were
   left as-is rather than churned.
+
+---
+
+## 18. Account Settings Module — IMPLEMENTED
+
+`/cronos/cuenta/configuracion` replaces the separate My Account and Security
+pages. The old URLs redirect to the matching tab (`?tab=profile|security`), so
+bookmarks keep working. Backend contract: `docs/api/account-settings.md`.
+
+| Piece | Path | Notes |
+|---|---|---|
+| `AccountSettingsComponent` | `pages/cronos/account/account-settings/` | Tab shell + Profile and Fiscal forms. `?tab=` is the single source of tab state |
+| `AccountSettingsStore` | same folder | Component-scoped; one `SectionState` signal slice per section, so a save in one tab never re-renders another |
+| `SecurityPanelComponent` | `…/account-settings/security-panel/` | Former Security page, now a lazily-rendered tab |
+| `PhoneInputComponent` (`app-phone-input`) | `shared/components/phone-input/` | CVA + validator. Model value is **E.164**. Uses `libphonenumber-js/max` |
+| `AvatarCropperDialogComponent` | `shared/components/avatar-cropper-dialog/` | `ngx-image-cropper`; emits a 512×512 JPEG `File` |
+| `FieldErrorComponent` (`app-field-error`) | `shared/components/field-error/` | One translated message per control; takes `errors` so it works under OnPush |
+| Validators | `shared/validators/{fiscal,phone,password}.validators.ts` | RFC, regime↔RFC, CP, legal-name suffix, E.164, password change |
+| `unsavedChangesGuard` | `core/guards/` | `canDeactivate` confirmation for dirty forms |
+
+Deviations, called out per §10:
+
+- **`p-tabs`, not `p-tabView`.** `TabView` was deprecated in PrimeNG 18 and is
+  not in v21. The page uses `p-tabs`/`p-tablist`/`p-tab`/`p-tabpanels`, same as
+  `recipe-detail`. `[lazy]="true"` renders each panel on its first visit and
+  keeps it mounted afterwards, so form state survives tab switches.
+- **Tab surface tokens via `[dt]`.** Transparent tablist/tabpanel backgrounds
+  are set through the component's design-token input rather than a
+  `::ng-deep` override (§14). That way the white surfaces still come from the
+  `p-card`s inside each tab.
+- **`libphonenumber-js` over `ngx-intl-tel-input`.** The latter pulls in
+  `ngx-bootstrap` and its own dropdown, which would be a second overlay system
+  next to PrimeNG's. `libphonenumber-js/max` (the full-metadata build) adds
+  about 55 kB gzip, but only to the lazy account-settings chunk.
+- Phone numbers are stored as E.164 from now on. The quote form still keeps its
+  local two-country `PHONE_COUNTRIES` list. Moving it onto `app-phone-input` is
+  a follow-up, not part of this change.

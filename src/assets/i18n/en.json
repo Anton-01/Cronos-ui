@@ -89,7 +89,9 @@
       "SECURITY": "Security",
       "USER_MANAGEMENT": "User Management",
       "ROLE_MANAGEMENT": "Role Management",
-      "SIGN_OUT": "Sign Out"
+      "SIGN_OUT": "Sign Out",
+      "ACCOUNT_SETTINGS": "Account Settings",
+      "FISCAL_DATA": "Fiscal Data"
     }
   },
   "BREADCRUMB": {
@@ -869,9 +871,12 @@
   },
   "ACCOUNT": {
     "ROLES": "Roles",
-    "MY_ACCOUNT_DESCRIPTION": "Your profile details",
     "TOAST": {
-      "PROFILE_UPDATED": "Profile updated"
+      "PROFILE_UPDATED": "Profile updated",
+      "AVATAR_UPDATED": "Profile picture updated",
+      "AVATAR_FAILED": "The profile picture could not be uploaded",
+      "AVATAR_REMOVED": "Profile picture removed",
+      "FISCAL_UPDATED": "Fiscal data saved"
     },
     "SECURITY": {
       "SIGN_IN_METHOD": "Sign-In Method",
@@ -891,7 +896,9 @@
       "REVOKE_TITLE": "Revoke session",
       "REVOKE_MESSAGE": "Are you sure you want to close the {{ browser }} session on {{ os }} (IP: {{ ip }})?",
       "REVOKE_ACCEPT": "Yes, revoke",
-      "SESSION_REVOKED": "Session revoked"
+      "SESSION_REVOKED": "Session revoked",
+      "STATUS_SUCCESS": "Successful",
+      "STATUS_FAILED": "Failed"
     },
     "SIGN_IN": {
       "CHANGE_PASSWORD": "Change password",
@@ -915,6 +922,96 @@
         "PASSWORD_UPDATED": "Password updated successfully",
         "TWO_FACTOR_ENABLED": "2FA enabled successfully",
         "TWO_FACTOR_DISABLED": "2FA disabled successfully"
+      },
+      "ENABLE_2FA": "Enable 2FA",
+      "DISABLE_2FA": "Disable 2FA",
+      "ERRORS": {
+        "PASSWORD_REUSE": "The new password must be different from the current one"
+      }
+    },
+    "SETTINGS": {
+      "TITLE": "Account Settings",
+      "DESCRIPTION": "Manage your profile, security and invoicing details",
+      "TABS": {
+        "PROFILE": "Profile Details",
+        "SECURITY": "Security",
+        "FISCAL": "Fiscal Data"
+      },
+      "UNSAVED_BADGE": "Unsaved changes",
+      "UNSAVED_TITLE": "Discard unsaved changes?",
+      "UNSAVED_MESSAGE": "You have edits that have not been saved. If you leave now they will be lost.",
+      "UNSAVED_ACCEPT": "Leave without saving",
+      "LOAD_FAILED": "This section could not be loaded.",
+      "DISCARD": "Discard changes"
+    },
+    "AVATAR": {
+      "ALT": "Profile picture",
+      "UPLOADING": "Uploading profile picture",
+      "CHANGE": "Change profile picture",
+      "UPLOAD": "Upload photo",
+      "HINT": "JPG, PNG or WebP. Cropped to a 512 × 512 px square.",
+      "REMOVE_TITLE": "Remove profile picture?",
+      "REMOVE_MESSAGE": "Your initials will be shown instead.",
+      "REMOVE_ACCEPT": "Yes, remove"
+    },
+    "FACTS": {
+      "MEMBER_SINCE": "Member since",
+      "LAST_SIGN_IN": "Last sign-in",
+      "TWO_FACTOR": "Two-factor"
+    },
+    "PROFILE": {
+      "TITLE": "Personal Information",
+      "SUBTITLE": "How you appear across Cronos and on shared quotes.",
+      "EMAIL_LOCKED": "Contact an administrator to change your email address."
+    },
+    "FISCAL": {
+      "EMPTY_HINT": "You have not registered fiscal data yet. It is required to issue CFDI invoices.",
+      "IDENTITY_TITLE": "Taxpayer Identity",
+      "IDENTITY_SUBTITLE": "Exactly as it appears on your SAT Constancia de Situación Fiscal.",
+      "TAXPAYER_TYPE": {
+        "INDIVIDUAL": "Individual (persona física)",
+        "LEGAL_ENTITY": "Legal entity (persona moral)"
+      },
+      "LEGAL_NAME": "Legal name",
+      "LEGAL_NAME_HINT": "Uppercase, without the corporate regime (e.g. omit \"S.A. de C.V.\").",
+      "TAX_ID": "RFC",
+      "TAX_ID_HINT": "13 characters for individuals, 12 for legal entities.",
+      "TAX_REGIME": "Tax regime",
+      "TAX_REGIME_PLACEHOLDER": "Select a tax regime",
+      "ADDRESS_TITLE": "Fiscal Address",
+      "ADDRESS_SUBTITLE": "The zip code must match the one registered with SAT.",
+      "STREET": "Street",
+      "EXTERIOR_NUMBER": "Exterior no.",
+      "INTERIOR_NUMBER": "Interior no.",
+      "NEIGHBORHOOD": "Neighborhood (colonia)",
+      "MUNICIPALITY": "Municipality / borough",
+      "STATE": "State",
+      "STATE_PLACEHOLDER": "Select a state",
+      "ZIP_CODE": "Zip code",
+      "COUNTRY": "Country",
+      "COUNTRY_MX": "Mexico",
+      "LAST_UPDATED": "Last updated {{ date }}",
+      "SAVE": "Save fiscal data",
+      "REGIMES": {
+        "601": "General Law — Legal Entities",
+        "603": "Non-Profit Legal Entities",
+        "605": "Wages and Salaries",
+        "606": "Leasing",
+        "607": "Sale or Acquisition of Goods",
+        "608": "Other Income",
+        "610": "Non-Residents without Permanent Establishment in Mexico",
+        "611": "Dividend Income",
+        "612": "Individuals with Business and Professional Activities",
+        "614": "Interest Income",
+        "615": "Prize Income",
+        "616": "No Tax Obligations",
+        "620": "Production Cooperatives Deferring Income",
+        "621": "Tax Incorporation",
+        "622": "Agricultural, Livestock, Forestry and Fishing Activities",
+        "623": "Optional for Corporate Groups",
+        "624": "Coordinated Entities",
+        "625": "Business Activities via Technology Platforms",
+        "626": "Simplified Trust Regime (RESICO)"
       }
     }
   },
@@ -1022,6 +1119,55 @@
       "NO_INSTRUCTIONS": "No instructions available",
       "STORAGE": "Storage",
       "LOAD_FAILED": "This link has expired or is invalid."
+    }
+  },
+  "FORM_ERRORS": {
+    "REQUIRED": "This field is required",
+    "MIN_LENGTH": "Must be at least {{ length }} characters",
+    "MAX_LENGTH": "Must be at most {{ length }} characters",
+    "EMAIL": "Enter a valid email address",
+    "RFC_GENERIC": "Generic RFCs (XAXX010101000, XEXX010101000) cannot be used as your own tax ID",
+    "RFC_FORMAT": "Enter a valid RFC (e.g. GODE561231GR8 or ABC010203AB9)",
+    "CORPORATE_SUFFIX": "Remove the corporate regime (S.A. de C.V., S. de R.L., A.C., …) — CFDI 4.0 rejects it",
+    "REGIME_MISMATCH": "This tax regime is not available for the taxpayer type of the RFC",
+    "ZIP_CODE": "Enter a valid 5-digit zip code",
+    "DUPLICATE": "This value is already in use",
+    "INVALID": "Invalid value"
+  },
+  "PHONE_INPUT": {
+    "COUNTRY": "Country dialing code",
+    "SEARCH_COUNTRY": "Search country or code",
+    "ERRORS": {
+      "TOO_SHORT": "The phone number is too short",
+      "TOO_LONG": "The phone number is too long",
+      "INVALID_LENGTH": "The phone number has an invalid length",
+      "INVALID_COUNTRY": "Unsupported country code",
+      "NOT_A_NUMBER": "Enter digits only",
+      "INVALID": "This is not a valid number for the selected country"
+    }
+  },
+  "AVATAR_CROPPER": {
+    "TITLE": "Update profile picture",
+    "DROP_TITLE": "Drag an image here or click to browse",
+    "DROP_HINT": "JPG, PNG or WebP · up to {{ max }} MB · at least {{ min }} × {{ min }} px",
+    "FRAME_ARIA": "Crop frame. Use the arrow keys to move it.",
+    "ZOOM": "Zoom",
+    "ZOOM_IN": "Zoom in",
+    "ZOOM_OUT": "Zoom out",
+    "ROTATE_LEFT": "Rotate left",
+    "ROTATE_RIGHT": "Rotate right",
+    "FLIP": "Flip horizontally",
+    "RESET": "Reset",
+    "GESTURE_HINT": "Drag the image to reposition it. Use the mouse wheel or pinch to zoom.",
+    "PREVIEW": "Preview",
+    "OUTPUT_HINT": "Saved as a {{ size }} × {{ size }} px JPEG.",
+    "CHANGE_IMAGE": "Choose another image",
+    "APPLY": "Save picture",
+    "ERRORS": {
+      "TYPE": "Unsupported file type. Use JPG, PNG or WebP.",
+      "SIZE": "The image exceeds {{ max }} MB.",
+      "DIMENSIONS": "The image is too small. Use one at least {{ min }} × {{ min }} px.",
+      "LOAD": "The image could not be read. Try a different file."
     }
   }
 }

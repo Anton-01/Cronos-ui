@@ -14,6 +14,7 @@ import { AuthService } from 'src/app/core/services/auth.service';
 import { ProfileStateService } from 'src/app/core/services/profile/ProfileStateService';
 import { LanguageService } from 'src/app/core/services/language.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
+import { passwordChangeValidator } from 'src/app/shared/validators/password.validators';
 
 @Component({
   selector: 'app-sign-in-method',
@@ -45,11 +46,14 @@ export class SignInMethodComponent implements OnInit {
   readonly isLoading2FA = signal(false);
   readonly twoFactorSetup = signal<{ secret: string; qrCodeUrl: string } | null>(null);
 
-  readonly passwordForm = this.fb.group({
-    currentPassword: ['', [Validators.required]],
-    newPassword: ['', [Validators.required, Validators.minLength(6)]],
-    confirmPassword: ['', [Validators.required]],
-  });
+  readonly passwordForm = this.fb.nonNullable.group(
+    {
+      currentPassword: ['', [Validators.required]],
+      newPassword: ['', [Validators.required, Validators.minLength(6)]],
+      confirmPassword: ['', [Validators.required]],
+    },
+    { validators: passwordChangeValidator('currentPassword', 'newPassword', 'confirmPassword') },
+  );
 
   readonly twoFactorCode = this.fb.group({
     code: ['', [Validators.required, Validators.minLength(6)]],
@@ -68,19 +72,12 @@ export class SignInMethodComponent implements OnInit {
 
   savePassword(): void {
     if (this.passwordForm.invalid) {
-      return;
-    }
-    if (this.passwordForm.value.newPassword !== this.passwordForm.value.confirmPassword) {
-      this.toastService.error('Error', this.language.t('AUTH.ERRORS.PASSWORD_MISMATCH'));
+      this.passwordForm.markAllAsTouched();
       return;
     }
     this.isChangingPassword.set(true);
     this.authService
-      .changePassword({
-        currentPassword: this.passwordForm.value.currentPassword!,
-        newPassword: this.passwordForm.value.newPassword!,
-        confirmPassword: this.passwordForm.value.confirmPassword!,
-      })
+      .changePassword(this.passwordForm.getRawValue())
       .subscribe({
         next: () => {
           this.isChangingPassword.set(false);

@@ -8,7 +8,6 @@ import {
   UserResponse,
   CreateUserRequest,
   UpdateUserRequest,
-  UpdateProfileRequest,
   AssignRolesRequest,
 } from '../models';
 
@@ -25,14 +24,6 @@ export interface UserFilterRequest {
 export class UserService {
   private readonly API = environment.apiUrl;
   private http = inject(HttpClient);
-
-  getProfile(): Observable<ApiResponse<UserResponse>> {
-    return this.http.get<ApiResponse<UserResponse>>(`${this.API}/users/me`);
-  }
-
-  updateProfile(req: UpdateProfileRequest): Observable<ApiResponse<UserResponse>> {
-    return this.http.put<ApiResponse<UserResponse>>(`${this.API}/users/me`, req);
-  }
 
   getAllUsers(params: UserFilterRequest): Observable<ApiResponse<Page<UserResponse>>> {
     let httpParams = new HttpParams()

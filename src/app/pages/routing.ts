@@ -1,6 +1,16 @@
-import { Routes } from '@angular/router';
+import { inject } from '@angular/core';
+import { Router, Routes, UrlTree } from '@angular/router';
 import { roleGuard } from '../core/guards/role.guard';
+import { unsavedChangesGuard } from '../core/guards/unsaved-changes.guard';
 import { CategoryType } from '../core/models/category.model';
+import { AccountSettingsTab } from '../core/models/account.model';
+
+const ACCOUNT_SETTINGS_PATH = '/cronos/cuenta/configuracion';
+
+/** Old standalone account pages now open the matching Account Settings tab. */
+function redirectToAccountTab(tab: AccountSettingsTab): () => UrlTree {
+  return () => inject(Router).createUrlTree([ACCOUNT_SETTINGS_PATH], { queryParams: { tab } });
+}
 
 const Routing: Routes = [
   {
@@ -89,13 +99,13 @@ const Routing: Routes = [
   },
   // ─── Cuenta ───
   {
-    path: 'cronos/cuenta/mi-cuenta',
-    loadComponent: () => import('./cronos/account/my-account/my-account.component').then(m => m.MyAccountComponent),
+    path: 'cronos/cuenta/configuracion',
+    loadComponent: () =>
+      import('./cronos/account/account-settings/account-settings.component').then(m => m.AccountSettingsComponent),
+    canDeactivate: [unsavedChangesGuard],
   },
-  {
-    path: 'cronos/cuenta/seguridad',
-    loadComponent: () => import('./cronos/account/security/security.component').then(m => m.SecurityComponent),
-  },
+  { path: 'cronos/cuenta/mi-cuenta', redirectTo: redirectToAccountTab('profile') },
+  { path: 'cronos/cuenta/seguridad', redirectTo: redirectToAccountTab('security') },
   // ─── Admin (role-guarded) ───
   {
     path: 'cronos/admin/usuarios',

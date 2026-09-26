@@ -154,7 +154,11 @@
           (click)="userMenu.toggle($event)"
           aria-haspopup="true"
         >
-          <p-avatar [label]="userInitials()" shape="circle" styleClass="layout-user-avatar" />
+          @if (profileState.user()?.avatarUrl; as avatarUrl) {
+            <p-avatar [image]="avatarUrl" shape="circle" styleClass="layout-user-avatar" />
+          } @else {
+            <p-avatar [label]="userInitials()" shape="circle" styleClass="layout-user-avatar" />
+          }
           <span class="layout-user-name hidden lg:inline">{{ userFullName() }}</span>
           <i class="pi pi-angle-down text-xs"></i>
         </button>

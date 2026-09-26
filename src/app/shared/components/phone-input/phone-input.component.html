@@ -1,0 +1,52 @@
+<div class="phone-input flex gap-2 w-full">
+  <p-select
+    [options]="countries()"
+    [ngModel]="activeCountry()"
+    (ngModelChange)="onCountryChange($event)"
+    optionValue="code"
+    optionLabel="name"
+    [filter]="true"
+    filterBy="name,dialCode,code"
+    [virtualScroll]="true"
+    [virtualScrollItemSize]="44"
+    [disabled]="disabled()"
+    [invalid]="invalid()"
+    [ariaLabel]="'PHONE_INPUT.COUNTRY' | translate"
+    [filterPlaceholder]="'PHONE_INPUT.SEARCH_COUNTRY' | translate"
+    styleClass="phone-input-country"
+    panelStyleClass="phone-input-panel"
+    (onBlur)="markTouched()"
+  >
+    <ng-template pTemplate="selectedItem">
+      @if (selectedOption(); as option) {
+        <span class="flex align-items-center gap-2">
+          <span class="phone-input-flag" aria-hidden="true">{{ option.flag }}</span>
+          <span class="font-medium">{{ option.dialCode }}</span>
+        </span>
+      }
+    </ng-template>
+    <ng-template pTemplate="item" let-option>
+      <span class="flex align-items-center gap-2 w-full">
+        <span class="phone-input-flag" aria-hidden="true">{{ option.flag }}</span>
+        <span class="flex-1 white-space-nowrap overflow-hidden text-overflow-ellipsis">{{ option.name }}</span>
+        <span class="text-color-secondary text-sm">{{ option.dialCode }}</span>
+      </span>
+    </ng-template>
+  </p-select>
+
+  <input
+    pInputText
+    type="tel"
+    inputmode="tel"
+    autocomplete="tel-national"
+    class="flex-1 min-w-0"
+    [id]="inputId()"
+    [value]="display()"
+    [placeholder]="placeholder()"
+    [disabled]="disabled()"
+    [invalid]="invalid()"
+    [attr.aria-invalid]="invalid()"
+    (input)="onNumberInput($event)"
+    (blur)="markTouched()"
+  />
+</div>
