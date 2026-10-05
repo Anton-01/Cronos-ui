@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 
+import { environment } from 'src/environments/environment';
 import { LanguageService } from 'src/app/core/services/language.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
@@ -79,7 +80,7 @@ export class StatusToggleComponent {
     }
 
     this.loading.set(true);
-    this.http.patch(`/api/v1/${this.endpoint}/${this.item.id}/status`, { status: newStatus }).subscribe({
+    this.http.patch(`${environment.apiUrl}/${this.endpoint}/${this.item.id}/status`, { status: newStatus }).subscribe({
       next: () => {
         this.loading.set(false);
         this.item = { ...this.item, status: newStatus };

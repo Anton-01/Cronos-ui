@@ -52,7 +52,11 @@ export interface NavSection {
  * themselves stay protected by `roleGuard` — this is presentation, not
  * authorization.
  */
-export function buildNavSections(hasAdminRole: boolean, hasSuperAdminRole: boolean): NavSection[] {
+export function buildNavSections(
+  hasAdminRole: boolean,
+  hasSuperAdminRole: boolean,
+  canManageCatalogs: boolean,
+): NavSection[] {
   const sections: NavSection[] = [
     {
       labelKey: 'NAV.SECTIONS.DASHBOARDS',
@@ -110,6 +114,13 @@ export function buildNavSections(hasAdminRole: boolean, hasSuperAdminRole: boole
   }
   if (hasSuperAdminRole) {
     adminItems.push({ labelKey: 'NAV.ITEMS.ROLE_MANAGEMENT', icon: 'pi pi-shield', route: '/cronos/admin/roles' });
+  }
+  if (hasSuperAdminRole || canManageCatalogs) {
+    adminItems.push({
+      labelKey: 'NAV.ITEMS.IMPORT_HISTORY',
+      icon: 'pi pi-history',
+      route: '/cronos/admin/importaciones',
+    });
   }
   if (adminItems.length > 0) {
     sections.push({ labelKey: 'NAV.SECTIONS.ADMINISTRATION', items: adminItems });

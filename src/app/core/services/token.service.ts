@@ -103,6 +103,22 @@ export class TokenService {
     return this.getRoles().some(r => r === normalizedRole);
   }
 
+  getPermissions(): string[] {
+    const token = this.getAccessToken();
+    if (!token) return [];
+    const payload = this.parseJwt(token);
+    return payload?.permissions ?? [];
+  }
+
+  /**
+   * `permissions` is a backend prerequisite (see `JwtPayload.permissions`):
+   * until that claim ships, this always answers `false`, so every caller
+   * must pair it with a role check rather than relying on it alone.
+   */
+  hasPermission(permission: string): boolean {
+    return this.getPermissions().includes(permission);
+  }
+
   getPrimaryRole(): string {
     const roles = this.getRoles();
     let highest = 'USER';

@@ -1,0 +1,120 @@
+<p-card>
+  <p-table
+    [value]="batches()"
+    dataKey="batchId"
+    [lazy]="true"
+    (onLazyLoad)="onLazyLoad($event)"
+    [loading]="isLoading()"
+    [showLoader]="false"
+    [paginator]="true"
+    [rows]="20"
+    [rowsPerPageOptions]="[20, 50, 100]"
+    [totalRecords]="totalRecords()"
+    [rowHover]="true"
+    [stripedRows]="true"
+    [showCurrentPageReport]="true"
+    [currentPageReportTemplate]="'COMMON.TABLE.PAGE_REPORT' | translate"
+  >
+    <ng-template pTemplate="caption">
+      <div class="flex align-items-center gap-3 flex-wrap">
+        <p-select
+          [(ngModel)]="resourceFilter"
+          [options]="resourceOptions()"
+          optionLabel="label"
+          optionValue="value"
+          [placeholder]="'IMPORT_HISTORY.FILTERS.RESOURCE' | translate"
+          [showClear]="true"
+          (onChange)="onFilterChange()"
+          (onClear)="onFilterChange()"
+        />
+        <p-select
+          [(ngModel)]="statusFilter"
+          [options]="statusOptions()"
+          optionLabel="label"
+          optionValue="value"
+          [placeholder]="'IMPORT_HISTORY.FILTERS.STATUS' | translate"
+          [showClear]="true"
+          (onChange)="onFilterChange()"
+          (onClear)="onFilterChange()"
+        />
+      </div>
+    </ng-template>
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="min-width: 10rem">{{ 'IMPORT_HISTORY.TABLE.DATE' | translate }}</th>
+        <th style="min-width: 10rem">{{ 'IMPORT_HISTORY.TABLE.RESOURCE' | translate }}</th>
+        <th style="min-width: 12rem">{{ 'IMPORT_HISTORY.TABLE.FILE' | translate }}</th>
+        <th style="width: 8rem">{{ 'IMPORT_HISTORY.TABLE.MODE' | translate }}</th>
+        <th style="width: 9rem">{{ 'IMPORT_HISTORY.TABLE.STATUS' | translate }}</th>
+        <th style="min-width: 10rem">{{ 'IMPORT_HISTORY.TABLE.TOTALS' | translate }}</th>
+        <th style="min-width: 8rem">{{ 'IMPORT_HISTORY.TABLE.USER' | translate }}</th>
+        <th style="min-width: 10rem">{{ 'IMPORT_HISTORY.TABLE.SHA256' | translate }}</th>
+        <th style="width: 7rem" class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-batch>
+      <tr>
+        <td>{{ batch.startedAt | date: 'short' }}</td>
+        <td>{{ resourceLabel(batch.resource) }}</td>
+        <td>{{ batch.fileName }}</td>
+        <td>{{ modeLabel(batch.dryRun) }}</td>
+        <td><p-tag [value]="statusLabel(batch.status)" [severity]="statusTag(batch.status)" /></td>
+        <td class="text-sm">
+          {{ 'UNIT_CATALOG_IMPORT.VALIDATE.CARDS.CREATED' | translate }}: {{ batch.created }} ·
+          {{ 'UNIT_CATALOG_IMPORT.VALIDATE.CARDS.UPDATED' | translate }}: {{ batch.updated }} ·
+          {{ 'UNIT_CATALOG_IMPORT.VALIDATE.CARDS.REJECTED_ROWS' | translate }}: {{ batch.rejectedRows }}
+        </td>
+        <td>{{ batch.actorUsername }}</td>
+        <td>
+          <span class="flex align-items-center gap-2">
+            <code [pTooltip]="batch.fileSha256">{{ shaShort(batch.fileSha256) }}</code>
+            <p-button icon="pi pi-copy" [text]="true" [rounded]="true" size="small" (onClick)="copySha(batch.fileSha256)" />
+          </span>
+        </td>
+        <td class="text-right">
+          <p-button
+            [label]="'IMPORT_HISTORY.TABLE.VIEW_REPORT' | translate"
+            [text]="true"
+            size="small"
+            (onClick)="viewReport(batch)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="loadingbody">
+      @for (row of skeletonRows; track $index) {
+        <tr appTableSkeletonRow [columns]="9"></tr>
+      }
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="9" class="text-center text-color-secondary py-5">{{ 'IMPORT_HISTORY.EMPTY' | translate }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-dialog
+  [header]="'IMPORT_HISTORY.REPORT_DIALOG_TITLE' | translate"
+  [visible]="showReportDialog()"
+  (visibleChange)="!$event && closeReportDialog()"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '56rem' }"
+  [breakpoints]="{ '960px': '95vw' }"
+>
+  @if (isLoadingReport()) {
+    <div class="flex justify-content-center py-5">
+      <i class="pi pi-spin pi-spinner text-2xl"></i>
+    </div>
+  } @else if (viewedReport(); as report) {
+    <app-import-report-view [report]="report" />
+  }
+  <ng-template pTemplate="footer">
+    <p-button [label]="'COMMON.CLOSE' | translate" (onClick)="closeReportDialog()" />
+  </ng-template>
+</p-dialog>

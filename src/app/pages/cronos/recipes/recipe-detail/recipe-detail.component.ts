@@ -26,7 +26,7 @@ import { MeasurementUnitService } from 'src/app/core/services/domain/measurement
 import {
   CreateRecipeRequest,
   IngredientResponse,
-  MeasurementUnitResponse,
+  MeasurementUnitOptionResponse,
   RecipeCostBreakdown,
   RecipeDetailResponse,
   RecipeFileResponse,
@@ -170,7 +170,7 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
   readonly isCalculating = signal(false);
   readonly simulationYield = signal<number | null>(null);
 
-  readonly measurementUnits = signal<MeasurementUnitResponse[]>([]);
+  readonly measurementUnits = signal<MeasurementUnitOptionResponse[]>([]);
 
   ngOnInit(): void {
     this.recipeId = this.route.snapshot.paramMap.get('id')!;
@@ -233,9 +233,8 @@ export class RecipeDetailComponent implements OnInit, OnDestroy {
   }
 
   private loadMeasurementUnits(): void {
-    const params: PageRequest = { page: 0, size: 200, sort: 'name,asc' };
-    this.measurementUnitService.getAll(params).pipe(takeUntil(this.destroy$)).subscribe({
-      next: (res) => this.measurementUnits.set(res.data.content),
+    this.measurementUnitService.getCatalogOptions().pipe(takeUntil(this.destroy$)).subscribe({
+      next: (res) => this.measurementUnits.set(res.data ?? []),
     });
   }
 

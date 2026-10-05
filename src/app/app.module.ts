@@ -18,8 +18,29 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ToastModule } from 'primeng/toast';
 import Aura from '@primeng/themes/aura';
 
-// Aura tuned for the Cronos look: hairline borders and softer radii everywhere
+// Aura tuned for the Cronos "premium dashboard" look: a large modern radius
+// scale and soft diffused shadows that let cards pop off a tinted ground,
+// instead of the earlier hairline-border/flat-card approach.
+//
+// Border-radius: PrimeNG v21's token engine has no single generic
+// `--border-radius` variable to override — every component's radius token
+// (card.root.borderRadius, form.field.border.radius, overlay.modal.border
+// .radius, ...) resolves against the *primitive* `border.radius` scale
+// (none/xs/sm/md/lg/xl). Bumping that scale once cascades the larger radius
+// to every component built on top of it — inputs/buttons via {form.field
+// .border.radius} -> md, panels/tags via {content.border.radius} -> md,
+// dialogs/cards via {border.radius.xl} directly.
 const CronosPreset = definePreset(Aura, {
+  primitive: {
+    borderRadius: {
+      none: '0',
+      xs: '6px',
+      sm: '8px',
+      md: '10px',
+      lg: '14px',
+      xl: '20px',
+    },
+  },
   semantic: {
     // Modern, soft elevation for dialogs/confirm dialogs — replaces Aura's
     // default (heavier, more clinical) modal shadow.
@@ -39,24 +60,27 @@ const CronosPreset = definePreset(Aura, {
     },
     colorScheme: {
       light: {
+        // No border here on purpose — cards/panels get their depth from the
+        // shadow token below (components.card / components.panel), not a
+        // hairline border on white. content.background already resolves to
+        // {surface.0} (pure white), which is what makes it pop off the
+        // tinted {surface.50} page ground set in styles.scss.
         content: {
-          borderColor: '{surface.100}',
+          borderColor: 'transparent',
         },
         formField: {
           borderColor: '{surface.200}',
           hoverBorderColor: '{surface.300}',
         },
-        // Dialogs share the same hairline border as cards instead of Aura's
-        // default heavier surface.200 border.
         overlay: {
           modal: {
-            borderColor: '{surface.100}',
+            borderColor: 'transparent',
           },
         },
       },
       dark: {
         content: {
-          borderColor: '{surface.800}',
+          borderColor: 'transparent',
         },
         formField: {
           borderColor: '{surface.700}',
@@ -64,7 +88,32 @@ const CronosPreset = definePreset(Aura, {
         },
         overlay: {
           modal: {
-            borderColor: '{surface.800}',
+            borderColor: 'transparent',
+          },
+        },
+      },
+    },
+  },
+  components: {
+    // Soft, large, diffused shadow — the depth cue that replaces the old
+    // hairline border. Deeper/darker in dark mode so cards still read as
+    // raised against {surface.900} instead of disappearing into it.
+    // p-panel has no `shadow` design token in Aura's own schema (its styled
+    // CSS never wires up a box-shadow property), so a token override here
+    // would be dead code — panel's shadow is applied via styles.scss instead
+    // (see the `.p-panel` rule, matched to this same shadow value).
+    card: {
+      colorScheme: {
+        light: {
+          root: {
+            shadow:
+              '0 20px 40px -16px rgba(15, 23, 42, 0.12), 0 4px 12px -4px rgba(15, 23, 42, 0.06)',
+          },
+        },
+        dark: {
+          root: {
+            shadow:
+              '0 20px 40px -16px rgba(0, 0, 0, 0.55), 0 4px 12px -4px rgba(0, 0, 0, 0.35)',
           },
         },
       },

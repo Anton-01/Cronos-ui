@@ -29,6 +29,14 @@ export const roleGuard: CanActivateFn = (route) => {
     return true;
   }
 
+  // Fine-grained permission, OR'd with the role check above — e.g. catalog
+  // writes need SUPER_ADMIN *or* MANAGE_CATALOGS, and a MANAGER with the
+  // permission would otherwise fail the role-level check unconditionally.
+  const anyPermission = (route.data?.['anyPermission'] as string[] | undefined) ?? [];
+  if (anyPermission.some((permission) => tokenService.hasPermission(permission))) {
+    return true;
+  }
+
   toast.error(language.t('ERRORS.RESTRICTED_TITLE'), language.t('ERRORS.RESTRICTED'));
   return router.createUrlTree(['/cronos/dashboard']);
 };

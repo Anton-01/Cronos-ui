@@ -14,7 +14,7 @@ this project. It reflects the **actual current state** of the codebase (verified
 | PrimeNG | `21.1.9` — new design-token theming engine (`@primeng/themes`), **not** the legacy CSS-theme era |
 | PrimeFlex | `^4.0.0`, already wired in `angular.json` (`styles` array) |
 | PrimeIcons | `^7.0.0` |
-| Tailwind CSS | **not installed** — to be added (v4, zero-config `@import "tailwindcss"` + PostCSS plugin) |
+| Tailwind CSS | `^4.x`, installed 2026-08-18 — `@tailwindcss/postcss` via `postcss.config.json`, entry point `src/tailwind.css` (kept out of `styles.scss` on purpose, see §3), `dark:` variant scoped to `.app-dark` via `@custom-variant` |
 | Theme preset | Custom `CronosPreset` in `app.module.ts` = `definePreset(Aura, {...})`, dark mode via `.app-dark` selector |
 | Component selectors | Modern only: `p-select`, `p-multiselect` (the app has zero usages of the deprecated `p-dropdown` / `p-multiSelect` tags — keep it that way) |
 
@@ -29,23 +29,44 @@ component that no longer exists in this PrimeNG version.
 
 **Decision:** the app already runs on `Aura`, extended into `CronosPreset`
 (`src/app/app.module.ts`). Aura is also what the real primeng.org homepage runs
-on. **Do not replace it with a `lara` preset.** Instead, deepen `CronosPreset`'s
-dark-mode branch to hit the "deep blacks, sophisticated grays" target:
+on. **Do not replace it with a `lara` preset** — `@primeng/themes/lara` does
+exist as an installable package (the new token engine ships Aura/Lara/Material/
+Nora as alternate primitive+semantic token sets), so asking for it isn't asking
+for a nonexistent component the way it would have under the pre-v18 CSS-theme
+catalog. It's simply not the base this project chose; `CronosPreset` stays an
+Aura extension, not a base-theme swap.
 
 - Extend `semantic.colorScheme.dark` in `CronosPreset` — do not hand-roll a
   parallel dark palette in `styles.scss`.
 - Keep the existing `.app-dark` selector as the single dark-mode toggle
   (`darkModeSelector: '.app-dark'` in `providePrimeNG`). Never introduce a second
   dark-mode mechanism (no `prefers-color-scheme` media query overrides, no
-  duplicate `:root[data-theme]` scheme).
+  duplicate `:root[data-theme]` scheme). Tailwind's `dark:` variant is scoped to
+  the same selector via `@custom-variant dark (&:where(.app-dark, .app-dark *));`
+  in `src/tailwind.css` — see §3.
 - Background depth for dark mode should route through `--p-surface-950` /
   `--p-surface-900` tokens (already bridged to `--surface-ground` /
   `--surface-card` in `styles.scss`), not literal hex/`#000` values.
 - Never leave a view relying on default `--p-surface-0` (pure white) as its main
   background. Large surfaces use `--p-surface-50` (light) / `--p-surface-950`
-  (dark); cards flatten to hairline borders instead of stacking shadows on white
-  (see existing `.layout-content .p-card` rule in `styles.scss` — follow that
-  pattern, don't fight it).
+  (dark). **Cards are the deliberate exception**: `p-card`/`p-panel` *do* render
+  on pure `--p-surface-0` (light) / `--p-surface-900` (dark) via
+  `content.background` — that's what lets them pop off the tinted ground. See
+  §10 for the full shadow-first card rule (this supersedes the project's
+  earlier hairline-border-only approach).
+- There is no single generic `--border-radius` CSS variable to override in
+  PrimeNG v21's token engine. Every component's radius resolves against the
+  **primitive** `border.radius` scale (`none/xs/sm/md/lg/xl`) — `CronosPreset`
+  bumps that scale once (`primitive.borderRadius` in `app.module.ts`) and it
+  cascades to every component built on top of it (inputs/buttons via
+  `{form.field.border.radius}` → `md`; panels/tags via
+  `{content.border.radius}` → `md`; dialogs/cards via `{border.radius.xl}`
+  directly). Don't add a literal `border-radius: 12px` (or similar) override
+  in `styles.scss` for a PrimeNG component that already reads a radius token —
+  bump the primitive scale or the specific component token in `CronosPreset`
+  instead, so the value stays centralized. Utility classes that have no
+  PrimeNG token equivalent (`.metric-card`, `.page-header`) may hardcode
+  `1.25rem` to match the current `xl` value — see §10.
 
 ---
 
@@ -57,14 +78,27 @@ Both stay. They are not redundant if scoped correctly:
   `align-items-*`, `justify-content-*`. Anything that mirrors how PrimeNG's own
   component internals expect spacing.
 - **Tailwind** → everything else: one-off spacing/sizing not covered by
-  PrimeFlex tokens, typography utilities, dark-mode fine-tuning (`dark:` variant
-  reads off `.app-dark`, configure `darkMode: 'selector'` pointed at
-  `.app-dark` — not the default `media` strategy, or Tailwind's dark mode and
-  PrimeNG's dark mode will drift out of sync), and interaction-state utilities
-  PrimeFlex doesn't provide (`hover:`, `focus-visible:`, `active:`).
+  PrimeFlex tokens, typography utilities, dark-mode fine-tuning, and
+  interaction-state utilities PrimeFlex doesn't provide (`hover:`,
+  `focus-visible:`, `active:`).
+- **Tailwind v4 install specifics** (installed 2026-08-18): entry point is
+  `src/tailwind.css` (`@import "tailwindcss";` + the `@custom-variant`), wired
+  via `postcss.config.json` (`@tailwindcss/postcss`) and listed in
+  `angular.json`'s `styles` array *before* `src/styles.scss`. It is **not**
+  imported from inside `styles.scss` — Sass's own `@import` resolver would try
+  to find a `tailwindcss.scss` partial and fail before PostCSS ever sees it
+  (Tailwind v4 + Sass don't compose through the same `@import`). Keep the
+  Tailwind entry as a plain `.css` file. `dark:` is scoped to `.app-dark` via
+  `@custom-variant dark (&:where(.app-dark, .app-dark *));` in that file — not
+  Tailwind's default `prefers-color-scheme` media strategy — so it never drifts
+  from PrimeNG's `darkModeSelector: '.app-dark'`.
 - Never use Tailwind's `bg-white` / `bg-black` literals — use the `p-` CSS
-  variable tokens (`var(--p-surface-*)`) via Tailwind's `theme()` / arbitrary
-  value syntax (`bg-[var(--p-surface-950)]`) so colors stay theme-reactive.
+  variable tokens (`var(--p-surface-*)`) via Tailwind's arbitrary value syntax
+  (`bg-[var(--p-surface-950)]`) so colors stay theme-reactive. Exception: the
+  vibrant `.metric-card-*` fills (§10) are intentionally *not*
+  theme-reactive — they use PrimeNG's static palette scale
+  (`--p-green-700`, `--p-orange-700`, `--p-blue-200`), which holds the same
+  value in both colorSchemes, unlike `--p-surface-*`.
 - No component may ship with an unbroken large white/pure-surface-0 background
   in dark mode. If a PrimeNG component defaults to `--p-surface-0`, override
   it through the preset (section 2), not with ad-hoc component CSS.
@@ -237,7 +271,103 @@ use `p-divider`.
 
 ---
 
-## 10. Working Agreement
+## 10. UI/UX Design System & Theming Rules
+
+Consolidates the "premium dashboard" pass (2026-08-18, Freya-reference visual
+target). This section is the index — the underlying mechanism for most of it
+already lives in §2 (radius, shadow, borders) and §3 (Tailwind); read those
+for the "why," this section for the checklist.
+
+**Global Layout**
+- The app wrapper (`body`) always uses `var(--surface-ground)`
+  (→ `--p-surface-50` light / `--p-surface-950` dark) — never pure white/black.
+- `p-card` / `p-panel` render pure `var(--surface-card)`
+  (→ `--p-surface-0` light / `--p-surface-900` dark) so they visibly pop off
+  the tinted ground. This is the one deliberate exception to "never rely on
+  `--p-surface-0`" — see §2.
+- Depth comes from shadow, not border. `content.borderColor` is set to
+  `transparent` in `CronosPreset` for both color schemes — do not reintroduce
+  a literal `border: 1px solid var(--p-content-border-color)` on a card-like
+  container; it will render invisibly and isn't the intended depth cue anyway.
+  Any container that needs to visually separate from the ground (e.g.
+  `.page-header`) needs the same `background: var(--p-content-background)` +
+  `box-shadow` pairing, not a border on a ground-colored background (that was
+  a real bug fixed in this pass — a `surface-50`-on-`surface-50` header with a
+  now-transparent border is invisible).
+
+**Border Radius**
+- Global scale lives in `CronosPreset.primitive.borderRadius`
+  (`app.module.ts`): `xs 6px / sm 8px / md 10px / lg 14px / xl 20px`. Bump it
+  there, not with a literal `--border-radius` variable (doesn't exist in this
+  PrimeNG version) or per-component hardcoded `border-radius` values.
+- Utility classes with no PrimeNG token equivalent (`.metric-card`,
+  `.page-header`, the paginator footer band) hardcode `1.25rem` to visually
+  match the current `xl` primitive. If the primitive scale changes, grep
+  `styles.scss` for `1.25rem` radius values and update them together — they
+  aren't token-linked because these aren't PrimeNG-templated elements.
+
+**Shadows**
+- Soft, large, diffused, two-layer shadows — never a single hard-edged
+  `box-shadow` or a heavy border-simulating shadow. Reference value (light):
+  `0 20px 40px -16px rgba(15, 23, 42, 0.12), 0 4px 12px -4px rgba(15, 23, 42, 0.06)`;
+  dark mode deepens the alpha, doesn't change the shape:
+  `0 20px 40px -16px rgba(0, 0, 0, 0.55), 0 4px 12px -4px rgba(0, 0, 0, 0.35)`.
+- `p-card` gets this via a real design token (`components.card.colorScheme.*
+  .root.shadow` in `CronosPreset`). `p-panel` does **not** have a `shadow`
+  design token in Aura's own schema (its styled CSS never wires up a
+  `box-shadow` property) — its elevation is a plain `.p-panel` /
+  `.app-dark .p-panel` rule in `styles.scss`, kept in sync with the card
+  value by hand. Don't assume every component token you'd expect actually
+  exists — check `node_modules/@primeuix/themes/dist/aura/<component>/index.mjs`
+  before wiring a token override that PrimeNG's CSS will silently ignore.
+- Dialog/overlay shadow is unchanged from the pre-existing rule (§2's
+  `overlay.modal.shadow` override) — already soft/diffused, not touched by
+  this pass.
+
+**Metric Cards (Dashboards)**
+- `.metric-card` + one of `.metric-card-green` / `.metric-card-dark` /
+  `.metric-card-orange` / `.metric-card-blue` (`styles.scss`). Structure:
+  `.metric-card-icon` (absolute, top-right), `.metric-card-label`,
+  `.metric-card-value`.
+- These fills are **intentionally not theme-reactive** — `--p-green-700`,
+  `#1e293b`, `--p-orange-700`, `--p-blue-200` hold the same value in both
+  light and dark colorScheme (unlike `--p-surface-*`), matching the reference
+  dashboard where accent tiles don't change color when the app switches
+  theme.
+- Text/icon color is picked per-variant for ≥4.5:1 contrast (WCAG AA, normal
+  text): green/dark/orange variants use white text on a `700`-weight fill;
+  the blue variant is a light tint (`blue-200`) so it takes dark text
+  (`blue-900`) instead — a `500`-weight blue with white text fails contrast
+  at this tile's font sizes. Don't lighten the green/orange fills or darken
+  the blue fill without rechecking contrast.
+- `<app-metric-card>` (`shared/components/metric-card`) is the reusable
+  component form: `[label]`, `[value]`, `[icon]`, `[variant]`. It expects a
+  real numeric/short stat value — don't repurpose it for a link+description
+  card (see the dashboard quick-links, which apply the `.metric-card-*`
+  classes directly instead of using the component, precisely because they
+  carry a sentence description, not a stat value).
+
+**Status Pills**
+- Already implemented pre-dating this pass: `.status-pill` +
+  `.status-pill-active` / `.status-pill-inactive` (`styles.scss`) — soft
+  transparent background (`--p-green-100`/`--p-green-700` light, a
+  `color-mix` tint in dark), rounded pill (`border-radius: 999px`), small dot
+  via `::before`. `p-tag` is also forced to `border-radius: 999px` so any
+  `<p-tag>` usage matches the same pill language. New status-style badges
+  (e.g. a hypothetical `INSTOCK`/`LOWSTOCK`/`OUTOFSTOCK` set) should add
+  sibling classes here (`.status-pill-lowstock`, etc.) rather than a new,
+  parallel badge system.
+
+**Language Rule**
+- Reaffirms §9: all UI text, code, classes, and comments touched by a
+  redesign pass go to English in the same PR, applied file-by-file as each
+  view is touched (not a mass find/replace). `dashboard.component.ts/html`
+  was fully migrated as part of this pass, since it was touched for the
+  metric-card restyle.
+
+---
+
+## 11. Working Agreement
 
 Component-by-component execution proceeds only after this file is approved.
 Each future change should cite which section of this file it satisfies (e.g.

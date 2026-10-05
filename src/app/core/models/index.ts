@@ -6,3 +6,4 @@ export * from './role.model';
 export * from './category.model';
 export * from './language.model';
 export * from './account.model';
+export * from './unit-catalog.models';

@@ -1,0 +1,113 @@
+<p-dialog
+  [header]="dialogTitle()"
+  [visible]="true"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '56rem' }"
+  [breakpoints]="{ '960px': '95vw' }"
+  (onHide)="close()"
+>
+  <div class="flex flex-column gap-4">
+    <p-steps [model]="stepItems()" [activeIndex]="activeStep()" [readonly]="true" />
+
+    @switch (activeStep()) {
+      @case (0) {
+        <p-message
+          severity="info"
+          [text]="'UNIT_CATALOG_IMPORT.WIZARD.FILE.HINT' | translate"
+        />
+
+        <div class="flex align-items-center justify-content-between flex-wrap gap-2">
+          <span class="text-sm text-color-secondary">
+            {{ 'UNIT_CATALOG_IMPORT.WIZARD.FILE.ACCEPT_HINT' | translate }}
+          </span>
+          <p-button
+            [label]="'UNIT_CATALOG_IMPORT.WIZARD.FILE.DOWNLOAD_TEMPLATE' | translate"
+            icon="pi pi-download"
+            severity="secondary"
+            [outlined]="true"
+            [loading]="isDownloadingTemplate()"
+            (onClick)="downloadTemplate()"
+          />
+        </div>
+
+        <p-fileUpload
+          mode="advanced"
+          [customUpload]="true"
+          [accept]="acceptedExtension"
+          [maxFileSize]="maxFileSizeBytes"
+          [multiple]="false"
+          [showUploadButton]="false"
+          [showCancelButton]="false"
+          [chooseLabel]="'UNIT_CATALOG_IMPORT.WIZARD.FILE.CHOOSE' | translate"
+          (onSelect)="onFileSelect($event)"
+          (onRemove)="onFileRemove($event)"
+          (onClear)="onFileClear()"
+          (uploadHandler)="onUploadHandler($event)"
+        />
+
+        @if (fileError()) {
+          <p-message severity="error" [text]="fileError()!" />
+        }
+      }
+
+      @case (1) {
+        @if (report(); as currentReport) {
+          @if (isRejected()) {
+            <p-message severity="error" [text]="'UNIT_CATALOG_IMPORT.VALIDATE.REJECTED_NOTICE' | translate" />
+          }
+          <app-import-report-view [report]="currentReport" />
+        }
+      }
+
+      @case (2) {
+        @if (report(); as currentReport) {
+          <p-message
+            [severity]="currentReport.status === 'COMMITTED' ? 'success' : 'error'"
+            [text]="
+              (currentReport.status === 'COMMITTED'
+                ? 'UNIT_CATALOG_IMPORT.RESULT.COMMITTED_TITLE'
+                : 'UNIT_CATALOG_IMPORT.RESULT.REJECTED_TITLE'
+              ) | translate
+            "
+          />
+
+          <app-import-report-view [report]="currentReport" />
+        }
+      }
+    }
+  </div>
+
+  <ng-template pTemplate="footer">
+    @switch (activeStep()) {
+      @case (0) {
+        <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="close()" />
+        <p-button
+          [label]="'UNIT_CATALOG_IMPORT.WIZARD.FILE.VALIDATE_BUTTON' | translate"
+          icon="pi pi-check"
+          [disabled]="!canValidate()"
+          [loading]="isValidating()"
+          (onClick)="validate()"
+        />
+      }
+      @case (1) {
+        <p-button
+          [label]="'UNIT_CATALOG_IMPORT.VALIDATE.BACK_BUTTON' | translate"
+          severity="secondary"
+          [outlined]="true"
+          (onClick)="backToFile()"
+        />
+        <p-button
+          [label]="'UNIT_CATALOG_IMPORT.VALIDATE.APPLY_BUTTON' | translate"
+          icon="pi pi-cloud-upload"
+          [disabled]="!canApply()"
+          [loading]="isApplying()"
+          (onClick)="confirmApply()"
+        />
+      }
+      @case (2) {
+        <p-button [label]="'UNIT_CATALOG_IMPORT.RESULT.CLOSE_BUTTON' | translate" (onClick)="close()" />
+      }
+    }
+  </ng-template>
+</p-dialog>

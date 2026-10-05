@@ -51,6 +51,13 @@ export interface TwoFactorSetupResponse {
 export interface JwtPayload {
   sub: string;
   roles?: string[];
+  /**
+   * Fine-grained permission strings (e.g. `MANAGE_CATALOGS`), orthogonal to
+   * `roles`. Backend prerequisite — see the "MANAGE_CATALOGS" note above
+   * `TokenService.hasPermission`; absent on a token minted before that claim
+   * ships, so every caller must treat it as possibly `undefined`.
+   */
+  permissions?: string[];
   exp: number;
   iat: number;
 }

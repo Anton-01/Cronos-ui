@@ -20,7 +20,8 @@
       "WARNING": "Warning",
       "INFO": "Information",
       "SAVE_FAILED": "Could not save",
-      "DELETE_FAILED": "Could not delete"
+      "DELETE_FAILED": "Could not delete",
+      "TRACE_REFERENCE": "Reference: {{traceId}}"
     },
     "CONFIRM": {
       "DELETE_TITLE": "Delete record?",
@@ -63,7 +64,9 @@
       "MB": "{{ size }} MB"
     },
     "REFRESH": "Refresh",
-    "TRY_AGAIN": "Please try again"
+    "TRY_AGAIN": "Please try again",
+    "YES": "Yes",
+    "NO": "No"
   },
   "NAV": {
     "SECTIONS": {
@@ -91,7 +94,8 @@
       "ROLE_MANAGEMENT": "Role Management",
       "SIGN_OUT": "Sign Out",
       "ACCOUNT_SETTINGS": "Account Settings",
-      "FISCAL_DATA": "Fiscal Data"
+      "FISCAL_DATA": "Fiscal Data",
+      "IMPORT_HISTORY": "Import History"
     }
   },
   "BREADCRUMB": {
@@ -340,12 +344,13 @@
     "PLACEHOLDERS": {
       "CODE": "Identifier code",
       "NAME": "Unit type name",
-      "DIMENSION": "e.g. mass, volume, length"
+      "DIMENSION": "Select a dimension"
     },
     "ERRORS": {
       "CODE_REQUIRED": "Code is required",
       "NAME_REQUIRED": "Name is required",
-      "DIMENSION_REQUIRED": "Dimension is required"
+      "DIMENSION_REQUIRED": "Dimension is required",
+      "CODE_PATTERN": "The code can only contain letters, digits, dots, hyphens and underscores, no spaces"
     },
     "TOAST": {
       "CREATED": "Unit type created successfully",
@@ -397,21 +402,25 @@
       "CODE": "e.g. kg",
       "NAME": "e.g. kilogram",
       "PLURAL": "e.g. kilograms",
-      "UNIT_TYPE": "e.g. mass"
+      "UNIT_TYPE": "Select a unit type"
     },
     "ERRORS": {
       "CODE_REQUIRED": "Code is required",
       "NAME_REQUIRED": "Name is required",
       "PLURAL_REQUIRED": "Plural is required",
       "UNIT_TYPE_REQUIRED": "Unit type is required",
-      "BASE_FACTOR_REQUIRED": "Factor is required"
+      "BASE_FACTOR_REQUIRED": "Factor is required",
+      "BASE_FACTOR_POSITIVE": "The factor must be greater than 0",
+      "BASE_FACTOR_PRECISION": "The factor allows up to 10 integer and 10 decimal digits",
+      "BASE_FACTOR_MUST_BE_ONE": "A base unit must have a factor of 1"
     },
     "TOAST": {
       "CREATED": "Measurement unit created successfully",
       "UPDATED": "Measurement unit updated successfully",
       "DELETED": "Measurement unit deleted successfully",
       "LOAD_FAILED": "Measurement units could not be loaded"
-    }
+    },
+    "IN_USE_HINT": "This unit is already in use: its unit type, factor and base-unit flag cannot be changed, and it cannot be deleted."
   },
   "FIXED_COSTS": {
     "TITLE": "Fixed Costs",
@@ -1168,6 +1177,146 @@
       "SIZE": "The image exceeds {{ max }} MB.",
       "DIMENSIONS": "The image is too small. Use one at least {{ min }} × {{ min }} px.",
       "LOAD": "The image could not be read. Try a different file."
+    }
+  },
+  "CATALOG": {
+    "DIMENSIONS": {
+      "MASS": "Mass",
+      "VOLUME": "Volume",
+      "COUNT": "Count",
+      "LENGTH": "Length"
+    }
+  },
+  "UNIT_CATALOG_IMPORT": {
+    "RESOURCE": {
+      "UNIT_TYPE": "Unit types",
+      "MEASUREMENT_UNIT": "Measurement units"
+    },
+    "STATUS": {
+      "VALIDATED": "Validated",
+      "COMMITTED": "Committed",
+      "REJECTED": "Rejected",
+      "FAILED": "Failed"
+    },
+    "SEVERITY": {
+      "ERROR": "Error",
+      "WARNING": "Warning"
+    },
+    "ACTION": {
+      "CREATE": "Create",
+      "UPDATE": "Update",
+      "UNCHANGED": "Unchanged"
+    },
+    "FIELDS": {
+      "codeIdentity": "Code",
+      "name": "Name",
+      "dimension": "Dimension",
+      "status": "Status",
+      "namePlural": "Plural",
+      "unitTypeId": "Unit type",
+      "multiplierToBase": "Base factor",
+      "isBaseUnit": "Base unit"
+    },
+    "WIZARD": {
+      "OPEN_BUTTON": "Import Excel",
+      "TITLE_UNIT_TYPE": "Import unit types",
+      "TITLE_MEASUREMENT_UNIT": "Import measurement units",
+      "STEPS": {
+        "FILE": "File",
+        "VALIDATE": "Validation",
+        "RESULT": "Result"
+      },
+      "FILE": {
+        "HINT": "Import unit types first, then measurement units.",
+        "ACCEPT_HINT": ".xlsx file, no macros or password, max 2 MB and 2000 rows.",
+        "DOWNLOAD_TEMPLATE": "Download template",
+        "TEMPLATE_FAILED": "Could not download the template",
+        "CHOOSE": "Choose file",
+        "VALIDATE_BUTTON": "Validate",
+        "ERRORS": {
+          "NOT_XLSX": "The file must have an .xlsx extension",
+          "TOO_LARGE": "The file exceeds the 2 MB size limit"
+        }
+      },
+      "TOAST": {
+        "VALIDATE_FAILED": "Could not validate the file",
+        "APPLY_FAILED": "Could not apply the import"
+      }
+    },
+    "VALIDATE": {
+      "CARDS": {
+        "TOTAL": "Total",
+        "CREATED": "Create",
+        "UPDATED": "Update",
+        "UNCHANGED": "Unchanged",
+        "REJECTED_ROWS": "Rows with errors",
+        "WARNINGS": "Warnings"
+      },
+      "ISSUES_TABLE": {
+        "TITLE": "Issues",
+        "ROW": "Row",
+        "COLUMN": "Column",
+        "SEVERITY": "Severity",
+        "CODE": "Code",
+        "MESSAGE": "Message",
+        "EMPTY": "No issues",
+        "TRUNCATED_NOTICE": "Only the first 500 issues are shown; fix these and re-validate to see the rest."
+      },
+      "ROWS_TABLE": {
+        "TITLE": "File rows",
+        "ROW": "Row",
+        "KEY": "Code",
+        "ACTION": "Action",
+        "EMPTY": "No rows to show"
+      },
+      "REJECTED_NOTICE": "The file was rejected: fix the issues below and upload it again.",
+      "BACK_BUTTON": "Back",
+      "APPLY_BUTTON": "Apply",
+      "EXPORT_ISSUES_CSV": "Export issues to CSV"
+    },
+    "CONFIRM": {
+      "TITLE": "Confirm import",
+      "MESSAGE": "{{created}} will be created and {{updated}} updated. Apply the changes?",
+      "ACCEPT": "Apply"
+    },
+    "RESULT": {
+      "COMMITTED_TITLE": "The import was applied successfully",
+      "REJECTED_TITLE": "The import was rejected: nothing was saved",
+      "BATCH_ID": "Batch",
+      "DURATION": "Duration",
+      "TRACE_ID": "Reference",
+      "COPIED": "Copied to clipboard",
+      "CLOSE_BUTTON": "Close"
+    }
+  },
+  "IMPORT_HISTORY": {
+    "TITLE": "Import History",
+    "DESCRIPTION": "Traceability for bulk catalog imports",
+    "EMPTY": "No imports recorded",
+    "REPORT_DIALOG_TITLE": "Import report",
+    "FILTERS": {
+      "RESOURCE": "Resource",
+      "STATUS": "Status"
+    },
+    "MODE": {
+      "VALIDATION": "Validation",
+      "COMMIT": "Commit"
+    },
+    "TABLE": {
+      "DATE": "Date",
+      "RESOURCE": "Resource",
+      "FILE": "File",
+      "MODE": "Mode",
+      "STATUS": "Status",
+      "TOTALS": "Totals",
+      "USER": "User",
+      "SHA256": "SHA-256",
+      "VIEW_REPORT": "View report"
+    },
+    "TOAST": {
+      "LOAD_FAILED": "Could not load the import history",
+      "REPORT_FAILED": "Could not load the report",
+      "SHA_COPIED": "SHA-256 copied to clipboard"
     }
   }
 }

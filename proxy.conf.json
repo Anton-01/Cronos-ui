@@ -1,6 +1,6 @@
 {
   "/api/v1": {
-    "target": "http://localhost:9191",
+    "target": "http://127.0.0.1:9191",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"

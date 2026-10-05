@@ -1,0 +1,12 @@
+/* Tailwind entry point — kept as plain CSS, not .scss.
+   Tailwind v4's `@import "tailwindcss"` is resolved by the PostCSS plugin at
+   build time; Sass would try (and fail) to resolve it as a Sass partial if
+   this lived inside styles.scss, so it stays in its own file wired up
+   alongside styles.scss in angular.json's "styles" array. */
+@import "tailwindcss";
+
+/* Scope Tailwind's `dark:` variant to the same selector PrimeNG's dark mode
+   already uses (`darkModeSelector: '.app-dark'` in app.module.ts) instead of
+   Tailwind's default `prefers-color-scheme` media query — one dark-mode
+   mechanism for the whole app, per context.md §2/§3. */
+@custom-variant dark (&:where(.app-dark, .app-dark *));

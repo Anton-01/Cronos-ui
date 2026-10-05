@@ -1,40 +1,74 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { environment } from 'src/environments/environment';
-import { ApiResponse } from '../../models';
-import { Page, PageRequest } from '../../models';
-import { UnitTypeResponse, CreateUnitTypeRequest, UpdateUnitTypeRequest } from '../../models/domain.model';
+import {
+  ApiEnvelope,
+  CatalogPage,
+  ChangeStatusRequest,
+  ImportReport,
+  RecordStatus,
+  UnitTypeRequest,
+  UnitTypeResponse,
+} from '../../models/unit-catalog.models';
+import { DownloadedFile, toDownloadedFile } from './import-file.util';
+
+export interface UnitTypeQuery {
+  page: number;
+  size: number;
+  sort?: string;
+  search?: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class UnitTypeService {
   private readonly API = environment.apiUrl + '/unit-type';
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
-  getAll(params: PageRequest, search?: string): Observable<ApiResponse<Page<UnitTypeResponse>>> {
-    let httpParams = new HttpParams()
-      .set('page', params.page.toString())
-      .set('size', params.size.toString())
-      .set('sort', params.sort ?? 'name,asc');
-    if (search) {
-      httpParams = httpParams.set('search', search);
+  getAll(query: UnitTypeQuery): Observable<ApiEnvelope<CatalogPage<UnitTypeResponse>>> {
+    let params = new HttpParams()
+      .set('page', query.page.toString())
+      .set('size', query.size.toString())
+      .set('sort', query.sort ?? 'name,asc');
+    if (query.search) {
+      params = params.set('search', query.search);
     }
-    return this.http.get<ApiResponse<Page<UnitTypeResponse>>>(this.API, { params: httpParams });
+    return this.http.get<ApiEnvelope<CatalogPage<UnitTypeResponse>>>(this.API, { params });
   }
 
-  getById(id: number): Observable<ApiResponse<UnitTypeResponse>> {
-    return this.http.get<ApiResponse<UnitTypeResponse>>(`${this.API}/${id}`);
+  getById(id: number): Observable<ApiEnvelope<UnitTypeResponse>> {
+    return this.http.get<ApiEnvelope<UnitTypeResponse>>(`${this.API}/${id}`);
   }
 
-  create(req: CreateUnitTypeRequest): Observable<ApiResponse<UnitTypeResponse>> {
-    return this.http.post<ApiResponse<UnitTypeResponse>>(this.API, req);
+  create(req: UnitTypeRequest): Observable<ApiEnvelope<UnitTypeResponse>> {
+    return this.http.post<ApiEnvelope<UnitTypeResponse>>(this.API, req);
   }
 
-  update(req: UpdateUnitTypeRequest): Observable<ApiResponse<UnitTypeResponse>> {
-    return this.http.put<ApiResponse<UnitTypeResponse>>(`${this.API}/${req.id}`, req);
+  update(id: number, req: UnitTypeRequest): Observable<ApiEnvelope<UnitTypeResponse>> {
+    return this.http.put<ApiEnvelope<UnitTypeResponse>>(`${this.API}/${id}`, req);
   }
 
-  delete(id: number): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.API}/${id}`);
+  changeStatus(id: number, status: RecordStatus): Observable<ApiEnvelope<UnitTypeResponse>> {
+    const body: ChangeStatusRequest = { status };
+    return this.http.patch<ApiEnvelope<UnitTypeResponse>>(`${this.API}/${id}/status`, body);
+  }
+
+  delete(id: number): Observable<ApiEnvelope<null>> {
+    return this.http.delete<ApiEnvelope<null>>(`${this.API}/${id}`);
+  }
+
+  /** `POST /unit-type/import?dryRun=` — multipart, part name `file`. */
+  importFile(file: File, dryRun: boolean): Observable<ApiEnvelope<ImportReport>> {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    return this.http.post<ApiEnvelope<ImportReport>>(`${this.API}/import`, formData, {
+      params: new HttpParams().set('dryRun', String(dryRun)),
+    });
+  }
+
+  downloadTemplate(): Observable<DownloadedFile> {
+    return this.http
+      .get(`${this.API}/import/template`, { observe: 'response', responseType: 'blob' })
+      .pipe(map((response) => toDownloadedFile(response, 'unit-type-template.xlsx')));
   }
 }

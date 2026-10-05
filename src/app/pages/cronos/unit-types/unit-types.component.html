@@ -28,9 +28,24 @@
             (input)="table.filterGlobal($any($event.target).value, 'contains')"
           />
         </p-iconfield>
-        <div class="flex align-items-center gap-3">
-          <p-button [label]="'UNIT_TYPES.CREATE' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
-        </div>
+        @if (canManageCatalogs()) {
+          <div class="flex align-items-center gap-3">
+            <p-button
+              [label]="'UNIT_CATALOG_IMPORT.WIZARD.OPEN_BUTTON' | translate"
+              icon="pi pi-file-excel"
+              severity="secondary"
+              [outlined]="true"
+              (onClick)="openImportWizard()"
+            />
+            <p-button
+              [label]="'UNIT_TYPES.CREATE' | translate"
+              icon="pi pi-plus"
+              severity="contrast"
+              styleClass="p-button-page-action"
+              (onClick)="openCreate()"
+            />
+          </div>
+        }
       </div>
     </ng-template>
 
@@ -59,12 +74,19 @@
         <th pSortableColumn="dimension" style="min-width: 9rem">
           {{ 'UNIT_TYPES.FIELDS.DIMENSION' | translate }}
           <p-sortIcon field="dimension" />
-          <p-columnFilter
-            type="text"
-            field="dimension"
-            display="menu"
-            [placeholder]="'UNIT_TYPES.FILTER_BY_DIMENSION' | translate"
-          />
+          <p-columnFilter field="dimension" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
+            <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+              <p-select
+                [ngModel]="value"
+                [options]="dimensionSelectOptions()"
+                optionLabel="label"
+                optionValue="value"
+                [placeholder]="'COMMON.ALL' | translate"
+                [showClear]="true"
+                (onChange)="filter($event.value)"
+              />
+            </ng-template>
+          </p-columnFilter>
         </th>
         <th style="width: 10rem">
           {{ 'COMMON.TABLE.STATUS' | translate }}
@@ -90,7 +112,7 @@
       <tr>
         <td>{{ item.codeIdentity }}</td>
         <td class="font-semibold">{{ item.name }}</td>
-        <td>{{ item.dimension }}</td>
+        <td>{{ 'CATALOG.DIMENSIONS.' + item.dimension | translate }}</td>
         <td>
           <app-status-toggle
             [item]="item"
@@ -100,22 +122,24 @@
           />
         </td>
         <td class="text-right">
-          <p-button
-            icon="pi pi-pencil"
-            severity="info"
-            [text]="true"
-            [rounded]="true"
-            [pTooltip]="'COMMON.EDIT' | translate"
-            (onClick)="openEdit(item)"
-          />
-          <p-button
-            icon="pi pi-trash"
-            severity="danger"
-            [text]="true"
-            [rounded]="true"
-            [pTooltip]="'COMMON.DELETE' | translate"
-            (onClick)="confirmDelete(item)"
-          />
+          @if (canManageCatalogs()) {
+            <p-button
+              icon="pi pi-pencil"
+              severity="info"
+              [text]="true"
+              [rounded]="true"
+              [pTooltip]="'COMMON.EDIT' | translate"
+              (onClick)="openEdit(item)"
+            />
+            <p-button
+              icon="pi pi-trash"
+              severity="danger"
+              [text]="true"
+              [rounded]="true"
+              [pTooltip]="'COMMON.DELETE' | translate"
+              (onClick)="confirmDelete(item)"
+            />
+          }
         </td>
       </tr>
     </ng-template>
@@ -142,7 +166,7 @@
   [draggable]="false"
   [style]="{ width: '30rem' }"
 >
-  <form [formGroup]="form" (ngSubmit)="saveForm()" id="unitTypeForm" class="flex flex-column gap-3">
+  <form #unitTypeFormEl [formGroup]="form" (ngSubmit)="saveForm()" id="unitTypeForm" class="flex flex-column gap-3">
     <div class="flex flex-column gap-1">
       <label for="unitTypeCode" class="font-medium">
         {{ 'COMMON.TABLE.CODE' | translate }} <span class="text-red-500">*</span>
@@ -151,11 +175,20 @@
         pInputText
         id="unitTypeCode"
         formControlName="codeIdentity"
+        [maxlength]="codeMaxLength"
+        [invalid]="isInvalid('codeIdentity')"
+        aria-describedby="unitTypeCodeError"
         [placeholder]="'UNIT_TYPES.PLACEHOLDERS.CODE' | translate"
       />
-      @if (form.controls.codeIdentity.hasError('required') && form.controls.codeIdentity.touched) {
-        <small class="text-red-500">{{ 'UNIT_TYPES.ERRORS.CODE_REQUIRED' | translate }}</small>
-      }
+      <small id="unitTypeCodeError">
+        @if (serverError('codeIdentity')) {
+          <span class="text-red-500">{{ serverError('codeIdentity') }}</span>
+        } @else if (form.controls.codeIdentity.hasError('required') && form.controls.codeIdentity.touched) {
+          <span class="text-red-500">{{ 'UNIT_TYPES.ERRORS.CODE_REQUIRED' | translate }}</span>
+        } @else if (form.controls.codeIdentity.hasError('codeIdentityPattern') && form.controls.codeIdentity.touched) {
+          <span class="text-red-500">{{ 'UNIT_TYPES.ERRORS.CODE_PATTERN' | translate }}</span>
+        }
+      </small>
     </div>
     <div class="flex flex-column gap-1">
       <label for="unitTypeName" class="font-medium">
@@ -165,25 +198,41 @@
         pInputText
         id="unitTypeName"
         formControlName="name"
+        [maxlength]="100"
+        [invalid]="isInvalid('name')"
+        aria-describedby="unitTypeNameError"
         [placeholder]="'UNIT_TYPES.PLACEHOLDERS.NAME' | translate"
       />
-      @if (form.controls.name.hasError('required') && form.controls.name.touched) {
-        <small class="text-red-500">{{ 'UNIT_TYPES.ERRORS.NAME_REQUIRED' | translate }}</small>
-      }
+      <small id="unitTypeNameError">
+        @if (serverError('name')) {
+          <span class="text-red-500">{{ serverError('name') }}</span>
+        } @else if (form.controls.name.hasError('required') && form.controls.name.touched) {
+          <span class="text-red-500">{{ 'UNIT_TYPES.ERRORS.NAME_REQUIRED' | translate }}</span>
+        }
+      </small>
     </div>
     <div class="flex flex-column gap-1">
       <label for="unitTypeDimension" class="font-medium">
         {{ 'UNIT_TYPES.FIELDS.DIMENSION' | translate }} <span class="text-red-500">*</span>
       </label>
-      <input
-        pInputText
-        id="unitTypeDimension"
+      <p-select
+        inputId="unitTypeDimension"
         formControlName="dimension"
+        [options]="dimensionSelectOptions()"
+        optionLabel="label"
+        optionValue="value"
+        [invalid]="isInvalid('dimension')"
+        aria-describedby="unitTypeDimensionError"
         [placeholder]="'UNIT_TYPES.PLACEHOLDERS.DIMENSION' | translate"
+        styleClass="w-full"
       />
-      @if (form.controls.dimension.hasError('required') && form.controls.dimension.touched) {
-        <small class="text-red-500">{{ 'UNIT_TYPES.ERRORS.DIMENSION_REQUIRED' | translate }}</small>
-      }
+      <small id="unitTypeDimensionError">
+        @if (serverError('dimension')) {
+          <span class="text-red-500">{{ serverError('dimension') }}</span>
+        } @else if (form.controls.dimension.hasError('required') && form.controls.dimension.touched) {
+          <span class="text-red-500">{{ 'UNIT_TYPES.ERRORS.DIMENSION_REQUIRED' | translate }}</span>
+        }
+      </small>
     </div>
   </form>
   <ng-template pTemplate="footer">
@@ -196,3 +245,7 @@
     />
   </ng-template>
 </p-dialog>
+
+@if (showImportWizard()) {
+  <app-unit-catalog-import-wizard resource="UNIT_TYPE" (finished)="onImportFinished($event)" />
+}

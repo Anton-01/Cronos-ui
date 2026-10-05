@@ -1,3 +1,5 @@
+import { UnitDimension } from 'src/app/core/models/unit-catalog.models';
+
 /**
  * Presentation helpers shared by every catalog grid.
  *
@@ -37,4 +39,27 @@ export function statusLabelKey(status: EntityStatus): string {
 /** Options for the "Estado / Status" column filter. */
 export function statusOptions(t: Translator): SelectOption<EntityStatus>[] {
   return STATUS_VALUES.map((value) => ({ label: t(STATUS_LABEL_KEYS[value]), value }));
+}
+
+/**
+ * The four `UnitDimension` values, shared by the unit-type form, the
+ * measurement-unit grid and the `.xlsx` import issue table — one catalog, so
+ * a page can never drift to a locale-specific string again (see
+ * `UnitConversionService`'s V8 fix for what that drift used to break).
+ */
+const DIMENSION_LABEL_KEYS: Readonly<Record<UnitDimension, string>> = {
+  MASS: 'CATALOG.DIMENSIONS.MASS',
+  VOLUME: 'CATALOG.DIMENSIONS.VOLUME',
+  COUNT: 'CATALOG.DIMENSIONS.COUNT',
+  LENGTH: 'CATALOG.DIMENSIONS.LENGTH',
+};
+
+const DIMENSION_VALUES: readonly UnitDimension[] = ['MASS', 'VOLUME', 'COUNT', 'LENGTH'];
+
+export function dimensionLabelKey(dimension: UnitDimension): string {
+  return DIMENSION_LABEL_KEYS[dimension];
+}
+
+export function dimensionOptions(t: Translator): SelectOption<UnitDimension>[] {
+  return DIMENSION_VALUES.map((value) => ({ label: t(DIMENSION_LABEL_KEYS[value]), value }));
 }

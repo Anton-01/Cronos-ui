@@ -21,54 +21,8 @@ export interface UpdateAllergenRequest {
   description?: string;
 }
 
-// Tipos de Unidad
-export interface UnitTypeResponse {
-  id: number;
-  codeIdentity: string;
-  name: string;
-  dimension: string;
-  status: 'ACTIVE' | 'INACTIVE';
-}
-export interface CreateUnitTypeRequest {
-  codeIdentity: string;
-  name: string;
-  dimension: string;
-}
-export interface UpdateUnitTypeRequest {
-  id: number;
-  codeIdentity: string;
-  name: string;
-  dimension: string;
-}
-
-// Unidades de Medida
-export interface MeasurementUnitResponse {
-  id: number;
-  codeIdentity: string;
-  name: string;
-  namePlural: string;
-  unitType: string;
-  multiplierToBase: number;
-  isBaseUnit: boolean;
-  status: 'ACTIVE' | 'INACTIVE';
-}
-export interface CreateMeasurementUnitRequest {
-  codeIdentity: string;
-  name: string;
-  namePlural: string;
-  unitType: string;
-  multiplierToBase: number;
-  isBaseUnit: boolean;
-}
-export interface UpdateMeasurementUnitRequest {
-  id: number;
-  codeIdentity: string;
-  name: string;
-  namePlural: string;
-  unitType: string;
-  multiplierToBase: number;
-  isBaseUnit: boolean;
-}
+// Tipos de Unidad y Unidades de Medida — ver ./unit-catalog.models.ts
+export * from './unit-catalog.models';
 
 // Ingredientes (List)
 export interface IngredientResponse {

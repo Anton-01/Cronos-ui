@@ -22,7 +22,7 @@ import { MeasurementUnitService } from 'src/app/core/services/domain/measurement
 import {
   CategoryResponse,
   DensityConversion,
-  MeasurementUnitResponse,
+  MeasurementUnitOptionResponse,
 } from 'src/app/core/models/domain.model';
 import { LanguageService } from 'src/app/core/services/language.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
@@ -31,15 +31,8 @@ import { DetailSkeletonComponent } from 'src/app/shared/components/detail-skelet
 
 type YieldLevel = 'excellent' | 'good' | 'warning' | 'none';
 
-const DENSITY_DIMENSIONS = new Set([
-  'masa',
-  'mass',
-  'peso',
-  'volumen',
-  'volume',
-  'masa y peso',
-  'volumen y capacidad',
-]);
+/** Density only ever converts MASS ⇄ VOLUME — matches `UnitConversionService` on the backend. */
+const DENSITY_DIMENSIONS = new Set(['MASS', 'VOLUME']);
 
 @Component({
   selector: 'app-ingredient-form',
@@ -80,7 +73,7 @@ export class IngredientFormComponent implements OnInit, OnDestroy {
   ingredientId: string | null = null;
 
   readonly categories = signal<CategoryResponse[]>([]);
-  readonly measurementUnits = signal<MeasurementUnitResponse[]>([]);
+  readonly measurementUnits = signal<MeasurementUnitOptionResponse[]>([]);
 
   readonly isLoading = signal(false);
   readonly isSaving = signal(false);
@@ -178,9 +171,9 @@ export class IngredientFormComponent implements OnInit, OnDestroy {
   }
 
   private loadMeasurementUnits(): void {
-    this.measurementUnitService.getAll({ page: 0, size: 200, sort: 'name,asc' }).subscribe({
+    this.measurementUnitService.getCatalogOptions().subscribe({
       next: (res) => {
-        this.measurementUnits.set(res.data.content);
+        this.measurementUnits.set(res.data ?? []);
         if (this.isEdit) {
           this.loadIngredient();
         }
@@ -263,8 +256,7 @@ export class IngredientFormComponent implements OnInit, OnDestroy {
         return;
       }
       const unit = this.measurementUnits().find((u) => u.id === unitId);
-      const dimension = (unit?.unitType ?? '').toLowerCase().trim();
-      const canHaveDensity = DENSITY_DIMENSIONS.has(dimension);
+      const canHaveDensity = unit !== undefined && DENSITY_DIMENSIONS.has(unit.dimension);
 
       this.showDensitySwitch.set(canHaveDensity);
       if (!canHaveDensity) {

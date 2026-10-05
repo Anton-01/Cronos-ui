@@ -120,6 +120,12 @@ const Routing: Routes = [
     data: { role: 'SUPER_ADMIN' },
   },
   {
+    path: 'cronos/admin/importaciones',
+    loadComponent: () => import('./cronos/admin/import-history/import-history.component').then(m => m.ImportHistoryComponent),
+    canActivate: [roleGuard],
+    data: { role: 'SUPER_ADMIN', anyPermission: ['MANAGE_CATALOGS'] },
+  },
+  {
     path: '',
     redirectTo: '/dashboard',
     pathMatch: 'full',

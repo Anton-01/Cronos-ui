@@ -28,9 +28,24 @@
             (input)="table.filterGlobal($any($event.target).value, 'contains')"
           />
         </p-iconfield>
-        <div class="flex align-items-center gap-3">
-          <p-button [label]="'MEASUREMENT_UNITS.CREATE' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
-        </div>
+        @if (canManageCatalogs()) {
+          <div class="flex align-items-center gap-3">
+            <p-button
+              [label]="'UNIT_CATALOG_IMPORT.WIZARD.OPEN_BUTTON' | translate"
+              icon="pi pi-file-excel"
+              severity="secondary"
+              [outlined]="true"
+              (onClick)="openImportWizard()"
+            />
+            <p-button
+              [label]="'MEASUREMENT_UNITS.CREATE' | translate"
+              icon="pi pi-plus"
+              severity="contrast"
+              styleClass="p-button-page-action"
+              (onClick)="openCreate()"
+            />
+          </div>
+        }
       </div>
     </ng-template>
 
@@ -104,22 +119,25 @@
           />
         </td>
         <td class="text-right">
-          <p-button
-            icon="pi pi-pencil"
-            severity="info"
-            [text]="true"
-            [rounded]="true"
-            [pTooltip]="'COMMON.EDIT' | translate"
-            (onClick)="openEdit(item)"
-          />
-          <p-button
-            icon="pi pi-trash"
-            severity="danger"
-            [text]="true"
-            [rounded]="true"
-            [pTooltip]="'COMMON.DELETE' | translate"
-            (onClick)="confirmDelete(item)"
-          />
+          @if (canManageCatalogs()) {
+            <p-button
+              icon="pi pi-pencil"
+              severity="info"
+              [text]="true"
+              [rounded]="true"
+              [pTooltip]="'COMMON.EDIT' | translate"
+              (onClick)="openEdit(item)"
+            />
+            <p-button
+              icon="pi pi-trash"
+              severity="danger"
+              [text]="true"
+              [rounded]="true"
+              [disabled]="item.inUse"
+              [pTooltip]="item.inUse ? ('MEASUREMENT_UNITS.IN_USE_HINT' | translate) : ('COMMON.DELETE' | translate)"
+              (onClick)="confirmDelete(item)"
+            />
+          }
         </td>
       </tr>
     </ng-template>
@@ -146,7 +164,10 @@
   [draggable]="false"
   [style]="{ width: '34rem' }"
 >
-  <form [formGroup]="form" (ngSubmit)="saveForm()" id="measurementUnitForm" class="flex flex-column gap-3">
+  @if (isUnitTypeLocked()) {
+    <p-message severity="warn" [text]="'MEASUREMENT_UNITS.IN_USE_HINT' | translate" styleClass="w-full mb-3" />
+  }
+  <form #measurementUnitFormEl [formGroup]="form" (ngSubmit)="saveForm()" id="measurementUnitForm" class="flex flex-column gap-3">
     <div class="grid">
       <div class="col-12 md:col-4 flex flex-column gap-1">
         <label for="unitCode" class="font-medium">
@@ -155,12 +176,21 @@
         <input
           pInputText
           id="unitCode"
-          formControlName="code"
+          formControlName="codeIdentity"
+          [maxlength]="codeMaxLength"
+          [invalid]="isInvalid('codeIdentity')"
+          aria-describedby="unitCodeError"
           [placeholder]="'MEASUREMENT_UNITS.PLACEHOLDERS.CODE' | translate"
         />
-        @if (form.controls.code.hasError('required') && form.controls.code.touched) {
-          <small class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.CODE_REQUIRED' | translate }}</small>
-        }
+        <small id="unitCodeError">
+          @if (serverError('codeIdentity')) {
+            <span class="text-red-500">{{ serverError('codeIdentity') }}</span>
+          } @else if (form.controls.codeIdentity.hasError('required') && form.controls.codeIdentity.touched) {
+            <span class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.CODE_REQUIRED' | translate }}</span>
+          } @else if (form.controls.codeIdentity.hasError('codeIdentityPattern') && form.controls.codeIdentity.touched) {
+            <span class="text-red-500">{{ 'UNIT_TYPES.ERRORS.CODE_PATTERN' | translate }}</span>
+          }
+        </small>
       </div>
       <div class="col-12 md:col-8 flex flex-column gap-1">
         <label for="unitName" class="font-medium">
@@ -170,11 +200,18 @@
           pInputText
           id="unitName"
           formControlName="name"
+          [maxlength]="100"
+          [invalid]="isInvalid('name')"
+          aria-describedby="unitNameError"
           [placeholder]="'MEASUREMENT_UNITS.PLACEHOLDERS.NAME' | translate"
         />
-        @if (form.controls.name.hasError('required') && form.controls.name.touched) {
-          <small class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.NAME_REQUIRED' | translate }}</small>
-        }
+        <small id="unitNameError">
+          @if (serverError('name')) {
+            <span class="text-red-500">{{ serverError('name') }}</span>
+          } @else if (form.controls.name.hasError('required') && form.controls.name.touched) {
+            <span class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.NAME_REQUIRED' | translate }}</span>
+          }
+        </small>
       </div>
       <div class="col-12 md:col-6 flex flex-column gap-1">
         <label for="unitPluralName" class="font-medium">
@@ -183,26 +220,42 @@
         <input
           pInputText
           id="unitPluralName"
-          formControlName="pluralName"
+          formControlName="namePlural"
+          [maxlength]="100"
+          [invalid]="isInvalid('namePlural')"
+          aria-describedby="unitPluralNameError"
           [placeholder]="'MEASUREMENT_UNITS.PLACEHOLDERS.PLURAL' | translate"
         />
-        @if (form.controls.pluralName.hasError('required') && form.controls.pluralName.touched) {
-          <small class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.PLURAL_REQUIRED' | translate }}</small>
-        }
+        <small id="unitPluralNameError">
+          @if (serverError('namePlural')) {
+            <span class="text-red-500">{{ serverError('namePlural') }}</span>
+          } @else if (form.controls.namePlural.hasError('required') && form.controls.namePlural.touched) {
+            <span class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.PLURAL_REQUIRED' | translate }}</span>
+          }
+        </small>
       </div>
       <div class="col-12 md:col-6 flex flex-column gap-1">
-        <label for="unitDimension" class="font-medium">
+        <label for="unitTypeId" class="font-medium">
           {{ 'MEASUREMENT_UNITS.FIELDS.UNIT_TYPE' | translate }} <span class="text-red-500">*</span>
         </label>
-        <input
-          pInputText
-          id="unitDimension"
-          formControlName="dimensionName"
+        <p-select
+          inputId="unitTypeId"
+          formControlName="unitTypeId"
+          [options]="unitTypeOptions()"
+          optionLabel="label"
+          optionValue="value"
+          [invalid]="isInvalid('unitTypeId')"
+          aria-describedby="unitTypeIdError"
           [placeholder]="'MEASUREMENT_UNITS.PLACEHOLDERS.UNIT_TYPE' | translate"
+          styleClass="w-full"
         />
-        @if (form.controls.dimensionName.hasError('required') && form.controls.dimensionName.touched) {
-          <small class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.UNIT_TYPE_REQUIRED' | translate }}</small>
-        }
+        <small id="unitTypeIdError">
+          @if (serverError('unitTypeId')) {
+            <span class="text-red-500">{{ serverError('unitTypeId') }}</span>
+          } @else if (form.controls.unitTypeId.hasError('required') && form.controls.unitTypeId.touched) {
+            <span class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.UNIT_TYPE_REQUIRED' | translate }}</span>
+          }
+        </small>
       </div>
       <div class="col-12 md:col-6 flex flex-column gap-1">
         <label for="unitBaseFactor" class="font-medium">
@@ -210,17 +263,29 @@
         </label>
         <p-inputnumber
           inputId="unitBaseFactor"
-          formControlName="baseFactor"
+          formControlName="multiplierToBase"
           [minFractionDigits]="0"
-          [maxFractionDigits]="6"
-          [min]="0.000001"
+          [maxFractionDigits]="10"
+          [min]="0.0000000001"
+          [invalid]="isInvalid('multiplierToBase')"
+          aria-describedby="unitBaseFactorError"
         />
-        @if (form.controls.baseFactor.hasError('required') && form.controls.baseFactor.touched) {
-          <small class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.BASE_FACTOR_REQUIRED' | translate }}</small>
-        }
+        <small id="unitBaseFactorError">
+          @if (serverError('multiplierToBase')) {
+            <span class="text-red-500">{{ serverError('multiplierToBase') }}</span>
+          } @else if (form.controls.multiplierToBase.hasError('required') && form.controls.multiplierToBase.touched) {
+            <span class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.BASE_FACTOR_REQUIRED' | translate }}</span>
+          } @else if (form.controls.multiplierToBase.hasError('multiplierPositive') && form.controls.multiplierToBase.touched) {
+            <span class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.BASE_FACTOR_POSITIVE' | translate }}</span>
+          } @else if (form.controls.multiplierToBase.hasError('multiplierPrecision') && form.controls.multiplierToBase.touched) {
+            <span class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.BASE_FACTOR_PRECISION' | translate }}</span>
+          } @else if (form.controls.multiplierToBase.hasError('baseUnitMultiplier') && form.controls.multiplierToBase.touched) {
+            <span class="text-red-500">{{ 'MEASUREMENT_UNITS.ERRORS.BASE_FACTOR_MUST_BE_ONE' | translate }}</span>
+          }
+        </small>
       </div>
       <div class="col-12 md:col-6 flex align-items-end gap-2 pb-2">
-        <p-checkbox inputId="unitIsBase" formControlName="isBase" [binary]="true" />
+        <p-checkbox inputId="unitIsBase" formControlName="isBaseUnit" [binary]="true" />
         <label for="unitIsBase" class="font-medium">{{ 'MEASUREMENT_UNITS.FIELDS.IS_BASE' | translate }}</label>
       </div>
     </div>
@@ -235,3 +300,7 @@
     />
   </ng-template>
 </p-dialog>
+
+@if (showImportWizard()) {
+  <app-unit-catalog-import-wizard resource="MEASUREMENT_UNIT" (finished)="onImportFinished($event)" />
+}

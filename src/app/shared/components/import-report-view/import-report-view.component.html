@@ -1,0 +1,143 @@
+<div class="flex flex-column gap-4">
+  <div class="flex flex-wrap align-items-center gap-4 text-sm">
+    <p-tag [value]="statusLabel(report().status)" [severity]="statusTag(report().status)" />
+    <div class="flex align-items-center gap-2">
+      <span class="text-color-secondary">{{ 'UNIT_CATALOG_IMPORT.RESULT.BATCH_ID' | translate }}:</span>
+      <code>{{ report().batchId }}</code>
+      <p-button icon="pi pi-copy" [text]="true" [rounded]="true" size="small" (onClick)="copyBatchId()" />
+    </div>
+    <span class="text-color-secondary">{{ report().fileName }} ({{ report().fileSizeBytes / 1024 | number: '1.0-1' }} KB)</span>
+    <span class="text-color-secondary">{{ 'UNIT_CATALOG_IMPORT.RESULT.DURATION' | translate }}: {{ report().durationMs }} ms</span>
+    @if (report().traceId) {
+      <span class="text-color-secondary">{{ 'UNIT_CATALOG_IMPORT.RESULT.TRACE_ID' | translate }}: {{ report().traceId }}</span>
+    }
+  </div>
+
+  <div class="grid">
+    @for (card of summaryCards(); track card.labelKey) {
+      <div class="col-6 md:col-2">
+        <app-stat-card [label]="card.labelKey | translate" [value]="card.value" [icon]="card.icon" [accent]="card.accent" />
+      </div>
+    }
+  </div>
+
+  @if (report().issuesTruncated) {
+    <p-message severity="warn" [text]="'UNIT_CATALOG_IMPORT.VALIDATE.ISSUES_TABLE.TRUNCATED_NOTICE' | translate" />
+  }
+
+  <div class="flex flex-column gap-2">
+    <div class="flex align-items-center justify-content-between">
+      <h3 class="m-0 text-base font-semibold">{{ 'UNIT_CATALOG_IMPORT.VALIDATE.ISSUES_TABLE.TITLE' | translate }}</h3>
+      @if (sortedIssues().length > 0) {
+        <p-button
+          [label]="'UNIT_CATALOG_IMPORT.VALIDATE.EXPORT_ISSUES_CSV' | translate"
+          icon="pi pi-download"
+          severity="secondary"
+          [outlined]="true"
+          size="small"
+          (onClick)="exportIssuesCsv()"
+        />
+      }
+    </div>
+
+    <p-table
+      [value]="sortedIssues()"
+      dataKey="code"
+      [paginator]="sortedIssues().length > 10"
+      [rows]="10"
+      [rowHover]="true"
+      [stripedRows]="true"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 6rem">{{ 'UNIT_CATALOG_IMPORT.VALIDATE.ISSUES_TABLE.ROW' | translate }}</th>
+          <th style="width: 10rem">
+            {{ 'UNIT_CATALOG_IMPORT.VALIDATE.ISSUES_TABLE.COLUMN' | translate }}
+            <p-columnFilter type="text" field="column" display="menu" [placeholder]="'COMMON.TABLE.FILTER' | translate" />
+          </th>
+          <th style="width: 9rem">
+            {{ 'UNIT_CATALOG_IMPORT.VALIDATE.ISSUES_TABLE.SEVERITY' | translate }}
+            <p-columnFilter type="text" field="severity" display="menu" [placeholder]="'COMMON.TABLE.FILTER' | translate" />
+          </th>
+          <th>{{ 'UNIT_CATALOG_IMPORT.VALIDATE.ISSUES_TABLE.MESSAGE' | translate }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-issue>
+        <tr>
+          <td>{{ issue.row ?? '—' }}</td>
+          <td>{{ issue.column ?? '—' }}</td>
+          <td><p-tag [value]="severityLabel(issue.severity)" [severity]="severityTag(issue.severity)" /></td>
+          <td>{{ issue.message }}</td>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4" class="text-center text-color-secondary py-3">
+            {{ 'UNIT_CATALOG_IMPORT.VALIDATE.ISSUES_TABLE.EMPTY' | translate }}
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <div class="flex flex-column gap-2">
+    <h3 class="m-0 text-base font-semibold">{{ 'UNIT_CATALOG_IMPORT.VALIDATE.ROWS_TABLE.TITLE' | translate }}</h3>
+    <p-table
+      [value]="report().rows"
+      dataKey="row"
+      [paginator]="report().rows.length > 10"
+      [rows]="10"
+      [rowHover]="true"
+      [stripedRows]="true"
+    >
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 3rem"></th>
+          <th style="width: 6rem">{{ 'UNIT_CATALOG_IMPORT.VALIDATE.ROWS_TABLE.ROW' | translate }}</th>
+          <th>{{ 'UNIT_CATALOG_IMPORT.VALIDATE.ROWS_TABLE.KEY' | translate }}</th>
+          <th style="width: 10rem">{{ 'UNIT_CATALOG_IMPORT.VALIDATE.ROWS_TABLE.ACTION' | translate }}</th>
+        </tr>
+      </ng-template>
+      <ng-template pTemplate="body" let-row>
+        <tr>
+          <td>
+            @if (changeEntries(row).length > 0) {
+              <p-button
+                [icon]="expandedRows()[row.row] ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
+                [text]="true"
+                [rounded]="true"
+                severity="secondary"
+                (onClick)="toggleRow(row.row)"
+              />
+            }
+          </td>
+          <td>{{ row.row }}</td>
+          <td class="font-medium">{{ row.key }}</td>
+          <td><p-tag [value]="actionLabel(row.action)" [severity]="actionTag(row.action)" /></td>
+        </tr>
+        @if (expandedRows()[row.row]) {
+          <tr>
+            <td></td>
+            <td colspan="3">
+              <ul class="m-0 pl-3 flex flex-column gap-1">
+                @for (entry of changeEntries(row); track entry.field) {
+                  <li>
+                    <span class="font-medium">{{ fieldLabel(entry.field) }}:</span>
+                    {{ displayValue(entry.change.from) }} → {{ displayValue(entry.change.to) }}
+                  </li>
+                }
+              </ul>
+            </td>
+          </tr>
+        }
+      </ng-template>
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td colspan="4" class="text-center text-color-secondary py-3">
+            {{ 'UNIT_CATALOG_IMPORT.VALIDATE.ROWS_TABLE.EMPTY' | translate }}
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+</div>

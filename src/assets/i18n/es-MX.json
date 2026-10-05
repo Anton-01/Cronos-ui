@@ -20,7 +20,8 @@
       "WARNING": "Advertencia",
       "INFO": "Información",
       "SAVE_FAILED": "No se pudo guardar",
-      "DELETE_FAILED": "No se pudo eliminar"
+      "DELETE_FAILED": "No se pudo eliminar",
+      "TRACE_REFERENCE": "Referencia: {{traceId}}"
     },
     "CONFIRM": {
       "DELETE_TITLE": "¿Eliminar registro?",
@@ -63,7 +64,9 @@
       "MB": "{{ size }} MB"
     },
     "REFRESH": "Actualizar",
-    "TRY_AGAIN": "Inténtalo de nuevo"
+    "TRY_AGAIN": "Inténtalo de nuevo",
+    "YES": "Sí",
+    "NO": "No"
   },
   "NAV": {
     "SECTIONS": {
@@ -91,7 +94,8 @@
       "ROLE_MANAGEMENT": "Gestión de Roles",
       "SIGN_OUT": "Cerrar Sesión",
       "ACCOUNT_SETTINGS": "Configuración de la cuenta",
-      "FISCAL_DATA": "Datos fiscales"
+      "FISCAL_DATA": "Datos fiscales",
+      "IMPORT_HISTORY": "Historial de Importaciones"
     }
   },
   "BREADCRUMB": {
@@ -340,12 +344,13 @@
     "PLACEHOLDERS": {
       "CODE": "Código identificador",
       "NAME": "Nombre del tipo de unidad",
-      "DIMENSION": "Ej. masa, volumen, longitud"
+      "DIMENSION": "Selecciona una dimensión"
     },
     "ERRORS": {
       "CODE_REQUIRED": "El código es requerido",
       "NAME_REQUIRED": "El nombre es requerido",
-      "DIMENSION_REQUIRED": "La dimensión es requerida"
+      "DIMENSION_REQUIRED": "La dimensión es requerida",
+      "CODE_PATTERN": "El código solo puede contener letras, números, puntos, guiones y guiones bajos, sin espacios"
     },
     "TOAST": {
       "CREATED": "Tipo de unidad creado correctamente",
@@ -397,21 +402,25 @@
       "CODE": "Ej. kg",
       "NAME": "Ej. kilogramo",
       "PLURAL": "Ej. kilogramos",
-      "UNIT_TYPE": "Ej. masa"
+      "UNIT_TYPE": "Selecciona un tipo de unidad"
     },
     "ERRORS": {
       "CODE_REQUIRED": "El código es requerido",
       "NAME_REQUIRED": "El nombre es requerido",
       "PLURAL_REQUIRED": "El plural es requerido",
       "UNIT_TYPE_REQUIRED": "El tipo de unidad es requerido",
-      "BASE_FACTOR_REQUIRED": "El factor es requerido"
+      "BASE_FACTOR_REQUIRED": "El factor es requerido",
+      "BASE_FACTOR_POSITIVE": "El factor debe ser mayor que 0",
+      "BASE_FACTOR_PRECISION": "El factor admite hasta 10 enteros y 10 decimales",
+      "BASE_FACTOR_MUST_BE_ONE": "Una unidad base debe tener un factor de 1"
     },
     "TOAST": {
       "CREATED": "Unidad de medida creada correctamente",
       "UPDATED": "Unidad de medida actualizada correctamente",
       "DELETED": "Unidad de medida eliminada correctamente",
       "LOAD_FAILED": "Error al cargar unidades de medida"
-    }
+    },
+    "IN_USE_HINT": "Esta unidad ya está en uso: el tipo de unidad, el factor y la marca de unidad base no se pueden modificar, y no puede eliminarse."
   },
   "FIXED_COSTS": {
     "TITLE": "Costos Fijos",
@@ -1168,6 +1177,146 @@
       "SIZE": "La imagen supera los {{ max }} MB.",
       "DIMENSIONS": "La imagen es demasiado pequeña. Usa una de al menos {{ min }} × {{ min }} px.",
       "LOAD": "No se pudo leer la imagen. Intenta con otro archivo."
+    }
+  },
+  "CATALOG": {
+    "DIMENSIONS": {
+      "MASS": "Masa",
+      "VOLUME": "Volumen",
+      "COUNT": "Conteo",
+      "LENGTH": "Longitud"
+    }
+  },
+  "UNIT_CATALOG_IMPORT": {
+    "RESOURCE": {
+      "UNIT_TYPE": "Tipos de unidad",
+      "MEASUREMENT_UNIT": "Unidades de medida"
+    },
+    "STATUS": {
+      "VALIDATED": "Validado",
+      "COMMITTED": "Aplicado",
+      "REJECTED": "Rechazado",
+      "FAILED": "Falló"
+    },
+    "SEVERITY": {
+      "ERROR": "Error",
+      "WARNING": "Advertencia"
+    },
+    "ACTION": {
+      "CREATE": "Crear",
+      "UPDATE": "Actualizar",
+      "UNCHANGED": "Sin cambios"
+    },
+    "FIELDS": {
+      "codeIdentity": "Código",
+      "name": "Nombre",
+      "dimension": "Dimensión",
+      "status": "Estatus",
+      "namePlural": "Plural",
+      "unitTypeId": "Tipo de unidad",
+      "multiplierToBase": "Factor a unidad base",
+      "isBaseUnit": "Es unidad base"
+    },
+    "WIZARD": {
+      "OPEN_BUTTON": "Importar Excel",
+      "TITLE_UNIT_TYPE": "Importar tipos de unidad",
+      "TITLE_MEASUREMENT_UNIT": "Importar unidades de medida",
+      "STEPS": {
+        "FILE": "Archivo",
+        "VALIDATE": "Validación",
+        "RESULT": "Resultado"
+      },
+      "FILE": {
+        "HINT": "Importa primero los tipos de unidad y después las unidades de medida.",
+        "ACCEPT_HINT": "Archivo .xlsx, sin macros ni contraseña, máximo 2 MB y 2000 filas.",
+        "DOWNLOAD_TEMPLATE": "Descargar plantilla",
+        "TEMPLATE_FAILED": "No se pudo descargar la plantilla",
+        "CHOOSE": "Elegir archivo",
+        "VALIDATE_BUTTON": "Validar",
+        "ERRORS": {
+          "NOT_XLSX": "El archivo debe tener extensión .xlsx",
+          "TOO_LARGE": "El archivo supera el tamaño máximo de 2 MB"
+        }
+      },
+      "TOAST": {
+        "VALIDATE_FAILED": "No se pudo validar el archivo",
+        "APPLY_FAILED": "No se pudo aplicar la importación"
+      }
+    },
+    "VALIDATE": {
+      "CARDS": {
+        "TOTAL": "Total",
+        "CREATED": "Crear",
+        "UPDATED": "Actualizar",
+        "UNCHANGED": "Sin cambios",
+        "REJECTED_ROWS": "Filas con error",
+        "WARNINGS": "Advertencias"
+      },
+      "ISSUES_TABLE": {
+        "TITLE": "Incidencias",
+        "ROW": "Fila",
+        "COLUMN": "Columna",
+        "SEVERITY": "Severidad",
+        "CODE": "Código",
+        "MESSAGE": "Mensaje",
+        "EMPTY": "No hay incidencias",
+        "TRUNCATED_NOTICE": "Se muestran solo las primeras 500 incidencias; corrige estas y vuelve a validar para ver el resto."
+      },
+      "ROWS_TABLE": {
+        "TITLE": "Filas del archivo",
+        "ROW": "Fila",
+        "KEY": "Código",
+        "ACTION": "Acción",
+        "EMPTY": "No hay filas para mostrar"
+      },
+      "REJECTED_NOTICE": "El archivo fue rechazado: corrige las incidencias señaladas y vuelve a subirlo.",
+      "BACK_BUTTON": "Volver",
+      "APPLY_BUTTON": "Aplicar",
+      "EXPORT_ISSUES_CSV": "Exportar incidencias a CSV"
+    },
+    "CONFIRM": {
+      "TITLE": "Confirmar importación",
+      "MESSAGE": "Se crearán {{created}} y actualizarán {{updated}} registros. ¿Aplicar los cambios?",
+      "ACCEPT": "Aplicar"
+    },
+    "RESULT": {
+      "COMMITTED_TITLE": "La importación se aplicó correctamente",
+      "REJECTED_TITLE": "La importación fue rechazada: nada se guardó",
+      "BATCH_ID": "Lote",
+      "DURATION": "Duración",
+      "TRACE_ID": "Referencia",
+      "COPIED": "Copiado al portapapeles",
+      "CLOSE_BUTTON": "Cerrar"
+    }
+  },
+  "IMPORT_HISTORY": {
+    "TITLE": "Historial de Importaciones",
+    "DESCRIPTION": "Trazabilidad de las cargas masivas de catálogos",
+    "EMPTY": "No hay importaciones registradas",
+    "REPORT_DIALOG_TITLE": "Reporte de importación",
+    "FILTERS": {
+      "RESOURCE": "Recurso",
+      "STATUS": "Estatus"
+    },
+    "MODE": {
+      "VALIDATION": "Validación",
+      "COMMIT": "Aplicación"
+    },
+    "TABLE": {
+      "DATE": "Fecha",
+      "RESOURCE": "Recurso",
+      "FILE": "Archivo",
+      "MODE": "Modo",
+      "STATUS": "Estatus",
+      "TOTALS": "Totales",
+      "USER": "Usuario",
+      "SHA256": "SHA-256",
+      "VIEW_REPORT": "Ver reporte"
+    },
+    "TOAST": {
+      "LOAD_FAILED": "No se pudo cargar el historial de importaciones",
+      "REPORT_FAILED": "No se pudo cargar el reporte",
+      "SHA_COPIED": "SHA-256 copiado al portapapeles"
     }
   }
 }

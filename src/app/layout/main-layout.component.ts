@@ -98,6 +98,7 @@ export class MainLayoutComponent implements OnInit {
   readonly navSections: NavSection[] = buildNavSections(
     this.tokenService.hasRole('ADMIN'),
     this.tokenService.hasRole('SUPER_ADMIN'),
+    this.tokenService.hasRole('SUPER_ADMIN') || this.tokenService.hasPermission('MANAGE_CATALOGS'),
   );
 
   readonly userMenuItems = computed<MenuItem[]>(() =>
