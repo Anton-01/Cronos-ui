@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 
 import { TranslatePipe } from '@ngx-translate/core';
@@ -11,6 +12,7 @@ import { PasswordModule } from 'primeng/password';
 import { TagModule } from 'primeng/tag';
 
 import { AuthService } from 'src/app/core/services/auth.service';
+import { TokenService } from 'src/app/core/services/token.service';
 import { ProfileStateService } from 'src/app/core/services/profile/ProfileStateService';
 import { LanguageService } from 'src/app/core/services/language.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
@@ -39,6 +41,12 @@ export class SignInMethodComponent implements OnInit {
   private readonly toastService = inject(ToastService);
   private readonly language = inject(LanguageService);
   private readonly fb = inject(FormBuilder);
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly tokenService = inject(TokenService);
+
+  /** Arrived here because the backend blocked the app until 2FA is enrolled (`?enroll2fa=1`). */
+  readonly enrollmentRequired = signal(this.route.snapshot.queryParamMap.get('enroll2fa') === '1');
 
   readonly showChangePasswordForm = signal(false);
   readonly isChangingPassword = signal(false);
@@ -61,6 +69,11 @@ export class SignInMethodComponent implements OnInit {
 
   ngOnInit(): void {
     this.profileState.loadProfile();
+    if (this.enrollmentRequired()) {
+      // Straight to the QR: there is nothing else this user can do until they enrol.
+      this.open2FAModal();
+      this.setup2FA();
+    }
   }
 
   togglePasswordForm(show: boolean): void {
@@ -132,8 +145,38 @@ export class SignInMethodComponent implements OnInit {
           this.profileState.updateUserSignal({ ...currentUser, twoFactorEnabled: true });
         }
         this.toastService.success(this.language.t('ACCOUNT.SIGN_IN.TOAST.TWO_FACTOR_ENABLED'));
+        this.refreshSessionAfterEnrollment();
       },
       error: (err) => this.toastService.error(this.language.t('COMMON.TOAST.ERROR'), err?.message),
+    });
+  }
+
+  /**
+   * The access token was minted before enrolment (its `2faEnabled` claim is
+   * false), so swap it for a fresh one before returning to the blocked page.
+   */
+  private refreshSessionAfterEnrollment(): void {
+    const refreshToken = this.tokenService.getRefreshToken();
+    const finish = () => {
+      if (!this.enrollmentRequired()) {
+        return;
+      }
+      this.enrollmentRequired.set(false);
+      const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+      // Only same-app paths: never follow an absolute URL from the query string.
+      const safe = returnUrl && returnUrl.startsWith('/') && !returnUrl.startsWith('//') ? returnUrl : '/dashboard';
+      void this.router.navigateByUrl(safe);
+    };
+    if (!refreshToken) {
+      finish();
+      return;
+    }
+    this.authService.refreshToken(refreshToken).subscribe({
+      next: (res) => {
+        this.tokenService.saveTokens(res.data.accessToken, res.data.refreshToken);
+        finish();
+      },
+      error: () => finish(),
     });
   }
 

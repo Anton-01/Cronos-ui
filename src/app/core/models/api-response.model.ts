@@ -8,7 +8,8 @@ export type ApiErrorCode =
   | 'VALIDATION_FIELD_ERROR'
   | 'DUPLICATE_RESOURCE'
   | 'SYSTEM_RESOURCE_CONFLICT'
-  | 'UNAUTHORIZED_MODIFICATION';
+  | 'UNAUTHORIZED_MODIFICATION'
+  | 'TWO_FACTOR_ENROLLMENT_REQUIRED';
 
 export interface ApiErrorDetail {
   code: ApiErrorCode;

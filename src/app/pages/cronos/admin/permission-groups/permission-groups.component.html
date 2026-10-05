@@ -1,0 +1,200 @@
+<p-tabs
+  [value]="activeTab()"
+  (valueChange)="selectTab($event)"
+  [lazy]="true"
+  [dt]="{ tablist: { background: 'transparent' }, tabpanel: { background: 'transparent', padding: '1.5rem 0 0 0' } }"
+>
+  <p-tablist>
+    <p-tab value="groups" class="flex align-items-center gap-2"><i class="pi pi-objects-column" aria-hidden="true"></i>{{ 'IAM.GROUPS.TAB_GROUPS' | translate }}</p-tab>
+    <p-tab value="catalog" class="flex align-items-center gap-2"><i class="pi pi-key" aria-hidden="true"></i>{{ 'IAM.GROUPS.TAB_CATALOG' | translate }}</p-tab>
+  </p-tablist>
+  <p-tabpanels>
+    <p-tabpanel value="groups">
+      <p-card>
+        <p-table [value]="filteredGroups()" dataKey="id" [loading]="loading()" [showLoader]="false" [rowHover]="true" sortField="name" [sortOrder]="1">
+          <ng-template pTemplate="caption">
+            <div class="flex flex-wrap align-items-center justify-content-between gap-2">
+              <p-iconfield iconPosition="left">
+                <p-inputicon styleClass="pi pi-search" />
+                <input pInputText type="search" [ngModel]="search()" (ngModelChange)="search.set($event)" [placeholder]="'IAM.GROUPS.SEARCH' | translate" />
+              </p-iconfield>
+              <p-button *appCan="perms.IAM_GROUP_CREATE" [label]="'IAM.GROUPS.CREATE' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
+            </div>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="name" style="min-width: 16rem">{{ 'IAM.GROUPS.GROUP' | translate }} <p-sortIcon field="name" /></th>
+              <th pSortableColumn="permissionCount" class="text-center" style="width: 9rem">{{ 'IAM.ROLES.PERMISSIONS' | translate }} <p-sortIcon field="permissionCount" /></th>
+              <th class="text-center" style="width: 8rem">{{ 'IAM.GROUPS.ROLES' | translate }}</th>
+              <th class="text-center" style="width: 8rem">{{ 'IAM.ROLES.USERS' | translate }}</th>
+              <th style="width: 8rem">{{ 'COMMON.TABLE.STATUS' | translate }}</th>
+              <th style="width: 10rem" class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-group>
+            <tr>
+              <td>
+                <div class="flex flex-column gap-1">
+                  <div class="flex align-items-center gap-2">
+                    <span class="font-semibold">{{ group.name }}</span>
+                    @if (group.system) {
+                      <p-tag [value]="'IAM.ROLES.SYSTEM' | translate" severity="contrast" icon="pi pi-verified" />
+                    }
+                  </div>
+                  <span class="text-xs font-mono text-color-secondary">{{ group.code }}</span>
+                  @if (group.description) {
+                    <span class="text-sm text-color-secondary">{{ group.description }}</span>
+                  }
+                </div>
+              </td>
+              <td class="text-center">{{ group.permissionCount }}</td>
+              <td class="text-center">{{ group.roleCount }}</td>
+              <td class="text-center">{{ group.userCount }}</td>
+              <td>
+                <span class="status-pill" [class.status-pill-active]="group.status === 'ACTIVE'" [class.status-pill-inactive]="group.status !== 'ACTIVE'">
+                  {{ (group.status === 'ACTIVE' ? 'COMMON.STATUS.ACTIVE' : 'COMMON.STATUS.INACTIVE') | translate }}
+                </span>
+              </td>
+              <td class="text-right white-space-nowrap">
+                <p-button [icon]="canUpdate() && !group.system ? 'pi pi-pencil' : 'pi pi-eye'" severity="info" [text]="true" [rounded]="true" [pTooltip]="(canUpdate() && !group.system ? 'COMMON.EDIT' : 'COMMON.VIEW_DETAIL') | translate" (onClick)="openEdit(group)" />
+                @if (canUpdate() && !group.system) {
+                  <p-button [icon]="group.status === 'ACTIVE' ? 'pi pi-ban' : 'pi pi-check-circle'" severity="secondary" [text]="true" [rounded]="true" [pTooltip]="(group.status === 'ACTIVE' ? 'IAM.ROLES.ACTIONS.DEACTIVATE' : 'IAM.ROLES.ACTIONS.ACTIVATE') | translate" (onClick)="toggleStatus(group)" />
+                }
+                @if (canDelete() && !group.system) {
+                  <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" [pTooltip]="'COMMON.DELETE' | translate" (onClick)="remove(group)" />
+                }
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="loadingbody">
+            @for (row of skeletonRows; track $index) {
+              <tr appTableSkeletonRow [columns]="6"></tr>
+            }
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr><td colspan="6" class="text-center text-color-secondary py-5">{{ 'IAM.GROUPS.EMPTY' | translate }}</td></tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </p-tabpanel>
+
+    <p-tabpanel value="catalog">
+      <p-card>
+        <p-table
+          [value]="filteredCatalog()"
+          dataKey="code"
+          [loading]="catalogLoading()"
+          [showLoader]="false"
+          rowGroupMode="subheader"
+          groupRowsBy="moduleName"
+          sortField="moduleName"
+          [sortOrder]="1"
+          [scrollable]="true"
+          scrollHeight="65vh"
+        >
+          <ng-template pTemplate="caption">
+            <div class="flex flex-wrap align-items-center justify-content-between gap-2">
+              <p-iconfield iconPosition="left">
+                <p-inputicon styleClass="pi pi-search" />
+                <input pInputText type="search" [ngModel]="catalogSearch()" (ngModelChange)="catalogSearch.set($event)" [placeholder]="'IAM.MATRIX.SEARCH' | translate" />
+              </p-iconfield>
+              <span class="text-sm text-color-secondary">{{ 'IAM.GROUPS.CATALOG_HINT' | translate: { count: catalog().length } }}</span>
+            </div>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr>
+              <th style="min-width: 14rem">{{ 'IAM.GROUPS.PERMISSION' | translate }}</th>
+              <th style="min-width: 10rem">{{ 'IAM.GROUPS.RESOURCE' | translate }}</th>
+              <th style="min-width: 18rem">{{ 'COMMON.TABLE.DESCRIPTION' | translate }}</th>
+              <th style="width: 8rem">{{ 'IAM.MATRIX.RISK' | translate }}</th>
+              <th style="min-width: 12rem">{{ 'IAM.MATRIX.REQUIRES' | translate }}</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="groupheader" let-permission>
+            <tr pRowGroupHeader>
+              <td colspan="5" class="font-semibold surface-ground">{{ permission.moduleName }} <span class="text-xs text-color-secondary font-mono ml-2">{{ permission.module }}</span></td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-permission>
+            <tr>
+              <td>
+                <div class="flex flex-column">
+                  <span class="font-medium">{{ permission.name }}</span>
+                  <code class="text-xs text-color-secondary">{{ permission.code }}</code>
+                </div>
+              </td>
+              <td>{{ permission.resourceName }}</td>
+              <td class="text-sm text-color-secondary">{{ permission.description }}</td>
+              <td><p-tag [value]="'IAM.RISK.' + permission.risk | translate" [severity]="riskSeverity[permission.risk]" /></td>
+              <td class="text-xs font-mono text-color-secondary">{{ permission.dependsOn.length ? permission.dependsOn.join(', ') : '—' }}</td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </p-tabpanel>
+  </p-tabpanels>
+</p-tabs>
+
+<p-dialog
+  [header]="(editing() ? (editorReadonly() ? 'IAM.GROUPS.VIEW' : 'IAM.GROUPS.EDIT') : 'IAM.GROUPS.CREATE') | translate"
+  [visible]="editorOpen()"
+  (visibleChange)="!$event && !saving() && editorOpen.set(false)"
+  [modal]="true"
+  [draggable]="false"
+  [maximizable]="true"
+  [style]="{ width: '72rem' }"
+  [breakpoints]="{ '1199px': '95vw' }"
+>
+  @if (editorLoading()) {
+    <div class="flex justify-content-center py-6"><i class="pi pi-spin pi-spinner text-3xl text-primary" aria-hidden="true"></i></div>
+  } @else {
+    <div class="grid">
+      <form [formGroup]="form" class="col-12 lg:col-4 flex flex-column gap-3" (ngSubmit)="save()">
+        <div class="flex flex-column gap-1">
+          <label for="groupName" class="font-medium">{{ 'COMMON.TABLE.NAME' | translate }} <span class="text-red-500">*</span></label>
+          <input pInputText id="groupName" formControlName="name" [maxlength]="nameMax" [invalid]="showError('name')" (blur)="onNameBlur()" />
+          <app-field-error [errors]="form.controls.name.errors" [visible]="showError('name')" />
+        </div>
+        <div class="flex flex-column gap-1">
+          <label for="groupCode" class="font-medium">{{ 'COMMON.TABLE.CODE' | translate }} <span class="text-red-500">*</span></label>
+          <input pInputText id="groupCode" formControlName="code" class="font-mono" [maxlength]="codeMax" [invalid]="showError('code')" (blur)="normalizeCode()" />
+          @if (showError('code')) {
+            <app-field-error [errors]="form.controls.code.errors" [visible]="true" />
+          } @else {
+            <small class="text-color-secondary">{{ 'IAM.ROLES.CODE_HINT' | translate }}</small>
+          }
+        </div>
+        <div class="flex flex-column gap-1">
+          <label for="groupDescription" class="font-medium">{{ 'COMMON.TABLE.DESCRIPTION' | translate }}</label>
+          <textarea pTextarea id="groupDescription" rows="4" formControlName="description" [maxlength]="descriptionMax"></textarea>
+          <app-field-error [errors]="form.controls.description.errors" [visible]="showError('description')" />
+        </div>
+        @if (editing(); as group) {
+          <div class="flex flex-column gap-2">
+            <span class="font-medium">{{ 'IAM.GROUPS.USED_BY' | translate }}</span>
+            <div class="flex flex-wrap gap-1">
+              @for (role of group.roles; track role.id) {
+                <app-role-chip [name]="role.name" [color]="role.color" />
+              } @empty {
+                <span class="text-sm text-color-secondary">{{ 'IAM.GROUPS.NO_ROLES' | translate }}</span>
+              }
+            </div>
+            <span class="text-sm text-color-secondary">{{ 'IAM.GROUPS.DIRECT_USERS' | translate: { count: group.userCount } }}</span>
+            @if (group.roleCount + group.userCount > 0 && !editorReadonly()) {
+              <p-message severity="warn" [text]="'IAM.GROUPS.PROPAGATION_WARNING' | translate" styleClass="w-full" />
+            }
+          </div>
+        }
+      </form>
+      <div class="col-12 lg:col-8">
+        <app-permission-matrix [catalog]="catalog()" [(granted)]="selected" mode="grant" [readonly]="editorReadonly()" [loading]="catalogLoading()" />
+      </div>
+    </div>
+  }
+  <ng-template pTemplate="footer">
+    <p-button [label]="(editorReadonly() ? 'COMMON.CLOSE' : 'COMMON.CANCEL') | translate" severity="secondary" [outlined]="true" [disabled]="saving()" (onClick)="editorOpen.set(false)" />
+    @if (!editorReadonly()) {
+      <p-button [label]="(editing() ? 'COMMON.SAVE_CHANGES' : 'IAM.GROUPS.CREATE') | translate" icon="pi pi-check" [loading]="saving()" [disabled]="editorLoading()" (onClick)="save()" />
+    }
+  </ng-template>
+</p-dialog>

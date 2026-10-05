@@ -1,0 +1,232 @@
+<!-- KPI tiles — each one filters the grid below -->
+<div class="grid mb-2">
+  <div class="col-12 sm:col-6 xl:col-3">
+    <button type="button" class="kpi-button" (click)="filterByStatus(null)" [attr.aria-label]="'IAM.USERS.KPI.TOTAL' | translate">
+      <app-stat-card [label]="'IAM.USERS.KPI.TOTAL' | translate" [value]="stats()?.total ?? 0" icon="pi pi-users" accent="navy" [loading]="statsLoading()"
+        [caption]="'IAM.USERS.KPI.TWO_FACTOR' | translate: { count: stats()?.twoFactorEnabled ?? 0 }" />
+    </button>
+  </div>
+  <div class="col-12 sm:col-6 xl:col-3">
+    <button type="button" class="kpi-button" (click)="filterByStatus('ACTIVE')" [attr.aria-label]="'IAM.USER_STATUS.ACTIVE' | translate">
+      <app-stat-card [label]="'IAM.USERS.KPI.ACTIVE' | translate" [value]="stats()?.byStatus?.ACTIVE ?? 0" icon="pi pi-check-circle" accent="green" [loading]="statsLoading()"
+        [caption]="'IAM.USERS.KPI.DORMANT' | translate: { count: stats()?.dormant ?? 0 }" />
+    </button>
+  </div>
+  <div class="col-12 sm:col-6 xl:col-3">
+    <button type="button" class="kpi-button" (click)="filterByStatus('PENDING_ACTIVATION')" [attr.aria-label]="'IAM.USER_STATUS.PENDING_ACTIVATION' | translate">
+      <app-stat-card [label]="'IAM.USERS.KPI.PENDING' | translate" [value]="stats()?.byStatus?.PENDING_ACTIVATION ?? 0" icon="pi pi-envelope" accent="slate" [loading]="statsLoading()"
+        [caption]="'IAM.USERS.KPI.NEVER_LOGGED' | translate: { count: stats()?.neverLoggedIn ?? 0 }" />
+    </button>
+  </div>
+  <div class="col-12 sm:col-6 xl:col-3">
+    <button type="button" class="kpi-button" (click)="filterByStatus('LOCKED')" [attr.aria-label]="'IAM.USER_STATUS.LOCKED' | translate">
+      <app-stat-card [label]="'IAM.USERS.KPI.RESTRICTED' | translate"
+        [value]="(stats()?.byStatus?.LOCKED ?? 0) + (stats()?.byStatus?.SUSPENDED ?? 0)" icon="pi pi-lock" accent="amber" [loading]="statsLoading()"
+        [caption]="'IAM.USERS.KPI.EXPIRING' | translate: { count: stats()?.expiringSoon ?? 0 }" />
+    </button>
+  </div>
+</div>
+
+<p-card>
+  <p-table
+    [value]="users()"
+    dataKey="id"
+    [lazy]="true"
+    (onLazyLoad)="onLazyLoad($event)"
+    [totalRecords]="total()"
+    [first]="first()"
+    [rows]="10"
+    [paginator]="true"
+    paginatorPosition="bottom"
+    [rowsPerPageOptions]="[10, 25, 50, 100]"
+    sortField="createdAt"
+    [sortOrder]="-1"
+    [loading]="loading()"
+    [showLoader]="false"
+    [rowHover]="true"
+    [selection]="selection()"
+    (selectionChange)="selection.set($event)"
+    [showCurrentPageReport]="true"
+    [currentPageReportTemplate]="'COMMON.TABLE.PAGE_REPORT' | translate"
+  >
+    <ng-template pTemplate="caption">
+      <div class="flex flex-column gap-3">
+        <div class="flex flex-wrap align-items-center justify-content-between gap-2">
+          <div class="flex flex-wrap align-items-center gap-2">
+            <p-iconfield iconPosition="left">
+              <p-inputicon styleClass="pi pi-search" />
+              <input pInputText type="search" class="w-18rem" [placeholder]="'IAM.USERS.SEARCH' | translate" (input)="onSearch($any($event.target).value)" />
+            </p-iconfield>
+            <p-multiselect
+              [options]="statusOptions()"
+              [ngModel]="statuses()"
+              (ngModelChange)="setStatuses($event ?? [])"
+              optionLabel="label"
+              optionValue="value"
+              [placeholder]="'IAM.USERS.FILTERS.STATUS' | translate"
+              [maxSelectedLabels]="1"
+              [selectedItemsLabel]="'IAM.AUDIT.N_SELECTED' | translate"
+              styleClass="w-12rem"
+            />
+            <p-multiselect
+              [options]="roleOptions()"
+              [ngModel]="roleIds()"
+              (ngModelChange)="setRoleIds($event ?? [])"
+              optionLabel="label"
+              optionValue="value"
+              [filter]="true"
+              [placeholder]="'IAM.USERS.FILTERS.ROLE' | translate"
+              [maxSelectedLabels]="1"
+              [selectedItemsLabel]="'IAM.AUDIT.N_SELECTED' | translate"
+              styleClass="w-12rem"
+            />
+            <p-select
+              [options]="twoFactorOptions()"
+              [ngModel]="twoFactor()"
+              (ngModelChange)="setTwoFactor($event ?? null)"
+              optionLabel="label"
+              optionValue="value"
+              [showClear]="true"
+              [placeholder]="'IAM.USERS.FILTERS.TWO_FACTOR' | translate"
+              styleClass="w-11rem"
+            />
+            @if (hasFilters()) {
+              <p-button [label]="'IAM.COMMON.CLEAR_FILTERS' | translate" icon="pi pi-filter-slash" [text]="true" severity="secondary" (onClick)="clearFilters()" />
+            }
+          </div>
+          <div class="flex align-items-center gap-2">
+            <p-button icon="pi pi-refresh" [text]="true" [rounded]="true" severity="secondary" [pTooltip]="'COMMON.REFRESH' | translate" [ariaLabel]="'COMMON.REFRESH' | translate" (onClick)="reload()" />
+            <p-button *appCan="perms.IAM_USER_EXPORT" [label]="'IAM.COMMON.EXPORT_CSV' | translate" icon="pi pi-download" severity="secondary" [outlined]="true" [loading]="exporting()" (onClick)="export()" />
+            <p-button *appCan="perms.IAM_USER_CREATE" [label]="'IAM.USERS.CREATE' | translate" icon="pi pi-user-plus" severity="contrast" styleClass="p-button-page-action" routerLink="/cronos/admin/usuarios/nuevo" />
+          </div>
+        </div>
+
+        @if (selection().length > 0) {
+          <div class="bulk-bar" role="region" [attr.aria-label]="'IAM.USERS.BULK.REGION' | translate">
+            <span class="font-medium">{{ selectionLabel() }}</span>
+            <div class="flex align-items-center gap-2">
+              <p-button [label]="'IAM.USERS.BULK.ACTIONS' | translate" icon="pi pi-bolt" size="small" (onClick)="bulkMenuRef.toggle($event)" />
+              <p-button [label]="'IAM.USERS.BULK.CLEAR' | translate" size="small" [text]="true" severity="secondary" (onClick)="selection.set([])" />
+            </div>
+          </div>
+        }
+      </div>
+    </ng-template>
+
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="width: 3rem"><p-tableHeaderCheckbox /></th>
+        <th pSortableColumn="displayName" style="min-width: 16rem">{{ 'IAM.USERS.COLUMNS.USER' | translate }} <p-sortIcon field="displayName" /></th>
+        <th style="min-width: 12rem">{{ 'IAM.USERS.COLUMNS.ROLES' | translate }}</th>
+        <th pSortableColumn="status" style="width: 10rem">{{ 'COMMON.TABLE.STATUS' | translate }} <p-sortIcon field="status" /></th>
+        <th style="width: 5rem" class="text-center">2FA</th>
+        <th pSortableColumn="lastLoginAt" style="min-width: 10rem">{{ 'IAM.USERS.COLUMNS.LAST_LOGIN' | translate }} <p-sortIcon field="lastLoginAt" /></th>
+        <th pSortableColumn="createdAt" style="min-width: 9rem">{{ 'IAM.USERS.COLUMNS.CREATED' | translate }} <p-sortIcon field="createdAt" /></th>
+        <th style="width: 5rem" class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-user>
+      <tr>
+        <td><p-tableCheckbox [value]="user" /></td>
+        <td>
+          <a [routerLink]="['/cronos/admin/usuarios', user.id]" class="flex align-items-center gap-3 no-underline text-color">
+            <app-user-avatar [avatarUrl]="user.avatarUrl" [firstName]="user.firstName" [lastName]="user.lastName" [displayName]="user.displayName" />
+            <div class="flex flex-column min-w-0">
+              <span class="font-semibold white-space-nowrap overflow-hidden text-overflow-ellipsis">{{ user.displayName }}</span>
+              <span class="text-sm text-color-secondary white-space-nowrap overflow-hidden text-overflow-ellipsis">{{ user.email }}</span>
+              @if (user.jobTitle || user.department) {
+                <span class="text-xs text-color-secondary">{{ user.jobTitle }}{{ user.jobTitle && user.department ? ' · ' : '' }}{{ user.department }}</span>
+              }
+            </div>
+          </a>
+        </td>
+        <td>
+          <div class="flex flex-wrap gap-1 align-items-center">
+            @for (role of visibleRoles(user); track role.id) {
+              <app-role-chip [name]="role.name" [color]="role.color" />
+            }
+            @if (user.roles.length > maxRoleChips) {
+              <span class="text-xs text-color-secondary" [pTooltip]="hiddenRoles(user)">+{{ user.roles.length - maxRoleChips }}</span>
+            }
+            @if (user.roles.length === 0) {
+              <span class="text-xs text-color-secondary">{{ 'IAM.USERS.NO_ROLES' | translate }}</span>
+            }
+          </div>
+        </td>
+        <td>
+          <div class="flex flex-column gap-1 align-items-start">
+            <app-user-status-tag [status]="user.status" [until]="user.statusUntil" />
+            @if (user.mustChangePassword) {
+              <span class="text-xs text-color-secondary"><i class="pi pi-key text-xs" aria-hidden="true"></i> {{ 'IAM.USERS.MUST_CHANGE_PASSWORD' | translate }}</span>
+            }
+          </div>
+        </td>
+        <td class="text-center">
+          <i
+            class="pi"
+            [class.pi-shield]="user.twoFactorEnabled"
+            [class.text-green-500]="user.twoFactorEnabled"
+            [class.pi-minus]="!user.twoFactorEnabled"
+            [class.text-color-secondary]="!user.twoFactorEnabled"
+            [pTooltip]="(user.twoFactorEnabled ? 'ACCOUNT.SIGN_IN.ENABLED' : 'ACCOUNT.SIGN_IN.DISABLED') | translate"
+            [attr.aria-label]="(user.twoFactorEnabled ? 'ACCOUNT.SIGN_IN.ENABLED' : 'ACCOUNT.SIGN_IN.DISABLED') | translate"
+          ></i>
+        </td>
+        <td class="text-sm">
+          @if (user.lastLoginAt) {
+            <span [pTooltip]="(user.lastLoginAt | date: 'medium') ?? ''">{{ user.lastLoginAt | date: 'mediumDate' }}</span>
+          } @else {
+            <span class="text-color-secondary">{{ 'IAM.USERS.NEVER' | translate }}</span>
+          }
+        </td>
+        <td class="text-sm text-color-secondary">{{ user.createdAt | date: 'mediumDate' }}</td>
+        <td class="text-right">
+          <p-button
+            icon="pi pi-ellipsis-v"
+            severity="secondary"
+            [text]="true"
+            [rounded]="true"
+            [ariaLabel]="'COMMON.ACTIONS' | translate"
+            (onClick)="openRowMenu(user); rowMenuRef.toggle($event)"
+          />
+        </td>
+      </tr>
+    </ng-template>
+
+    <ng-template pTemplate="loadingbody">
+      @for (row of skeletonRows; track $index) {
+        <tr appTableSkeletonRow [columns]="8"></tr>
+      }
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="8" class="text-center py-6">
+          <div class="flex flex-column align-items-center gap-2 text-color-secondary">
+            <i class="pi pi-users text-3xl" aria-hidden="true"></i>
+            <span>{{ (hasFilters() ? 'IAM.USERS.EMPTY_FILTERED' : 'IAM.USERS.EMPTY') | translate }}</span>
+            @if (hasFilters()) {
+              <p-button [label]="'IAM.COMMON.CLEAR_FILTERS' | translate" [text]="true" (onClick)="clearFilters()" />
+            }
+          </div>
+        </td>
+      </tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-menu #rowMenuRef [model]="rowMenu()" [popup]="true" />
+<p-menu #bulkMenuRef [model]="bulkMenu()" [popup]="true" />
+
+<app-change-status-dialog
+  [(visible)]="statusDialogOpen"
+  [targetStatus]="bulkTarget()"
+  [subject]="selectionLabel()"
+  [saving]="bulkSaving()"
+  (confirmed)="applyBulkStatus($event)"
+/>
+
+@if (bulkRolesOpen()) {
+  <app-bulk-roles-dialog [users]="selection()" [roles]="roles()" (done)="onBulkRolesDone($event)" />
+}

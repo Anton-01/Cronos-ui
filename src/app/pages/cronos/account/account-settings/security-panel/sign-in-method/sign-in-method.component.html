@@ -1,4 +1,13 @@
 <div class="flex flex-column gap-4">
+  @if (enrollmentRequired() && !profileState.user()?.twoFactorEnabled) {
+    <p-message severity="warn" styleClass="w-full">
+      <div class="flex flex-column gap-1">
+        <strong>{{ 'ACCOUNT.SIGN_IN.ENROLLMENT.REQUIRED_TITLE' | translate }}</strong>
+        <span class="text-sm">{{ 'ACCOUNT.SIGN_IN.ENROLLMENT.BANNER' | translate }}</span>
+      </div>
+    </p-message>
+  }
+
   <!-- Password -->
   <div class="flex align-items-start justify-content-between flex-wrap gap-3">
     <div>

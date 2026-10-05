@@ -1,5 +1,7 @@
 import { MenuItem } from 'primeng/api';
 
+import { PERMISSIONS } from '../core/constants/permissions';
+
 /**
  * A single navigable destination in the sidebar.
  *
@@ -48,15 +50,11 @@ export interface NavSection {
 /**
  * The sidebar navigation model.
  *
- * Admin sections are filtered by role here for a clean menu; the routes
- * themselves stay protected by `roleGuard` — this is presentation, not
- * authorization.
+ * Admin and settings items are filtered by permission here for a clean menu;
+ * the routes themselves stay protected by `permissionGuard` / `roleGuard` —
+ * this is presentation, not authorization.
  */
-export function buildNavSections(
-  hasAdminRole: boolean,
-  hasSuperAdminRole: boolean,
-  canManageCatalogs: boolean,
-): NavSection[] {
+export function buildNavSections(can: (permission: string) => boolean, canManageCatalogs: boolean): NavSection[] {
   const sections: NavSection[] = [
     {
       labelKey: 'NAV.SECTIONS.DASHBOARDS',
@@ -108,14 +106,41 @@ export function buildNavSections(
     },
   ];
 
+  const settingsItems: NavItem[] = [];
+  if (can(PERMISSIONS.FINANCE_CURRENCY_READ) || can(PERMISSIONS.FINANCE_TAX_READ)) {
+    settingsItems.push({ labelKey: 'NAV.ITEMS.FINANCE', icon: 'pi pi-percentage', route: '/cronos/configuracion/finanzas' });
+  }
+  if (settingsItems.length > 0) {
+    sections.push({ labelKey: 'NAV.SECTIONS.SETTINGS', items: settingsItems });
+  }
+
   const adminItems: NavItem[] = [];
-  if (hasAdminRole) {
+  if (can(PERMISSIONS.IAM_USER_READ)) {
     adminItems.push({ labelKey: 'NAV.ITEMS.USER_MANAGEMENT', icon: 'pi pi-users', route: '/cronos/admin/usuarios' });
   }
-  if (hasSuperAdminRole) {
-    adminItems.push({ labelKey: 'NAV.ITEMS.ROLE_MANAGEMENT', icon: 'pi pi-shield', route: '/cronos/admin/roles' });
+  const accessChildren: NavItem[] = [];
+  if (can(PERMISSIONS.IAM_ROLE_READ)) {
+    accessChildren.push({ labelKey: 'NAV.ITEMS.ROLES', icon: 'pi pi-shield', route: '/cronos/admin/roles' });
   }
-  if (hasSuperAdminRole || canManageCatalogs) {
+  if (can(PERMISSIONS.IAM_GROUP_READ)) {
+    accessChildren.push({ labelKey: 'NAV.ITEMS.PERMISSION_GROUPS', icon: 'pi pi-objects-column', route: '/cronos/admin/grupos-permisos' });
+  }
+  if (accessChildren.length > 0) {
+    adminItems.push({
+      labelKey: 'NAV.ITEMS.ROLE_MANAGEMENT',
+      icon: 'pi pi-shield',
+      route: accessChildren[0].route,
+      activePrefixes: ['/cronos/admin/roles', '/cronos/admin/grupos-permisos'],
+      children: accessChildren,
+    });
+  }
+  if (can(PERMISSIONS.IAM_AUDIT_READ)) {
+    adminItems.push({ labelKey: 'NAV.ITEMS.AUDIT_LOG', icon: 'pi pi-list-check', route: '/cronos/admin/auditoria' });
+  }
+  if (can(PERMISSIONS.IAM_POLICY_READ)) {
+    adminItems.push({ labelKey: 'NAV.ITEMS.SECURITY_POLICY', icon: 'pi pi-lock', route: '/cronos/admin/politica-seguridad' });
+  }
+  if (canManageCatalogs) {
     adminItems.push({
       labelKey: 'NAV.ITEMS.IMPORT_HISTORY',
       icon: 'pi pi-history',

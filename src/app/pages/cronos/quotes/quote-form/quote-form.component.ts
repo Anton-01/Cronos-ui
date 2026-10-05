@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import {
   FormsModule,
   ReactiveFormsModule,
@@ -28,6 +28,7 @@ import {
   RecipeSimpleResponse,
 } from 'src/app/core/models/domain.model';
 import { LanguageService } from 'src/app/core/services/language.service';
+import { FinanceDefaultsStore } from 'src/app/core/services/finance/finance-defaults.store';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
@@ -63,6 +64,9 @@ export const PHONE_COUNTRIES: PhoneCountry[] = [
     placeholder: '(555) 123-4567',
   },
 ];
+
+/** Used only until the finance catalog answers (or if it is unreachable). */
+const LEGACY_CURRENCIES = ['MXN', 'USD', 'EUR', 'COP', 'ARS', 'CLP', 'PEN', 'GTQ'];
 
 @Component({
   selector: 'app-quote-form',
@@ -123,7 +127,18 @@ export class QuoteFormComponent implements OnInit, OnDestroy {
   readonly extraFeeValue = signal(0);
   readonly total = signal(0);
 
-  readonly currencies = ['MXN', 'USD', 'EUR', 'COP', 'ARS', 'CLP', 'PEN', 'GTQ'];
+  private readonly financeDefaults = inject(FinanceDefaultsStore);
+
+  /** ACTIVE catalog currencies (doc §9); the legacy list only until the catalog answers. */
+  readonly currencies = computed(() => {
+    const codes = this.financeDefaults.currencyOptions().map((option) => option.code);
+    return codes.length > 0 ? codes : LEGACY_CURRENCIES;
+  });
+
+  /** Catalog IVA presets: picking one fills the tax-rate field. */
+  readonly taxRatePresets = computed(() =>
+    this.financeDefaults.taxRateOptions().map((option) => ({ label: option.name, value: option.ratePercent ?? 0 })),
+  );
 
   get items(): FormArray {
     return this.form.get('items') as FormArray;
@@ -139,11 +154,44 @@ export class QuoteFormComponent implements OnInit, OnDestroy {
     ]);
 
     this.addItem();
+    this.applyFinanceDefaults();
 
     this.items.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.recalcTotals());
     for (const field of ['taxRate', 'deliveryFee', 'extraFee']) {
       this.form.get(field)!.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.recalcTotals());
     }
+  }
+
+  /**
+   * New quotes start from the tenant's default currency and IVA (doc §11),
+   * unless the user already touched those fields while the defaults loaded.
+   */
+  private applyFinanceDefaults(): void {
+    this.financeDefaults
+      .load()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          const currency = this.form.controls.currency;
+          const taxRate = this.form.controls.taxRate;
+          if (!currency.dirty) {
+            currency.setValue(this.financeDefaults.defaultCurrency().code);
+          }
+          if (!taxRate.dirty) {
+            taxRate.setValue(this.financeDefaults.defaultTaxPercent());
+          }
+        },
+        // Unreachable finance API: keep the historical MXN / 0 % starting point.
+        error: () => undefined,
+      });
+  }
+
+  applyTaxPreset(ratePercent: number | null): void {
+    if (ratePercent === null) {
+      return;
+    }
+    this.form.controls.taxRate.setValue(ratePercent);
+    this.form.controls.taxRate.markAsDirty();
   }
 
   ngOnDestroy(): void {

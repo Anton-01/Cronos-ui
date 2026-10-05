@@ -1,0 +1,126 @@
+<div class="grid">
+  <div class="col-12 lg:col-4">
+    <p-card styleClass="mb-3">
+      <div class="flex flex-column align-items-center text-center gap-3">
+        <div class="relative">
+          <app-user-avatar size="xl" [avatarUrl]="user().avatarUrl" [firstName]="user().firstName" [lastName]="user().lastName" [displayName]="user().displayName" />
+          @if (avatarBusy()) {
+            <div class="absolute top-0 left-0 w-full h-full flex align-items-center justify-content-center border-circle" style="background: rgba(15, 23, 42, 0.45)">
+              <i class="pi pi-spin pi-spinner text-white text-2xl" aria-hidden="true"></i>
+            </div>
+          }
+        </div>
+        @if (canEdit()) {
+          <div class="flex gap-2">
+            <p-button [label]="'IAM.CREATE.CHANGE_PHOTO' | translate" icon="pi pi-camera" size="small" [outlined]="true" [disabled]="avatarBusy()" (onClick)="cropperOpen.set(true)" />
+            @if (user().avatarUrl) {
+              <p-button icon="pi pi-trash" size="small" severity="danger" [text]="true" [disabled]="avatarBusy()" [ariaLabel]="'COMMON.REMOVE' | translate" [pTooltip]="'COMMON.REMOVE' | translate" (onClick)="removeAvatar()" />
+            }
+          </div>
+        }
+      </div>
+    </p-card>
+
+    <p-card [header]="'IAM.DETAIL.PROFILE.ACCOUNT_FACTS' | translate">
+      <dl class="iam-facts text-sm">
+        <dt>{{ 'IAM.DETAIL.PROFILE.ID' | translate }}</dt>
+        <dd class="font-mono text-xs">{{ user().id }}</dd>
+        <dt>{{ 'IAM.DETAIL.PROFILE.CREATED' | translate }}</dt>
+        <dd>{{ user().createdAt | date: 'medium' }}@if (user().createdBy; as by) {<br /><span class="text-color-secondary">{{ by.displayName }}</span>}</dd>
+        <dt>{{ 'IAM.DETAIL.PROFILE.UPDATED' | translate }}</dt>
+        <dd>{{ user().updatedAt ? (user().updatedAt | date: 'medium') : '—' }}@if (user().updatedBy; as by) {<br /><span class="text-color-secondary">{{ by.displayName }}</span>}</dd>
+        <dt>{{ 'IAM.DETAIL.PROFILE.PASSWORD_CHANGED' | translate }}</dt>
+        <dd>{{ user().passwordChangedAt ? (user().passwordChangedAt | date: 'medium') : '—' }}</dd>
+        <dt>2FA</dt>
+        <dd>{{ (user().twoFactorEnabled ? 'ACCOUNT.SIGN_IN.ENABLED' : 'ACCOUNT.SIGN_IN.DISABLED') | translate }}</dd>
+        <dt>{{ 'IAM.DETAIL.PROFILE.FAILED_ATTEMPTS' | translate }}</dt>
+        <dd>{{ user().failedLoginAttempts }}</dd>
+        @if (user().invitationExpiresAt) {
+          <dt>{{ 'IAM.DETAIL.PROFILE.INVITATION_EXPIRES' | translate }}</dt>
+          <dd>{{ user().invitationExpiresAt | date: 'medium' }}</dd>
+        }
+      </dl>
+    </p-card>
+  </div>
+
+  <div class="col-12 lg:col-8">
+    <form #profileFormEl [formGroup]="form" (ngSubmit)="save()">
+      <p-card [header]="'IAM.CREATE.SECTIONS.PERSONAL' | translate" styleClass="mb-3">
+        <div class="grid">
+          <div class="col-12 md:col-6 flex flex-column gap-1">
+            <label for="pFirstName" class="font-medium">{{ 'IAM.FIELDS.FIRST_NAME' | translate }} <span class="text-red-500">*</span></label>
+            <input pInputText id="pFirstName" formControlName="firstName" [invalid]="showError('firstName')" />
+            <app-field-error [errors]="form.controls.firstName.errors" [visible]="showError('firstName')" />
+          </div>
+          <div class="col-12 md:col-6 flex flex-column gap-1">
+            <label for="pLastName" class="font-medium">{{ 'IAM.FIELDS.LAST_NAME' | translate }} <span class="text-red-500">*</span></label>
+            <input pInputText id="pLastName" formControlName="lastName" [invalid]="showError('lastName')" />
+            <app-field-error [errors]="form.controls.lastName.errors" [visible]="showError('lastName')" />
+          </div>
+          <div class="col-12 md:col-6 flex flex-column gap-1">
+            <label for="pUsername" class="font-medium">{{ 'IAM.FIELDS.USERNAME' | translate }} <span class="text-red-500">*</span></label>
+            <input pInputText id="pUsername" formControlName="username" [maxlength]="usernameMax" [invalid]="showError('username')" />
+            @if (form.controls.username.pending) {
+              <small class="text-color-secondary"><i class="pi pi-spin pi-spinner text-xs" aria-hidden="true"></i> {{ 'IAM.CREATE.CHECKING' | translate }}</small>
+            } @else {
+              <app-field-error [errors]="form.controls.username.errors" [visible]="showError('username')" />
+            }
+          </div>
+          <div class="col-12 md:col-6 flex flex-column gap-1">
+            <label for="pEmail" class="font-medium">{{ 'IAM.FIELDS.EMAIL' | translate }} <span class="text-red-500">*</span></label>
+            <input pInputText id="pEmail" type="email" formControlName="email" [invalid]="showError('email')" />
+            @if (form.controls.email.pending) {
+              <small class="text-color-secondary"><i class="pi pi-spin pi-spinner text-xs" aria-hidden="true"></i> {{ 'IAM.CREATE.CHECKING' | translate }}</small>
+            } @else if (showError('email')) {
+              <app-field-error [errors]="form.controls.email.errors" [visible]="true" />
+            } @else if (form.controls.email.dirty) {
+              <small class="text-orange-500">{{ 'IAM.DETAIL.PROFILE.EMAIL_REVERIFY' | translate }}</small>
+            }
+          </div>
+          <div class="col-12 md:col-6 flex flex-column gap-1">
+            <label for="pPhone" class="font-medium">{{ 'IAM.FIELDS.PHONE' | translate }}</label>
+            <app-phone-input inputId="pPhone" formControlName="phoneNumber" [invalid]="showError('phoneNumber')" />
+            <app-field-error [errors]="form.controls.phoneNumber.errors" [visible]="showError('phoneNumber')" />
+          </div>
+          <div class="col-12 md:col-6 flex flex-column gap-1">
+            <label for="pLocale" class="font-medium">{{ 'IAM.FIELDS.LOCALE' | translate }}</label>
+            <p-select inputId="pLocale" formControlName="locale" [options]="localeOptions" optionLabel="label" optionValue="value" styleClass="w-full" />
+          </div>
+        </div>
+      </p-card>
+
+      <p-card [header]="'IAM.CREATE.SECTIONS.ORGANIZATION' | translate">
+        <div class="grid">
+          <div class="col-12 md:col-6 flex flex-column gap-1">
+            <label for="pJob" class="font-medium">{{ 'IAM.FIELDS.JOB_TITLE' | translate }}</label>
+            <input pInputText id="pJob" formControlName="jobTitle" [invalid]="showError('jobTitle')" />
+            <app-field-error [errors]="form.controls.jobTitle.errors" [visible]="showError('jobTitle')" />
+          </div>
+          <div class="col-12 md:col-6 flex flex-column gap-1">
+            <label for="pDept" class="font-medium">{{ 'IAM.FIELDS.DEPARTMENT' | translate }}</label>
+            <input pInputText id="pDept" formControlName="department" [invalid]="showError('department')" />
+            <app-field-error [errors]="form.controls.department.errors" [visible]="showError('department')" />
+          </div>
+          <div class="col-12 md:col-6 flex flex-column gap-1">
+            <label for="pEmp" class="font-medium">{{ 'IAM.FIELDS.EMPLOYEE_NUMBER' | translate }}</label>
+            <input pInputText id="pEmp" formControlName="employeeNumber" [invalid]="showError('employeeNumber')" />
+            <app-field-error [errors]="form.controls.employeeNumber.errors" [visible]="showError('employeeNumber')" />
+          </div>
+          <div class="col-12 md:col-6 flex flex-column gap-1">
+            <label for="pExpires" class="font-medium">{{ 'IAM.FIELDS.ACCESS_EXPIRES' | translate }}</label>
+            <p-datepicker inputId="pExpires" formControlName="accessExpiresAt" [minDate]="today" [showIcon]="true" [showClear]="true" styleClass="w-full" [placeholder]="'IAM.FIELDS.NEVER_EXPIRES' | translate" />
+          </div>
+        </div>
+        @if (canEdit()) {
+          <p-divider />
+          <div class="flex justify-content-end gap-2">
+            <p-button [label]="'IAM.COMMON.DISCARD' | translate" severity="secondary" [outlined]="true" [disabled]="!isDirty() || saving()" (onClick)="discard()" />
+            <p-button type="submit" [label]="'COMMON.SAVE_CHANGES' | translate" icon="pi pi-check" [loading]="saving()" [disabled]="!isDirty()" />
+          </div>
+        }
+      </p-card>
+    </form>
+  </div>
+</div>
+
+<app-avatar-cropper-dialog [(visible)]="cropperOpen" [saving]="avatarBusy()" (confirmed)="onAvatarCropped($event)" />

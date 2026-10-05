@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -29,6 +29,7 @@ import {
   QuoteItemRequest,
 } from 'src/app/core/models/domain.model';
 import { LanguageService } from 'src/app/core/services/language.service';
+import { FinanceDefaultsStore } from 'src/app/core/services/finance/finance-defaults.store';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { DetailSkeletonComponent } from 'src/app/shared/components/detail-skeleton/detail-skeleton.component';
@@ -37,6 +38,9 @@ import { DetailSkeletonComponent } from 'src/app/shared/components/detail-skelet
 const LOCKED_STATUSES = ['ACCEPTED', 'REJECTED'] as const;
 
 type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary';
+
+/** Used only until the finance catalog answers (or if it is unreachable). */
+const LEGACY_CURRENCIES = ['MXN', 'USD', 'EUR', 'COP', 'ARS', 'CLP', 'PEN', 'GTQ'];
 
 @Component({
   selector: 'app-quote-edit',
@@ -86,7 +90,22 @@ export class QuoteEditComponent implements OnInit, OnDestroy {
   readonly extraFeeValue = signal(0);
   readonly total = signal(0);
 
-  readonly currencies = ['MXN', 'USD', 'EUR', 'COP', 'ARS', 'CLP', 'PEN', 'GTQ'];
+  private readonly financeDefaults = inject(FinanceDefaultsStore);
+
+  /** ACTIVE catalog currencies (doc §9); the legacy list only until the catalog answers. */
+  readonly currencies = computed(() => {
+    const codes = this.financeDefaults.currencyOptions().map((option) => option.code);
+    const list = codes.length > 0 ? codes : LEGACY_CURRENCIES;
+    // A quote keeps the currency it was issued in, even if that currency was later deactivated.
+    const current = this.quoteCurrency();
+    return current && !list.includes(current) ? [current, ...list] : list;
+  });
+
+  /** Catalog IVA presets: picking one fills the tax-rate field. */
+  readonly taxRatePresets = computed(() =>
+    this.financeDefaults.taxRateOptions().map((option) => ({ label: option.name, value: option.ratePercent ?? 0 })),
+  );
+  private readonly quoteCurrency = signal<string | null>(null);
 
   readonly form = this.fb.group({
     clientName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(150)]],
@@ -128,6 +147,15 @@ export class QuoteEditComponent implements OnInit, OnDestroy {
     this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.recalcTotals());
 
     this.loadQuote(id);
+    this.financeDefaults.load().pipe(takeUntil(this.destroy$)).subscribe({ error: () => undefined });
+  }
+
+  applyTaxPreset(ratePercent: number | null): void {
+    if (ratePercent === null) {
+      return;
+    }
+    this.form.controls.taxRate.setValue(ratePercent);
+    this.form.controls.taxRate.markAsDirty();
   }
 
   ngOnDestroy(): void {
@@ -156,6 +184,7 @@ export class QuoteEditComponent implements OnInit, OnDestroy {
   private hydrateForm(data: QuoteDetailResponse): void {
     this.quoteNumber.set(data.quoteNumber);
     this.status.set(data.status);
+    this.quoteCurrency.set(data.currency ?? null);
 
     this.items.clear();
     (data.items ?? []).forEach((item) => this.items.push(this.createItemGroup(item)));
@@ -167,7 +196,7 @@ export class QuoteEditComponent implements OnInit, OnDestroy {
       clientAddress: data.clientAddress ?? '',
       notes: data.notes ?? '',
       taxRate: data.taxRate ?? 0,
-      currency: data.currency ?? 'MXN',
+      currency: data.currency ?? this.financeDefaults.defaultCurrency().code,
       validDays: data.validDays ?? 15,
       deliveryFee: data.deliveryFee ?? 0,
       extraFee: data.extraFee ?? 0,

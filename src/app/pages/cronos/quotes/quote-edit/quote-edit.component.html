@@ -150,10 +150,22 @@
               <div class="col-6 flex flex-column gap-1">
                 <label for="editTaxRate" class="font-medium text-sm">{{ 'QUOTES.FORM.TAX' | translate }}</label>
                 <p-inputnumber inputId="editTaxRate" formControlName="taxRate" [min]="0" [max]="100" suffix=" %" />
+              @if (taxRatePresets().length > 0) {
+                <p-select
+                  [options]="taxRatePresets()"
+                  optionLabel="label"
+                  optionValue="value"
+                  [placeholder]="'FINANCE.TAX_RATES.PICK_PRESET' | translate"
+                  size="small"
+                  styleClass="w-full"
+                  (onChange)="applyTaxPreset($event.value)"
+                  [attr.aria-label]="'FINANCE.TAX_RATES.PICK_PRESET' | translate"
+                />
+              }
               </div>
               <div class="col-6 flex flex-column gap-1">
                 <label for="editCurrency" class="font-medium text-sm">{{ 'INGREDIENTS.FIELDS.CURRENCY' | translate }}</label>
-                <p-select inputId="editCurrency" formControlName="currency" [options]="currencies" />
+                <p-select inputId="editCurrency" formControlName="currency" [options]="currencies()" />
               </div>
               <div class="col-6 flex flex-column gap-1">
                 <label for="editValidDays" class="font-medium text-sm">{{ 'QUOTES.FORM.VALIDITY_DAYS' | translate }}</label>

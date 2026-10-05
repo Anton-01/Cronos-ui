@@ -1,0 +1,223 @@
+<div class="grid">
+  @if (canResetCredentials()) {
+    <div class="col-12 xl:col-5">
+      <p-card [header]="'IAM.SECURITY.CREDENTIALS' | translate" styleClass="h-full">
+        <div class="flex flex-column gap-3">
+          <div class="security-action">
+            <div class="flex flex-column gap-1">
+              <span class="font-medium">{{ 'IAM.SECURITY.RESET.TITLE' | translate }}</span>
+              <small class="text-color-secondary">{{ 'IAM.SECURITY.RESET.HINT' | translate }}</small>
+            </div>
+            <p-button [label]="'IAM.SECURITY.RESET.ACTION' | translate" icon="pi pi-replay" size="small" [outlined]="true" [disabled]="!canReceiveReset() || isSelf()" [pTooltip]="isSelf() ? ('IAM.SECURITY.SELF_HINT' | translate) : ''" (onClick)="openReset()" />
+          </div>
+          <p-divider styleClass="my-0" />
+          <div class="security-action">
+            <div class="flex flex-column gap-1">
+              <span class="font-medium">{{ 'IAM.SECURITY.FORCE_CHANGE.TITLE' | translate }}</span>
+              <small class="text-color-secondary">{{ (user().mustChangePassword ? 'IAM.SECURITY.FORCE_CHANGE.PENDING' : 'IAM.SECURITY.FORCE_CHANGE.HINT') | translate }}</small>
+            </div>
+            <p-button [label]="'IAM.SECURITY.FORCE_CHANGE.ACTION' | translate" icon="pi pi-key" size="small" [outlined]="true" [loading]="busy() === 'force'" [disabled]="user().mustChangePassword || isSelf()" (onClick)="requirePasswordChange()" />
+          </div>
+          <p-divider styleClass="my-0" />
+          <div class="security-action">
+            <div class="flex flex-column gap-1">
+              <span class="font-medium">{{ 'IAM.SECURITY.TWO_FACTOR.TITLE' | translate }}
+                <p-tag [value]="(user().twoFactorEnabled ? 'ACCOUNT.SIGN_IN.ENABLED' : 'ACCOUNT.SIGN_IN.DISABLED') | translate" [severity]="user().twoFactorEnabled ? 'success' : 'secondary'" styleClass="ml-2" />
+              </span>
+              <small class="text-color-secondary">{{ 'IAM.SECURITY.TWO_FACTOR.HINT' | translate }}</small>
+            </div>
+            <p-button [label]="'IAM.SECURITY.TWO_FACTOR.ACTION' | translate" icon="pi pi-mobile" size="small" severity="danger" [outlined]="true" [disabled]="!user().twoFactorEnabled || isSelf()" (onClick)="twoFactorOpen.set(true)" />
+          </div>
+          @if (user().status === 'PENDING_ACTIVATION') {
+            <p-divider styleClass="my-0" />
+            <div class="security-action">
+              <div class="flex flex-column gap-1">
+                <span class="font-medium">{{ 'IAM.SECURITY.INVITATION.TITLE' | translate }}</span>
+                <small class="text-color-secondary">
+                  {{ 'IAM.SECURITY.INVITATION.HINT' | translate }}
+                  @if (user().invitationExpiresAt) {
+                    {{ 'IAM.SECURITY.INVITATION.EXPIRES' | translate }} {{ user().invitationExpiresAt | date: 'medium' }}
+                  }
+                </small>
+              </div>
+              <p-button [label]="'IAM.SECURITY.INVITATION.ACTION' | translate" icon="pi pi-send" size="small" [outlined]="true" [loading]="busy() === 'invite'" (onClick)="resendInvitation()" />
+            </div>
+          }
+        </div>
+      </p-card>
+    </div>
+  }
+
+  @if (canManageSessions()) {
+    <div class="col-12" [class.xl:col-7]="canResetCredentials()">
+      <p-card styleClass="h-full">
+        <ng-template pTemplate="title">
+          <div class="flex align-items-center justify-content-between gap-2">
+            <span>{{ 'IAM.SECURITY.SESSIONS.TITLE' | translate }}</span>
+            <div class="flex gap-1">
+              <p-button icon="pi pi-refresh" [text]="true" [rounded]="true" severity="secondary" [ariaLabel]="'COMMON.REFRESH' | translate" (onClick)="loadSessions()" />
+              @if (sessions().length > 0 && !isSelf()) {
+                <p-button [label]="'IAM.SECURITY.SESSIONS.REVOKE_ALL' | translate" icon="pi pi-sign-out" size="small" severity="danger" [outlined]="true" (onClick)="revokeAll()" />
+              }
+            </div>
+          </div>
+        </ng-template>
+        <p-table [value]="sessions()" [loading]="sessionsLoading()" [showLoader]="false" dataKey="id">
+          <ng-template pTemplate="header">
+            <tr>
+              <th>{{ 'IAM.SECURITY.SESSIONS.DEVICE' | translate }}</th>
+              <th>{{ 'IAM.SECURITY.SESSIONS.LOCATION' | translate }}</th>
+              <th>{{ 'IAM.SECURITY.SESSIONS.LAST_ACTIVITY' | translate }}</th>
+              <th style="width: 4rem"></th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-session>
+            <tr>
+              <td>
+                <div class="flex flex-column text-sm">
+                  <span class="font-medium">{{ session.browser }} · {{ session.os }}</span>
+                  <span class="text-color-secondary">{{ session.device }}</span>
+                </div>
+              </td>
+              <td class="text-sm">
+                <div class="flex flex-column">
+                  <span>{{ session.location ?? '—' }}</span>
+                  <span class="text-color-secondary font-mono text-xs">{{ session.ipAddress }}</span>
+                </div>
+              </td>
+              <td class="text-sm">{{ session.lastActivityAt | date: 'medium' }}</td>
+              <td class="text-right">
+                @if (!isSelf()) {
+                  <p-button icon="pi pi-times" severity="danger" [text]="true" [rounded]="true" [pTooltip]="'IAM.SECURITY.SESSIONS.REVOKE' | translate" [ariaLabel]="'IAM.SECURITY.SESSIONS.REVOKE' | translate" (onClick)="revokeSession(session)" />
+                }
+              </td>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="loadingbody">
+            @for (row of skeletonRows; track $index) {
+              <tr appTableSkeletonRow [columns]="4"></tr>
+            }
+          </ng-template>
+          <ng-template pTemplate="emptymessage">
+            <tr><td colspan="4" class="text-center text-color-secondary py-4">{{ 'IAM.SECURITY.SESSIONS.EMPTY' | translate }}</td></tr>
+          </ng-template>
+        </p-table>
+      </p-card>
+    </div>
+  }
+
+  <div class="col-12">
+    <p-card [header]="'IAM.SECURITY.HISTORY.TITLE' | translate">
+      <p-table
+        [value]="attempts()"
+        [lazy]="true"
+        (onLazyLoad)="loadAttempts($event)"
+        [totalRecords]="attemptsTotal()"
+        [rows]="10"
+        [paginator]="true"
+        [rowsPerPageOptions]="[10, 25, 50]"
+        [loading]="attemptsLoading()"
+        [showLoader]="false"
+        dataKey="id"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th>{{ 'IAM.AUDIT.WHEN' | translate }}</th>
+            <th>{{ 'IAM.AUDIT.RESULT' | translate }}</th>
+            <th>{{ 'IAM.SECURITY.SESSIONS.DEVICE' | translate }}</th>
+            <th>{{ 'IAM.SECURITY.SESSIONS.LOCATION' | translate }}</th>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-attempt>
+          <tr>
+            <td class="text-sm">{{ attempt.occurredAt | date: 'medium' }}</td>
+            <td>
+              <div class="flex flex-column gap-1 align-items-start">
+                <p-tag [value]="'IAM.SECURITY.HISTORY.OUTCOME.' + attempt.outcome | translate" [severity]="outcomeSeverity[attempt.outcome]" />
+                @if (attempt.failureReason) {
+                  <small class="text-color-secondary">{{ attempt.failureReason }}</small>
+                }
+              </div>
+            </td>
+            <td class="text-sm">{{ attempt.browser ?? '—' }}{{ attempt.os ? ' · ' + attempt.os : '' }}</td>
+            <td class="text-sm">
+              <div class="flex flex-column">
+                <span>{{ attempt.location ?? '—' }}</span>
+                <span class="text-color-secondary font-mono text-xs">{{ attempt.ipAddress }}</span>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+        <ng-template pTemplate="loadingbody">
+          @for (row of skeletonRows; track $index) {
+            <tr appTableSkeletonRow [columns]="4"></tr>
+          }
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+          <tr><td colspan="4" class="text-center text-color-secondary py-4">{{ 'IAM.SECURITY.HISTORY.EMPTY' | translate }}</td></tr>
+        </ng-template>
+      </p-table>
+    </p-card>
+  </div>
+</div>
+
+<!-- Password reset -->
+<p-dialog
+  [header]="'IAM.SECURITY.RESET.TITLE' | translate"
+  [visible]="resetOpen()"
+  (visibleChange)="!$event && !resetBusy() && resetOpen.set(false)"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '34rem' }"
+  [breakpoints]="{ '640px': '95vw' }"
+>
+  @if (resetResult(); as result) {
+    <div class="flex flex-column align-items-center text-center gap-3 py-2">
+      <i class="pi pi-check-circle text-green-500 text-4xl" aria-hidden="true"></i>
+      <p class="m-0 line-height-3">
+        {{ (result.mode === 'EMAIL_LINK' ? 'IAM.SECURITY.RESET.SENT_LINK' : 'IAM.SECURITY.RESET.SENT_TEMP') | translate: { to: result.deliveredTo } }}
+      </p>
+      <small class="text-color-secondary">{{ 'IAM.SECURITY.RESET.EXPIRES' | translate }} {{ result.expiresAt | date: 'medium' }}</small>
+    </div>
+  } @else {
+    <div class="flex flex-column gap-3">
+      <p class="m-0 text-color-secondary">{{ 'IAM.SECURITY.RESET.DESCRIPTION' | translate: { email: user().email } }}</p>
+      <label class="flex align-items-start gap-2 cursor-pointer">
+        <p-radiobutton name="resetMode" value="EMAIL_LINK" [ngModel]="resetMode()" (ngModelChange)="resetMode.set($event)" inputId="resetLink" />
+        <span class="flex flex-column">
+          <span class="font-medium">{{ 'IAM.SECURITY.RESET.MODE_LINK' | translate }}</span>
+          <small class="text-color-secondary">{{ 'IAM.SECURITY.RESET.MODE_LINK_HINT' | translate }}</small>
+        </span>
+      </label>
+      <label class="flex align-items-start gap-2 cursor-pointer">
+        <p-radiobutton name="resetMode" value="TEMPORARY_PASSWORD" [ngModel]="resetMode()" (ngModelChange)="resetMode.set($event)" inputId="resetTemp" />
+        <span class="flex flex-column">
+          <span class="font-medium">{{ 'IAM.SECURITY.RESET.MODE_TEMP' | translate }}</span>
+          <small class="text-color-secondary">{{ 'IAM.SECURITY.RESET.MODE_TEMP_HINT' | translate }}</small>
+        </span>
+      </label>
+      <label class="flex align-items-center gap-2 cursor-pointer">
+        <p-toggleswitch [ngModel]="resetRevoke()" (ngModelChange)="resetRevoke.set($event)" />
+        <span>{{ 'IAM.SECURITY.RESET.REVOKE' | translate }}</span>
+      </label>
+    </div>
+  }
+  <ng-template pTemplate="footer">
+    @if (resetResult()) {
+      <p-button [label]="'COMMON.CLOSE' | translate" (onClick)="resetOpen.set(false)" />
+    } @else {
+      <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" [disabled]="resetBusy()" (onClick)="resetOpen.set(false)" />
+      <p-button [label]="'IAM.SECURITY.RESET.SEND' | translate" icon="pi pi-send" [loading]="resetBusy()" (onClick)="submitReset()" />
+    }
+  </ng-template>
+</p-dialog>
+
+<app-reason-dialog
+  [(visible)]="twoFactorOpen"
+  [title]="'IAM.SECURITY.TWO_FACTOR.TITLE' | translate"
+  [message]="'IAM.SECURITY.TWO_FACTOR.CONFIRM' | translate: { name: user().displayName }"
+  [confirmLabel]="'IAM.SECURITY.TWO_FACTOR.ACTION' | translate"
+  severity="danger"
+  [saving]="busy() === '2fa'"
+  (confirmed)="resetTwoFactor($event)"
+/>

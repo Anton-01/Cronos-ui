@@ -1,0 +1,138 @@
+<p-card>
+  <p-table [value]="filtered()" dataKey="id" [loading]="loading()" [showLoader]="false" [rowHover]="true" sortField="code" [sortOrder]="1">
+    <ng-template pTemplate="caption">
+      <div class="flex flex-wrap align-items-center justify-content-between gap-2">
+        <p-iconfield iconPosition="left">
+          <p-inputicon styleClass="pi pi-search" />
+          <input pInputText type="search" [ngModel]="search()" (ngModelChange)="search.set($event)" [placeholder]="'FINANCE.CURRENCIES.SEARCH' | translate" />
+        </p-iconfield>
+        @if (canManage()) {
+          <p-button [label]="'FINANCE.CURRENCIES.CREATE' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
+        }
+      </div>
+    </ng-template>
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="code" style="width: 9rem">{{ 'COMMON.TABLE.CODE' | translate }} <p-sortIcon field="code" /></th>
+        <th pSortableColumn="name" style="min-width: 12rem">{{ 'COMMON.TABLE.NAME' | translate }} <p-sortIcon field="name" /></th>
+        <th style="width: 6rem" class="text-center">{{ 'FINANCE.CURRENCIES.SYMBOL' | translate }}</th>
+        <th style="width: 7rem" class="text-center">{{ 'FINANCE.CURRENCIES.DECIMALS' | translate }}</th>
+        <th style="min-width: 11rem">{{ 'FINANCE.CURRENCIES.FORMAT' | translate }}</th>
+        <th style="width: 9rem">{{ 'COMMON.TABLE.STATUS' | translate }}</th>
+        <th style="width: 11rem" class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr>
+        <td>
+          <div class="flex align-items-center gap-2">
+            <span class="font-mono font-semibold">{{ item.code }}</span>
+            <span class="text-xs text-color-secondary font-mono">{{ item.numericCode }}</span>
+          </div>
+        </td>
+        <td>
+          <div class="flex align-items-center gap-2">
+            <span>{{ item.name }}</span>
+            @if (item.isDefault) {
+              <p-tag [value]="'FINANCE.DEFAULT.BADGE' | translate" icon="pi pi-star-fill" severity="success" />
+            }
+            @if (item.inUse) {
+              <i class="pi pi-link text-xs text-color-secondary" [pTooltip]="'FINANCE.IN_USE' | translate"></i>
+            }
+          </div>
+        </td>
+        <td class="text-center font-semibold">{{ item.symbol }}</td>
+        <td class="text-center">{{ item.decimalPlaces }}</td>
+        <td class="font-mono text-sm">{{ format(item) }}</td>
+        <td>
+          <span class="status-pill" [class.status-pill-active]="item.status === 'ACTIVE'" [class.status-pill-inactive]="item.status !== 'ACTIVE'">
+            {{ (item.status === 'ACTIVE' ? 'COMMON.STATUS.ACTIVE' : 'COMMON.STATUS.INACTIVE') | translate }}
+          </span>
+        </td>
+        <td class="text-right white-space-nowrap">
+          @if (canSetDefault() && !item.isDefault && item.status === 'ACTIVE') {
+            <p-button icon="pi pi-star" severity="warn" [text]="true" [rounded]="true" [pTooltip]="'FINANCE.DEFAULT.SET' | translate" [ariaLabel]="'FINANCE.DEFAULT.SET' | translate" (onClick)="setDefault(item)" />
+          }
+          @if (canManage()) {
+            <p-button icon="pi pi-pencil" severity="info" [text]="true" [rounded]="true" [pTooltip]="'COMMON.EDIT' | translate" (onClick)="openEdit(item)" />
+            <p-button
+              [icon]="item.status === 'ACTIVE' ? 'pi pi-ban' : 'pi pi-check-circle'"
+              severity="secondary"
+              [text]="true"
+              [rounded]="true"
+              [disabled]="item.isDefault"
+              [pTooltip]="(item.isDefault ? 'FINANCE.DEFAULT.LOCKED' : item.status === 'ACTIVE' ? 'IAM.ROLES.ACTIONS.DEACTIVATE' : 'IAM.ROLES.ACTIONS.ACTIVATE') | translate"
+              (onClick)="toggleStatus(item)"
+            />
+            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" [disabled]="item.isDefault || item.inUse" [pTooltip]="(item.isDefault ? 'FINANCE.DEFAULT.LOCKED' : item.inUse ? 'FINANCE.IN_USE_DELETE' : 'COMMON.DELETE') | translate" (onClick)="remove(item)" />
+          }
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="loadingbody">
+      @for (row of skeletonRows; track $index) {
+        <tr appTableSkeletonRow [columns]="7"></tr>
+      }
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="7" class="text-center text-color-secondary py-5">{{ 'FINANCE.CURRENCIES.EMPTY' | translate }}</td></tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-dialog
+  [header]="(editing() ? 'FINANCE.CURRENCIES.EDIT' : 'FINANCE.CURRENCIES.CREATE') | translate"
+  [visible]="dialogOpen()"
+  (visibleChange)="!$event && !saving() && dialogOpen.set(false)"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '34rem' }"
+  [breakpoints]="{ '640px': '95vw' }"
+>
+  <form [formGroup]="form" class="grid" (ngSubmit)="save()">
+    @if (editing()?.inUse) {
+      <div class="col-12">
+        <p-message severity="info" [text]="'FINANCE.CURRENCIES.IN_USE_LOCK' | translate" styleClass="w-full" />
+      </div>
+    }
+    <div class="col-6 flex flex-column gap-1">
+      <label for="curCode" class="font-medium">{{ 'FINANCE.CURRENCIES.ISO_CODE' | translate }} <span class="text-red-500">*</span></label>
+      <input pInputText id="curCode" formControlName="code" class="font-mono uppercase" maxlength="3" placeholder="MXN" (blur)="uppercase('code')" [invalid]="showError('code')" />
+      <app-field-error [errors]="form.controls.code.errors" [visible]="showError('code')" />
+    </div>
+    <div class="col-6 flex flex-column gap-1">
+      <label for="curNumeric" class="font-medium">{{ 'FINANCE.CURRENCIES.NUMERIC_CODE' | translate }} <span class="text-red-500">*</span></label>
+      <input pInputText id="curNumeric" formControlName="numericCode" class="font-mono" maxlength="3" inputmode="numeric" placeholder="484" [invalid]="showError('numericCode')" />
+      <app-field-error [errors]="form.controls.numericCode.errors" [visible]="showError('numericCode')" />
+    </div>
+    <div class="col-12 flex flex-column gap-1">
+      <label for="curName" class="font-medium">{{ 'COMMON.TABLE.NAME' | translate }} <span class="text-red-500">*</span></label>
+      <input pInputText id="curName" formControlName="name" [maxlength]="nameMax" [placeholder]="'FINANCE.CURRENCIES.NAME_PLACEHOLDER' | translate" [invalid]="showError('name')" />
+      <app-field-error [errors]="form.controls.name.errors" [visible]="showError('name')" />
+    </div>
+    <div class="col-6 flex flex-column gap-1">
+      <label for="curSymbol" class="font-medium">{{ 'FINANCE.CURRENCIES.SYMBOL' | translate }} <span class="text-red-500">*</span></label>
+      <input pInputText id="curSymbol" formControlName="symbol" [maxlength]="symbolMax" [invalid]="showError('symbol')" />
+      <app-field-error [errors]="form.controls.symbol.errors" [visible]="showError('symbol')" />
+    </div>
+    <div class="col-6 flex flex-column gap-1">
+      <label for="curDecimals" class="font-medium">{{ 'FINANCE.CURRENCIES.DECIMALS' | translate }} <span class="text-red-500">*</span></label>
+      <p-inputnumber inputId="curDecimals" formControlName="decimalPlaces" [min]="0" [max]="4" [showButtons]="true" styleClass="w-full" [invalid]="showError('decimalPlaces')" />
+      <app-field-error [errors]="form.controls.decimalPlaces.errors" [visible]="showError('decimalPlaces')" />
+    </div>
+    <div class="col-12 flex flex-column gap-1">
+      <span class="font-medium">{{ 'FINANCE.CURRENCIES.SYMBOL_POSITION' | translate }}</span>
+      <p-selectbutton formControlName="symbolPosition" [options]="positionOptions()" optionLabel="label" optionValue="value" [allowEmpty]="false" />
+    </div>
+    <div class="col-12">
+      <div class="p-3 border-round-xl surface-ground flex align-items-center justify-content-between">
+        <span class="text-sm text-color-secondary">{{ 'FINANCE.CURRENCIES.PREVIEW' | translate }}</span>
+        <span class="font-mono font-semibold text-lg">{{ preview() }}</span>
+      </div>
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" [disabled]="saving()" (onClick)="dialogOpen.set(false)" />
+    <p-button [label]="(editing() ? 'COMMON.UPDATE' : 'COMMON.CREATE') | translate" icon="pi pi-check" [loading]="saving()" (onClick)="save()" />
+  </ng-template>
+</p-dialog>

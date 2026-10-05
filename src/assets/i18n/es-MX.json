@@ -74,7 +74,8 @@
       "OPERATIONS": "Operación",
       "CATALOGS": "Catálogos",
       "ACCOUNT": "Cuenta",
-      "ADMINISTRATION": "Administración"
+      "ADMINISTRATION": "Administración",
+      "SETTINGS": "Configuración"
     },
     "ITEMS": {
       "DASHBOARD": "Tablero",
@@ -91,11 +92,16 @@
       "MY_ACCOUNT": "Mi Cuenta",
       "SECURITY": "Seguridad",
       "USER_MANAGEMENT": "Gestión de Usuarios",
-      "ROLE_MANAGEMENT": "Gestión de Roles",
+      "ROLE_MANAGEMENT": "Roles y permisos",
       "SIGN_OUT": "Cerrar Sesión",
       "ACCOUNT_SETTINGS": "Configuración de la cuenta",
       "FISCAL_DATA": "Datos fiscales",
-      "IMPORT_HISTORY": "Historial de Importaciones"
+      "IMPORT_HISTORY": "Historial de Importaciones",
+      "ROLES": "Roles",
+      "PERMISSION_GROUPS": "Grupos de permisos",
+      "AUDIT_LOG": "Bitácora de auditoría",
+      "SECURITY_POLICY": "Política de seguridad",
+      "FINANCE": "Monedas e impuestos"
     }
   },
   "BREADCRUMB": {
@@ -936,6 +942,11 @@
       "DISABLE_2FA": "Desactivar 2FA",
       "ERRORS": {
         "PASSWORD_REUSE": "La nueva contraseña debe ser distinta de la actual"
+      },
+      "ENROLLMENT": {
+        "REQUIRED_TITLE": "Activa la verificación en dos pasos",
+        "REQUIRED_MESSAGE": "Tu rol exige verificación en dos pasos. Actívala para continuar usando la plataforma.",
+        "BANNER": "Escanea el código QR con tu app de autenticación (Google Authenticator, Microsoft Authenticator, 1Password…) e ingresa el código de 6 dígitos. Al confirmarlo volverás a la pantalla en la que estabas."
       }
     },
     "SETTINGS": {
@@ -1024,76 +1035,6 @@
       }
     }
   },
-  "ADMIN": {
-    "USERS": {
-      "DESCRIPTION": "Administra los usuarios del sistema, sus roles y accesos",
-      "SEARCH_PLACEHOLDER": "Buscar usuario...",
-      "ALL_ROLES": "Todos los roles",
-      "ALL_STATUSES": "Todos los estados",
-      "CREATE": "Nuevo Usuario",
-      "BLOCKED": "Bloqueado",
-      "SAVE_ROLES": "Guardar Roles",
-      "LAST_ACCESS": "Último acceso",
-      "EMPTY": "No hay usuarios registrados",
-      "FAILED_ATTEMPTS": "Intentos fallidos",
-      "CREATED_AT": "Creado",
-      "LOAD_FAILED": "Error al cargar usuarios",
-      "ACTIONS": {
-        "VIEW_DETAILS": "Ver detalles",
-        "ASSIGN_ROLES": "Asignar roles",
-        "BLOCK": "Bloquear usuario",
-        "UNBLOCK": "Desbloquear usuario"
-      },
-      "TOAST": {
-        "ROLES_UPDATED": "Roles actualizados",
-        "BLOCKED": "Usuario bloqueado",
-        "UNBLOCKED": "Usuario desbloqueado",
-        "CREATED": "Usuario creado",
-        "CREATED_DETAIL": "\"{{ username }}\" fue registrado exitosamente",
-        "CREATE_FAILED": "Error al crear usuario"
-      },
-      "MODAL": {
-        "SUBTITLE": "Registra un nuevo usuario en el sistema y asígnale un rol.",
-        "PHOTO": "Foto de perfil",
-        "PHOTO_FORMATS": "JPG, PNG o WEBP",
-        "UPLOAD_IMAGE": "Subir imagen",
-        "PREVIEW_ALT": "Vista previa",
-        "CHANGE_IMAGE": "Cambiar imagen",
-        "REMOVE_IMAGE": "Quitar imagen",
-        "SUBMIT": "Crear Usuario",
-        "ROLES_LOAD_FAILED": "No se pudieron cargar los roles disponibles",
-        "INVALID_FORMAT": "Formato inválido",
-        "INVALID_FORMAT_DETAIL": "Usa una imagen JPG, PNG o WEBP",
-        "ERRORS": {
-          "USERNAME": "Username requerido (3-50 caracteres)",
-          "ROLE_REQUIRED": "Selecciona al menos un rol"
-        }
-      }
-    },
-    "ROLES": {
-      "DESCRIPTION": "Define los roles del sistema y sus permisos",
-      "CREATE": "Nuevo Rol",
-      "ROLE": "Rol",
-      "PERMISSIONS": "Permisos",
-      "EMPTY": "No hay roles registrados",
-      "NAME_PLACEHOLDER": "Ej. MANAGER",
-      "DESCRIPTION_PLACEHOLDER": "Descripción del rol",
-      "TOTAL_PERMISSIONS": "{{ count }} permisos en total",
-      "LOAD_FAILED": "No se pudieron cargar los roles",
-      "PERMISSIONS_LOAD_FAILED": "No se pudieron cargar los permisos",
-      "ERRORS": {
-        "NAME_REQUIRED": "El nombre es requerido"
-      },
-      "TOAST": {
-        "CREATED": "Rol creado",
-        "CREATED_DETAIL": "\"{{ name }}\" fue creado exitosamente",
-        "CREATE_FAILED": "No se pudo crear el rol",
-        "UPDATED": "Rol actualizado",
-        "UPDATED_DETAIL": "\"{{ name }}\" fue actualizado",
-        "UPDATE_FAILED": "No se pudo actualizar el rol"
-      }
-    }
-  },
   "PUBLIC": {
     "GO_HOME": "Ir al inicio",
     "PRINT": "Imprimir",
@@ -1141,7 +1082,12 @@
     "REGIME_MISMATCH": "Este régimen fiscal no aplica al tipo de contribuyente del RFC",
     "ZIP_CODE": "Ingresa un código postal válido de 5 dígitos",
     "DUPLICATE": "Este valor ya está en uso",
-    "INVALID": "Valor no válido"
+    "INVALID": "Valor no válido",
+    "TAKEN": "Este valor ya está registrado",
+    "MIN": "El valor mínimo es {{ value }}",
+    "MAX": "El valor máximo es {{ value }}",
+    "PATTERN": "El formato no es válido",
+    "MAX_DECIMALS": "Usa como máximo {{ value }} decimales"
   },
   "PHONE_INPUT": {
     "COUNTRY": "Lada internacional",
@@ -1317,6 +1263,678 @@
       "LOAD_FAILED": "No se pudo cargar el historial de importaciones",
       "REPORT_FAILED": "No se pudo cargar el reporte",
       "SHA_COPIED": "SHA-256 copiado al portapapeles"
+    }
+  },
+  "IAM": {
+    "COMMON": {
+      "ACTION_FAILED": "No se pudo completar la acción",
+      "APPLY": "Aplicar",
+      "CLEAR_FILTERS": "Limpiar filtros",
+      "CONCURRENT_MODIFICATION": "Otro administrador modificó este registro. Se recargó la información más reciente; revisa y vuelve a intentarlo.",
+      "DISCARD": "Descartar",
+      "EXPORT_CSV": "Exportar CSV",
+      "UNSAVED_CHANGES": "Tienes cambios sin guardar"
+    },
+    "USER_STATUS": {
+      "PENDING_ACTIVATION": "Pendiente de activación",
+      "ACTIVE": "Activo",
+      "SUSPENDED": "Suspendido",
+      "LOCKED": "Bloqueado",
+      "DEACTIVATED": "Dado de baja",
+      "UNTIL": "Hasta"
+    },
+    "STATUS_REASON": {
+      "SECURITY_INCIDENT": "Incidente de seguridad",
+      "POLICY_VIOLATION": "Incumplimiento de políticas",
+      "OFFBOARDING": "Baja del colaborador",
+      "LEAVE_OF_ABSENCE": "Licencia o ausencia temporal",
+      "ROLE_CHANGE": "Cambio de puesto",
+      "ADMIN_REQUEST": "Solicitud administrativa",
+      "OTHER": "Otro (especificar)"
+    },
+    "RISK": {
+      "LOW": "Bajo",
+      "MEDIUM": "Medio",
+      "HIGH": "Alto",
+      "CRITICAL": "Crítico"
+    },
+    "REASON": {
+      "LABEL": "Justificación",
+      "PLACEHOLDER": "Describe el motivo del cambio; quedará registrado en la bitácora de auditoría.",
+      "MIN": "Mínimo {{ min }} caracteres"
+    },
+    "FIELDS": {
+      "FIRST_NAME": "Nombre(s)",
+      "LAST_NAME": "Apellidos",
+      "USERNAME": "Nombre de usuario",
+      "USERNAME_HINT": "3–50 caracteres: letras, números, punto, guion o guion bajo.",
+      "EMAIL": "Correo electrónico",
+      "PHONE": "Teléfono",
+      "LOCALE": "Idioma preferido",
+      "JOB_TITLE": "Puesto",
+      "DEPARTMENT": "Área / departamento",
+      "EMPLOYEE_NUMBER": "Número de empleado",
+      "ACCESS_EXPIRES": "Vigencia del acceso",
+      "NEVER_EXPIRES": "Sin vencimiento",
+      "ACCESS_EXPIRES_HINT": "Para personal temporal o externo: el acceso se desactiva automáticamente al terminar el día indicado."
+    },
+    "USERS": {
+      "TITLE": "Usuarios",
+      "DESCRIPTION": "Alta, ciclo de vida, accesos y seguridad de las cuentas de la plataforma",
+      "SEARCH": "Buscar por nombre, usuario o correo…",
+      "CREATE": "Nuevo usuario",
+      "LOAD_FAILED": "No se pudieron cargar los usuarios",
+      "EXPORT_FAILED": "No se pudo exportar el listado",
+      "EMPTY": "Aún no hay usuarios registrados",
+      "EMPTY_FILTERED": "Ningún usuario coincide con los filtros",
+      "NO_ROLES": "Sin roles",
+      "NEVER": "Nunca",
+      "MUST_CHANGE_PASSWORD": "Debe cambiar contraseña",
+      "FILTERS": {
+        "STATUS": "Estatus",
+        "ROLE": "Rol",
+        "TWO_FACTOR": "2FA",
+        "TWO_FACTOR_ON": "Con 2FA",
+        "TWO_FACTOR_OFF": "Sin 2FA"
+      },
+      "KPI": {
+        "TOTAL": "Usuarios totales",
+        "TWO_FACTOR": "{{ count }} con 2FA activo",
+        "ACTIVE": "Activos",
+        "DORMANT": "{{ count }} sin actividad en 90 días",
+        "PENDING": "Pendientes de activar",
+        "NEVER_LOGGED": "{{ count }} nunca han ingresado",
+        "RESTRICTED": "Bloqueados / suspendidos",
+        "EXPIRING": "{{ count }} accesos vencen en 30 días"
+      },
+      "COLUMNS": {
+        "USER": "Usuario",
+        "ROLES": "Roles",
+        "LAST_LOGIN": "Último acceso",
+        "CREATED": "Alta"
+      },
+      "ACTIONS": {
+        "OPEN": "Abrir ficha",
+        "MANAGE_ACCESS": "Gestionar accesos",
+        "SECURITY": "Seguridad y credenciales",
+        "ACTIVITY": "Historial de actividad"
+      },
+      "BULK": {
+        "REGION": "Acciones masivas",
+        "SUBJECT": "{{ count }} usuario(s) seleccionado(s)",
+        "ACTIONS": "Acciones",
+        "CLEAR": "Quitar selección",
+        "SET_ACTIVE": "Activar",
+        "SET_SUSPENDED": "Suspender",
+        "SET_LOCKED": "Bloquear",
+        "SET_DEACTIVATED": "Dar de baja",
+        "ROLES": "Asignar / retirar roles",
+        "ROLES_DESCRIPTION": "Los cambios se aplicarán a {{ count }} usuario(s). Los roles que ya tengan no se duplican.",
+        "ADD_ROLES": "Roles a agregar",
+        "REMOVE_ROLES": "Roles a retirar",
+        "OVERLAP": "Un rol no puede agregarse y retirarse a la vez.",
+        "SELF_EXCLUDED": "Tu propia cuenta se excluirá de esta acción.",
+        "NONE_ELIGIBLE": "Ninguno de los usuarios seleccionados admite este cambio de estatus.",
+        "DONE": "Acción aplicada a {{ count }} usuario(s)",
+        "PARTIAL": "{{ ok }} aplicados, {{ failed }} omitidos",
+        "FAILED": "No se pudo aplicar la acción masiva"
+      }
+    },
+    "CREATE": {
+      "TITLE": "Alta de usuario",
+      "DESCRIPTION": "Registra una nueva cuenta, asígnale accesos y define cómo se activará",
+      "NEW_USER": "Nuevo usuario",
+      "EMAIL_PENDING": "correo pendiente",
+      "ADD_PHOTO": "Agregar foto",
+      "CHANGE_PHOTO": "Cambiar foto",
+      "AVATAR_ALT": "Foto de perfil",
+      "PHOTO_HINT": "JPG, PNG o WEBP. Se recorta a 512 × 512 px.",
+      "CHECKING": "Verificando disponibilidad…",
+      "CHECKING_AVAILABILITY": "Espera a que termine la verificación de disponibilidad.",
+      "NEXT": "Siguiente",
+      "SUBMIT": "Crear usuario",
+      "STEPS": {
+        "IDENTITY": "Identidad",
+        "ACCESS": "Accesos",
+        "REVIEW": "Activación y revisión"
+      },
+      "SECTIONS": {
+        "PERSONAL": "Datos personales",
+        "ORGANIZATION": "Datos organizacionales",
+        "ROLES": "Roles",
+        "EXTRA_ACCESS": "Accesos adicionales",
+        "ACTIVATION": "Método de activación",
+        "SUMMARY": "Resumen"
+      },
+      "ROLES_HINT": "Asigna los roles según la función del usuario (principio de mínimo privilegio).",
+      "PERMISSION_GROUPS": "Grupos de permisos",
+      "PERMISSION_GROUPS_PLACEHOLDER": "Selecciona grupos (opcional)",
+      "PERMISSION_GROUPS_HINT": "Paquetes de permisos que se suman a los de sus roles.",
+      "REQUIRE_2FA": "Exigir autenticación de dos factores",
+      "REQUIRE_2FA_HINT": "El usuario deberá configurar 2FA en su primer ingreso.",
+      "NO_ACCESS_WARNING": "El usuario no tendrá ningún permiso hasta que le asignes un rol o grupo.",
+      "MODE": {
+        "INVITATION": "Enviar invitación por correo",
+        "INVITATION_HINT": "El usuario recibe un enlace de un solo uso para definir su propia contraseña. Nadie más la conoce.",
+        "TEMPORARY": "Contraseña temporal por correo",
+        "TEMPORARY_HINT": "Se genera una contraseña aleatoria que se envía al usuario y deberá cambiarla en su primer ingreso."
+      },
+      "RECOMMENDED": "Recomendado",
+      "REQUIRED": "Obligatorio",
+      "OPTIONAL": "Opcional",
+      "UNSAVED_MESSAGE": "El alta del usuario no se ha completado. Si sales, se perderá la información capturada.",
+      "TOAST": {
+        "INVITED": "Usuario creado. Se envió la invitación a {{ email }}",
+        "CREATED": "Usuario creado. Se enviaron las credenciales temporales a {{ email }}",
+        "FAILED": "No se pudo crear el usuario"
+      }
+    },
+    "DETAIL": {
+      "TITLE": "Ficha de usuario",
+      "DESCRIPTION": "Perfil, accesos, seguridad y actividad de la cuenta",
+      "NOT_FOUND": "El usuario no existe o fue eliminado",
+      "BACK_TO_LIST": "Volver al listado",
+      "LOAD_FAILED": "No se pudo cargar el usuario",
+      "YOU": "Tú",
+      "EMAIL_VERIFIED": "Correo verificado",
+      "CHANGE_STATUS": "Cambiar estatus",
+      "ALERTS": {
+        "EMAIL_UNVERIFIED": "Correo sin verificar",
+        "MUST_CHANGE_PASSWORD": "Cambio de contraseña pendiente",
+        "FAILED_ATTEMPTS": "{{ count }} intento(s) fallido(s) de acceso",
+        "EXPIRING": "Acceso vence el {{ date }}"
+      },
+      "TABS": {
+        "OVERVIEW": "Perfil",
+        "ACCESS": "Accesos y permisos",
+        "SECURITY": "Seguridad",
+        "ACTIVITY": "Actividad"
+      },
+      "PROFILE": {
+        "ACCOUNT_FACTS": "Datos de la cuenta",
+        "ID": "ID",
+        "CREATED": "Creado",
+        "UPDATED": "Última modificación",
+        "PASSWORD_CHANGED": "Contraseña cambiada",
+        "FAILED_ATTEMPTS": "Intentos fallidos",
+        "INVITATION_EXPIRES": "Invitación vence",
+        "EMAIL_REVERIFY": "Al cambiar el correo, el usuario deberá verificarlo de nuevo.",
+        "SAVED": "Perfil actualizado",
+        "SAVED_EMAIL": "Perfil actualizado. Se envió un correo de verificación a la nueva dirección.",
+        "SAVE_FAILED": "No se pudo actualizar el perfil",
+        "AVATAR_UPDATED": "Foto de perfil actualizada",
+        "AVATAR_REMOVED": "Foto de perfil eliminada",
+        "REMOVE_AVATAR_TITLE": "¿Quitar foto de perfil?",
+        "REMOVE_AVATAR_MESSAGE": "Se mostrarán las iniciales del usuario en su lugar."
+      },
+      "ACCESS": {
+        "ASSIGNMENTS": "Asignaciones",
+        "NO_ROLES": "Sin roles asignados",
+        "EFFECTIVE": "Permisos efectivos",
+        "EFFECTIVE_HINT": "Resultado de roles + grupos + concesiones directas − denegaciones.",
+        "PREVIEWING": "Calculando vista previa…",
+        "WILL_GAIN": "Obtendrá {{ count }} permiso(s)",
+        "WILL_LOSE": "Perderá {{ count }} permiso(s)",
+        "FINE_TUNING": "Ajuste fino de permisos",
+        "FINE_TUNING_HINT": "Concede permisos adicionales o deniega explícitamente permisos heredados. Una denegación siempre prevalece.",
+        "SAVE": "Guardar accesos",
+        "SAVED": "Accesos actualizados",
+        "SAVE_FAILED": "No se pudieron actualizar los accesos",
+        "LOAD_FAILED": "No se pudieron cargar los accesos",
+        "SELF_READONLY": "No puedes modificar tus propios accesos. Solicítalo a otro administrador (segregación de funciones).",
+        "CONFIRM_TITLE": "Confirmar cambio de accesos",
+        "CONFIRM_MESSAGE": "El usuario obtendrá {{ gained }} y perderá {{ lost }} permiso(s). El cambio se aplica de inmediato y cierra sus sesiones activas si pierde permisos.",
+        "VIA": "vía",
+        "SOURCE": {
+          "ROLE": "Rol",
+          "ROLE_GROUP": "Grupo",
+          "USER_GROUP": "Grupo",
+          "DIRECT_GRANT": "Concesión directa"
+        }
+      },
+      "ACTIVITY": {
+        "HINT": "Eventos registrados en la bitácora inmutable de auditoría.",
+        "ON_USER": "Cambios a este usuario",
+        "BY_USER": "Acciones del usuario"
+      }
+    },
+    "STATUS_DIALOG": {
+      "TITLE": {
+        "PENDING_ACTIVATION": "Pendiente de activación",
+        "ACTIVE": "Activar usuario",
+        "SUSPENDED": "Suspender usuario",
+        "LOCKED": "Bloquear usuario",
+        "DEACTIVATED": "Dar de baja al usuario"
+      },
+      "DESCRIPTION": {
+        "PENDING_ACTIVATION": "{{ subject }} quedará pendiente de activación.",
+        "ACTIVE": "{{ subject }} podrá volver a iniciar sesión con sus accesos actuales.",
+        "SUSPENDED": "{{ subject }} no podrá iniciar sesión mientras dure la suspensión. Sus accesos se conservan.",
+        "LOCKED": "{{ subject }} quedará bloqueado por motivos de seguridad. Úsalo ante sospecha de compromiso de la cuenta.",
+        "DEACTIVATED": "{{ subject }} se dará de baja: no podrá iniciar sesión y dejará de contar como usuario activo. La información y su historial se conservan."
+      },
+      "CONFIRM": {
+        "PENDING_ACTIVATION": "Confirmar",
+        "ACTIVE": "Activar",
+        "SUSPENDED": "Suspender",
+        "LOCKED": "Bloquear",
+        "DEACTIVATED": "Dar de baja"
+      },
+      "ACTION": {
+        "PENDING_ACTIVATION": "Marcar pendiente",
+        "ACTIVE": "Activar",
+        "SUSPENDED": "Suspender",
+        "LOCKED": "Bloquear",
+        "DEACTIVATED": "Dar de baja"
+      },
+      "REASON": "Motivo",
+      "REASON_PLACEHOLDER": "Selecciona un motivo",
+      "COMMENT": "Comentario",
+      "UNTIL": "Revertir automáticamente el",
+      "UNTIL_PLACEHOLDER": "Indefinido",
+      "UNTIL_HINT": "Opcional. Al llegar la fecha, la cuenta vuelve a estar activa.",
+      "REVOKE_SESSIONS": "Cerrar sus sesiones activas",
+      "SESSIONS_WARNING": "Todas las sesiones activas del usuario se cerrarán de inmediato.",
+      "DONE": "Estatus actualizado a «{{ status }}»",
+      "FAILED": "No se pudo cambiar el estatus"
+    },
+    "SOD": {
+      "TITLE": "Conflicto de segregación de funciones",
+      "BLOCKING_SAVE": "Hay un conflicto de segregación de funciones bloqueante. Ajusta los accesos antes de guardar.",
+      "SAVE_WARNING": "Existen conflictos de segregación de funciones. Documenta en la justificación el control compensatorio."
+    },
+    "MATRIX": {
+      "SEARCH": "Buscar permiso…",
+      "RISK_FILTER": "Nivel de riesgo",
+      "ONLY_SELECTED": "Solo otorgados",
+      "EXPAND_ALL": "Expandir todo",
+      "COLLAPSE_ALL": "Contraer todo",
+      "CLEAR": "Quitar todos",
+      "EFFECTIVE": "permisos efectivos",
+      "DIRECT_GRANTS": "{{ count }} concesiones directas",
+      "DENIALS": "{{ count }} denegaciones",
+      "HIGHEST_RISK": "Riesgo máximo",
+      "CASCADE_ADDED": "Se agregaron automáticamente por dependencia:",
+      "CASCADE_REMOVED": "Se retiraron también porque dependían del permiso quitado:",
+      "NO_MATCHES": "Ningún permiso coincide con los filtros",
+      "SELECT_MODULE": "Seleccionar todo el módulo",
+      "SELECT_RESOURCE": "Seleccionar todo el recurso",
+      "RISK": "Riesgo",
+      "INHERITED_FROM": "Heredado de",
+      "REQUIRES": "Requiere",
+      "CYCLE_HINT": "Haz clic en un permiso para alternar: conceder → denegar → heredar.",
+      "STATE": {
+        "NONE": "sin otorgar",
+        "GRANTED": "Concedido",
+        "INHERITED": "Heredado",
+        "DENIED": "Denegado"
+      }
+    },
+    "ROLES": {
+      "TITLE": "Roles",
+      "DESCRIPTION": "Define perfiles de acceso con permisos granulares y grupos reutilizables",
+      "EDITOR_DESCRIPTION": "Configura la información del rol, sus permisos y sus integrantes",
+      "SEARCH": "Buscar rol…",
+      "TOTALS": "{{ roles }} roles · {{ custom }} personalizados · {{ unused }} sin usuarios",
+      "GROUPS_LINK": "Grupos de permisos",
+      "CREATE": "Nuevo rol",
+      "ROLE": "Rol",
+      "USERS": "Usuarios",
+      "PERMISSIONS": "Permisos",
+      "GROUPS": "Grupos",
+      "SYSTEM": "Sistema",
+      "NO_DESCRIPTION": "Sin descripción",
+      "PERMISSION_COUNT": "{{ count }} permisos",
+      "EMPTY": "No hay roles registrados",
+      "LOAD_FAILED": "No se pudieron cargar los roles",
+      "ACTIONS": {
+        "OPEN": "Editar",
+        "MEMBERS": "Ver integrantes",
+        "CLONE": "Duplicar",
+        "ACTIVATE": "Activar",
+        "DEACTIVATE": "Desactivar"
+      },
+      "DELETE_BLOCKED": "Retira a todos los usuarios antes de eliminar el rol",
+      "DEACTIVATE_MESSAGE": "Al desactivar «{{ name }}», sus {{ count }} usuario(s) perderán los permisos que otorga.",
+      "ACTIVATE_MESSAGE": "«{{ name }}» volverá a otorgar sus permisos a sus integrantes.",
+      "DELETED": "Rol eliminado",
+      "COPY": "copia",
+      "CLONE_TITLE": "Duplicar «{{ name }}»",
+      "CLONE_HINT": "Se copiarán los permisos y grupos; los integrantes no se copian.",
+      "CLONED": "Rol duplicado",
+      "GENERAL": "Información general",
+      "PREVIEW": "Vista previa",
+      "CODE_HINT": "MAYÚSCULAS_CON_GUION_BAJO. Identificador estable, no se puede cambiar en roles del sistema.",
+      "DESCRIPTION_PLACEHOLDER": "Qué funciones cubre este rol y para quién está pensado",
+      "COLOR": "Color",
+      "GROUPS_HINT": "Los permisos de los grupos se suman a los del rol y se muestran como heredados.",
+      "GROUP_DETAILS_FAILED": "No se pudieron cargar los permisos de algunos grupos",
+      "MEMBERS": "Integrantes",
+      "NEW_ROLE": "Nuevo rol",
+      "NEW_HINT": "Completa la información y los permisos del nuevo rol",
+      "EMPTY_PERMISSIONS": "Asigna al menos un permiso o grupo al rol.",
+      "CREATED": "Rol «{{ name }}» creado",
+      "UPDATED": "Rol «{{ name }}» actualizado",
+      "ROOT_LOCKED": "SUPER_ADMIN es el rol raíz de la plataforma: siempre tiene todos los permisos y no puede modificarse.",
+      "SYSTEM_HINT": "Rol del sistema: su código es fijo y no puede eliminarse, pero puedes ajustar sus permisos.",
+      "ADD_MEMBERS": "Agregar integrantes",
+      "FIND_USERS": "Buscar usuarios",
+      "FIND_USERS_PLACEHOLDER": "Escribe al menos 2 caracteres…",
+      "ADD_N": "Agregar ({{ count }})",
+      "REMOVE_MEMBER": "Retirar del rol",
+      "REMOVE_MESSAGE": "{{ user }} dejará de tener el rol «{{ role }}».",
+      "NO_MEMBERS": "Este rol no tiene integrantes",
+      "MEMBERS_FAILED": "No se pudieron cargar los integrantes",
+      "MEMBERS_ADDED": "Se agregaron {{ count }} integrante(s)",
+      "MEMBER_REMOVED": "{{ user }} fue retirado del rol"
+    },
+    "GROUPS": {
+      "TITLE": "Grupos de permisos",
+      "DESCRIPTION": "Paquetes reutilizables de permisos que se asignan a roles o directamente a usuarios",
+      "TAB_GROUPS": "Grupos",
+      "TAB_CATALOG": "Catálogo de permisos",
+      "SEARCH": "Buscar grupo…",
+      "CREATE": "Nuevo grupo",
+      "EDIT": "Editar grupo",
+      "VIEW": "Detalle del grupo",
+      "GROUP": "Grupo",
+      "ROLES": "Roles",
+      "EMPTY": "No hay grupos de permisos",
+      "LOAD_FAILED": "No se pudieron cargar los grupos",
+      "CATALOG_FAILED": "No se pudo cargar el catálogo de permisos",
+      "CATALOG_HINT": "{{ count }} permisos definidos por la plataforma",
+      "PERMISSION": "Permiso",
+      "RESOURCE": "Recurso",
+      "USED_BY": "Usado por",
+      "NO_ROLES": "Ningún rol usa este grupo",
+      "DIRECT_USERS": "{{ count }} usuario(s) lo tienen asignado directamente",
+      "PROPAGATION_WARNING": "Los cambios se aplican de inmediato a todos los roles y usuarios que usan este grupo.",
+      "EMPTY_SELECTION": "Selecciona al menos un permiso",
+      "CREATED": "Grupo «{{ name }}» creado",
+      "UPDATED": "Grupo «{{ name }}» actualizado",
+      "DELETED": "Grupo eliminado",
+      "DELETE_BLOCKED": "No se puede eliminar: lo usan {{ roles }} rol(es) y {{ users }} usuario(s). Desasígnalo primero.",
+      "DEACTIVATE_MESSAGE": "Al desactivar «{{ name }}» dejará de otorgar permisos a {{ roles }} rol(es) y {{ users }} usuario(s).",
+      "ACTIVATE_MESSAGE": "«{{ name }}» volverá a otorgar sus permisos."
+    },
+    "SECURITY": {
+      "CREDENTIALS": "Credenciales",
+      "SELF_HINT": "Para tu propia cuenta usa Configuración de la cuenta.",
+      "RESET": {
+        "TITLE": "Restablecer contraseña",
+        "HINT": "Envía al usuario un medio seguro para definir una nueva contraseña.",
+        "ACTION": "Restablecer",
+        "DESCRIPTION": "Se enviará a {{ email }}. Las credenciales nunca se muestran al administrador.",
+        "MODE_LINK": "Enlace de restablecimiento",
+        "MODE_LINK_HINT": "Enlace de un solo uso con vigencia limitada.",
+        "MODE_TEMP": "Contraseña temporal",
+        "MODE_TEMP_HINT": "Contraseña aleatoria que deberá cambiar al ingresar.",
+        "REVOKE": "Cerrar todas sus sesiones activas",
+        "SEND": "Enviar",
+        "SENT_LINK": "Se envió el enlace de restablecimiento a {{ to }}.",
+        "SENT_TEMP": "Se envió la contraseña temporal a {{ to }}.",
+        "EXPIRES": "Vence:",
+        "FAILED": "No se pudo restablecer la contraseña"
+      },
+      "FORCE_CHANGE": {
+        "TITLE": "Forzar cambio de contraseña",
+        "HINT": "Al siguiente inicio de sesión deberá definir una nueva contraseña.",
+        "PENDING": "Ya tiene un cambio de contraseña pendiente.",
+        "ACTION": "Forzar cambio",
+        "MESSAGE": "{{ name }} deberá cambiar su contraseña en su próximo inicio de sesión.",
+        "DONE": "Se exigirá el cambio de contraseña"
+      },
+      "TWO_FACTOR": {
+        "TITLE": "Autenticación de dos factores",
+        "HINT": "Restablecer elimina el dispositivo registrado; tendrá que configurarlo de nuevo.",
+        "ACTION": "Restablecer 2FA",
+        "CONFIRM": "Se eliminará el segundo factor de {{ name }}. Úsalo solo si perdió su dispositivo y verificaste su identidad.",
+        "DONE": "2FA restablecido"
+      },
+      "INVITATION": {
+        "TITLE": "Invitación de activación",
+        "HINT": "El usuario aún no activa su cuenta.",
+        "EXPIRES": "Vence:",
+        "ACTION": "Reenviar invitación",
+        "DONE": "Invitación reenviada a {{ email }}"
+      },
+      "SESSIONS": {
+        "TITLE": "Sesiones activas",
+        "DEVICE": "Dispositivo",
+        "LOCATION": "Ubicación / IP",
+        "LAST_ACTIVITY": "Última actividad",
+        "REVOKE": "Cerrar sesión",
+        "REVOKE_ALL": "Cerrar todas",
+        "EMPTY": "No hay sesiones activas",
+        "REVOKE_TITLE": "¿Cerrar esta sesión?",
+        "REVOKE_MESSAGE": "Se cerrará la sesión en {{ device }}.",
+        "REVOKED": "Sesión cerrada",
+        "REVOKE_ALL_TITLE": "¿Cerrar todas las sesiones?",
+        "REVOKE_ALL_MESSAGE": "{{ name }} deberá iniciar sesión nuevamente en todos sus dispositivos.",
+        "REVOKED_ALL": "Se cerraron {{ count }} sesión(es)"
+      },
+      "HISTORY": {
+        "TITLE": "Historial de inicios de sesión",
+        "EMPTY": "Sin registros de inicio de sesión",
+        "OUTCOME": {
+          "SUCCESS": "Exitoso",
+          "FAILURE": "Fallido",
+          "LOCKED": "Bloqueado",
+          "TWO_FACTOR_FAILED": "2FA fallido"
+        }
+      }
+    },
+    "AUDIT": {
+      "TITLE": "Bitácora de auditoría",
+      "DESCRIPTION": "Registro inmutable de accesos, cambios de seguridad y administración",
+      "SEARCH": "Buscar evento, usuario o referencia…",
+      "FILTER_CATEGORY": "Categoría",
+      "FILTER_OUTCOME": "Resultado",
+      "FILTER_SEVERITY": "Severidad",
+      "FILTER_DATES": "Rango de fechas",
+      "N_SELECTED": "{0} seleccionados",
+      "TOTAL": "{{ count }} eventos",
+      "WHEN": "Fecha",
+      "EVENT": "Evento",
+      "ACTOR": "Realizado por",
+      "RESULT": "Resultado",
+      "SEVERITY_LABEL": "Severidad",
+      "SYSTEM": "Sistema",
+      "TOGGLE_DETAILS": "Ver detalle",
+      "CHANGES": "Cambios",
+      "FIELD": "Campo",
+      "BEFORE": "Antes",
+      "AFTER": "Después",
+      "NO_CHANGES": "Este evento no modificó datos.",
+      "CONTEXT": "Contexto",
+      "TARGET": "Objeto",
+      "IP": "Dirección IP",
+      "USER_AGENT": "Navegador",
+      "TRACE": "Referencia (trace)",
+      "EMPTY": "No hay eventos para los filtros seleccionados",
+      "LOAD_FAILED": "No se pudo cargar la bitácora",
+      "EXPORT_FAILED": "No se pudo exportar la bitácora",
+      "IMMUTABLE_HINT": "La bitácora es de solo lectura: ningún usuario, incluido el administrador, puede editar o borrar eventos.",
+      "CATEGORY": {
+        "AUTHENTICATION": "Autenticación",
+        "USER_ADMINISTRATION": "Administración de usuarios",
+        "ACCESS_CONTROL": "Control de accesos",
+        "SECURITY": "Seguridad",
+        "CONFIGURATION": "Configuración",
+        "DATA": "Datos"
+      },
+      "OUTCOME": {
+        "SUCCESS": "Exitoso",
+        "FAILURE": "Fallido",
+        "DENIED": "Denegado"
+      },
+      "SEVERITY": {
+        "INFO": "Informativo",
+        "NOTICE": "Aviso",
+        "WARNING": "Advertencia",
+        "CRITICAL": "Crítico"
+      }
+    },
+    "POLICY": {
+      "TITLE": "Política de seguridad",
+      "DESCRIPTION": "Reglas de contraseñas, bloqueo, sesiones y 2FA aplicables a toda la organización",
+      "LOAD_FAILED": "No se pudo cargar la política",
+      "READONLY": "Tienes acceso de solo lectura a la política de seguridad.",
+      "SAVED": "Política de seguridad actualizada",
+      "SECTIONS": {
+        "PASSWORD": "Contraseñas",
+        "LOCKOUT": "Bloqueo de cuenta",
+        "SESSIONS": "Sesiones e invitaciones",
+        "TWO_FACTOR": "Autenticación de dos factores"
+      },
+      "FIELDS": {
+        "MIN_LENGTH": "Longitud mínima",
+        "HISTORY": "Historial de contraseñas",
+        "MAX_AGE": "Vigencia máxima",
+        "UPPERCASE": "Exigir mayúsculas",
+        "LOWERCASE": "Exigir minúsculas",
+        "DIGIT": "Exigir números",
+        "SYMBOL": "Exigir símbolos",
+        "MAX_ATTEMPTS": "Intentos fallidos permitidos",
+        "LOCKOUT": "Duración del bloqueo",
+        "IDLE": "Cierre por inactividad",
+        "ABSOLUTE": "Duración máxima de sesión",
+        "CONCURRENT": "Sesiones simultáneas",
+        "INVITATION_TTL": "Vigencia de invitaciones",
+        "TWO_FACTOR_ROLES": "Roles que requieren 2FA"
+      },
+      "HINTS": {
+        "MIN_LENGTH": "Entre {{ min }} y {{ max }} caracteres. Se recomiendan 12 o más.",
+        "HISTORY": "Últimas contraseñas que no pueden reutilizarse ({{ min }}–{{ max }}).",
+        "MAX_AGE": "0 = sin vencimiento ({{ min }}–{{ max }} días).",
+        "MAX_ATTEMPTS": "Tras este número la cuenta se bloquea ({{ min }}–{{ max }}).",
+        "LOCKOUT": "Bloqueo temporal automático ({{ min }}–{{ max }} min).",
+        "IDLE": "{{ min }}–{{ max }} minutos sin actividad.",
+        "ABSOLUTE": "Reautenticación obligatoria ({{ min }}–{{ max }} h).",
+        "CONCURRENT": "Dispositivos con sesión simultánea ({{ min }}–{{ max }}).",
+        "INVITATION_TTL": "Vigencia del enlace de activación ({{ min }}–{{ max }} h).",
+        "TWO_FACTOR_ROLES": "Los integrantes de estos roles deberán configurar 2FA antes de usar la plataforma."
+      },
+      "UNITS": {
+        "DAYS": "días",
+        "HOURS": "h",
+        "MINUTES": "min"
+      },
+      "STRENGTH": "Robustez de la política",
+      "STRENGTH_LEVEL": {
+        "WEAK": "Débil",
+        "MODERATE": "Moderada",
+        "STRONG": "Robusta"
+      },
+      "IDLE_EXCEEDS": "El cierre por inactividad no puede exceder la duración máxima de la sesión.",
+      "WEAKEN_TITLE": "¿Reducir el nivel de seguridad?",
+      "WEAKEN_MESSAGE": "Estás relajando uno o más controles de seguridad. El cambio quedará registrado en la bitácora de auditoría."
+    }
+  },
+  "FINANCE": {
+    "TITLE": "Monedas e impuestos",
+    "DESCRIPTION": "Catálogos de moneda e IVA y la configuración predeterminada para todos los cálculos",
+    "LOAD_FAILED": "No se pudo cargar la configuración financiera",
+    "SAVED": "Configuración de cálculo actualizada",
+    "IN_USE": "En uso por documentos existentes",
+    "IN_USE_DELETE": "No se puede eliminar porque está en uso",
+    "TABS": {
+      "OVERVIEW": "Configuración predeterminada",
+      "CURRENCIES": "Monedas",
+      "TAX_RATES": "Tipos de IVA"
+    },
+    "DEFAULT": {
+      "CURRENCY": "Moneda predeterminada",
+      "TAX_RATE": "IVA predeterminado",
+      "CHANGE": "Cambiar",
+      "NONE": "Sin definir",
+      "BADGE": "Predeterminada",
+      "SET": "Establecer como predeterminada",
+      "LOCKED": "El registro predeterminado no puede desactivarse ni eliminarse",
+      "CONFIRM_TITLE": "¿Cambiar el valor predeterminado?"
+    },
+    "CALCULATION": {
+      "TITLE": "Reglas de cálculo",
+      "PRICES_INCLUDE_TAX": "Los precios capturados ya incluyen IVA",
+      "PRICES_INCLUDE_TAX_HINT": "Si se activa, el IVA se desglosa del precio capturado. Si no, se suma al subtotal.",
+      "ROUNDING": "Redondeo",
+      "IMPACT": "Aplica a los cálculos nuevos; los documentos existentes conservan sus valores."
+    },
+    "ROUNDING": {
+      "HALF_UP": "Al más cercano (0.5 hacia arriba)",
+      "HALF_EVEN": "Bancario (0.5 al par)",
+      "UP": "Siempre hacia arriba",
+      "DOWN": "Siempre hacia abajo"
+    },
+    "ROUNDING_HINT": {
+      "HALF_UP": "Comercial estándar: 2.345 → 2.35",
+      "HALF_EVEN": "Reduce el sesgo acumulado: 2.345 → 2.34, 2.355 → 2.36",
+      "UP": "Favorece al emisor: 2.341 → 2.35",
+      "DOWN": "Favorece al cliente: 2.349 → 2.34"
+    },
+    "EXAMPLE": {
+      "TITLE": "Ejemplo de cálculo",
+      "HINT": "Para un precio capturado de {{ amount }}:",
+      "NET": "Subtotal",
+      "TAX": "IVA",
+      "TOTAL": "Total"
+    },
+    "CURRENCIES": {
+      "SEARCH": "Buscar moneda…",
+      "CREATE": "Nueva moneda",
+      "EDIT": "Editar moneda",
+      "EMPTY": "No hay monedas registradas",
+      "LOAD_FAILED": "No se pudieron cargar las monedas",
+      "SYMBOL": "Símbolo",
+      "DECIMALS": "Decimales",
+      "DECIMALS_N": "{{ count }} decimales",
+      "FORMAT": "Formato",
+      "ISO_CODE": "Código ISO 4217",
+      "NUMERIC_CODE": "Código numérico",
+      "NAME_PLACEHOLDER": "Ej. Peso mexicano",
+      "SYMBOL_POSITION": "Posición del símbolo",
+      "POSITION": {
+        "BEFORE": "Antes ($100)",
+        "AFTER": "Después (100 €)"
+      },
+      "PREVIEW": "Vista previa",
+      "IN_USE_LOCK": "Esta moneda ya se usa en documentos: su código y decimales están bloqueados.",
+      "CREATED": "Moneda {{ code }} creada",
+      "UPDATED": "Moneda {{ code }} actualizada",
+      "DELETED": "Moneda eliminada",
+      "DEFAULT_MESSAGE": "{{ code }} · {{ name }} será la moneda de todos los cálculos nuevos.",
+      "DEFAULT_SET": "{{ code }} es ahora la moneda predeterminada"
+    },
+    "TAX_RATES": {
+      "SEARCH": "Buscar tipo de IVA…",
+      "CREATE": "Nuevo tipo de IVA",
+      "EDIT": "Editar tipo de IVA",
+      "EMPTY": "No hay tipos de IVA registrados",
+      "LOAD_FAILED": "No se pudieron cargar los tipos de IVA",
+      "RATE": "Tasa",
+      "FACTOR_LABEL": "Tipo de factor",
+      "FACTOR": {
+        "TASA": "Tasa",
+        "EXENTO": "Exento"
+      },
+      "FACTOR_HINT": "Catálogo SAT c_TipoFactor. «Exento» no genera impuesto ni tasa.",
+      "VALIDITY": "Vigencia",
+      "VALID_FROM": "Vigente desde",
+      "VALID_TO": "Vigente hasta",
+      "OPEN_ENDED": "Sin fecha de fin",
+      "SCHEDULED": "Programado",
+      "EXPIRED": "Vencido",
+      "PREVIEW": "Ejemplo sobre 1,000",
+      "NAME_PLACEHOLDER": "Ej. IVA general 16%",
+      "DESCRIPTION_PLACEHOLDER": "Cuándo aplica (región fronteriza, tasa 0 %, etc.)",
+      "RANGE_ERROR": "La fecha de fin no puede ser anterior a la de inicio.",
+      "IN_USE_LOCK": "Esta tasa ya se aplicó en documentos: su valor no puede cambiar. Cierra su vigencia y crea una nueva tasa.",
+      "CREATED": "Tipo de IVA «{{ name }}» creado",
+      "UPDATED": "Tipo de IVA «{{ name }}» actualizado",
+      "DELETED": "Tipo de IVA eliminado",
+      "DEFAULT_MESSAGE": "«{{ name }}» será el IVA de todos los cálculos nuevos.",
+      "DEFAULT_SET": "«{{ name }}» es ahora el IVA predeterminado",
+      "PICK_PRESET": "Aplicar tipo de IVA del catálogo"
     }
   }
 }

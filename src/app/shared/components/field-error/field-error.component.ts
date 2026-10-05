@@ -29,15 +29,25 @@ const ERROR_KEYS: readonly (readonly [string, string])[] = [
   ['regimeMismatch', 'FORM_ERRORS.REGIME_MISMATCH'],
   ['zipCode', 'FORM_ERRORS.ZIP_CODE'],
   ['duplicate', 'FORM_ERRORS.DUPLICATE'],
+  ['taken', 'FORM_ERRORS.TAKEN'],
+  ['min', 'FORM_ERRORS.MIN'],
+  ['max', 'FORM_ERRORS.MAX'],
+  ['maxDecimals', 'FORM_ERRORS.MAX_DECIMALS'],
+  ['pattern', 'FORM_ERRORS.PATTERN'],
 ];
 
 function lengthParam(errors: ValidationErrors, key: string): TranslationParams {
   const detail: unknown = errors[key];
-  if (typeof detail === 'object' && detail !== null && 'requiredLength' in detail) {
+  if (typeof detail !== 'object' || detail === null) {
+    return {};
+  }
+  if ('requiredLength' in detail) {
     const length = (detail as { requiredLength: unknown }).requiredLength;
     return typeof length === 'number' ? { length } : {};
   }
-  return {};
+  // Validators.min / Validators.max / maxDecimalsValidator
+  const bound = (detail as { min?: unknown; max?: unknown })[key === 'min' ? 'min' : 'max'];
+  return typeof bound === 'number' ? { value: bound } : {};
 }
 
 function resolve(errors: ValidationErrors): ResolvedError | null {
