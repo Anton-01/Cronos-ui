@@ -249,8 +249,8 @@ CREATE TABLE user_fiscal_data (
 | Method | Path | Body |
 |---|---|---|
 | `POST` | `/auth/change-password` | `{ "currentPassword", "newPassword", "confirmPassword" }` — the UI now also blocks `newPassword == currentPassword`; please enforce it server-side too |
-| `POST` | `/auth/2fa/setup` | `{}` → `{ secret, qrCodeUrl, message }` |
-| `POST` | `/auth/2fa/verify` \| `/auth/2fa/disable` | `{ "code": 123456 }` |
+| `POST` | `/auth/2fa/setup` | **superseded** by `/users/me/two-factor/*` (iam-and-finance.md §8.2) |
+| `POST` | `/auth/2fa/verify` \| `/auth/2fa/disable` | **superseded** by `/users/me/two-factor/*` |
 | `GET` | `/auth/sessions` | → `ActiveSession[]` |
 | `GET` | `/auth/login-history` | → `LoginHistoryEntry[]` |
 

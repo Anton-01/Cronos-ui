@@ -19,10 +19,6 @@ export interface ChangePasswordRequest {
   confirmPassword: string;
 }
 
-export interface VerifyTwoFactorRequest {
-  code: number;
-}
-
 export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
@@ -40,12 +36,6 @@ export interface TokenResponse {
   refreshToken: string;
   tokenType: string;
   expiresIn: number;
-}
-
-export interface TwoFactorSetupResponse {
-  secret: string;
-  qrCodeUrl: string;
-  message: string;
 }
 
 export interface JwtPayload {

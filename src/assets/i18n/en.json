@@ -1033,6 +1033,80 @@
         "625": "Business Activities via Technology Platforms",
         "626": "Simplified Trust Regime (RESICO)"
       }
+    },
+    "TWO_FACTOR": {
+      "ENROLL": {
+        "TITLE": "Set up two-step verification",
+        "PROGRESS": "Step {{ step }} of 4",
+        "STEP_1": "Get your app",
+        "STEP_2": "Scan the code",
+        "STEP_3": "Confirm",
+        "STEP_4": "Recovery codes",
+        "INTRO_TITLE": "Protect your account with a second factor",
+        "INTRO_REQUIRED_TITLE": "Your role requires two-step verification",
+        "INTRO": "Besides your password, signing in will ask for a 6-digit code your phone generates every 30 seconds. Even if someone learns your password, they cannot get in without it.",
+        "APPS": "You need an authenticator app on your phone:",
+        "APPS_HINT": "Any TOTP-compatible app works. If you already have one, continue.",
+        "HAVE_APP": "I have the app"
+      },
+      "SCAN": {
+        "INSTRUCTIONS": "Open your authenticator app, tap “Add account” and scan this code.",
+        "QR_ALT": "QR code to link your authenticator app",
+        "QR_UNAVAILABLE": "QR code unavailable; use the manual key",
+        "EXPIRES_IN": "This code expires in {{ time }}",
+        "EXPIRED": "The code expired for security. Generate a new one.",
+        "NEW_CODE": "Generate new code",
+        "CANT_SCAN": "Can't scan it? Enter the key manually",
+        "MANUAL_HINT": "In your app choose “Enter a setup key”, account {{ account }}, issuer {{ issuer }}:",
+        "TIME_BASED": "Type: time-based · {{ digits }} digits · every {{ period }} s",
+        "COPY": "Copy key",
+        "COPIED": "Key copied",
+        "SCANNED": "I scanned it"
+      },
+      "VERIFY": {
+        "INSTRUCTIONS": "Type the 6-digit code your app shows for Cronos.",
+        "CHECKING": "Verifying…",
+        "CLOCK_HINT": "If the code is rejected, make sure your phone's time is set automatically."
+      },
+      "RECOVERY": {
+        "ENABLED": "Done! Two-step verification is on.",
+        "INSTRUCTIONS": "Store these recovery codes somewhere safe (password manager or printed). Each one signs you in once if you lose your phone. We will not show them again.",
+        "COPY": "Copy",
+        "DOWNLOAD": "Download .txt",
+        "COPIED": "Codes copied",
+        "ACK": "I stored my recovery codes somewhere safe",
+        "FINISH": "Finish",
+        "FILE_HEADER": "Cronos — two-step verification recovery codes"
+      },
+      "STATUS": {
+        "REQUIRED": "Required by your role",
+        "ON_HINT": "Your account asks for a code from your authenticator app at every sign-in.",
+        "OFF_HINT": "Add a temporary code from your phone to your password so nobody else can sign in.",
+        "SINCE": "On since",
+        "RECOVERY_LEFT": "{{ count }} recovery codes left",
+        "RECOVERY_LOW": "You are running out of recovery codes; generate new ones.",
+        "CANNOT_DISABLE": "Your role requires two-step verification; it cannot be turned off."
+      },
+      "MANAGE": {
+        "DISABLE_TITLE": "Turn off two-step verification",
+        "REGENERATE_TITLE": "Generate new recovery codes",
+        "REGENERATE": "New recovery codes",
+        "DISABLE_WARNING": "Your account will be protected by your password only and your other sessions will be ended.",
+        "REGENERATE_WARNING": "Your previous recovery codes will stop working.",
+        "USE_APP": "App code",
+        "USE_RECOVERY": "Recovery code",
+        "APP_HINT": "Current code from your authenticator app",
+        "RECOVERY_LABEL": "Recovery code",
+        "RECOVERY_HINT": "Format XXXX-XXXX. Each code works once.",
+        "REGENERATED": "Your new codes are ready. Save them now; they will not be shown again."
+      },
+      "ERRORS": {
+        "UNAVAILABLE": "Two-step verification setup is not available on the server yet. Contact support with the reference.",
+        "EXPIRED": "The QR code expired. Generate a new one and scan it again.",
+        "CODE_REJECTED": "The code is not valid. Make sure it is the latest one from your app.",
+        "RATE_LIMITED": "Too many attempts. Wait a moment before trying again.",
+        "GENERIC": "The operation could not be completed."
+      }
     }
   },
   "PUBLIC": {
@@ -1813,7 +1887,8 @@
         "ABSOLUTE": "Forced re-authentication ({{ min }}–{{ max }} h).",
         "CONCURRENT": "Devices signed in at once ({{ min }}–{{ max }}).",
         "INVITATION_TTL": "Activation link validity ({{ min }}–{{ max }} h).",
-        "TWO_FACTOR_ROLES": "Members of these roles must enrol 2FA before using the platform."
+        "TWO_FACTOR_ROLES": "Members of these roles must enrol 2FA before using the platform.",
+        "SUPER_ADMIN_EXCLUDED": "SUPER_ADMIN cannot require 2FA: it is the break-glass account and an enrolment lockout would leave nobody able to recover access. Its members should enable it voluntarily."
       },
       "UNITS": {
         "DAYS": "days",

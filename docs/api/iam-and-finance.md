@@ -713,7 +713,7 @@ Singleton (one row). `GET` → `SecurityPolicy`; `PUT` with `SecurityPolicyReque
 | `sessionAbsoluteHours` | 1–720 | 12 |
 | `maxConcurrentSessions` | 1–20 | 3 (oldest session is revoked on overflow) |
 | `invitationTtlHours` | 1–336 | 72 |
-| `twoFactorRequiredRoleIds` | existing roles | SUPER_ADMIN, ADMIN |
+| `twoFactorRequiredRoleIds` | existing roles **except SUPER_ADMIN** (→ 400 `field: "twoFactorRequiredRoleIds[i]"`, code `VALIDATION_ERROR`) | ADMIN |
 
 Cross-field: `sessionIdleMinutes ≤ sessionAbsoluteHours × 60` → else 400 `field: "sessionIdleMinutes"`.
 Enforcement points: password set/change/reset (complexity, history via stored hashes, also reject passwords containing the username/email local part and the top-10k breached list), login (lockout), session issuance (idle/absolute/concurrency), invitation creation (TTL), and a 2FA gate filter.
@@ -733,17 +733,138 @@ with **HTTP 403**. The UI redirects to Account Settings → Security (`?tab=secu
 
 | Allowed while not enrolled | Why |
 |---|---|
-| `POST /auth/2fa/setup`, `POST /auth/2fa/verify` | the enrolment itself |
+| `GET /users/me/two-factor`, `POST /users/me/two-factor/enrollment`, `POST /users/me/two-factor/enrollment/confirm` | the enrolment itself (§8.2) |
 | `POST /auth/refresh`, `POST /auth/logout` | the UI swaps the token right after enrolling |
-| `GET /users/me` | the settings page shows the 2FA state from it |
+| `GET /users/me` | the settings page shows the user from it |
 | `GET /auth/sessions`, `GET /auth/login-history` | rendered on the same Security tab |
 | `GET /finance/settings`, `GET /finance/*/catalog` | read by the app shell (optional; harmless) |
 
+Implement the allowlist as an explicit `RequestMatcher` list next to the gate filter, with a test that walks it — not as scattered `if (path.startsWith(...))`.
+
 Rules:
 - Evaluate the gate from the **database** (or the cache evicted on enrolment), not from the access token's `2faEnabled` claim — otherwise the token minted before enrolment keeps the user blocked until it expires.
-- `POST /auth/2fa/verify` success must bump `access_version` only if you also rely on claims; the UI calls `POST /auth/refresh` immediately after enrolling and expects the new token to pass the gate.
-- `POST /auth/2fa/disable` must be **rejected** (`403 TWO_FACTOR_ENROLLMENT_REQUIRED` or `409`) for users whose role requires 2FA.
+- Enrolment confirmation (§8.2) must bump `access_version` if you rely on claims; the UI calls `POST /auth/refresh` immediately after enrolling and expects the new token to pass the gate.
+- Disabling 2FA (`POST /users/me/two-factor/disable`) must be **rejected** with `409 TWO_FACTOR_REQUIRED_BY_ROLE` for users whose role requires it.
 - Login response: add `"requiresTwoFactorEnrollment": true|false` so the UI can route straight to setup after sign-in (optional, recommended).
+
+### 8.2 Self-service 2FA (TOTP) — `/api/v1/users/me/two-factor`
+
+> **Observed 2026-10-05:** the UI called `POST /auth/2fa/setup` and got `404 ROUTE_NOT_FOUND` — the endpoint does not exist. The UI now uses the contract below (V8 envelope). The old `/auth/2fa/setup|verify|disable` calls were removed from the frontend; drop or redirect them on the backend.
+
+All endpoints act on the JWT subject, require authentication only (no IAM permission) and are **in the enrolment-gate allowlist** (§8.1) except `disable` and `recovery-codes`.
+
+#### `GET /users/me/two-factor` → `TwoFactorStatus`
+```json
+{ "enabled": false, "required": true, "requiredBy": ["Administrador"], "method": null, "enrolledAt": null, "recoveryCodesRemaining": 0 }
+```
+`required` = `users.require_two_factor` OR the user holds an ACTIVE role in `twoFactorRequiredRoleIds`. `requiredBy` = display names of those roles.
+
+#### `POST /users/me/two-factor/enrollment` → `TwoFactorEnrollment`
+```json
+{
+  "enrollmentId": "6c1d…",
+  "secret": "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP",
+  "otpauthUri": "otpauth://totp/Cronos:admin%40cronos.com?secret=JBSW…&issuer=Cronos&algorithm=SHA1&digits=6&period=30",
+  "qrCodeDataUri": "data:image/png;base64,iVBORw0KGgo…",
+  "issuer": "Cronos",
+  "accountName": "admin@cronos.com",
+  "digits": 6,
+  "periodSeconds": 30,
+  "expiresAt": "2026-10-05T19:24:00Z"
+}
+```
+- Secret: 20 random bytes (`SecureRandom`) → Base32 (160-bit, RFC 4226 recommendation). SHA1 / 6 digits / 30 s for maximum app compatibility.
+- Store the pending secret **encrypted** (AES-GCM with a key from the secret store, never the DB) in `two_factor_enrollments(id, user_id, secret_enc, expires_at, consumed_at)`; TTL **10 minutes**. Starting a new enrolment invalidates previous pending ones for that user.
+- Render the QR **server-side** (ZXing, 240×240 PNG, error correction M) as a data URI. Never use a third-party QR URL: the secret would leave our infrastructure. The UI only binds `data:image/png;base64,…` or `data:image/svg+xml;base64,…`.
+- If 2FA is already enabled → `409 TWO_FACTOR_ALREADY_ENABLED`.
+- Rate limit: 10 enrolments/hour per user.
+- Response headers: `Cache-Control: no-store`. Never log the body.
+
+#### `POST /users/me/two-factor/enrollment/confirm` → `TwoFactorRecoveryCodes`
+Body: `{ "enrollmentId": "6c1d…", "code": "123456" }`.
+- `code`: `^\d{6}$` → else 400 `field: "code"`.
+- Unknown/consumed enrolment → `404 RESOURCE_NOT_FOUND`; expired → `409 ENROLLMENT_EXPIRED`.
+- Verify with a ±1 step window (clock drift) and **reject reuse** of the same time-step (store `last_used_step`). Wrong code → `400 INVALID_TOTP_CODE`, `field: "code"`. After 5 failures the enrolment is consumed (user must restart).
+- On success, in one transaction: move the secret to `user_two_factor(user_id, secret_enc, enrolled_at, last_used_step)`, set `users.two_factor_enabled = true`, mark the enrolment consumed, generate **10 recovery codes** (`XXXX-XXXX`, Crockford Base32 without ambiguous chars), store only their **hashes** (BCrypt or Argon2), bump `access_version`, evict the gate cache, audit `USER_2FA_ENABLED` (NOTICE).
+- Response (codes shown **once**):
+```json
+{ "recoveryCodes": ["7KQ4-M2XD", "…"], "status": { "enabled": true, "required": true, "requiredBy": ["Administrador"], "method": "TOTP", "enrolledAt": "2026-10-05T19:15:00Z", "recoveryCodesRemaining": 10 } }
+```
+- After this call the UI immediately calls `POST /auth/refresh`; the new access token must pass the gate (§8.1 rules).
+
+#### `POST /users/me/two-factor/disable` → `TwoFactorStatus`
+Body: `{ "password": "…", "code": "123456" | "7KQ4-M2XD" }`.
+- Wrong password → `400 INVALID_PASSWORD`, `field: "password"`; wrong code → `400 INVALID_TOTP_CODE` / `INVALID_RECOVERY_CODE`, `field: "code"`. A recovery code used here is consumed.
+- `required = true` → `409 TWO_FACTOR_REQUIRED_BY_ROLE`.
+- On success: delete the secret and recovery codes, revoke **all other** sessions, bump `access_version`, audit `USER_2FA_DISABLED` (WARNING), email a security notice.
+
+#### `POST /users/me/two-factor/recovery-codes` → `TwoFactorRecoveryCodes`
+Body: `{ "code": "123456" | "7KQ4-M2XD" }`. Replaces all recovery codes (old ones invalid immediately). Audit `USER_2FA_RECOVERY_CODES_REGENERATED` (NOTICE).
+
+#### Login with 2FA
+`POST /auth/login` with `twoFactorCode` must accept either a 6-digit TOTP or an unused recovery code (consumed on use; audit `LOGIN_WITH_RECOVERY_CODE`, WARNING; notify the user by email).
+
+#### New error codes
+| Code | HTTP |
+|---|---|
+| `TWO_FACTOR_ENROLLMENT_REQUIRED` | 403 |
+| `TWO_FACTOR_ALREADY_ENABLED` | 409 |
+| `TWO_FACTOR_REQUIRED_BY_ROLE` | 409 |
+| `ENROLLMENT_EXPIRED` | 409 |
+| `INVALID_TOTP_CODE`, `INVALID_RECOVERY_CODE`, `INVALID_PASSWORD` | 400 (with `field`) |
+
+#### Tables
+```sql
+CREATE TABLE two_factor_enrollments (
+  id           UUID PRIMARY KEY,
+  user_id      UUID        NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  secret_enc   BYTEA       NOT NULL,
+  failed_tries SMALLINT    NOT NULL DEFAULT 0,
+  expires_at   TIMESTAMPTZ NOT NULL,
+  consumed_at  TIMESTAMPTZ,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE user_two_factor (
+  user_id         UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  secret_enc      BYTEA       NOT NULL,
+  last_used_step  BIGINT,
+  enrolled_at     TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE TABLE user_recovery_codes (
+  id         BIGSERIAL PRIMARY KEY,
+  user_id    UUID         NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  code_hash  VARCHAR(255) NOT NULL,
+  used_at    TIMESTAMPTZ
+);
+CREATE INDEX ix_recovery_codes_user ON user_recovery_codes (user_id) WHERE used_at IS NULL;
+```
+If the backend already stores a TOTP secret on `users`, migrate it into `user_two_factor` (encrypted) and drop the plaintext column.
+
+### 8.3 SUPER_ADMIN is never 2FA-mandatory (break-glass rule)
+
+Making SUPER_ADMIN 2FA-mandatory deadlocks the platform when enrolment fails: every SUPER_ADMIN is gated, and the only screens that can relax the policy are behind the same gate (this happened on 2026-10-05). Therefore:
+
+1. **Validation:** `PUT /iam/security-policy` rejects a `twoFactorRequiredRoleIds` containing SUPER_ADMIN → `400 VALIDATION_ERROR`, `field: "twoFactorRequiredRoleIds[i]"`. (The UI no longer offers it.)
+2. **Gate:** the enrolment gate never blocks a user *because of* SUPER_ADMIN; `required` for SUPER_ADMIN members comes only from their own `require_two_factor` flag.
+3. **Seed:** `twoFactorRequiredRoleIds = [ADMIN]` (§13.4).
+4. **Data fix — new Flyway migration** (do not edit already-applied migrations):
+
+```sql
+-- V__n__remove_super_admin_from_2fa_required_roles.sql
+DELETE FROM security_policy_2fa_roles
+ WHERE role_id = (SELECT id FROM roles WHERE code = 'SUPER_ADMIN');
+
+UPDATE security_policy SET version = version + 1, updated_at = now() WHERE id = 1;
+
+INSERT INTO audit_events (id, occurred_at, category, action, outcome, severity, actor_id, actor_label,
+                          target_type, target_id, target_label, params, reason, changes)
+VALUES (gen_random_uuid(), now(), 'CONFIGURATION', 'SECURITY_POLICY_UPDATED', 'SUCCESS', 'WARNING',
+        NULL, 'System migration', 'SECURITY_POLICY', '1', 'Security policy', '{}'::jsonb,
+        'SUPER_ADMIN removed from 2FA-required roles (break-glass rule, doc §8.3)',
+        '{"twoFactorRequiredRoleIds": {"from": ["SUPER_ADMIN"], "to": []}}'::jsonb);
+```
+   Then evict the policy/gate caches (restart is enough if they are in-memory).
+5. SUPER_ADMIN members are still **encouraged** to enable 2FA voluntarily; consider a dashboard reminder.
 
 ---
 
@@ -1160,7 +1281,7 @@ Map existing users' legacy roles 1:1. Create a SUPER_ADMIN membership for the cu
 | `SOD_TAX_AND_DEFAULTS` | WARNING | {`FINANCE.TAX_RATE.MANAGE`} × {`FINANCE.SETTINGS.UPDATE`} | Definir y activar tasas fiscales sin revisión |
 
 ### 13.4 Security policy
-One row with the defaults of §8; `twoFactorRequiredRoleIds = [SUPER_ADMIN, ADMIN]`.
+One row with the defaults of §8; `twoFactorRequiredRoleIds = [ADMIN]`. **Never SUPER_ADMIN** (see §8.3).
 
 ### 13.5 Currencies
 
@@ -1243,6 +1364,11 @@ Keep them for one release returning `Deprecation: true` and `Sunset: <date>` hea
 | GET | `/iam/audit-events/export` | IAM.AUDIT.EXPORT | new |
 | GET | `/iam/security-policy` | IAM.SECURITY_POLICY.READ | new |
 | PUT | `/iam/security-policy` | IAM.SECURITY_POLICY.UPDATE | new |
+| GET | `/users/me/two-factor` | authenticated (gate-exempt) | new |
+| POST | `/users/me/two-factor/enrollment` | authenticated (gate-exempt) | new |
+| POST | `/users/me/two-factor/enrollment/confirm` | authenticated (gate-exempt) | new |
+| POST | `/users/me/two-factor/disable` | authenticated | new |
+| POST | `/users/me/two-factor/recovery-codes` | authenticated | new |
 | GET | `/finance/currencies` | FINANCE.CURRENCY.READ | new |
 | GET | `/finance/currencies/catalog` | authenticated | new |
 | POST | `/finance/currencies` | FINANCE.CURRENCY.MANAGE | new |

@@ -1033,6 +1033,80 @@
         "625": "Régimen de las Actividades Empresariales con ingresos a través de Plataformas Tecnológicas",
         "626": "Régimen Simplificado de Confianza"
       }
+    },
+    "TWO_FACTOR": {
+      "ENROLL": {
+        "TITLE": "Configurar verificación en dos pasos",
+        "PROGRESS": "Paso {{ step }} de 4",
+        "STEP_1": "Prepara tu app",
+        "STEP_2": "Escanea el código",
+        "STEP_3": "Confirma",
+        "STEP_4": "Códigos de respaldo",
+        "INTRO_TITLE": "Protege tu cuenta con un segundo factor",
+        "INTRO_REQUIRED_TITLE": "Tu rol requiere verificación en dos pasos",
+        "INTRO": "Además de tu contraseña, al iniciar sesión te pediremos un código de 6 dígitos que genera tu teléfono cada 30 segundos. Aunque alguien conozca tu contraseña, no podrá entrar sin él.",
+        "APPS": "Necesitas una app de autenticación instalada en tu teléfono:",
+        "APPS_HINT": "Cualquier app compatible con TOTP funciona. Si ya tienes una, continúa.",
+        "HAVE_APP": "Ya tengo la app"
+      },
+      "SCAN": {
+        "INSTRUCTIONS": "Abre tu app de autenticación, toca «Agregar cuenta» y escanea este código.",
+        "QR_ALT": "Código QR para vincular tu app de autenticación",
+        "QR_UNAVAILABLE": "Código QR no disponible; usa la clave manual",
+        "EXPIRES_IN": "Este código vence en {{ time }}",
+        "EXPIRED": "El código venció por seguridad. Genera uno nuevo.",
+        "NEW_CODE": "Generar código nuevo",
+        "CANT_SCAN": "¿No puedes escanearlo? Ingresa la clave manualmente",
+        "MANUAL_HINT": "En tu app elige «Ingresar clave de configuración», cuenta {{ account }}, emisor {{ issuer }}:",
+        "TIME_BASED": "Tipo: basada en tiempo · {{ digits }} dígitos · cada {{ period }} s",
+        "COPY": "Copiar clave",
+        "COPIED": "Clave copiada",
+        "SCANNED": "Ya lo escaneé"
+      },
+      "VERIFY": {
+        "INSTRUCTIONS": "Escribe el código de 6 dígitos que muestra tu app para Cronos.",
+        "CHECKING": "Verificando…",
+        "CLOCK_HINT": "Si el código no es aceptado, revisa que la hora de tu teléfono esté en automático."
+      },
+      "RECOVERY": {
+        "ENABLED": "¡Listo! La verificación en dos pasos está activa.",
+        "INSTRUCTIONS": "Guarda estos códigos de respaldo en un lugar seguro (gestor de contraseñas o impreso). Cada uno sirve una sola vez para entrar si pierdes tu teléfono. No volveremos a mostrarlos.",
+        "COPY": "Copiar",
+        "DOWNLOAD": "Descargar .txt",
+        "COPIED": "Códigos copiados",
+        "ACK": "Guardé mis códigos de respaldo en un lugar seguro",
+        "FINISH": "Finalizar",
+        "FILE_HEADER": "Cronos — códigos de respaldo de verificación en dos pasos"
+      },
+      "STATUS": {
+        "REQUIRED": "Obligatoria por tu rol",
+        "ON_HINT": "Tu cuenta pide un código de tu app de autenticación en cada inicio de sesión.",
+        "OFF_HINT": "Agrega un código temporal de tu teléfono a tu contraseña para que nadie más pueda entrar.",
+        "SINCE": "Activa desde",
+        "RECOVERY_LEFT": "{{ count }} códigos de respaldo disponibles",
+        "RECOVERY_LOW": "Te quedan pocos códigos de respaldo; genera nuevos.",
+        "CANNOT_DISABLE": "Tu rol exige verificación en dos pasos; no puede desactivarse."
+      },
+      "MANAGE": {
+        "DISABLE_TITLE": "Desactivar verificación en dos pasos",
+        "REGENERATE_TITLE": "Generar nuevos códigos de respaldo",
+        "REGENERATE": "Nuevos códigos de respaldo",
+        "DISABLE_WARNING": "Tu cuenta quedará protegida solo con tu contraseña y se cerrarán tus demás sesiones.",
+        "REGENERATE_WARNING": "Los códigos de respaldo anteriores dejarán de funcionar.",
+        "USE_APP": "Código de la app",
+        "USE_RECOVERY": "Código de respaldo",
+        "APP_HINT": "Código actual de tu app de autenticación",
+        "RECOVERY_LABEL": "Código de respaldo",
+        "RECOVERY_HINT": "Formato XXXX-XXXX. Cada código se usa una sola vez.",
+        "REGENERATED": "Se generaron tus nuevos códigos. Guárdalos ahora; no se volverán a mostrar."
+      },
+      "ERRORS": {
+        "UNAVAILABLE": "La configuración de verificación en dos pasos aún no está disponible en el servidor. Contacta a soporte con la referencia.",
+        "EXPIRED": "El código QR venció. Genera uno nuevo y vuelve a escanearlo.",
+        "CODE_REJECTED": "El código no es válido. Revisa que sea el más reciente de tu app.",
+        "RATE_LIMITED": "Demasiados intentos. Espera un momento antes de volver a intentar.",
+        "GENERIC": "No se pudo completar la operación."
+      }
     }
   },
   "PUBLIC": {
@@ -1813,7 +1887,8 @@
         "ABSOLUTE": "Reautenticación obligatoria ({{ min }}–{{ max }} h).",
         "CONCURRENT": "Dispositivos con sesión simultánea ({{ min }}–{{ max }}).",
         "INVITATION_TTL": "Vigencia del enlace de activación ({{ min }}–{{ max }} h).",
-        "TWO_FACTOR_ROLES": "Los integrantes de estos roles deberán configurar 2FA antes de usar la plataforma."
+        "TWO_FACTOR_ROLES": "Los integrantes de estos roles deberán configurar 2FA antes de usar la plataforma.",
+        "SUPER_ADMIN_EXCLUDED": "SUPER_ADMIN no puede exigir 2FA obligatoria: es la cuenta de rescate y un bloqueo la dejaría sin acceso. Se recomienda que sus integrantes la activen de forma voluntaria."
       },
       "UNITS": {
         "DAYS": "días",

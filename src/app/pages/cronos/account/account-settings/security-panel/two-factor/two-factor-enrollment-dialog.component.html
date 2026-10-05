@@ -1,0 +1,176 @@
+<ng-template #failureBox let-failure>
+  <p-message severity="error" styleClass="w-full">
+    <div class="flex flex-column gap-1 text-sm">
+      <strong>{{ failure.titleKey | translate }}</strong>
+      @if (failure.detail) {
+        <span>{{ failure.detail }}</span>
+      }
+      @if (failure.traceId) {
+        <span class="text-xs opacity-80">{{ 'COMMON.TOAST.TRACE_REFERENCE' | translate: { traceId: failure.traceId } }}</span>
+      }
+    </div>
+  </p-message>
+</ng-template>
+
+<p-dialog
+  [header]="'ACCOUNT.TWO_FACTOR.ENROLL.TITLE' | translate"
+  [visible]="visible()"
+  (visibleChange)="onVisibleChange($event)"
+  [modal]="true"
+  [draggable]="false"
+  [closable]="canClose()"
+  [closeOnEscape]="canClose()"
+  [style]="{ width: '34rem' }"
+  [breakpoints]="{ '640px': '95vw' }"
+>
+  <div class="tf-steps" role="progressbar" [attr.aria-valuenow]="step()" aria-valuemin="1" aria-valuemax="4" [attr.aria-label]="'ACCOUNT.TWO_FACTOR.ENROLL.PROGRESS' | translate: { step: step() }">
+    @for (index of [1, 2, 3, 4]; track index) {
+      <span class="tf-step" [class.tf-step-done]="index <= step()"></span>
+    }
+  </div>
+  <div class="text-xs text-color-secondary uppercase font-semibold mb-3">
+    {{ 'ACCOUNT.TWO_FACTOR.ENROLL.PROGRESS' | translate: { step: step() } }} · {{ 'ACCOUNT.TWO_FACTOR.ENROLL.STEP_' + step() | translate }}
+  </div>
+
+  @switch (step()) {
+    <!-- 1 · Get an authenticator app -->
+    @case (1) {
+      <div class="flex flex-column gap-3">
+        <div class="flex align-items-start gap-3">
+          <span class="tf-hero-icon"><i class="pi pi-shield" aria-hidden="true"></i></span>
+          <div class="flex flex-column gap-1">
+            <span class="font-semibold">{{ (mandatory() ? 'ACCOUNT.TWO_FACTOR.ENROLL.INTRO_REQUIRED_TITLE' : 'ACCOUNT.TWO_FACTOR.ENROLL.INTRO_TITLE') | translate }}</span>
+            <span class="text-sm text-color-secondary line-height-3">{{ 'ACCOUNT.TWO_FACTOR.ENROLL.INTRO' | translate }}</span>
+          </div>
+        </div>
+        <span class="text-sm font-medium">{{ 'ACCOUNT.TWO_FACTOR.ENROLL.APPS' | translate }}</span>
+        <div class="tf-apps">
+          <span class="tf-app"><i class="pi pi-google" aria-hidden="true"></i> Google Authenticator</span>
+          <span class="tf-app"><i class="pi pi-microsoft" aria-hidden="true"></i> Microsoft Authenticator</span>
+          <span class="tf-app"><i class="pi pi-key" aria-hidden="true"></i> 1Password</span>
+          <span class="tf-app"><i class="pi pi-mobile" aria-hidden="true"></i> Authy</span>
+        </div>
+        <small class="text-color-secondary">{{ 'ACCOUNT.TWO_FACTOR.ENROLL.APPS_HINT' | translate }}</small>
+        @if (enrollmentFailure(); as failure) {
+          <ng-container *ngTemplateOutlet="failureBox; context: { $implicit: failure }" />
+        }
+      </div>
+    }
+
+    <!-- 2 · Scan -->
+    @case (2) {
+      <div class="flex flex-column align-items-center gap-3 text-center">
+        <span class="text-sm text-color-secondary line-height-3">{{ 'ACCOUNT.TWO_FACTOR.SCAN.INSTRUCTIONS' | translate }}</span>
+        @if (loadingEnrollment()) {
+          <p-skeleton width="13rem" height="13rem" borderRadius="14px" />
+        } @else if (enrollmentFailure(); as failure) {
+          <ng-container *ngTemplateOutlet="failureBox; context: { $implicit: failure }" />
+          <p-button [label]="'COMMON.TRY_AGAIN' | translate" icon="pi pi-refresh" [outlined]="true" (onClick)="requestEnrollment()" />
+        } @else if (enrollment(); as pending) {
+          <div class="relative">
+            @if (qrSrc(); as src) {
+              <img [src]="src" [alt]="'ACCOUNT.TWO_FACTOR.SCAN.QR_ALT' | translate" class="tf-qr" [class.tf-qr-expired]="expired()" />
+            } @else {
+              <div class="tf-qr flex align-items-center justify-content-center text-sm text-color-secondary">{{ 'ACCOUNT.TWO_FACTOR.SCAN.QR_UNAVAILABLE' | translate }}</div>
+            }
+            @if (expired()) {
+              <div class="absolute top-0 left-0 w-full h-full flex align-items-center justify-content-center">
+                <p-button [label]="'ACCOUNT.TWO_FACTOR.SCAN.NEW_CODE' | translate" icon="pi pi-refresh" (onClick)="requestEnrollment()" />
+              </div>
+            }
+          </div>
+          <small class="text-color-secondary">
+            @if (expired()) {
+              {{ 'ACCOUNT.TWO_FACTOR.SCAN.EXPIRED' | translate }}
+            } @else {
+              {{ 'ACCOUNT.TWO_FACTOR.SCAN.EXPIRES_IN' | translate: { time: countdown() } }}
+            }
+          </small>
+          <div class="w-full flex flex-column gap-2 p-3 border-round-xl surface-ground text-left">
+            <button type="button" class="p-0 border-none bg-transparent text-primary cursor-pointer text-sm font-medium text-left" (click)="showSecret.set(!showSecret())" [attr.aria-expanded]="showSecret()">
+              <i class="pi text-xs mr-1" [class.pi-chevron-right]="!showSecret()" [class.pi-chevron-down]="showSecret()" aria-hidden="true"></i>
+              {{ 'ACCOUNT.TWO_FACTOR.SCAN.CANT_SCAN' | translate }}
+            </button>
+            @if (showSecret()) {
+              <span class="text-xs text-color-secondary">{{ 'ACCOUNT.TWO_FACTOR.SCAN.MANUAL_HINT' | translate: { account: pending.accountName, issuer: pending.issuer } }}</span>
+              <div class="flex align-items-center justify-content-between gap-2">
+                <span class="tf-secret">{{ groupedSecret() }}</span>
+                <p-button icon="pi pi-copy" [text]="true" [rounded]="true" [pTooltip]="'ACCOUNT.TWO_FACTOR.SCAN.COPY' | translate" [ariaLabel]="'ACCOUNT.TWO_FACTOR.SCAN.COPY' | translate" (onClick)="copySecret()" />
+              </div>
+              <span class="text-xs text-color-secondary">{{ 'ACCOUNT.TWO_FACTOR.SCAN.TIME_BASED' | translate: { digits: pending.digits, period: pending.periodSeconds } }}</span>
+            }
+          </div>
+        }
+      </div>
+    }
+
+    <!-- 3 · Verify -->
+    @case (3) {
+      <div class="flex flex-column align-items-center gap-3 text-center">
+        <span class="tf-hero-icon"><i class="pi pi-mobile" aria-hidden="true"></i></span>
+        <span class="text-sm text-color-secondary line-height-3">{{ 'ACCOUNT.TWO_FACTOR.VERIFY.INSTRUCTIONS' | translate }}</span>
+        <p-inputotp
+          [ngModel]="code()"
+          (ngModelChange)="onCodeChange($event)"
+          [length]="codeLength"
+          [integerOnly]="true"
+          [disabled]="verifying()"
+          [attr.aria-label]="'ACCOUNT.SIGN_IN.VERIFICATION_CODE' | translate"
+        />
+        @if (verifying()) {
+          <small class="text-color-secondary"><i class="pi pi-spin pi-spinner text-xs" aria-hidden="true"></i> {{ 'ACCOUNT.TWO_FACTOR.VERIFY.CHECKING' | translate }}</small>
+        }
+        @if (verifyFailure(); as failure) {
+          <ng-container *ngTemplateOutlet="failureBox; context: { $implicit: failure }" />
+          @if (failure.titleKey === 'ACCOUNT.TWO_FACTOR.ERRORS.EXPIRED') {
+            <p-button [label]="'ACCOUNT.TWO_FACTOR.SCAN.NEW_CODE' | translate" icon="pi pi-refresh" [outlined]="true" (onClick)="requestEnrollment(); step.set(2)" />
+          }
+        }
+        <small class="text-color-secondary">{{ 'ACCOUNT.TWO_FACTOR.VERIFY.CLOCK_HINT' | translate }}</small>
+      </div>
+    }
+
+    <!-- 4 · Recovery codes -->
+    @case (4) {
+      <div class="flex flex-column gap-3">
+        <p-message severity="success" styleClass="w-full" [text]="'ACCOUNT.TWO_FACTOR.RECOVERY.ENABLED' | translate" />
+        <span class="text-sm line-height-3">{{ 'ACCOUNT.TWO_FACTOR.RECOVERY.INSTRUCTIONS' | translate }}</span>
+        <div class="tf-codes" aria-live="polite">
+          @for (recovery of result()?.recoveryCodes ?? []; track recovery) {
+            <span>{{ recovery }}</span>
+          }
+        </div>
+        <div class="flex gap-2">
+          <p-button [label]="'ACCOUNT.TWO_FACTOR.RECOVERY.COPY' | translate" icon="pi pi-copy" severity="secondary" [outlined]="true" size="small" (onClick)="copyCodes()" />
+          <p-button [label]="'ACCOUNT.TWO_FACTOR.RECOVERY.DOWNLOAD' | translate" icon="pi pi-download" severity="secondary" [outlined]="true" size="small" (onClick)="downloadCodes()" />
+        </div>
+        <label class="flex align-items-start gap-2 cursor-pointer text-sm">
+          <p-checkbox [binary]="true" [ngModel]="acknowledged()" (ngModelChange)="acknowledged.set($event)" inputId="tfAck" />
+          <span>{{ 'ACCOUNT.TWO_FACTOR.RECOVERY.ACK' | translate }}</span>
+        </label>
+      </div>
+    }
+  }
+
+  <ng-template pTemplate="footer">
+    @switch (step()) {
+      @case (1) {
+        @if (!mandatory()) {
+          <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="onVisibleChange(false)" />
+        }
+        <p-button [label]="'ACCOUNT.TWO_FACTOR.ENROLL.HAVE_APP' | translate" icon="pi pi-arrow-right" iconPos="right" (onClick)="step.set(2)" />
+      }
+      @case (2) {
+        <p-button [label]="'COMMON.BACK' | translate" severity="secondary" [outlined]="true" (onClick)="step.set(1)" />
+        <p-button [label]="'ACCOUNT.TWO_FACTOR.SCAN.SCANNED' | translate" icon="pi pi-arrow-right" iconPos="right" [disabled]="!enrollment() || expired()" (onClick)="step.set(3)" />
+      }
+      @case (3) {
+        <p-button [label]="'COMMON.BACK' | translate" severity="secondary" [outlined]="true" [disabled]="verifying()" (onClick)="step.set(2)" />
+        <p-button [label]="'ACCOUNT.SIGN_IN.VERIFY_ENABLE' | translate" icon="pi pi-check" [loading]="verifying()" [disabled]="code().length !== codeLength" (onClick)="verify()" />
+      }
+      @case (4) {
+        <p-button [label]="'ACCOUNT.TWO_FACTOR.RECOVERY.FINISH' | translate" icon="pi pi-check" [disabled]="!acknowledged()" (onClick)="finish()" />
+      }
+    }
+  </ng-template>
+</p-dialog>

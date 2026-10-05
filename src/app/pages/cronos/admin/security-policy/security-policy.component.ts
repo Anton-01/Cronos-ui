@@ -26,6 +26,8 @@ import { FieldErrorComponent } from 'src/app/shared/components/field-error/field
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ConfirmService } from 'src/app/shared/services/confirm.service';
 
+const ROOT_ROLE_CODE = 'SUPER_ADMIN';
+
 /** Bounds mirrored from doc §8 — the server enforces the same ranges. */
 export const POLICY_BOUNDS = {
   passwordMinLength: [8, 128],
@@ -109,7 +111,16 @@ export class SecurityPolicyComponent implements HasUnsavedChanges {
 
   private readonly dirty = toSignal(this.form.valueChanges.pipe(map(() => this.form.dirty)), { initialValue: false });
   protected readonly isDirty = computed(() => this.dirty());
-  protected readonly roleOptions = computed(() => this.roles().map((role) => ({ label: role.name, value: role.id })));
+  /**
+   * SUPER_ADMIN is the break-glass role: forcing 2FA on it can lock every
+   * administrator out (the enrolment gate blocks the screens that would fix
+   * it), so it is never offered here and the server rejects it (doc §8).
+   */
+  protected readonly roleOptions = computed(() =>
+    this.roles()
+      .filter((role) => role.code !== ROOT_ROLE_CODE)
+      .map((role) => ({ label: role.name, value: role.id })),
+  );
 
   /** Human summary of the password rule, live as the admin edits. */
   private readonly value = toSignal(this.form.valueChanges.pipe(map(() => this.form.getRawValue())), {
@@ -169,7 +180,7 @@ export class SecurityPolicyComponent implements HasUnsavedChanges {
   private hydrate(policy: SecurityPolicy): void {
     this.policy.set(policy);
     const { updatedAt: _updatedAt, updatedBy: _updatedBy, version: _version, ...values } = policy;
-    this.form.reset(values);
+    this.form.reset({ ...values, twoFactorRequiredRoleIds: this.withoutRoot(values.twoFactorRequiredRoleIds) });
   }
 
   protected discard(): void {
@@ -205,7 +216,11 @@ export class SecurityPolicyComponent implements HasUnsavedChanges {
         return;
       }
     }
-    const request: SecurityPolicyRequest = { ...value, version: policy.version };
+    const request: SecurityPolicyRequest = {
+      ...value,
+      twoFactorRequiredRoleIds: this.withoutRoot(value.twoFactorRequiredRoleIds),
+      version: policy.version,
+    };
     this.saving.set(true);
     this.auditService.updateSecurityPolicy(request).subscribe({
       next: (response) => {
@@ -230,6 +245,11 @@ export class SecurityPolicyComponent implements HasUnsavedChanges {
         this.alert.error(catalogErrorMessage(error, this.language.t('COMMON.TOAST.SAVE_FAILED')));
       },
     });
+  }
+
+  private withoutRoot(roleIds: number[]): number[] {
+    const rootId = this.roles().find((role) => role.code === ROOT_ROLE_CODE)?.id;
+    return rootId === undefined ? roleIds : roleIds.filter((id) => id !== rootId);
   }
 
   protected showError(name: keyof typeof this.form.controls): boolean {

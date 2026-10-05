@@ -1,18 +1,22 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 
 import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
-import { DialogModule } from 'primeng/dialog';
 import { DividerModule } from 'primeng/divider';
-import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
 import { PasswordModule } from 'primeng/password';
 import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 
 import { AuthService } from 'src/app/core/services/auth.service';
 import { TokenService } from 'src/app/core/services/token.service';
+import { TwoFactorService } from 'src/app/core/services/two-factor.service';
+import { TwoFactorStatus } from 'src/app/core/models/two-factor.models';
+import { TwoFactorEnrollmentDialogComponent } from '../two-factor/two-factor-enrollment-dialog.component';
+import { TwoFactorManageDialogComponent, TwoFactorManageMode } from '../two-factor/two-factor-manage-dialog.component';
 import { ProfileStateService } from 'src/app/core/services/profile/ProfileStateService';
 import { LanguageService } from 'src/app/core/services/language.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
@@ -22,17 +26,37 @@ import { passwordChangeValidator } from 'src/app/shared/validators/password.vali
   selector: 'app-sign-in-method',
   standalone: true,
   imports: [
+    DatePipe,
     TranslatePipe,
     ReactiveFormsModule,
     ButtonModule,
-    DialogModule,
     DividerModule,
-    InputTextModule,
     MessageModule,
     PasswordModule,
     TagModule,
+    TooltipModule,
+    TwoFactorEnrollmentDialogComponent,
+    TwoFactorManageDialogComponent,
   ],
   templateUrl: './sign-in-method.component.html',
+  styles: `
+    .tf-status-icon {
+      display: inline-flex;
+      flex-shrink: 0;
+      align-items: center;
+      justify-content: center;
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      background: color-mix(in srgb, var(--p-amber-500) 15%, transparent);
+      color: var(--p-amber-600);
+    }
+
+    .tf-status-icon-on {
+      background: color-mix(in srgb, var(--p-green-500) 15%, transparent);
+      color: var(--p-green-600);
+    }
+  `,
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class SignInMethodComponent implements OnInit {
@@ -50,9 +74,19 @@ export class SignInMethodComponent implements OnInit {
 
   readonly showChangePasswordForm = signal(false);
   readonly isChangingPassword = signal(false);
-  readonly show2FAModal = signal(false);
-  readonly isLoading2FA = signal(false);
-  readonly twoFactorSetup = signal<{ secret: string; qrCodeUrl: string } | null>(null);
+  private readonly twoFactor = inject(TwoFactorService);
+
+  /** Server view of the user's 2FA; `null` until loaded or when the endpoint is unavailable. */
+  readonly twoFactorStatus = signal<TwoFactorStatus | null>(null);
+  readonly twoFactorLoading = signal(true);
+  readonly enrollOpen = signal(false);
+  readonly manageOpen = signal(false);
+  readonly manageMode = signal<TwoFactorManageMode>('disable');
+
+  /** Falls back to the profile flag if the status endpoint is not deployed yet. */
+  readonly twoFactorEnabled = computed(() => this.twoFactorStatus()?.enabled ?? this.profileState.user()?.twoFactorEnabled ?? false);
+  readonly twoFactorRequired = computed(() => this.twoFactorStatus()?.required ?? this.enrollmentRequired());
+  readonly accountName = computed(() => this.profileState.user()?.email ?? '');
 
   readonly passwordForm = this.fb.nonNullable.group(
     {
@@ -63,16 +97,13 @@ export class SignInMethodComponent implements OnInit {
     { validators: passwordChangeValidator('currentPassword', 'newPassword', 'confirmPassword') },
   );
 
-  readonly twoFactorCode = this.fb.group({
-    code: ['', [Validators.required, Validators.minLength(6)]],
-  });
 
   ngOnInit(): void {
     this.profileState.loadProfile();
+    this.loadTwoFactorStatus();
     if (this.enrollmentRequired()) {
-      // Straight to the QR: there is nothing else this user can do until they enrol.
-      this.open2FAModal();
-      this.setup2FA();
+      // Straight into the wizard: there is nothing else this user can do until they enrol.
+      this.enrollOpen.set(true);
     }
   }
 
@@ -105,50 +136,34 @@ export class SignInMethodComponent implements OnInit {
       });
   }
 
-  open2FAModal(): void {
-    this.show2FAModal.set(true);
-    this.twoFactorSetup.set(null);
-    this.twoFactorCode.reset();
-  }
-
-  close2FAModal(): void {
-    this.show2FAModal.set(false);
-    this.twoFactorSetup.set(null);
-    this.twoFactorCode.reset();
-  }
-
-  setup2FA(): void {
-    this.isLoading2FA.set(true);
-    this.authService.setup2FA().subscribe({
-      next: (res) => {
-        this.twoFactorSetup.set({ secret: res.data.secret, qrCodeUrl: res.data.qrCodeUrl });
-        this.isLoading2FA.set(false);
+  private loadTwoFactorStatus(): void {
+    this.twoFactorLoading.set(true);
+    this.twoFactor.status().subscribe({
+      next: (response) => {
+        this.twoFactorStatus.set(response.data);
+        this.twoFactorLoading.set(false);
       },
-      error: (err) => {
-        this.isLoading2FA.set(false);
-        this.toastService.error(this.language.t('COMMON.TOAST.ERROR'), err?.message);
-      },
+      error: () => this.twoFactorLoading.set(false),
     });
   }
 
-  verify2FA(): void {
-    if (this.twoFactorCode.invalid) {
-      return;
+  openManage(mode: TwoFactorManageMode): void {
+    this.manageMode.set(mode);
+    this.manageOpen.set(true);
+  }
+
+  onTwoFactorEnabled(status: TwoFactorStatus): void {
+    this.applyStatus(status);
+    this.toastService.success(this.language.t('ACCOUNT.SIGN_IN.TOAST.TWO_FACTOR_ENABLED'));
+    this.refreshSessionAfterEnrollment();
+  }
+
+  applyStatus(status: TwoFactorStatus): void {
+    this.twoFactorStatus.set(status);
+    const currentUser = this.profileState.user();
+    if (currentUser) {
+      this.profileState.updateUserSignal({ ...currentUser, twoFactorEnabled: status.enabled });
     }
-    this.authService.verify2FA({ code: Number(this.twoFactorCode.value.code) }).subscribe({
-      next: () => {
-        this.twoFactorSetup.set(null);
-        this.twoFactorCode.reset();
-        this.close2FAModal();
-        const currentUser = this.profileState.user();
-        if (currentUser) {
-          this.profileState.updateUserSignal({ ...currentUser, twoFactorEnabled: true });
-        }
-        this.toastService.success(this.language.t('ACCOUNT.SIGN_IN.TOAST.TWO_FACTOR_ENABLED'));
-        this.refreshSessionAfterEnrollment();
-      },
-      error: (err) => this.toastService.error(this.language.t('COMMON.TOAST.ERROR'), err?.message),
-    });
   }
 
   /**
@@ -180,21 +195,4 @@ export class SignInMethodComponent implements OnInit {
     });
   }
 
-  disable2FA(): void {
-    if (this.twoFactorCode.invalid) {
-      return;
-    }
-    this.authService.disable2FA({ code: Number(this.twoFactorCode.value.code) }).subscribe({
-      next: () => {
-        this.twoFactorCode.reset();
-        this.close2FAModal();
-        const currentUser = this.profileState.user();
-        if (currentUser) {
-          this.profileState.updateUserSignal({ ...currentUser, twoFactorEnabled: false });
-        }
-        this.toastService.success(this.language.t('ACCOUNT.SIGN_IN.TOAST.TWO_FACTOR_DISABLED'));
-      },
-      error: (err) => this.toastService.error(this.language.t('COMMON.TOAST.ERROR'), err?.message),
-    });
-  }
 }

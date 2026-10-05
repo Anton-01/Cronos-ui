@@ -1,0 +1,79 @@
+<p-dialog
+  [header]="(mode() === 'disable' ? 'ACCOUNT.TWO_FACTOR.MANAGE.DISABLE_TITLE' : 'ACCOUNT.TWO_FACTOR.MANAGE.REGENERATE_TITLE') | translate"
+  [visible]="visible()"
+  (visibleChange)="!busy() && visible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '30rem' }"
+  [breakpoints]="{ '640px': '95vw' }"
+>
+  @if (newCodes(); as codes) {
+    <div class="flex flex-column gap-3">
+      <p-message severity="success" styleClass="w-full" [text]="'ACCOUNT.TWO_FACTOR.MANAGE.REGENERATED' | translate" />
+      <div class="tf-codes">
+        @for (recovery of codes; track recovery) {
+          <span>{{ recovery }}</span>
+        }
+      </div>
+      <div class="flex gap-2">
+        <p-button [label]="'ACCOUNT.TWO_FACTOR.RECOVERY.COPY' | translate" icon="pi pi-copy" severity="secondary" [outlined]="true" size="small" (onClick)="copyCodes()" />
+        <p-button [label]="'ACCOUNT.TWO_FACTOR.RECOVERY.DOWNLOAD' | translate" icon="pi pi-download" severity="secondary" [outlined]="true" size="small" (onClick)="downloadCodes()" />
+      </div>
+    </div>
+  } @else {
+    <form class="flex flex-column gap-3" (ngSubmit)="submit()">
+      <p-message
+        [severity]="mode() === 'disable' ? 'warn' : 'info'"
+        styleClass="w-full"
+        [text]="(mode() === 'disable' ? 'ACCOUNT.TWO_FACTOR.MANAGE.DISABLE_WARNING' : 'ACCOUNT.TWO_FACTOR.MANAGE.REGENERATE_WARNING') | translate"
+      />
+      @if (mode() === 'disable') {
+        <div class="flex flex-column gap-1">
+          <label for="tfPassword" class="font-medium text-sm">{{ 'ACCOUNT.SIGN_IN.CURRENT_PASSWORD' | translate }}</label>
+          <p-password inputId="tfPassword" name="password" [ngModel]="password()" (ngModelChange)="password.set($event ?? '')" [feedback]="false" [toggleMask]="true" styleClass="w-full" inputStyleClass="w-full" autocomplete="current-password" />
+        </div>
+      }
+      <p-selectbutton name="kind" [options]="kindOptions()" [ngModel]="codeKind()" (ngModelChange)="codeKind.set($event)" optionLabel="label" optionValue="value" [allowEmpty]="false" />
+      @if (codeKind() === 'TOTP') {
+        <div class="flex flex-column align-items-center gap-1">
+          <p-inputotp name="totp" [ngModel]="totp()" (ngModelChange)="totp.set($event ?? '')" [length]="6" [integerOnly]="true" />
+          <small class="text-color-secondary">{{ 'ACCOUNT.TWO_FACTOR.MANAGE.APP_HINT' | translate }}</small>
+        </div>
+      } @else {
+        <div class="flex flex-column gap-1">
+          <label for="tfRecovery" class="font-medium text-sm">{{ 'ACCOUNT.TWO_FACTOR.MANAGE.RECOVERY_LABEL' | translate }}</label>
+          <input pInputText id="tfRecovery" name="recovery" class="tf-secret uppercase" maxlength="9" placeholder="ABCD-1234" autocomplete="off" [ngModel]="recoveryCode()" (ngModelChange)="recoveryCode.set($event ?? '')" />
+          <small class="text-color-secondary">{{ 'ACCOUNT.TWO_FACTOR.MANAGE.RECOVERY_HINT' | translate }}</small>
+        </div>
+      }
+      @if (failure(); as error) {
+        <p-message severity="error" styleClass="w-full">
+          <div class="flex flex-column gap-1 text-sm">
+            <strong>{{ error.titleKey | translate }}</strong>
+            @if (error.detail) {
+              <span>{{ error.detail }}</span>
+            }
+            @if (error.traceId) {
+              <span class="text-xs opacity-80">{{ 'COMMON.TOAST.TRACE_REFERENCE' | translate: { traceId: error.traceId } }}</span>
+            }
+          </div>
+        </p-message>
+      }
+    </form>
+  }
+  <ng-template pTemplate="footer">
+    @if (newCodes()) {
+      <p-button [label]="'COMMON.CLOSE' | translate" (onClick)="visible.set(false)" />
+    } @else {
+      <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" [disabled]="busy()" (onClick)="visible.set(false)" />
+      <p-button
+        [label]="(mode() === 'disable' ? 'ACCOUNT.SIGN_IN.DISABLE_2FA' : 'ACCOUNT.TWO_FACTOR.MANAGE.REGENERATE') | translate"
+        [severity]="mode() === 'disable' ? 'danger' : 'primary'"
+        [icon]="mode() === 'disable' ? 'pi pi-power-off' : 'pi pi-refresh'"
+        [loading]="busy()"
+        [disabled]="!canSubmit()"
+        (onClick)="submit()"
+      />
+    }
+  </ng-template>
+</p-dialog>

@@ -129,6 +129,7 @@
             <label for="twoFactorRoles" class="font-medium">{{ 'IAM.POLICY.FIELDS.TWO_FACTOR_ROLES' | translate }}</label>
             <p-multiselect inputId="twoFactorRoles" formControlName="twoFactorRequiredRoleIds" [options]="roleOptions()" optionLabel="label" optionValue="value" display="chip" [filter]="true" styleClass="w-full" />
             <small class="text-color-secondary">{{ 'IAM.POLICY.HINTS.TWO_FACTOR_ROLES' | translate }}</small>
+            <small class="text-color-secondary"><i class="pi pi-info-circle text-xs" aria-hidden="true"></i> {{ 'IAM.POLICY.HINTS.SUPER_ADMIN_EXCLUDED' | translate }}</small>
           </div>
           @if (policy(); as p) {
             @if (p.updatedAt) {
