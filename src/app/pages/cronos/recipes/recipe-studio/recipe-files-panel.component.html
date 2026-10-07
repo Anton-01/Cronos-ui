@@ -1,0 +1,124 @@
+@if (!readonly()) {
+  <div
+    class="drop-zone"
+    [class.drop-zone-active]="dragOver()"
+    role="button"
+    tabindex="0"
+    [attr.aria-label]="'KITCHEN.FILES.DROP' | translate"
+    (click)="browse()"
+    (keydown.enter)="browse()"
+    (keydown.space)="browse(); $event.preventDefault()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="dragOver.set(false)"
+    (drop)="onDrop($event)"
+  >
+    <i class="pi pi-cloud-upload text-3xl text-primary" aria-hidden="true"></i>
+    <span class="font-semibold">{{ 'KITCHEN.FILES.DROP' | translate }}</span>
+    <span class="text-sm text-color-secondary">{{ 'KITCHEN.FILES.LIMITS' | translate: { max: maxMb, count: maxFiles } }}</span>
+    <input #picker type="file" class="hidden" multiple [accept]="accept" (change)="onPicked($event)" />
+  </div>
+  @if (!recipeId() && pending().length > 0) {
+    <p-message severity="info" styleClass="w-full mt-2" [text]="'KITCHEN.FILES.WAITING_SAVE' | translate" />
+  }
+}
+
+@if (pending().length > 0 || queue().length > 0) {
+  <div class="flex flex-column gap-2 mt-3" aria-live="polite">
+    @for (item of queue(); track item.key) {
+      <div class="upload-row" [class.upload-row-failed]="item.state === 'FAILED'">
+        <i [class]="iconForType(item.file.type) + ' text-xl text-color-secondary'" aria-hidden="true"></i>
+        <div class="flex flex-column gap-1 flex-1 min-w-0">
+          <div class="flex align-items-center justify-content-between gap-2">
+            <span class="text-sm font-medium white-space-nowrap overflow-hidden text-overflow-ellipsis">{{ item.file.name }}</span>
+            <span class="text-xs text-color-secondary white-space-nowrap">{{ size(item.file.size) }}</span>
+          </div>
+          @switch (item.state) {
+            @case ('QUEUED') {
+              <input pInputText class="text-sm" [ngModel]="item.description" (ngModelChange)="setQueuedDescription(item, $event)" maxlength="200" [placeholder]="'KITCHEN.FILES.DESCRIPTION_PLACEHOLDER' | translate" [attr.aria-label]="'KITCHEN.FILES.DESCRIPTION' | translate" />
+            }
+            @case ('UPLOADING') {
+              <p-progressbar [value]="item.progress" [style]="{ height: '0.45rem' }" [showValue]="false" />
+            }
+            @case ('DONE') {
+              <span class="text-xs text-green-600"><i class="pi pi-check text-xs" aria-hidden="true"></i> {{ 'KITCHEN.FILES.UPLOADED' | translate }}</span>
+            }
+            @case ('FAILED') {
+              <span class="text-xs text-red-500">{{ item.error }}</span>
+            }
+          }
+        </div>
+        @if (item.state === 'FAILED') {
+          <p-button icon="pi pi-refresh" [text]="true" [rounded]="true" size="small" [ariaLabel]="'COMMON.TRY_AGAIN' | translate" [pTooltip]="'COMMON.TRY_AGAIN' | translate" (onClick)="retry(item)" />
+        }
+        @if (item.state !== 'DONE') {
+          <p-button icon="pi pi-times" [text]="true" [rounded]="true" size="small" severity="secondary" [ariaLabel]="'COMMON.CANCEL' | translate" (onClick)="cancel(item)" />
+        }
+      </div>
+    }
+  </div>
+}
+
+<div class="file-grid mt-3">
+  @for (file of files(); track file.id) {
+    <article class="file-card">
+      <button type="button" class="file-thumb" (click)="preview.set(file)" [attr.aria-label]="file.fileName">
+        @if (file.kind === 'IMAGE' && (file.thumbnailUrl || file.url)) {
+          <img [src]="file.thumbnailUrl ?? file.url" [alt]="file.description ?? file.fileName" loading="lazy" />
+        } @else {
+          <i [class]="kindIcon[file.kind] + ' text-4xl text-color-secondary'" aria-hidden="true"></i>
+        }
+        @if (file.isCover) {
+          <p-tag [value]="'KITCHEN.FILES.COVER' | translate" severity="success" icon="pi pi-star-fill" styleClass="file-cover-tag" />
+        }
+      </button>
+      <div class="flex flex-column gap-1 p-2">
+        <span class="text-sm font-medium white-space-nowrap overflow-hidden text-overflow-ellipsis" [pTooltip]="file.fileName">{{ file.fileName }}</span>
+        <span class="text-xs text-color-secondary">{{ size(file.sizeBytes) }} · {{ file.uploadedAt | date: 'mediumDate' }}</span>
+        @if (file.description) {
+          <span class="text-xs text-color-secondary file-description">{{ file.description }}</span>
+        }
+      </div>
+      <div class="flex justify-content-end gap-1 px-1 pb-1">
+        <a [href]="file.url" target="_blank" rel="noopener" class="p-button p-button-text p-button-rounded p-button-sm p-button-secondary" [attr.aria-label]="'KITCHEN.FILES.OPEN' | translate" [pTooltip]="'KITCHEN.FILES.OPEN' | translate"><i class="pi pi-external-link" aria-hidden="true"></i></a>
+        @if (!readonly()) {
+          @if (file.kind === 'IMAGE' && !file.isCover) {
+            <p-button icon="pi pi-star" [text]="true" [rounded]="true" size="small" severity="warn" [pTooltip]="'KITCHEN.FILES.MAKE_COVER' | translate" [ariaLabel]="'KITCHEN.FILES.MAKE_COVER' | translate" (onClick)="makeCover(file)" />
+          }
+          <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" size="small" severity="info" [ariaLabel]="'COMMON.EDIT' | translate" (onClick)="openEdit(file)" />
+          <p-button icon="pi pi-trash" [text]="true" [rounded]="true" size="small" severity="danger" [ariaLabel]="'COMMON.DELETE' | translate" (onClick)="remove(file)" />
+        }
+      </div>
+    </article>
+  } @empty {
+    @if (queue().length === 0) {
+      <span class="text-sm text-color-secondary">{{ 'KITCHEN.FILES.EMPTY' | translate }}</span>
+    }
+  }
+</div>
+
+<p-dialog [header]="'KITCHEN.FILES.EDIT' | translate" [visible]="editing() !== null" (visibleChange)="!$event && editing.set(null)" [modal]="true" [draggable]="false" [style]="{ width: '28rem' }" [breakpoints]="{ '640px': '95vw' }">
+  <div class="flex flex-column gap-1">
+    <label for="fileDesc" class="font-medium">{{ 'KITCHEN.FILES.DESCRIPTION' | translate }}</label>
+    <input pInputText id="fileDesc" maxlength="200" [ngModel]="editDescription()" (ngModelChange)="editDescription.set($event)" />
+  </div>
+  <ng-template pTemplate="footer">
+    <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="editing.set(null)" />
+    <p-button [label]="'COMMON.SAVE' | translate" icon="pi pi-check" (onClick)="saveEdit()" />
+  </ng-template>
+</p-dialog>
+
+<p-dialog [header]="preview()?.fileName ?? ''" [visible]="preview() !== null" (visibleChange)="!$event && preview.set(null)" [modal]="true" [draggable]="false" [maximizable]="true" [style]="{ width: '60rem' }" [breakpoints]="{ '960px': '95vw' }">
+  @if (preview(); as file) {
+    @if (file.kind === 'IMAGE') {
+      <img [src]="file.url" [alt]="file.description ?? file.fileName" class="w-full border-round-lg" />
+    } @else {
+      <div class="flex flex-column align-items-center gap-3 py-5">
+        <i [class]="kindIcon[file.kind] + ' text-5xl text-color-secondary'" aria-hidden="true"></i>
+        <a [href]="file.url" target="_blank" rel="noopener" class="p-button"><i class="pi pi-external-link mr-2" aria-hidden="true"></i>{{ 'KITCHEN.FILES.OPEN' | translate }}</a>
+      </div>
+    }
+    @if (file.description) {
+      <p class="text-color-secondary">{{ file.description }}</p>
+    }
+  }
+</p-dialog>

@@ -1,128 +1,199 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, effect, inject, signal } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, effect, inject, signal, untracked } from '@angular/core';
+import { takeUntilDestroyed, toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-
+import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
-import { SelectModule } from 'primeng/select';
-import { TableModule } from 'primeng/table';
-import { TagModule } from 'primeng/tag';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { PaginatorModule, PaginatorState } from 'primeng/paginator';
+import { SkeletonModule } from 'primeng/skeleton';
 import { TooltipModule } from 'primeng/tooltip';
+import { Subject, catchError, debounceTime, distinctUntilChanged, of, switchMap } from 'rxjs';
 
+import { PERMISSIONS } from 'src/app/core/constants/permissions';
+import { CostStatus, RecipeQuery, RecipeStats, RecipeStatus, RecipeSummary } from 'src/app/core/models/kitchen.models';
+import { AuthorizationService } from 'src/app/core/services/authorization.service';
+import { AllergenService } from 'src/app/core/services/domain/allergen.service';
 import { RecipeService } from 'src/app/core/services/domain/recipe.service';
-import { RecipeResponse } from 'src/app/core/models/domain.model';
 import { LanguageService } from 'src/app/core/services/language.service';
-import { SelectOption, EntityStatus, statusOptions } from 'src/app/shared/i18n/catalog-options';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
+import { catalogErrorMessage } from 'src/app/core/utils/catalog-error.util';
+import { StatCardComponent } from 'src/app/shared/components/stat-card/stat-card.component';
 import { AlertService } from 'src/app/shared/services/alert.service';
-import { ConfirmService } from 'src/app/shared/services/confirm.service';
-import { TableSkeletonRowComponent } from 'src/app/shared/components/table-skeleton-row/table-skeleton-row.component';
+import { AllergenBadgesComponent } from '../kitchen-shared/allergen-badges.component';
+import { CostStatusTagComponent } from '../kitchen-shared/cost-status-tag.component';
+import { DIFFICULTY_ICON, RECIPE_STATUS_PILL, formatMinutes, recipeStatusOptions } from '../kitchen-shared/kitchen-labels';
+import { KitchenLookupsStore } from '../kitchen-shared/kitchen-lookups.store';
 
+const PAGE_SIZE = 12;
+
+/** Recipe library: searchable, filterable by allergens it must be free of, with each recipe's cost health. */
 @Component({
   selector: 'app-recipes',
   standalone: true,
   imports: [
-    TranslatePipe,
+    DecimalPipe,
     FormsModule,
+    RouterLink,
+    TranslatePipe,
     ButtonModule,
-    CardModule,
     IconFieldModule,
     InputIconModule,
     InputTextModule,
-    SelectModule,
-    TableModule,
-    TagModule,
+    MultiSelectModule,
+    PaginatorModule,
+    SkeletonModule,
     TooltipModule,
-    TableSkeletonRowComponent,
+    StatCardComponent,
+    AllergenBadgesComponent,
+    CostStatusTagComponent,
   ],
   templateUrl: './recipes.component.html',
+  styleUrls: ['./recipes.component.scss', '../admin/users/user-list/user-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RecipesComponent implements OnInit {
+export class RecipesComponent {
   private readonly recipeService = inject(RecipeService);
-  private readonly alertService = inject(AlertService);
-  private readonly confirmService = inject(ConfirmService);
-  private readonly pageInfoService = inject(PageInfoService);
+  private readonly authorization = inject(AuthorizationService);
+  private readonly lookups = inject(KitchenLookupsStore);
+  private readonly alert = inject(AlertService);
   private readonly language = inject(LanguageService);
-  private readonly router = inject(Router);
+  private readonly pageInfo = inject(PageInfoService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  readonly items = signal<RecipeResponse[]>([]);
-  readonly isLoading = signal(false);
-  protected readonly skeletonRows = Array.from({ length: 6 });
-  selectedItems: RecipeResponse[] = [];
+  protected readonly statusPill = RECIPE_STATUS_PILL;
+  protected readonly difficultyIcon = DIFFICULTY_ICON;
+  protected readonly pageSize = PAGE_SIZE;
+  protected readonly skeletons = Array.from({ length: 8 });
 
-  readonly statusFilterOptions = computed<SelectOption<EntityStatus>[]>(() =>
-    statusOptions((key) => this.language.t(key)),
+  protected readonly recipes = signal<RecipeSummary[]>([]);
+  protected readonly total = signal(0);
+  protected readonly loading = signal(true);
+  protected readonly stats = signal<RecipeStats | null>(null);
+  protected readonly statsLoading = signal(true);
+  protected readonly first = signal(0);
+
+  protected readonly search = signal('');
+  protected readonly categoryIds = signal<number[]>([]);
+  protected readonly statuses = signal<RecipeStatus[]>([]);
+  protected readonly freeOf = signal<number[]>([]);
+  protected readonly costStatus = signal<CostStatus | null>(null);
+
+  private readonly allergenCatalog = toSignal(inject(AllergenService).active().pipe(catchError(() => of([]))), { initialValue: [] });
+  protected readonly allergenOptions = computed(() => this.allergenCatalog().map((allergen) => ({ label: allergen.name, value: allergen.id })));
+  protected readonly categoryOptions = computed(() => this.lookups.snapshot().productCategories.map((category) => ({ label: category.name, value: category.id })));
+  protected readonly statusOptions = computed(() => recipeStatusOptions((key) => this.language.t(key)));
+  protected readonly canCreate = computed(() => this.authorization.can(PERMISSIONS.RECIPE_CREATE));
+  protected readonly hasFilters = computed(
+    () => !!this.search() || this.categoryIds().length > 0 || this.statuses().length > 0 || this.freeOf().length > 0 || this.costStatus() !== null,
   );
 
+  private readonly page = signal(0);
+  private readonly requests = new Subject<RecipeQuery>();
+  private readonly searchInput = new Subject<string>();
+
   constructor() {
-    // Page chrome re-renders on a language switch; the fetch stays in ngOnInit.
     effect(() => {
-      this.pageInfoService.updateTitle(this.language.t('RECIPES.TITLE'));
-      this.pageInfoService.updateDescription(this.language.t('RECIPES.DESCRIPTION'));
-      this.pageInfoService.updateBreadcrumbs([
+      this.pageInfo.updateTitle(this.language.t('KITCHEN.RECIPES.TITLE'));
+      this.pageInfo.updateDescription(this.language.t('KITCHEN.RECIPES.DESCRIPTION'));
+      this.pageInfo.updateBreadcrumbs([
         { title: this.language.t('BREADCRUMB.HOME'), path: '/dashboard', isActive: false },
-        { title: this.language.t('BREADCRUMB.OPERATIONS'), path: '', isActive: false },
-        { title: this.language.t('RECIPES.TITLE'), path: '', isActive: true },
+        { title: this.language.t('KITCHEN.RECIPES.TITLE'), path: '', isActive: true },
       ]);
     });
-  }
-
-  ngOnInit(): void {
-    this.load();
-  }
-
-  load(): void {
-    this.isLoading.set(true);
-    this.recipeService.getAll({ page: 0, size: 1000, sort: 'name,asc' }).subscribe({
-      next: (res) => {
-        this.items.set(res.data.content);
-        this.isLoading.set(false);
+    this.requests
+      .pipe(
+        switchMap((query) => {
+          this.loading.set(true);
+          return this.recipeService.search(query).pipe(
+            catchError((error: unknown) => {
+              this.alert.error(catalogErrorMessage(error, this.language.t('KITCHEN.RECIPES.LOAD_FAILED')));
+              return of(null);
+            }),
+          );
+        }),
+        takeUntilDestroyed(this.destroyRef),
+      )
+      .subscribe((response) => {
+        this.recipes.set(response?.data?.content ?? []);
+        this.total.set(response?.data?.totalElements ?? 0);
+        this.loading.set(false);
+      });
+    this.searchInput
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
+      .subscribe((term) => this.applyFilter(() => this.search.set(term)));
+    effect(() => {
+      const query: RecipeQuery = {
+        page: this.page(),
+        size: PAGE_SIZE,
+        sort: 'updatedAt,desc',
+        search: this.search() || undefined,
+        categoryIds: this.categoryIds(),
+        statuses: this.statuses(),
+        freeOfAllergenIds: this.freeOf(),
+        costStatus: this.costStatus() ?? undefined,
+      };
+      untracked(() => this.requests.next(query));
+    });
+    this.lookups.load().subscribe();
+    this.recipeService.stats().subscribe({
+      next: (response) => {
+        this.stats.set(response.data);
+        this.statsLoading.set(false);
       },
-      error: (err) => {
-        this.isLoading.set(false);
-        this.alertService.error(
-          err?.error?.message || err?.message || this.language.t('RECIPES.TOAST.LOAD_FAILED'),
-        );
-      },
+      error: () => this.statsLoading.set(false),
     });
   }
 
-  openCreate(): void {
-    this.router.navigate(['/cronos/recetas/nueva']);
+  protected onSearch(term: string): void {
+    this.searchInput.next(term.trim());
   }
 
-  openDetail(item: RecipeResponse): void {
-    this.router.navigate(['/cronos/recetas', item.id]);
+  protected setCategories(value: number[]): void {
+    this.applyFilter(() => this.categoryIds.set(value));
   }
 
-  openEdit(item: RecipeResponse): void {
-    this.router.navigate(['/cronos/recetas/editar', item.id]);
+  protected setStatuses(value: RecipeStatus[]): void {
+    this.applyFilter(() => this.statuses.set(value));
   }
 
-  formatDate(date: string): string {
-    return new Date(date).toLocaleDateString('es-MX', { year: 'numeric', month: 'short', day: 'numeric' });
+  protected setFreeOf(value: number[]): void {
+    this.applyFilter(() => this.freeOf.set(value));
   }
 
-  async confirmDelete(item: RecipeResponse): Promise<void> {
-    const confirmed = await this.confirmService.confirmDelete(item.name);
-    if (!confirmed) {
-      return;
-    }
-    this.recipeService.delete(item.id).subscribe({
-      next: () => {
-        this.load();
-        this.alertService.success(this.language.t('RECIPES.TOAST.DELETED'));
-      },
-      error: (err) => {
-        this.alertService.error(
-          err?.error?.message || err?.message || this.language.t('COMMON.TOAST.DELETE_FAILED'),
-        );
-      },
+  protected quick(filter: 'ALL' | 'ACTIVE' | 'DRAFT' | 'STALE'): void {
+    this.applyFilter(() => {
+      this.statuses.set(filter === 'ACTIVE' ? ['ACTIVE'] : filter === 'DRAFT' ? ['DRAFT'] : []);
+      this.costStatus.set(filter === 'STALE' ? 'STALE' : null);
     });
+  }
+
+  protected clearFilters(): void {
+    this.applyFilter(() => {
+      this.search.set('');
+      this.categoryIds.set([]);
+      this.statuses.set([]);
+      this.freeOf.set([]);
+      this.costStatus.set(null);
+    });
+  }
+
+  private applyFilter(change: () => void): void {
+    change();
+    this.first.set(0);
+    this.page.set(0);
+  }
+
+  protected onPage(event: PaginatorState): void {
+    this.first.set(event.first ?? 0);
+    this.page.set(event.page ?? 0);
+  }
+
+  protected time(minutes: number): string {
+    return formatMinutes(minutes, (key) => this.language.t(key));
   }
 }

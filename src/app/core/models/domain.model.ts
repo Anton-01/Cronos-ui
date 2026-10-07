@@ -1,219 +1,10 @@
+import { AllergenRef, RecipeConfiguration } from './kitchen.models';
+
 // Categorías — see ./category.model.ts (typed by CategoryType + CategoryScope).
 export * from './category.model';
 
-export interface AllergenResponse {
-  id: string;
-  name: string;
-  alternativeName: string | null;
-  description: string | null;
-  isSystemDefault: boolean;
-  status: 'ACTIVE' | 'INACTIVE';
-}
-export interface CreateAllergenRequest {
-  name: string;
-  alternativeName?: string;
-  description?: string;
-}
-export interface UpdateAllergenRequest {
-  id: string;
-  name: string;
-  alternativeName?: string;
-  description?: string;
-}
-
 // Tipos de Unidad y Unidades de Medida — ver ./unit-catalog.models.ts
 export * from './unit-catalog.models';
-
-// Ingredientes (List)
-export interface IngredientResponse {
-  id: string;
-  name: string;
-  categoryName: string;
-  purchaseUnitCode: string;
-  purchaseQuantity: number;
-  unitCost: number;
-  currency: string;
-  yieldPercentage: number;
-  baseUnitCost: number;
-  status: 'ACTIVE' | 'INACTIVE';
-}
-
-// Ingredientes (Detail for edit)
-export interface IngredientDetailResponse {
-  id: string;
-  name: string;
-  description: string | null;
-  brand: string | null;
-  supplier: string | null;
-  categoryId: number;
-  categoryName: string;
-  purchaseUnitId: number;
-  purchaseUnitCode: string;
-  purchaseQuantity: number;
-  unitCost: number;
-  currency: string;
-  yieldPercentage: number;
-  baseUnitCost: number;
-  minimumStock: number | null;
-  densityConversion: DensityConversion | null;
-  status: 'ACTIVE' | 'INACTIVE';
-}
-
-export interface DensityConversion {
-  gramsPerCup: number;
-  gramsPerTablespoon?: number;
-  gramsPerTeaspoon?: number;
-}
-
-export interface CreateIngredientRequest {
-  name: string;
-  description?: string;
-  brand?: string;
-  supplier?: string;
-  categoryId: number;
-  purchaseUnitId: number;
-  purchaseQuantity: number;
-  unitCost: number;
-  currency: string;
-  yieldPercentage: number;
-  minimumStock?: number;
-  densityConversion?: DensityConversion;
-}
-
-export interface UpdateIngredientRequest {
-  id: string;
-  name: string;
-  description?: string;
-  brand?: string;
-  supplier?: string;
-  categoryId: number;
-  purchaseUnitId: number;
-  purchaseQuantity: number;
-  unitCost: number;
-  currency: string;
-  yieldPercentage: number;
-  minimumStock?: number;
-  densityConversion?: DensityConversion;
-}
-
-// Recetas
-export interface CreateRecipeRequest {
-  name: string;
-  description?: string;
-  categoryId?: string;
-  yieldQuantity: number;
-  yieldUnit: string;
-  preparationTimeMinutes?: number;
-  bakingTimeMinutes?: number;
-  coolingTimeMinutes?: number;
-  instructions?: string;
-  storageInstructions?: string;
-  shelfLifeDays?: number;
-}
-
-export interface RecipeResponse {
-  id: string;
-  name: string;
-  description: string;
-  yieldQuantity: number;
-  yieldUnit: string;
-  status: 'DRAFT' | 'ACTIVE';
-  isActive: boolean;
-  needsRecalculation: boolean;
-  currentVersion: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface RecipeDetailResponse {
-  id: string;
-  name: string;
-  description: string | null;
-  categoryId: string | null;
-  yieldQuantity: number;
-  yieldUnit: string;
-  preparationTimeMinutes: number | null;
-  bakingTimeMinutes: number | null;
-  coolingTimeMinutes: number | null;
-  instructions: string | null;
-  storageInstructions: string | null;
-  shelfLifeDays: number | null;
-  status: 'DRAFT' | 'ACTIVE';
-  isActive: boolean;
-  needsRecalculation: boolean;
-  currentVersion: number;
-  ingredients: RecipeIngredientResponse[];
-  fixedCosts: RecipeFixedCostResponse[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface RecipeIngredientRequest {
-  rawMaterialId: string;
-  quantity: number;
-  unitId: string;
-  displayOrder?: number;
-  isOptional?: boolean;
-  notes?: string;
-}
-
-export interface RecipeIngredientResponse {
-  id: string;
-  rawMaterialId: string;
-  rawMaterialName: string;
-  quantity: number;
-  unitId: string;
-  unitName: string;
-  displayOrder: number;
-  isOptional: boolean;
-  notes: string | null;
-  hasAllergen: boolean;
-  allergenNames: string[];
-}
-
-export interface SubstituteIngredientRequest {
-  substituteMaterialId: string;
-}
-
-export interface RecipeFixedCostRequest {
-  userFixedCostId: string;
-  timeInMinutes?: number;
-  percentage?: number;
-}
-
-export interface RecipeFixedCostResponse {
-  id: string;
-  userFixedCostId: string;
-  userFixedCostName: string;
-  calculationMethod: string;
-  defaultAmount: number;
-  timeInMinutes: number | null;
-  percentage: number | null;
-  calculatedCost: number;
-}
-
-export interface RecipeCostBreakdown {
-  targetYield: number;
-  yieldUnit: string;
-  scaleFactor: number;
-  materialsCost: number;
-  subRecipesCost: number;
-  fixedCosts: number;
-  totalCost: number;
-  costPerUnit: number;
-}
-
-// Archivos de Receta
-export interface RecipeFileResponse {
-  id: string;
-  fileName: string;
-  fileUrl: string;
-  fileType: string;
-  sizeBytes: number;
-  description: string | null;
-  isPrimary: boolean;
-  createdAt: string;
-}
 
 // Compartir Receta
 export interface CreateRecipeShareRequest {
@@ -292,6 +83,8 @@ export interface UserFixedCostResponse {
 
 export interface QuoteItemRequest {
   recipeId?: string;
+  /** Which selectable lines go in / are swapped (doc kitchen §6). Server re-prices it; `unitCost` is informative. */
+  recipeConfiguration?: RecipeConfiguration | null;
   productName: string;
   productDescription?: string;
   productSize?: string;
@@ -334,6 +127,8 @@ export interface InternalQuoteResponse {
 export interface QuoteItemDetailResponse {
   id?: string;
   recipeId?: string | null;
+  recipeConfiguration?: RecipeConfiguration | null;
+  allergens?: AllergenRef[];
   productName: string;
   productDescription?: string | null;
   productSize?: string | null;

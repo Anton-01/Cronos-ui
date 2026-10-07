@@ -54,11 +54,14 @@ const Routing: Routes = [
   },
   {
     path: 'cronos/ingredientes/nuevo',
-    loadComponent: () => import('./cronos/ingredients/ingredient-form/ingredient-form.component').then(m => m.IngredientFormComponent),
+    loadComponent: () => import('./cronos/ingredients/ingredient-editor/ingredient-editor.component').then(m => m.IngredientEditorComponent),
+    canDeactivate: [unsavedChangesGuard],
   },
+  { path: 'cronos/ingredientes/editar/:id', redirectTo: 'cronos/ingredientes/:id' },
   {
-    path: 'cronos/ingredientes/editar/:id',
-    loadComponent: () => import('./cronos/ingredients/ingredient-form/ingredient-form.component').then(m => m.IngredientFormComponent),
+    path: 'cronos/ingredientes/:id',
+    loadComponent: () => import('./cronos/ingredients/ingredient-editor/ingredient-editor.component').then(m => m.IngredientEditorComponent),
+    canDeactivate: [unsavedChangesGuard],
   },
   // ─── Recetas ───
   {
@@ -67,15 +70,14 @@ const Routing: Routes = [
   },
   {
     path: 'cronos/recetas/nueva',
-    loadComponent: () => import('./cronos/recipes/recipe-form/recipe-form.component').then(m => m.RecipeFormComponent),
+    loadComponent: () => import('./cronos/recipes/recipe-studio/recipe-studio.component').then(m => m.RecipeStudioComponent),
+    canDeactivate: [unsavedChangesGuard],
   },
-  {
-    path: 'cronos/recetas/editar/:id',
-    loadComponent: () => import('./cronos/recipes/recipe-form/recipe-form.component').then(m => m.RecipeFormComponent),
-  },
+  { path: 'cronos/recetas/editar/:id', redirectTo: 'cronos/recetas/:id' },
   {
     path: 'cronos/recetas/:id',
-    loadComponent: () => import('./cronos/recipes/recipe-detail/recipe-detail.component').then(m => m.RecipeDetailComponent),
+    loadComponent: () => import('./cronos/recipes/recipe-studio/recipe-studio.component').then(m => m.RecipeStudioComponent),
+    canDeactivate: [unsavedChangesGuard],
   },
   // ─── Cotizaciones ───
   {

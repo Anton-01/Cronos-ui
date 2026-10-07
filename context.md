@@ -963,3 +963,36 @@ Rules introduced here:
   finance settings).
 - Input-dependent loads in child components run in `ngOnInit`, never in the
   constructor — reading a required signal input there throws `NG0950`.
+
+---
+
+## 20. Kitchen Catalog & Recipe Studio — IMPLEMENTED
+
+Rebuilds allergens, ingredients and recipes on the V8 envelope. Backend
+contract, cost engine and seed data: `docs/api/kitchen-catalog-and-recipes.md`.
+Contracts: `core/models/kitchen.models.ts`.
+
+| Piece | Path | Notes |
+|---|---|---|
+| Allergen catalog | `pages/cronos/allergens/` | Card grid; keywords are the editor's centre, with a live "would this match?" tester. SYSTEM allergens accept extra keywords only |
+| Ingredients list | `pages/cronos/ingredients/ingredients.component` | Server-paged; KPI tiles as filters; effective cost per kg/L/pz with its source (own / reference / none) and staleness |
+| Ingredient editor | `pages/cronos/ingredients/ingredient-editor/` | `/cronos/ingredientes/nuevo` and `/:id` (`editar/:id` redirects). Allergen suggestions from the name, substitutes with ratio and allergen impact, optional first price, price history and recipe usage tabs |
+| Price dialog | `kitchen-shared/price-dialog.component` | Live cost-per-base-unit preview, ±50 % jump confirmation, then shows the ripple (recipes recalculated, quotes flagged, recipes below margin) |
+| Recipes list | `pages/cronos/recipes/recipes.component` | Card grid with cover, allergens, cost/unit, suggested price and cost status; "free of allergens" filter |
+| Recipe studio | `pages/cronos/recipes/recipe-studio/` | Replaces `recipe-form` + `recipe-detail`. Tabs: General, Ingredients, Process (PrimeNG Editor/Quill), Costing, Files, History, Share; sticky live cost panel fed by `POST /recipes/cost-preview` |
+| Lines editor | `recipe-studio/recipe-lines-editor.component` | Keyboard-first add bar; declared allergens auto-linked; keyword matches surface as per-line "link / dismiss" suggestions; substitutes free of the line's allergens |
+| Files panel | `recipe-studio/recipe-files-panel.component` | N files, one request each, 3 concurrent, progress/retry/cancel, client-side type/size/count checks; files added before the first save upload once the recipe gets an id |
+| Configurator | `kitchen-shared/recipe-configurator-dialog.component` | Used by quote create/edit: include/exclude selectable lines, swap allergenic ingredients, server-priced unit cost + allergen declaration written into the quote line |
+| Detection | `kitchen-shared/allergen-detection.ts` | Accent-free whole-word matching; the server runs the same algorithm (doc §3.3) |
+| Lookups | `kitchen-shared/kitchen-lookups.store.ts` | Units, categories, fixed costs cached per session; a failed source is **not** cached (retried on the next screen) |
+
+Rules introduced here:
+
+- **The server is the cost authority.** Client estimates are labelled previews;
+  every saved or quoted cost comes from the API.
+- **Allergens are never linked silently.** Declared ones come from the
+  ingredient; anything inferred from text is a suggestion the user accepts.
+- **A new recipe stays on the same component after its first save**
+  (`Location.replaceState`) so queued attachments keep uploading.
+- Quill (`quill@^2`) is a dependency for `p-editor`; `quill-delta` is listed in
+  `allowedCommonJsDependencies`.

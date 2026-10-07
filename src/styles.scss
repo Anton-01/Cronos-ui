@@ -459,6 +459,74 @@ a {
   box-shadow: 0 0 0 2px var(--primary-color);
 }
 
+.price-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-hover);
+}
+
+.price-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  background: var(--surface-card);
+}
+
+.price-change-up {
+  color: var(--p-red-600);
+}
+
+.price-change-down {
+  color: var(--p-green-600);
+}
+
+.suggestion-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--p-orange-500) 10%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--p-orange-500) 45%, transparent);
+}
+
+.substitute-row {
+  position: relative;
+  padding: 0.75rem;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+
+  .substitute-remove {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+  }
+}
+
+.configurator-line {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+}
+
+.quote-recipe-config {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 // PrimeNG tags rendered as pills to match
 .p-tag {
   border-radius: var(--radius-pill);

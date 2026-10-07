@@ -1,0 +1,204 @@
+<!-- Allergen summary of the whole recipe -->
+<div class="allergen-summary">
+  <div class="flex flex-column gap-1">
+    <span class="text-xs uppercase font-semibold text-color-secondary">{{ 'KITCHEN.RECIPES.CONTAINS' | translate }}</span>
+    <app-allergen-badges [allergens]="summary().contains" [showEmpty]="true" />
+  </div>
+  @if (summary().optionalOnly.length > 0) {
+    <div class="flex flex-column gap-1">
+      <span class="text-xs uppercase font-semibold text-color-secondary">{{ 'KITCHEN.RECIPES.MAY_CONTAIN' | translate }}</span>
+      <app-allergen-badges [allergens]="summary().optionalOnly" />
+    </div>
+  }
+  <div class="flex flex-column align-items-end gap-1 ml-auto">
+    <span class="text-xs uppercase font-semibold text-color-secondary">{{ 'KITCHEN.RECIPES.INGREDIENTS_COST' | translate }}</span>
+    <span class="text-lg font-bold font-mono">
+      @if (costing()) {
+        <i class="pi pi-spin pi-spinner text-sm" aria-hidden="true"></i>
+      }
+      {{ totalCost() | number: '1.2-2' }}
+    </span>
+  </div>
+</div>
+
+<!-- Add bar -->
+@if (!readonly()) {
+  <div class="add-bar" (keydown)="onAddKey($event)">
+    <div class="add-bar-ingredient flex flex-column gap-1">
+      <label for="addIngredient" class="text-xs font-semibold text-color-secondary">{{ 'KITCHEN.RECIPES.ADD.INGREDIENT' | translate }}</label>
+      <p-autocomplete
+        inputId="addIngredient"
+        [ngModel]="picked()"
+        (ngModelChange)="onIngredientModel($event)"
+        (onSelect)="onPick($event.value)"
+        [suggestions]="suggestions()"
+        (completeMethod)="search($event)"
+        optionLabel="name"
+        [minQueryLength]="2"
+        [delay]="250"
+        [forceSelection]="true"
+        styleClass="w-full"
+        inputStyleClass="w-full"
+        [placeholder]="'KITCHEN.RECIPES.ADD.SEARCH' | translate"
+      >
+        <ng-template let-item #item>
+          <div class="flex align-items-center justify-content-between gap-3 w-full">
+            <div class="flex flex-column">
+              <span class="font-medium">{{ item.name }}</span>
+              <span class="text-xs text-color-secondary">{{ item.categoryName }}</span>
+            </div>
+            <div class="flex align-items-center gap-2">
+              <app-allergen-badges [allergens]="item.allergens" [compact]="true" />
+              @if (item.costPerBaseUnit === null) {
+                <p-tag [value]="'KITCHEN.PRICE_SOURCE.NONE' | translate" severity="danger" />
+              }
+            </div>
+          </div>
+        </ng-template>
+      </p-autocomplete>
+    </div>
+    <div class="flex flex-column gap-1" #quantityInput>
+      <label for="addQty" class="text-xs font-semibold text-color-secondary">{{ 'KITCHEN.RECIPES.QUANTITY' | translate }}</label>
+      <p-inputnumber inputId="addQty" [ngModel]="addQuantity()" (ngModelChange)="addQuantity.set($event)" [minFractionDigits]="0" [maxFractionDigits]="3" [min]="0" styleClass="w-full" inputStyleClass="w-8rem" />
+    </div>
+    <div class="flex flex-column gap-1">
+      <label for="addUnit" class="text-xs font-semibold text-color-secondary">{{ 'KITCHEN.PRICE.UNIT' | translate }}</label>
+      <p-select inputId="addUnit" [options]="addUnits()" [ngModel]="addUnitId()" (ngModelChange)="addUnitId.set($event)" optionLabel="codeIdentity" optionValue="id" [filter]="true" filterBy="name,codeIdentity" [disabled]="!picked()" styleClass="w-8rem" />
+    </div>
+    <div class="flex flex-column gap-1">
+      <label for="addSection" class="text-xs font-semibold text-color-secondary">{{ 'KITCHEN.RECIPES.SECTION' | translate }}</label>
+      <p-autocomplete inputId="addSection" [ngModel]="addSection()" (ngModelChange)="addSection.set($event ?? '')" [suggestions]="sectionSuggestions()" (completeMethod)="searchSections($event)" [dropdown]="sections().length > 0" inputStyleClass="w-10rem" [placeholder]="'KITCHEN.RECIPES.SECTION_PLACEHOLDER' | translate" />
+    </div>
+    <p-button icon="pi pi-plus" [label]="'KITCHEN.RECIPES.ADD.BUTTON' | translate" [disabled]="!canAdd()" styleClass="add-bar-button" (onClick)="add()" />
+  </div>
+  <small class="text-color-secondary block mb-3">{{ 'KITCHEN.RECIPES.ADD.HINT' | translate }}</small>
+}
+
+<!-- Lines -->
+@for (group of groups(); track group.section ?? '__none') {
+  <section class="line-group">
+    @if (group.section) {
+      <h4 class="line-group-title">{{ group.section }}</h4>
+    }
+    @for (line of group.lines; track line.key) {
+      @let issue = issueByKey().get(line.key);
+      @let possible = suggestionsFor(line);
+      <div class="recipe-line" [class.recipe-line-invalid]="!!issue" [class.recipe-line-optional]="line.optional">
+        <div class="recipe-line-main">
+          <div class="flex flex-column gap-1 min-w-0 recipe-line-name">
+            <span class="font-semibold">
+              {{ line.ingredientName }}
+              @if (line.substitutedFrom) {
+                <i class="pi pi-sync text-xs text-color-secondary" [pTooltip]="('KITCHEN.RECIPES.REPLACES' | translate) + ' ' + line.substitutedFrom" aria-hidden="true"></i>
+              }
+            </span>
+            <app-allergen-badges [allergens]="allergensOf(line)" />
+          </div>
+          <p-inputnumber [ngModel]="line.quantity" (ngModelChange)="patch(line.key, { quantity: $event })" [minFractionDigits]="0" [maxFractionDigits]="3" [min]="0" [disabled]="readonly()" inputStyleClass="w-7rem text-right" [ariaLabel]="('KITCHEN.RECIPES.QUANTITY' | translate) + ' ' + line.ingredientName" />
+          <p-select [options]="unitsFor(line.baseDimension)" [ngModel]="line.unitId" (ngModelChange)="patch(line.key, { unitId: $event })" optionLabel="codeIdentity" optionValue="id" [disabled]="readonly()" styleClass="w-7rem" [ariaLabel]="'KITCHEN.PRICE.UNIT' | translate" />
+          <span class="recipe-line-cost font-mono" [pTooltip]="'KITCHEN.RECIPES.LINE_COST_HINT' | translate">
+            @if (lineCosts().get(line.key) === null) {
+              <i class="pi pi-exclamation-circle text-red-500" [pTooltip]="'KITCHEN.RECIPES.LINE_UNPRICED' | translate" aria-hidden="true"></i>
+            } @else if (lineCosts().has(line.key)) {
+              {{ lineCosts().get(line.key) | number: '1.2-2' }}
+            } @else {
+              —
+            }
+          </span>
+          @if (!readonly()) {
+            <div class="flex align-items-center gap-1 recipe-line-actions">
+              <p-button icon="pi pi-arrow-up" [text]="true" [rounded]="true" size="small" severity="secondary" [ariaLabel]="'KITCHEN.RECIPES.MOVE_UP' | translate" (onClick)="move(line.key, -1)" />
+              <p-button icon="pi pi-arrow-down" [text]="true" [rounded]="true" size="small" severity="secondary" [ariaLabel]="'KITCHEN.RECIPES.MOVE_DOWN' | translate" (onClick)="move(line.key, 1)" />
+              <p-button icon="pi pi-sync" [text]="true" [rounded]="true" size="small" severity="info" [pTooltip]="'KITCHEN.RECIPES.SUBSTITUTE' | translate" [ariaLabel]="'KITCHEN.RECIPES.SUBSTITUTE' | translate" (onClick)="openSubstitutes(line)" />
+              <p-button icon="pi pi-exclamation-triangle" [text]="true" [rounded]="true" size="small" severity="warn" [pTooltip]="'KITCHEN.RECIPES.EDIT_ALLERGENS' | translate" [ariaLabel]="'KITCHEN.RECIPES.EDIT_ALLERGENS' | translate" (onClick)="openAllergenEdit(line)" />
+              <p-button icon="pi pi-trash" [text]="true" [rounded]="true" size="small" severity="danger" [ariaLabel]="'COMMON.REMOVE' | translate" (onClick)="remove(line.key)" />
+            </div>
+          }
+        </div>
+        <div class="recipe-line-options">
+          <label class="flex align-items-center gap-2 text-sm cursor-pointer">
+            <p-toggleswitch [ngModel]="line.optional" (ngModelChange)="patch(line.key, { optional: $event })" [disabled]="readonly()" />
+            {{ 'KITCHEN.RECIPES.OPTIONAL' | translate }}
+          </label>
+          <label class="flex align-items-center gap-2 text-sm cursor-pointer" [pTooltip]="'KITCHEN.RECIPES.QUOTE_SELECTABLE_HINT' | translate">
+            <p-toggleswitch [ngModel]="line.quoteSelectable || line.optional" (ngModelChange)="patch(line.key, { quoteSelectable: $event })" [disabled]="readonly() || line.optional" />
+            {{ 'KITCHEN.RECIPES.QUOTE_SELECTABLE' | translate }}
+          </label>
+          <input pInputText class="recipe-line-notes" [ngModel]="line.notes" (ngModelChange)="patch(line.key, { notes: $event })" maxlength="200" [disabled]="readonly()" [placeholder]="'KITCHEN.RECIPES.LINE_NOTES' | translate" [attr.aria-label]="'KITCHEN.RECIPES.LINE_NOTES' | translate" />
+        </div>
+        @if (!readonly()) {
+          @for (match of possible; track match.allergen.id) {
+            <div class="suggestion-row mt-2" role="status">
+              <i [class]="match.allergen.icon + ' text-orange-500'" aria-hidden="true"></i>
+              <span class="flex-1 text-sm">{{ 'KITCHEN.DETECTION.SUGGESTION' | translate: { allergen: match.allergen.name, keyword: match.keyword } }}</span>
+              <p-button [label]="'KITCHEN.DETECTION.LINK' | translate" size="small" icon="pi pi-link" (onClick)="acceptSuggestion(line, match)" />
+              <p-button icon="pi pi-times" size="small" [text]="true" severity="secondary" [ariaLabel]="'KITCHEN.DETECTION.DISMISS' | translate" [pTooltip]="'KITCHEN.DETECTION.DISMISS' | translate" (onClick)="dismissSuggestion(line, match)" />
+            </div>
+          }
+        }
+        @if (issue) {
+          <small class="text-red-500 block mt-1"><i class="pi pi-exclamation-circle text-xs" aria-hidden="true"></i> {{ issue | translate }}</small>
+        }
+      </div>
+    }
+  </section>
+} @empty {
+  <div class="flex flex-column align-items-center gap-2 py-6 text-color-secondary text-center">
+    <i class="pi pi-shopping-bag text-3xl" aria-hidden="true"></i>
+    <span>{{ 'KITCHEN.RECIPES.NO_LINES' | translate }}</span>
+  </div>
+}
+
+<!-- Substitutes -->
+<p-dialog [header]="'KITCHEN.RECIPES.SUBSTITUTE_TITLE' | translate: { name: substituteFor()?.ingredientName ?? '' }" [visible]="substituteFor() !== null" (visibleChange)="!$event && substituteFor.set(null)" [modal]="true" [draggable]="false" [style]="{ width: '36rem' }" [breakpoints]="{ '640px': '95vw' }">
+  @if (substituteLoading()) {
+    <div class="flex justify-content-center py-5"><i class="pi pi-spin pi-spinner text-2xl text-primary" aria-hidden="true"></i></div>
+  } @else {
+    <div class="flex flex-column gap-2">
+      @for (option of substituteOptions(); track option.ingredientId) {
+        <button type="button" class="substitute-option" (click)="applySubstitute(option)">
+          <div class="flex flex-column gap-1 text-left">
+            <span class="font-semibold">{{ option.ingredientName }} <span class="text-sm font-normal text-color-secondary">× {{ option.ratio | number: '1.0-3' }}</span></span>
+            @if (option.notes) {
+              <span class="text-xs text-color-secondary">{{ option.notes }}</span>
+            }
+            <div class="flex flex-wrap gap-2 text-xs">
+              @if (option.freeOf.length > 0) {
+                <span class="text-green-600"><i class="pi pi-check text-xs" aria-hidden="true"></i> {{ 'KITCHEN.INGREDIENTS.FREE_OF_LABEL' | translate }} {{ names(option.freeOf) }}</span>
+              }
+              @if (option.introduces.length > 0) {
+                <span class="text-orange-600"><i class="pi pi-exclamation-triangle text-xs" aria-hidden="true"></i> {{ 'KITCHEN.INGREDIENTS.INTRODUCES_LABEL' | translate }} {{ names(option.introduces) }}</span>
+              }
+            </div>
+          </div>
+          <i class="pi pi-arrow-right text-color-secondary" aria-hidden="true"></i>
+        </button>
+      } @empty {
+        <p-message severity="info" styleClass="w-full" [text]="'KITCHEN.RECIPES.NO_SUBSTITUTES' | translate" />
+      }
+    </div>
+  }
+</p-dialog>
+
+<!-- Manual allergens -->
+<p-dialog [header]="'KITCHEN.RECIPES.EDIT_ALLERGENS' | translate" [visible]="allergenEditFor() !== null" (visibleChange)="!$event && allergenEditFor.set(null)" [modal]="true" [draggable]="false" [style]="{ width: '30rem' }" [breakpoints]="{ '640px': '95vw' }">
+  @if (allergenEditFor(); as line) {
+    <div class="flex flex-column gap-3">
+      @if (line.ingredientAllergens.length > 0) {
+        <div class="flex flex-column gap-1">
+          <span class="text-sm font-medium">{{ 'KITCHEN.RECIPES.DECLARED_ALLERGENS' | translate }}</span>
+          <app-allergen-badges [allergens]="line.ingredientAllergens" />
+        </div>
+      }
+      <div class="flex flex-column gap-1">
+        <label for="extraAllergens" class="text-sm font-medium">{{ 'KITCHEN.RECIPES.EXTRA_ALLERGENS' | translate }}</label>
+        <p-multiselect inputId="extraAllergens" [options]="allergenOptions()" [ngModel]="allergenEditIds()" (ngModelChange)="allergenEditIds.set($event ?? [])" optionLabel="label" optionValue="value" display="chip" [filter]="true" styleClass="w-full" />
+        <small class="text-color-secondary">{{ 'KITCHEN.RECIPES.EXTRA_ALLERGENS_HINT' | translate }}</small>
+      </div>
+    </div>
+  }
+  <ng-template pTemplate="footer">
+    <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="allergenEditFor.set(null)" />
+    <p-button [label]="'IAM.COMMON.APPLY' | translate" icon="pi pi-check" (onClick)="saveAllergenEdit()" />
+  </ng-template>
+</p-dialog>

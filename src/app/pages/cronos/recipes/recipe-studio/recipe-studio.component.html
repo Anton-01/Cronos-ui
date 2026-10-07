@@ -1,0 +1,311 @@
+@switch (loadState()) {
+  @case ('loading') {
+    <p-card><app-detail-skeleton [fields]="10" [showTitle]="true" /></p-card>
+  }
+  @case ('error') {
+    <p-card>
+      <div class="flex flex-column align-items-center gap-3 py-6">
+        <p-message severity="error" [text]="'KITCHEN.RECIPES.LOAD_FAILED' | translate" />
+        <div class="flex gap-2">
+          <p-button [label]="'COMMON.BACK' | translate" severity="secondary" [outlined]="true" routerLink="/cronos/recetas" />
+          <p-button [label]="'COMMON.TRY_AGAIN' | translate" icon="pi pi-refresh" (onClick)="load()" />
+        </div>
+      </div>
+    </p-card>
+  }
+  @case ('ready') {
+    <!-- Header -->
+    <div class="studio-header">
+      <div class="flex flex-column gap-1 min-w-0">
+        <div class="flex flex-wrap align-items-center gap-2">
+          <span class="text-xl font-bold">{{ form.controls.name.value || ('KITCHEN.STUDIO.NEW' | translate) }}</span>
+          @if (recipe(); as current) {
+            <span class="status-pill" [class]="'status-pill ' + statusPill[current.status]">{{ 'KITCHEN.RECIPE_STATUS.' + current.status | translate }}</span>
+            <span class="text-xs text-color-secondary">v{{ current.version }}</span>
+          } @else {
+            <span class="status-pill status-pill-info">{{ 'KITCHEN.STUDIO.UNSAVED' | translate }}</span>
+          }
+        </div>
+        <div class="flex flex-wrap align-items-center gap-3 text-sm text-color-secondary">
+          <span><i class="pi pi-clock text-xs mr-1" aria-hidden="true"></i>{{ totalTime() }}</span>
+          <span><i class="pi pi-box text-xs mr-1" aria-hidden="true"></i>{{ form.controls.yieldQuantity.value ?? '—' }} {{ form.controls.yieldUnit.value }}</span>
+          <span><i class="pi pi-shopping-bag text-xs mr-1" aria-hidden="true"></i>{{ 'KITCHEN.STUDIO.LINE_COUNT' | translate: { count: lines().length } }}</span>
+          @if (recipe()?.updatedAt) {
+            <span>{{ 'IAM.DETAIL.PROFILE.UPDATED' | translate }} {{ recipe()?.updatedAt | date: 'medium' }}{{ recipe()?.updatedBy ? ' · ' + recipe()?.updatedBy?.displayName : '' }}</span>
+          }
+        </div>
+      </div>
+      <div class="flex align-items-center gap-2">
+        @if (recipe(); as current) {
+          @if (current.status === 'DRAFT' && canWrite()) {
+            <p-button [label]="'KITCHEN.STUDIO.ACTIONS.PUBLISH' | translate" icon="pi pi-check-circle" severity="success" [outlined]="true" (onClick)="changeStatus('ACTIVE')" />
+          }
+          <p-button icon="pi pi-ellipsis-v" severity="secondary" [outlined]="true" [ariaLabel]="'COMMON.ACTIONS' | translate" (onClick)="openActions(); actionsRef.toggle($event)" />
+        }
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="col-12 xl:col-9">
+        <p-tabs [value]="activeTab()" (valueChange)="selectTab($event)" [scrollable]="true" [dt]="{ tablist: { background: 'transparent' }, tabpanel: { background: 'transparent', padding: '1.25rem 0 0 0' } }">
+          <p-tablist>
+            @for (tab of tabs(); track tab.value) {
+              <p-tab [value]="tab.value" class="flex align-items-center gap-2">
+                <i [class]="tab.icon" aria-hidden="true"></i>
+                <span>{{ tab.labelKey | translate }}</span>
+                @if (tab.value === 'ingredients' && lineIssues().length > 0) {
+                  <span class="tab-alert" [attr.aria-label]="'KITCHEN.RECIPES.ERRORS.LINES_INVALID' | translate: { count: lineIssues().length }">{{ lineIssues().length }}</span>
+                }
+                @if (tab.value === 'files' && files().length > 0) {
+                  <p-tag [value]="'' + files().length" severity="secondary" />
+                }
+              </p-tab>
+            }
+          </p-tablist>
+          <p-tabpanels>
+            <!-- General -->
+            <p-tabpanel value="general">
+              <form #generalFormEl [formGroup]="form">
+                <p-card [header]="'KITCHEN.STUDIO.SECTIONS.IDENTITY' | translate" styleClass="mb-3">
+                  <div class="grid">
+                    <div class="col-12 md:col-8 flex flex-column gap-1">
+                      <label for="rcName" class="font-medium">{{ 'COMMON.TABLE.NAME' | translate }} <span class="text-red-500">*</span></label>
+                      <input pInputText id="rcName" formControlName="name" maxlength="120" (blur)="onNameBlur()" [invalid]="showError('name')" [placeholder]="'KITCHEN.STUDIO.NAME_PLACEHOLDER' | translate" />
+                      <app-field-error [errors]="form.controls.name.errors" [visible]="showError('name')" />
+                    </div>
+                    <div class="col-12 md:col-4 flex flex-column gap-1">
+                      <label for="rcCode" class="font-medium">{{ 'COMMON.TABLE.CODE' | translate }} <span class="text-red-500">*</span></label>
+                      <input pInputText id="rcCode" formControlName="code" class="font-mono" maxlength="50" [invalid]="showError('code')" />
+                      <app-field-error [errors]="form.controls.code.errors" [visible]="showError('code')" />
+                    </div>
+                    <div class="col-12 md:col-6 flex flex-column gap-1">
+                      <label for="rcCategory" class="font-medium">{{ 'KITCHEN.STUDIO.CATEGORY' | translate }}</label>
+                      <p-select inputId="rcCategory" formControlName="categoryId" [options]="categoryOptions()" optionLabel="name" optionValue="id" [filter]="true" [showClear]="true" styleClass="w-full" [placeholder]="'KITCHEN.STUDIO.CATEGORY_PLACEHOLDER' | translate" />
+                    </div>
+                    <div class="col-12 md:col-6 flex flex-column gap-1">
+                      <label for="rcDifficulty" class="font-medium">{{ 'KITCHEN.STUDIO.DIFFICULTY' | translate }}</label>
+                      <p-select inputId="rcDifficulty" formControlName="difficulty" [options]="difficultyOptions()" optionLabel="label" optionValue="value" styleClass="w-full" />
+                    </div>
+                    <div class="col-12 flex flex-column gap-1">
+                      <label for="rcDescription" class="font-medium">{{ 'COMMON.TABLE.DESCRIPTION' | translate }}</label>
+                      <textarea pTextarea id="rcDescription" rows="3" formControlName="description" maxlength="1000" [placeholder]="'KITCHEN.STUDIO.DESCRIPTION_PLACEHOLDER' | translate"></textarea>
+                    </div>
+                  </div>
+                </p-card>
+                <p-card [header]="'KITCHEN.STUDIO.SECTIONS.PRODUCTION' | translate">
+                  <div class="grid">
+                    <div class="col-6 md:col-3 flex flex-column gap-1">
+                      <label for="rcYield" class="font-medium">{{ 'KITCHEN.STUDIO.YIELD' | translate }} <span class="text-red-500">*</span></label>
+                      <p-inputnumber inputId="rcYield" formControlName="yieldQuantity" [maxFractionDigits]="2" styleClass="w-full" [invalid]="showError('yieldQuantity')" />
+                      <app-field-error [errors]="form.controls.yieldQuantity.errors" [visible]="showError('yieldQuantity')" />
+                    </div>
+                    <div class="col-6 md:col-3 flex flex-column gap-1">
+                      <label for="rcYieldUnit" class="font-medium">{{ 'KITCHEN.STUDIO.YIELD_UNIT' | translate }} <span class="text-red-500">*</span></label>
+                      <p-autocomplete inputId="rcYieldUnit" formControlName="yieldUnit" [suggestions]="yieldUnitSuggestions()" (completeMethod)="searchYieldUnits($event)" [dropdown]="true" styleClass="w-full" inputStyleClass="w-full" />
+                    </div>
+                    <div class="col-6 md:col-3 flex flex-column gap-1">
+                      <label for="rcOven" class="font-medium">{{ 'KITCHEN.STUDIO.OVEN' | translate }}</label>
+                      <p-inputnumber inputId="rcOven" formControlName="ovenTemperatureC" suffix=" °C" styleClass="w-full" [invalid]="showError('ovenTemperatureC')" />
+                      <app-field-error [errors]="form.controls.ovenTemperatureC.errors" [visible]="showError('ovenTemperatureC')" />
+                    </div>
+                    <div class="col-6 md:col-3 flex flex-column gap-1">
+                      <label for="rcShelf" class="font-medium">{{ 'KITCHEN.STUDIO.SHELF_LIFE' | translate }}</label>
+                      <p-inputnumber inputId="rcShelf" formControlName="shelfLifeDays" [suffix]="' ' + ('KITCHEN.UNITS.DAYS' | translate)" styleClass="w-full" />
+                    </div>
+                    <div class="col-4 flex flex-column gap-1">
+                      <label for="rcPrep" class="font-medium">{{ 'KITCHEN.STUDIO.PREP' | translate }}</label>
+                      <p-inputnumber inputId="rcPrep" formControlName="prepMinutes" suffix=" min" styleClass="w-full" />
+                    </div>
+                    <div class="col-4 flex flex-column gap-1">
+                      <label for="rcBake" class="font-medium">{{ 'KITCHEN.STUDIO.BAKE' | translate }}</label>
+                      <p-inputnumber inputId="rcBake" formControlName="bakeMinutes" suffix=" min" styleClass="w-full" />
+                    </div>
+                    <div class="col-4 flex flex-column gap-1">
+                      <label for="rcCool" class="font-medium">{{ 'KITCHEN.STUDIO.COOL' | translate }}</label>
+                      <p-inputnumber inputId="rcCool" formControlName="coolMinutes" suffix=" min" styleClass="w-full" />
+                    </div>
+                  </div>
+                </p-card>
+              </form>
+            </p-tabpanel>
+
+            <!-- Ingredients -->
+            <p-tabpanel value="ingredients">
+              <p-card>
+                <app-recipe-lines-editor [(lines)]="lines" [allergenCatalog]="allergenCatalog()" [lineCosts]="lineCosts()" [issues]="lineIssues()" [readonly]="!canWrite()" [costing]="costing()" />
+              </p-card>
+            </p-tabpanel>
+
+            <!-- Process -->
+            <p-tabpanel value="process">
+              <form [formGroup]="form">
+                <p-card styleClass="mb-3">
+                  <ng-template pTemplate="title">{{ 'KITCHEN.STUDIO.SECTIONS.PROCESS' | translate }}</ng-template>
+                  <ng-template pTemplate="subtitle">{{ 'KITCHEN.STUDIO.PROCESS_HINT' | translate }}</ng-template>
+                  <p-editor formControlName="processHtml" [style]="{ height: '420px' }" [readonly]="!canWrite()" [placeholder]="'KITCHEN.STUDIO.PROCESS_PLACEHOLDER' | translate" />
+                  <div class="flex justify-content-between mt-2 text-xs" [class.text-red-500]="processChars() > processMax" [class.text-color-secondary]="processChars() <= processMax">
+                    <span>{{ 'KITCHEN.STUDIO.WORDS' | translate: { count: processWords() } }}</span>
+                    <span>{{ processChars() | number }} / {{ processMax | number }}</span>
+                  </div>
+                </p-card>
+                <p-card [header]="'KITCHEN.STUDIO.SECTIONS.STORAGE' | translate">
+                  <textarea pTextarea rows="3" class="w-full" formControlName="storageInstructions" maxlength="1000" [placeholder]="'KITCHEN.STUDIO.STORAGE_PLACEHOLDER' | translate" [attr.aria-label]="'KITCHEN.STUDIO.SECTIONS.STORAGE' | translate"></textarea>
+                </p-card>
+              </form>
+            </p-tabpanel>
+
+            <!-- Costing -->
+            <p-tabpanel value="costing">
+              <form [formGroup]="form">
+                <p-card styleClass="mb-3">
+                  <ng-template pTemplate="title">{{ 'KITCHEN.STUDIO.SECTIONS.MARGINS' | translate }}</ng-template>
+                  <ng-template pTemplate="subtitle">{{ 'KITCHEN.STUDIO.MARGINS_HINT' | translate }}</ng-template>
+                  <div class="grid">
+                    <div class="col-12 md:col-6 flex flex-column gap-1">
+                      <label for="rcMargin" class="font-medium">{{ 'KITCHEN.STUDIO.TARGET_MARGIN' | translate }}</label>
+                      <p-inputnumber inputId="rcMargin" formControlName="targetMarginPercent" suffix=" %" [maxFractionDigits]="1" styleClass="w-full" [invalid]="showError('targetMarginPercent')" />
+                      <small class="text-color-secondary">{{ 'KITCHEN.STUDIO.TARGET_MARGIN_HINT' | translate }}</small>
+                    </div>
+                    <div class="col-12 md:col-6 flex flex-column gap-1">
+                      <label for="rcWaste" class="font-medium">{{ 'KITCHEN.STUDIO.WASTE' | translate }}</label>
+                      <p-inputnumber inputId="rcWaste" formControlName="wastePercent" suffix=" %" [maxFractionDigits]="1" styleClass="w-full" [invalid]="showError('wastePercent')" />
+                      <small class="text-color-secondary">{{ 'KITCHEN.STUDIO.WASTE_HINT' | translate }}</small>
+                    </div>
+                  </div>
+                </p-card>
+                <p-card>
+                  <ng-template pTemplate="title">{{ 'KITCHEN.STUDIO.SECTIONS.FIXED_COSTS' | translate }}</ng-template>
+                  <ng-template pTemplate="subtitle">{{ 'KITCHEN.STUDIO.FIXED_COSTS_HINT' | translate }}</ng-template>
+                  <div class="flex flex-column gap-2" formArrayName="fixedCosts">
+                    @for (row of fixedCosts.controls; track row; let i = $index) {
+                      @let catalogCost = fixedCostOf(i);
+                      <div class="grid align-items-end" [formGroupName]="i">
+                        <div class="col-12 md:col-6 flex flex-column gap-1">
+                          <label class="text-xs text-color-secondary" [for]="'fc' + i">{{ 'KITCHEN.STUDIO.FIXED_COST' | translate }}</label>
+                          <p-select [inputId]="'fc' + i" formControlName="userFixedCostId" [options]="fixedCostCatalog()" optionLabel="name" optionValue="id" [filter]="true" styleClass="w-full" [placeholder]="'KITCHEN.STUDIO.FIXED_COST_PLACEHOLDER' | translate" />
+                          @if (catalogCost) {
+                            <small class="text-color-secondary">{{ 'FIXED_COSTS.METHODS.' + catalogCost.calculationMethod + '.LABEL' | translate }}</small>
+                          }
+                        </div>
+                        <div class="col-8 md:col-4 flex flex-column gap-1">
+                          @if (catalogCost?.calculationMethod === 'HOURLY_RATE') {
+                            <label class="text-xs text-color-secondary" [for]="'fcMin' + i">{{ 'KITCHEN.STUDIO.MINUTES' | translate }} <span class="text-red-500">*</span></label>
+                            <p-inputnumber [inputId]="'fcMin' + i" formControlName="minutes" suffix=" min" styleClass="w-full" />
+                          } @else if (catalogCost?.calculationMethod === 'PERCENTAGE') {
+                            <label class="text-xs text-color-secondary" [for]="'fcPct' + i">{{ 'KITCHEN.STUDIO.PERCENTAGE_OVERRIDE' | translate }}</label>
+                            <p-inputnumber [inputId]="'fcPct' + i" formControlName="percentage" suffix=" %" [maxFractionDigits]="2" styleClass="w-full" [placeholder]="'' + (catalogCost?.percentage ?? '')" />
+                          } @else if (catalogCost) {
+                            <span class="text-sm text-color-secondary">{{ 'KITCHEN.STUDIO.NO_INPUT_NEEDED' | translate }}</span>
+                          }
+                        </div>
+                        <div class="col-4 md:col-2 flex justify-content-end">
+                          @if (canWrite()) {
+                            <p-button icon="pi pi-trash" [text]="true" severity="danger" [ariaLabel]="'COMMON.REMOVE' | translate" (onClick)="removeFixedCost(i)" />
+                          }
+                        </div>
+                      </div>
+                    } @empty {
+                      <span class="text-sm text-color-secondary">{{ 'KITCHEN.STUDIO.NO_FIXED_COSTS' | translate }}</span>
+                    }
+                    @if (canWrite()) {
+                      <p-button [label]="'KITCHEN.STUDIO.ADD_FIXED_COST' | translate" icon="pi pi-plus" size="small" [outlined]="true" styleClass="align-self-start" [disabled]="fixedCostCatalog().length === 0" (onClick)="addFixedCost()" />
+                    }
+                    @if (fixedCostCatalog().length === 0) {
+                      <small class="text-color-secondary">{{ 'KITCHEN.STUDIO.NO_FIXED_COST_CATALOG' | translate }} <a routerLink="/cronos/costos-fijos">{{ 'NAV.ITEMS.FIXED_COSTS' | translate }}</a></small>
+                    }
+                  </div>
+                </p-card>
+              </form>
+            </p-tabpanel>
+
+            <!-- Files -->
+            <p-tabpanel value="files">
+              <p-card>
+                <app-recipe-files-panel [recipeId]="recipeId()" [(files)]="files" [readonly]="!canWrite()" />
+              </p-card>
+            </p-tabpanel>
+
+            @if (recipeId(); as id) {
+              <p-tabpanel value="history">
+                <p-card><app-recipe-history-panel [recipeId]="id" /></p-card>
+              </p-tabpanel>
+              <p-tabpanel value="shares">
+                <p-card><app-recipe-shares-panel [recipeId]="id" /></p-card>
+              </p-tabpanel>
+            }
+          </p-tabpanels>
+        </p-tabs>
+      </div>
+
+      <!-- Live cost summary -->
+      <div class="col-12 xl:col-3">
+        <div class="cost-panel">
+          <div class="flex align-items-center justify-content-between gap-2">
+            <span class="font-semibold">{{ 'KITCHEN.STUDIO.COST.TITLE' | translate }}</span>
+            @if (costing()) {
+              <i class="pi pi-spin pi-spinner text-primary" [pTooltip]="'KITCHEN.STUDIO.COST.CALCULATING' | translate"></i>
+            } @else if (cost(); as c) {
+              <app-cost-status-tag [status]="c.status" [calculatedAt]="c.calculatedAt" />
+            }
+          </div>
+          @if (cost(); as c) {
+            <dl class="cost-lines">
+              <dt>{{ 'KITCHEN.STUDIO.COST.INGREDIENTS' | translate }}</dt>
+              <dd>{{ c.ingredientsCost | number: '1.2-2' }}</dd>
+              <dt>{{ 'KITCHEN.STUDIO.COST.WASTE' | translate: { percent: form.controls.wastePercent.value } }}</dt>
+              <dd>{{ c.wasteCost | number: '1.2-2' }}</dd>
+              <dt>{{ 'KITCHEN.STUDIO.COST.FIXED' | translate }}</dt>
+              <dd>{{ c.fixedCosts | number: '1.2-2' }}</dd>
+              <dt class="font-semibold text-color">{{ 'KITCHEN.STUDIO.COST.TOTAL' | translate }}</dt>
+              <dd class="font-semibold">{{ c.totalCost | number: '1.2-2' }} {{ c.currency }}</dd>
+            </dl>
+            <p-divider styleClass="my-2" />
+            <div class="flex flex-column gap-1">
+              <span class="text-xs uppercase text-color-secondary font-semibold">{{ 'KITCHEN.STUDIO.COST.PER_UNIT' | translate: { unit: form.controls.yieldUnit.value } }}</span>
+              <span class="text-2xl font-bold font-mono">{{ c.costPerUnit | number: '1.2-2' }}</span>
+            </div>
+            <div class="suggested-price">
+              <span class="text-xs uppercase font-semibold">{{ 'KITCHEN.STUDIO.COST.SUGGESTED' | translate: { margin: margin() } }}</span>
+              <span class="text-2xl font-bold font-mono">{{ c.suggestedUnitPrice | number: '1.2-2' }}</span>
+            </div>
+            @if (c.unpricedLines > 0) {
+              <p-message severity="error" styleClass="w-full" [text]="'KITCHEN.STUDIO.COST.UNPRICED' | translate: { count: c.unpricedLines }" />
+            }
+            @if (c.status === 'STALE') {
+              <p-message severity="warn" styleClass="w-full" [text]="'KITCHEN.STUDIO.COST.STALE' | translate" />
+            }
+          } @else {
+            <span class="text-sm text-color-secondary">{{ 'KITCHEN.STUDIO.COST.EMPTY' | translate }}</span>
+          }
+          <p-divider styleClass="my-2" />
+          <div class="flex flex-column gap-1">
+            <span class="text-xs uppercase text-color-secondary font-semibold">{{ 'KITCHEN.RECIPES.CONTAINS' | translate }}</span>
+            <div class="flex flex-wrap gap-1">
+              @for (allergen of allergens().contains; track allergen.id) {
+                <p-tag [value]="allergen.name" severity="warn" />
+              } @empty {
+                <span class="text-xs text-color-secondary">{{ 'KITCHEN.ALLERGENS.NONE_DECLARED' | translate }}</span>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    @if (canWrite() && (isDirty() || isNew())) {
+      <div class="sticky-save-bar">
+        <span class="font-medium"><i class="pi pi-info-circle mr-2" aria-hidden="true"></i>{{ (isNew() ? 'KITCHEN.STUDIO.NEW_HINT' : 'IAM.COMMON.UNSAVED_CHANGES') | translate }}</span>
+        <div class="flex gap-2">
+          @if (isNew()) {
+            <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" routerLink="/cronos/recetas" />
+          } @else {
+            <p-button [label]="'IAM.COMMON.DISCARD' | translate" severity="secondary" [outlined]="true" [disabled]="saving()" (onClick)="discard()" />
+          }
+          <p-button [label]="(isNew() ? 'KITCHEN.STUDIO.CREATE' : 'COMMON.SAVE_CHANGES') | translate" icon="pi pi-check" [loading]="saving()" (onClick)="save()" />
+        </div>
+      </div>
+    }
+
+    <p-menu #actionsRef [model]="actionsMenu()" [popup]="true" />
+  }
+}

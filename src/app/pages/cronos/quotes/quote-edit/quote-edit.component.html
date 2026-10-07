@@ -97,6 +97,17 @@
                       <small class="text-red-500">{{ 'QUOTES.FORM.ERRORS.NAME_REQUIRED' | translate }}</small>
                     }
                   </div>
+                  @if (getItemGroup(i).get('recipeId')!.value) {
+                    <div class="col-12 quote-recipe-config">
+                      <p-button [label]="'KITCHEN.CONFIGURATOR.OPEN' | translate" icon="pi pi-sliders-h" size="small" [outlined]="true" [disabled]="form.disabled" (onClick)="openConfigurator(i)" />
+                      <app-allergen-badges [allergens]="getItemGroup(i).get('allergens')!.value ?? []" [showEmpty]="true" />
+                    </div>
+                  }
+                  @if ((getItemGroup(i).get('unitPrice')!.value ?? 0) < (getItemGroup(i).get('unitCost')!.value ?? 0)) {
+                    <div class="col-12">
+                      <small class="text-red-500"><i class="pi pi-exclamation-triangle text-xs" aria-hidden="true"></i> {{ 'KITCHEN.CONFIGURATOR.BELOW_COST' | translate }}</small>
+                    </div>
+                  }
                   <div class="col-12 md:col-6 flex flex-column gap-1">
                     <label class="font-medium text-sm">{{ 'COMMON.TABLE.DESCRIPTION' | translate }}</label>
                     <input pInputText formControlName="productDescription" [placeholder]="'COMMON.OPTIONAL_DESCRIPTION' | translate" />
@@ -221,3 +232,5 @@
     </div>
   </form>
 }
+
+<app-recipe-configurator-dialog [(visible)]="configuratorOpen" [recipeId]="configuringRecipeId()" [initial]="configuringInitial()" (applied)="onConfigured($event)" />

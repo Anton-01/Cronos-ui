@@ -1,191 +1,151 @@
-<p-card>
-  <p-table
-    #table
-    [value]="items()"
-    dataKey="id"
-    paginatorPosition="bottom"
-    [stripedRows]="true"
-    [loading]="isLoading()"
-    [showLoader]="false"
-    [paginator]="true"
-    [rows]="10"
-    [rowsPerPageOptions]="[10, 25, 50]"
-    [globalFilterFields]="['name', 'alternativeName', 'description']"
-    sortField="name"
-    [sortOrder]="1"
-    [rowHover]="true"
-    [showCurrentPageReport]="true"
-    [currentPageReportTemplate]="'COMMON.TABLE.PAGE_REPORT' | translate"
-  >
-    <ng-template pTemplate="caption">
-      <div class="flex align-items-center justify-content-between flex-wrap gap-2">
-        <p-iconfield iconPosition="left">
-          <p-inputicon styleClass="pi pi-search" />
-          <input
-            pInputText
-            type="text"
-            [placeholder]="'ALLERGENS.SEARCH_PLACEHOLDER' | translate"
-            (input)="table.filterGlobal($any($event.target).value, 'contains')"
-          />
-        </p-iconfield>
-        <div class="flex align-items-center gap-3">
-          <p-button [label]="'ALLERGENS.CREATE' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
-        </div>
+<div class="flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+  <div class="flex flex-wrap align-items-center gap-2">
+    <p-iconfield iconPosition="left">
+      <p-inputicon styleClass="pi pi-search" />
+      <input pInputText type="search" class="w-18rem" [ngModel]="search()" (ngModelChange)="search.set($event)" [placeholder]="'KITCHEN.ALLERGENS.SEARCH' | translate" />
+    </p-iconfield>
+    <p-selectbutton [options]="statusOptions()" [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)" optionLabel="label" optionValue="value" [allowEmpty]="false" />
+    <span class="text-sm text-color-secondary">{{ 'KITCHEN.ALLERGENS.COUNTS' | translate: counts() }}</span>
+  </div>
+  @if (canManage()) {
+    <p-button [label]="'KITCHEN.ALLERGENS.CREATE' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
+  }
+</div>
+
+<p-message severity="info" styleClass="w-full mb-3">
+  <span class="text-sm">{{ 'KITCHEN.ALLERGENS.HOW_IT_WORKS' | translate }}</span>
+</p-message>
+
+<div class="grid">
+  @if (loading()) {
+    @for (item of skeletons; track $index) {
+      <div class="col-12 md:col-6 xl:col-3"><p-skeleton height="12rem" borderRadius="14px" /></div>
+    }
+  } @else {
+    @for (item of filtered(); track item.id) {
+      <div class="col-12 md:col-6 xl:col-3">
+        <article class="allergen-card" [class.allergen-card-inactive]="item.status !== 'ACTIVE'">
+          <header class="flex align-items-start justify-content-between gap-2">
+            <div class="flex align-items-center gap-3 min-w-0">
+              <span class="allergen-icon"><i [class]="item.icon" aria-hidden="true"></i></span>
+              <div class="flex flex-column min-w-0">
+                <span class="font-semibold white-space-nowrap overflow-hidden text-overflow-ellipsis">{{ item.name }}</span>
+                <span class="text-xs font-mono text-color-secondary">{{ item.code }}</span>
+              </div>
+            </div>
+            @if (item.scope === 'SYSTEM') {
+              <i class="pi pi-verified text-color-secondary" [pTooltip]="'KITCHEN.SCOPE.SYSTEM_HINT' | translate" aria-hidden="true"></i>
+            }
+          </header>
+          @if (item.description) {
+            <p class="text-sm text-color-secondary m-0 line-height-3 allergen-description">{{ item.description }}</p>
+          }
+          <div class="flex flex-wrap gap-1">
+            @for (keyword of item.keywords.slice(0, 6); track keyword) {
+              <span class="keyword-chip">{{ keyword }}</span>
+            }
+            @if (item.keywords.length > 6) {
+              <span class="keyword-chip" [pTooltip]="item.keywords.slice(6).join(', ')">+{{ item.keywords.length - 6 }}</span>
+            }
+          </div>
+          <footer class="flex align-items-center justify-content-between gap-2 mt-auto">
+            <div class="flex flex-wrap gap-1">
+              @for (regulation of item.regulations; track regulation) {
+                <p-tag [value]="regulation" severity="secondary" />
+              }
+            </div>
+            <span class="text-xs text-color-secondary white-space-nowrap">{{ 'KITCHEN.ALLERGENS.INGREDIENT_COUNT' | translate: { count: item.ingredientCount } }}</span>
+          </footer>
+          @if (canManage()) {
+            <div class="flex justify-content-end gap-1 allergen-actions">
+              <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" severity="info" [pTooltip]="'COMMON.EDIT' | translate" [ariaLabel]="'COMMON.EDIT' | translate" (onClick)="openEdit(item)" />
+              @if (item.scope === 'USER') {
+                <p-button [icon]="item.status === 'ACTIVE' ? 'pi pi-ban' : 'pi pi-check-circle'" [text]="true" [rounded]="true" severity="secondary" [pTooltip]="(item.status === 'ACTIVE' ? 'IAM.ROLES.ACTIONS.DEACTIVATE' : 'IAM.ROLES.ACTIONS.ACTIVATE') | translate" (onClick)="toggleStatus(item)" />
+                <p-button icon="pi pi-trash" [text]="true" [rounded]="true" severity="danger" [pTooltip]="'COMMON.DELETE' | translate" [ariaLabel]="'COMMON.DELETE' | translate" (onClick)="remove(item)" />
+              }
+            </div>
+          }
+        </article>
       </div>
-    </ng-template>
-
-    <ng-template pTemplate="header">
-      <tr>
-        <th pSortableColumn="name" style="min-width: 11rem">
-          {{ 'COMMON.TABLE.NAME' | translate }}
-          <p-sortIcon field="name" />
-          <p-columnFilter
-            type="text"
-            field="name"
-            display="menu"
-            [placeholder]="'COMMON.TABLE.FILTER_BY_NAME' | translate"
-          />
-        </th>
-        <th pSortableColumn="alternativeName" style="min-width: 11rem">
-          {{ 'ALLERGENS.FIELDS.ALTERNATIVE_NAME' | translate }}
-          <p-sortIcon field="alternativeName" />
-          <p-columnFilter
-            type="text"
-            field="alternativeName"
-            display="menu"
-            [placeholder]="'COMMON.TABLE.FILTER' | translate"
-          />
-        </th>
-        <th pSortableColumn="description" style="min-width: 14rem">
-          {{ 'COMMON.TABLE.DESCRIPTION' | translate }}
-          <p-sortIcon field="description" />
-          <p-columnFilter
-            type="text"
-            field="description"
-            display="menu"
-            [placeholder]="'COMMON.TABLE.FILTER' | translate"
-          />
-        </th>
-        <th style="width: 10rem">
-          {{ 'COMMON.TABLE.STATUS' | translate }}
-          <p-columnFilter field="status" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
-            <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-              <p-select
-                [ngModel]="value"
-                [options]="statusFilterOptions()"
-                optionLabel="label"
-                optionValue="value"
-                [placeholder]="'COMMON.ALL' | translate"
-                [showClear]="true"
-                (onChange)="filter($event.value)"
-              />
-            </ng-template>
-          </p-columnFilter>
-        </th>
-        <th style="width: 8rem" class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
-      </tr>
-    </ng-template>
-
-    <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
-      <tr>
-        <td class="font-semibold">{{ item.name }}</td>
-        <td>{{ item.alternativeName || ('COMMON.EMPTY_VALUE' | translate) }}</td>
-        <td>{{ item.description || ('COMMON.EMPTY_VALUE' | translate) }}</td>
-        <td>
-          <app-status-toggle
-            [item]="item"
-            endpoint="allergen"
-            [nameEntity]="item.name"
-            (statusChanged)="updateItemStatus(item.id, $event)"
-          />
-        </td>
-        <td class="text-right">
-          <p-button
-            icon="pi pi-pencil"
-            severity="info"
-            [text]="true"
-            [rounded]="true"
-            [pTooltip]="'COMMON.EDIT' | translate"
-            (onClick)="openEdit(item)"
-          />
-          <p-button
-            icon="pi pi-trash"
-            severity="danger"
-            [text]="true"
-            [rounded]="true"
-            [pTooltip]="'COMMON.DELETE' | translate"
-            (onClick)="confirmDelete(item)"
-          />
-        </td>
-      </tr>
-    </ng-template>
-
-    <ng-template pTemplate="loadingbody">
-      @for (row of skeletonRows; track $index) {
-        <tr appTableSkeletonRow [columns]="5"></tr>
-      }
-    </ng-template>
-
-    <ng-template pTemplate="emptymessage">
-      <tr>
-        <td colspan="5" class="text-center text-color-secondary py-5">{{ 'ALLERGENS.EMPTY' | translate }}</td>
-      </tr>
-    </ng-template>
-  </p-table>
-</p-card>
+    } @empty {
+      <div class="col-12 text-center text-color-secondary py-6">{{ 'KITCHEN.ALLERGENS.EMPTY' | translate }}</div>
+    }
+  }
+</div>
 
 <p-dialog
-  [header]="(selectedItem() ? 'ALLERGENS.EDIT' : 'ALLERGENS.CREATE') | translate"
-  [visible]="showForm()"
-  (visibleChange)="!$event && closeForm()"
+  [header]="(editing() ? 'KITCHEN.ALLERGENS.EDIT' : 'KITCHEN.ALLERGENS.CREATE') | translate"
+  [visible]="dialogOpen()"
+  (visibleChange)="!$event && !saving() && dialogOpen.set(false)"
   [modal]="true"
   [draggable]="false"
-  [style]="{ width: '30rem' }"
+  [style]="{ width: '40rem' }"
+  [breakpoints]="{ '720px': '95vw' }"
 >
-  <form [formGroup]="form" (ngSubmit)="saveForm()" id="allergenForm" class="flex flex-column gap-3">
-    <div class="flex flex-column gap-1">
-      <label for="allergenName" class="font-medium">
-        {{ 'COMMON.TABLE.NAME' | translate }} <span class="text-red-500">*</span>
-      </label>
-      <input
-        pInputText
-        id="allergenName"
-        formControlName="name"
-        [placeholder]="'ALLERGENS.PLACEHOLDERS.NAME' | translate"
-      />
-      @if (form.controls.name.hasError('required') && form.controls.name.touched) {
-        <small class="text-red-500">{{ 'ALLERGENS.ERRORS.NAME_REQUIRED' | translate }}</small>
-      }
+  <form [formGroup]="form" class="grid" (ngSubmit)="save()">
+    @if (isSystem()) {
+      <div class="col-12"><p-message severity="info" styleClass="w-full" [text]="'KITCHEN.ALLERGENS.SYSTEM_EDIT_HINT' | translate" /></div>
+    }
+    <div class="col-12 md:col-7 flex flex-column gap-1">
+      <label for="alName" class="font-medium">{{ 'COMMON.TABLE.NAME' | translate }} <span class="text-red-500">*</span></label>
+      <input pInputText id="alName" formControlName="name" maxlength="80" (blur)="onNameBlur()" [invalid]="showError('name')" />
+      <app-field-error [errors]="form.controls.name.errors" [visible]="showError('name')" />
     </div>
-    <div class="flex flex-column gap-1">
-      <label for="allergenAlternativeName" class="font-medium">
-        {{ 'ALLERGENS.FIELDS.ALTERNATIVE_NAME' | translate }}
-      </label>
-      <input
-        pInputText
-        id="allergenAlternativeName"
-        formControlName="alternativeName"
-        [placeholder]="'ALLERGENS.PLACEHOLDERS.ALTERNATIVE_NAME' | translate"
-      />
+    <div class="col-12 md:col-5 flex flex-column gap-1">
+      <label for="alCode" class="font-medium">{{ 'COMMON.TABLE.CODE' | translate }} <span class="text-red-500">*</span></label>
+      <input pInputText id="alCode" formControlName="code" class="font-mono" maxlength="50" [invalid]="showError('code')" />
+      <app-field-error [errors]="form.controls.code.errors" [visible]="showError('code')" />
     </div>
-    <div class="flex flex-column gap-1">
-      <label for="allergenDescription" class="font-medium">{{ 'COMMON.TABLE.DESCRIPTION' | translate }}</label>
-      <textarea
-        pTextarea
-        id="allergenDescription"
-        formControlName="description"
-        rows="3"
-        [placeholder]="'COMMON.OPTIONAL_DESCRIPTION' | translate"
-      ></textarea>
+    <div class="col-12 flex flex-column gap-1">
+      <label for="alDescription" class="font-medium">{{ 'COMMON.TABLE.DESCRIPTION' | translate }}</label>
+      <textarea pTextarea id="alDescription" rows="2" formControlName="description" maxlength="500"></textarea>
+    </div>
+    <div class="col-12 flex flex-column gap-2">
+      <span class="font-medium">{{ 'KITCHEN.ALLERGENS.ICON' | translate }}</span>
+      <div class="flex flex-wrap gap-2" role="radiogroup" [attr.aria-label]="'KITCHEN.ALLERGENS.ICON' | translate">
+        @for (icon of iconChoices; track icon) {
+          <button type="button" class="icon-choice" role="radio" [class.icon-choice-selected]="form.controls.icon.value === icon" [attr.aria-checked]="form.controls.icon.value === icon" [disabled]="form.controls.icon.disabled" (click)="pickIcon(icon)">
+            <i [class]="icon" aria-hidden="true"></i>
+          </button>
+        }
+      </div>
+    </div>
+    <div class="col-12 flex flex-column gap-2">
+      <label for="alKeyword" class="font-medium">{{ 'KITCHEN.ALLERGENS.KEYWORDS' | translate }} <span class="text-red-500">*</span></label>
+      <div class="flex gap-2">
+        <input pInputText id="alKeyword" class="flex-1" maxlength="40" [ngModel]="keywordDraft()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="keywordDraft.set($event)" (keydown)="onKeywordKey($event)" [placeholder]="'KITCHEN.ALLERGENS.KEYWORD_PLACEHOLDER' | translate" />
+        <p-button icon="pi pi-plus" [outlined]="true" [ariaLabel]="'COMMON.CREATE' | translate" (onClick)="addKeyword()" />
+      </div>
+      <div class="flex flex-wrap gap-1">
+        @for (keyword of keywords(); track keyword) {
+          <span class="keyword-chip keyword-chip-removable">
+            {{ keyword }}
+            <button type="button" (click)="removeKeyword(keyword)" [attr.aria-label]="('COMMON.REMOVE' | translate) + ' ' + keyword"><i class="pi pi-times text-xs" aria-hidden="true"></i></button>
+          </span>
+        } @empty {
+          <small class="text-color-secondary">{{ 'KITCHEN.ALLERGENS.KEYWORDS_EMPTY' | translate }}</small>
+        }
+      </div>
+      <small class="text-color-secondary">{{ 'KITCHEN.ALLERGENS.KEYWORDS_HINT' | translate }}</small>
+      <div class="p-3 border-round-lg surface-ground flex flex-column gap-2">
+        <label for="alTest" class="text-sm font-medium">{{ 'KITCHEN.ALLERGENS.TEST_LABEL' | translate }}</label>
+        <input pInputText id="alTest" [ngModel]="testText()" [ngModelOptions]="{ standalone: true }" (ngModelChange)="testText.set($event)" [placeholder]="'KITCHEN.ALLERGENS.TEST_PLACEHOLDER' | translate" />
+        @if (testMatch() !== null) {
+          @if (testMatch()) {
+            <small class="text-orange-600"><i class="pi pi-exclamation-triangle text-xs" aria-hidden="true"></i> {{ 'KITCHEN.ALLERGENS.TEST_MATCH' | translate: { keyword: testMatch() } }}</small>
+          } @else {
+            <small class="text-color-secondary"><i class="pi pi-check text-xs" aria-hidden="true"></i> {{ 'KITCHEN.ALLERGENS.TEST_NO_MATCH' | translate }}</small>
+          }
+        }
+      </div>
+    </div>
+    <div class="col-12 flex flex-column gap-1">
+      <label for="alRegulations" class="font-medium">{{ 'KITCHEN.ALLERGENS.REGULATIONS' | translate }}</label>
+      <p-multiselect inputId="alRegulations" formControlName="regulations" [options]="regulationOptions" optionLabel="label" optionValue="value" display="chip" [showToggleAll]="false" styleClass="w-full" />
     </div>
   </form>
   <ng-template pTemplate="footer">
-    <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="closeForm()" />
-    <p-button
-      [label]="(selectedItem() ? 'COMMON.UPDATE' : 'COMMON.CREATE') | translate"
-      [disabled]="form.invalid || isSaving()"
-      [loading]="isSaving()"
-      (onClick)="saveForm()"
-    />
+    <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" [disabled]="saving()" (onClick)="dialogOpen.set(false)" />
+    <p-button [label]="(editing() ? 'COMMON.SAVE_CHANGES' : 'COMMON.CREATE') | translate" icon="pi pi-check" [loading]="saving()" (onClick)="save()" />
   </ng-template>
 </p-dialog>

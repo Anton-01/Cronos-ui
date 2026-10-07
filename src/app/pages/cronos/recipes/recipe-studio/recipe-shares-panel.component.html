@@ -1,0 +1,79 @@
+<form [formGroup]="form" (ngSubmit)="create()" class="grid align-items-start mb-3">
+  <div class="col-12 md:col-3 flex flex-column gap-1">
+    <label for="shDays" class="font-medium text-sm">{{ 'RECIPES.DETAIL.SHARES.EXPIRES_IN' | translate }}</label>
+    <p-inputnumber inputId="shDays" formControlName="expirationDays" [min]="1" [max]="30" [suffix]="' ' + ('KITCHEN.UNITS.DAYS' | translate)" styleClass="w-full" />
+  </div>
+  <div class="col-12 md:col-5 flex flex-column gap-1">
+    <label for="shEmail" class="font-medium text-sm">{{ 'RECIPES.DETAIL.SHARES.RECIPIENT_EMAIL' | translate }}</label>
+    <input pInputText id="shEmail" type="email" formControlName="recipientEmail" [placeholder]="'AUTH.REGISTER.EMAIL_PLACEHOLDER' | translate" />
+    <app-field-error [errors]="form.controls.recipientEmail.errors" [visible]="form.controls.recipientEmail.touched" />
+  </div>
+  <div class="col-12 md:col-4 md:pt-5">
+    <p-button [label]="'RECIPES.DETAIL.SHARES.GENERATE' | translate" icon="pi pi-link" type="submit" [loading]="creating()" />
+  </div>
+</form>
+
+<p-table [value]="shares()" dataKey="id" [rowHover]="true" [loading]="loading()" [showLoader]="false">
+  <ng-template pTemplate="header">
+    <tr>
+      <th>{{ 'RECIPES.DETAIL.SHARES.LINK' | translate }}</th>
+      <th>{{ 'COMMON.TABLE.STATUS' | translate }}</th>
+      <th class="text-center">{{ 'RECIPES.DETAIL.SHARES.VIEWS' | translate }}</th>
+      <th>{{ 'RECIPES.DETAIL.SHARES.EXPIRES' | translate }}</th>
+      <th class="text-right" style="width: 10rem">{{ 'COMMON.ACTIONS' | translate }}</th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-share>
+    <tr>
+      <td style="max-width: 18rem"><span class="text-sm white-space-nowrap overflow-hidden text-overflow-ellipsis block font-mono">{{ share.shareUrl }}</span></td>
+      <td>
+        @if (share.isRevoked) {
+          <p-tag [value]="'RECIPES.DETAIL.SHARES.REVOKED' | translate" severity="danger" />
+        } @else if (isExpired(share)) {
+          <p-tag [value]="'RECIPES.DETAIL.SHARES.EXPIRED' | translate" severity="warn" />
+        } @else {
+          <p-tag [value]="'COMMON.STATUS.ACTIVE' | translate" severity="success" />
+        }
+      </td>
+      <td class="text-center">{{ share.viewsCount }}</td>
+      <td class="text-sm text-color-secondary">{{ share.expiresAt | date: 'medium' }}</td>
+      <td class="text-right white-space-nowrap">
+        <p-button icon="pi pi-copy" severity="secondary" [text]="true" [rounded]="true" [pTooltip]="'RECIPES.DETAIL.SHARES.COPY' | translate" [ariaLabel]="'RECIPES.DETAIL.SHARES.COPY' | translate" (onClick)="copy(share)" />
+        <p-button icon="pi pi-chart-line" severity="info" [text]="true" [rounded]="true" [pTooltip]="'RECIPES.DETAIL.SHARES.ANALYTICS' | translate" [ariaLabel]="'RECIPES.DETAIL.SHARES.ANALYTICS' | translate" (onClick)="openAnalytics(share)" />
+        @if (!share.isRevoked) {
+          <p-button icon="pi pi-ban" severity="danger" [text]="true" [rounded]="true" [pTooltip]="'RECIPES.DETAIL.SHARES.REVOKE' | translate" [ariaLabel]="'RECIPES.DETAIL.SHARES.REVOKE' | translate" (onClick)="revoke(share)" />
+        }
+      </td>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="loadingbody">
+    @for (row of [1, 2, 3]; track row) {
+      <tr appTableSkeletonRow [columns]="5"></tr>
+    }
+  </ng-template>
+  <ng-template pTemplate="emptymessage">
+    <tr><td colspan="5" class="text-center text-color-secondary py-4">{{ 'RECIPES.DETAIL.SHARES.EMPTY' | translate }}</td></tr>
+  </ng-template>
+</p-table>
+
+<p-dialog [header]="'RECIPES.DETAIL.SHARES.ANALYTICS' | translate" [visible]="analyticsFor() !== null" (visibleChange)="!$event && analyticsFor.set(null)" [modal]="true" [draggable]="false" [style]="{ width: '40rem' }" [breakpoints]="{ '720px': '95vw' }">
+  <p-table [value]="analytics()" [loading]="analyticsLoading()" [showLoader]="false" [scrollable]="true" scrollHeight="50vh">
+    <ng-template pTemplate="header">
+      <tr>
+        <th>{{ 'IAM.AUDIT.WHEN' | translate }}</th>
+        <th>{{ 'IAM.AUDIT.IP' | translate }}</th>
+        <th>{{ 'IAM.AUDIT.USER_AGENT' | translate }}</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-log>
+      <tr>
+        <td class="text-sm">{{ log.accessedAt | date: 'medium' }}</td>
+        <td class="text-sm font-mono">{{ log.ipAddress }}</td>
+        <td class="text-sm text-color-secondary">{{ log.userAgent }}</td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="3" class="text-center text-color-secondary py-4">{{ 'RECIPES.DETAIL.SHARES.NO_VIEWS' | translate }}</td></tr>
+    </ng-template>
+  </p-table>
+</p-dialog>

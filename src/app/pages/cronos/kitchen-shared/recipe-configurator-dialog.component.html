@@ -1,0 +1,100 @@
+<p-dialog
+  [header]="'KITCHEN.CONFIGURATOR.TITLE' | translate: { name: recipe()?.name ?? '' }"
+  [visible]="visible()"
+  (visibleChange)="visible.set($event)"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '46rem' }"
+  [breakpoints]="{ '760px': '95vw' }"
+>
+  @if (loading()) {
+    <div class="flex flex-column gap-2">
+      <p-skeleton height="2.5rem" />
+      <p-skeleton height="8rem" />
+      <p-skeleton height="4rem" />
+    </div>
+  } @else if (error()) {
+    <p-message severity="error" styleClass="w-full" [text]="error()!" />
+  } @else if (recipe(); as current) {
+    <div class="flex flex-column gap-4">
+      <div class="flex flex-wrap align-items-end gap-3">
+        <div class="flex flex-column gap-1">
+          <label for="cfgYield" class="text-sm font-medium">{{ 'KITCHEN.CONFIGURATOR.YIELD' | translate }}</label>
+          <p-inputnumber inputId="cfgYield" [ngModel]="yieldQuantity()" (ngModelChange)="yieldQuantity.set($event ?? current.yieldQuantity)" [min]="0.01" [maxFractionDigits]="2" [suffix]="' ' + current.yieldUnit" inputStyleClass="w-10rem" />
+        </div>
+        <span class="text-xs text-color-secondary pb-2">{{ 'KITCHEN.CONFIGURATOR.BASE_YIELD' | translate: { quantity: current.yieldQuantity, unit: current.yieldUnit } }}</span>
+      </div>
+
+      @if (selectableLines().length > 0) {
+        <section class="flex flex-column gap-2">
+          <span class="text-sm font-semibold">{{ 'KITCHEN.CONFIGURATOR.SELECTABLE' | translate }}</span>
+          @for (line of selectableLines(); track line.id) {
+            <label class="configurator-line cursor-pointer">
+              <p-checkbox [binary]="true" [ngModel]="isIncluded(line)" (ngModelChange)="toggle(line, $event)" [inputId]="'cfg-' + line.id" />
+              <span class="flex-1 flex flex-column">
+                <span class="font-medium">{{ line.ingredientName }} @if (line.optional) {<p-tag [value]="'KITCHEN.RECIPES.OPTIONAL' | translate" severity="secondary" styleClass="ml-2" />}</span>
+                <span class="text-xs text-color-secondary">{{ line.quantity }} {{ line.unitCode }}{{ line.section ? ' · ' + line.section : '' }}</span>
+              </span>
+              <app-allergen-badges [allergens]="lineAllergens(line)" [compact]="true" />
+            </label>
+          }
+        </section>
+      }
+
+      @if (swappableLines().length > 0) {
+        <section class="flex flex-column gap-2">
+          <span class="text-sm font-semibold">{{ 'KITCHEN.CONFIGURATOR.SWAPS' | translate }}</span>
+          <small class="text-color-secondary">{{ 'KITCHEN.CONFIGURATOR.SWAPS_HINT' | translate }}</small>
+          @for (line of swappableLines(); track line.id) {
+            <div class="configurator-line">
+              <span class="flex-1 flex flex-column gap-1">
+                <span class="font-medium">{{ line.ingredientName }}</span>
+                <app-allergen-badges [allergens]="lineAllergens(line)" />
+              </span>
+              <p-select [options]="swapOptions(line)" [ngModel]="swapOf(line)" (ngModelChange)="setSwap(line, $event)" optionLabel="label" optionValue="value" [disabled]="!isIncluded(line)" styleClass="w-16rem" />
+            </div>
+          }
+        </section>
+      }
+
+      @if (selectableLines().length === 0 && swappableLines().length === 0) {
+        <p-message severity="info" styleClass="w-full" [text]="'KITCHEN.CONFIGURATOR.NOTHING_TO_CONFIGURE' | translate" />
+      }
+
+      <details class="text-sm">
+        <summary class="cursor-pointer text-color-secondary">{{ 'KITCHEN.CONFIGURATOR.FIXED_LINES' | translate: { count: fixedLines().length } }}</summary>
+        <ul class="mt-2 mb-0 pl-4">
+          @for (line of fixedLines(); track line.id) {
+            <li>{{ line.ingredientName }} — {{ line.quantity }} {{ line.unitCode }}</li>
+          }
+        </ul>
+      </details>
+
+      <div class="price-preview">
+        <div class="flex flex-column gap-1">
+          <span class="text-xs uppercase font-semibold text-color-secondary">{{ 'KITCHEN.CONFIGURATOR.ALLERGENS' | translate }}</span>
+          <app-allergen-badges [allergens]="preview()?.allergens ?? []" [showEmpty]="true" />
+        </div>
+        <div class="flex flex-column align-items-end">
+          <span class="text-xs uppercase font-semibold text-color-secondary">{{ 'KITCHEN.CONFIGURATOR.UNIT_COST' | translate: { unit: current.yieldUnit } }}</span>
+          <span class="text-xl font-bold font-mono">
+            @if (pricing()) {
+              <i class="pi pi-spin pi-spinner text-sm" aria-hidden="true"></i>
+            }
+            {{ unitCost() === null ? '—' : (unitCost() | number: '1.2-2') }}
+          </span>
+          @if (preview(); as p) {
+            <span class="text-xs text-green-600">{{ 'KITCHEN.CONFIGURATOR.SUGGESTED' | translate }} {{ p.cost.suggestedUnitPrice | number: '1.2-2' }}</span>
+          }
+        </div>
+      </div>
+      @if ((preview()?.cost?.unpricedLines ?? 0) > 0) {
+        <p-message severity="warn" styleClass="w-full" [text]="'KITCHEN.STUDIO.COST.UNPRICED' | translate: { count: preview()?.cost?.unpricedLines }" />
+      }
+    </div>
+  }
+  <ng-template pTemplate="footer">
+    <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="visible.set(false)" />
+    <p-button [label]="'KITCHEN.CONFIGURATOR.APPLY' | translate" icon="pi pi-check" [disabled]="!preview() || pricing()" (onClick)="apply()" />
+  </ng-template>
+</p-dialog>

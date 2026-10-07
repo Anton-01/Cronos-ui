@@ -128,9 +128,9 @@ export class DashboardComponent implements OnInit {
    */
   private loadCounts(): void {
     forkJoin({
-      recipes: this.countFrom(this.recipeService.getAll(COUNT_PAGE)),
+      recipes: this.recipeService.stats().pipe(map((response) => response.data?.total ?? 0), catchError(() => of(0))),
       quotes: this.countFrom(this.quoteService.getAll(COUNT_PAGE)),
-      ingredients: this.countFrom(this.ingredientService.getAll(COUNT_PAGE)),
+      ingredients: this.ingredientService.stats().pipe(map((response) => response.data?.total ?? 0), catchError(() => of(0))),
       fixedCosts: this.countFrom(this.fixedCostService.getAll(COUNT_PAGE)),
     })
       .pipe(takeUntilDestroyed(this.destroyRef))
