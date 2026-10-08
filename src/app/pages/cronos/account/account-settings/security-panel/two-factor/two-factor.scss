@@ -1,0 +1,78 @@
+.tf-steps {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.tf-step {
+  flex: 1;
+  height: 0.3rem;
+  border-radius: var(--radius-pill);
+  background: var(--surface-hover);
+  transition: background-color 0.2s ease;
+}
+
+.tf-step-done {
+  background: var(--primary-color);
+}
+
+.tf-hero-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+  color: var(--primary-color);
+  font-size: 1.5rem;
+}
+
+.tf-apps {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.tf-app {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-md);
+  font-size: 0.875rem;
+}
+
+.tf-qr {
+  width: 13rem;
+  height: 13rem;
+  padding: 0.5rem;
+  border-radius: var(--radius-lg);
+  background: #fff; // QR scanners need a light quiet zone, also in dark mode
+  box-shadow: var(--shadow-card);
+}
+
+.tf-qr-expired {
+  filter: blur(4px);
+  opacity: 0.4;
+}
+
+.tf-secret {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  word-break: break-all;
+}
+
+.tf-codes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-hover);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.95rem;
+  text-align: center;
+}

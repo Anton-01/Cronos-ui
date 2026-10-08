@@ -1,0 +1,144 @@
+// Matrix-specific layout only — PrimeNG internals stay governed by styles.scss (context.md §14).
+
+.matrix-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-hover);
+  font-size: 0.875rem;
+}
+
+.matrix-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+}
+
+.matrix-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.1rem 0.55rem;
+  border-radius: var(--radius-pill);
+  background: var(--surface-hover);
+  color: var(--text-color-secondary);
+}
+
+.matrix-count-active {
+  background: color-mix(in srgb, var(--primary-color) 14%, transparent);
+  color: var(--primary-color);
+}
+
+.matrix-row {
+  display: grid;
+  grid-template-columns: minmax(10rem, 14rem) 1fr;
+  gap: 1rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--surface-border);
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  @media (max-width: 767px) {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+  }
+}
+
+.matrix-row-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.matrix-cells {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.matrix-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  min-height: 2rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  color: var(--text-color);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--primary-color);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+  }
+
+  &:disabled {
+    cursor: default;
+  }
+}
+
+.matrix-cell-granted {
+  background: color-mix(in srgb, var(--primary-color) 14%, transparent);
+  border-color: color-mix(in srgb, var(--primary-color) 45%, transparent);
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.matrix-cell-inherited {
+  background: var(--surface-hover);
+  border-style: dashed;
+  color: var(--text-color-secondary);
+}
+
+.matrix-cell-denied {
+  background: color-mix(in srgb, var(--p-red-500) 12%, transparent);
+  border-color: color-mix(in srgb, var(--p-red-500) 45%, transparent);
+  color: var(--p-red-600);
+  text-decoration: line-through;
+}
+
+.matrix-cell-readonly {
+  cursor: default;
+}
+
+.matrix-cell-dot {
+  display: inline-block;
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  border: 1px solid var(--surface-border);
+  vertical-align: middle;
+  margin-right: 0.25rem;
+}
+
+.matrix-risk {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--p-surface-400);
+
+  &[data-risk='MEDIUM'] {
+    background: var(--p-sky-500);
+  }
+
+  &[data-risk='HIGH'] {
+    background: var(--p-orange-500);
+  }
+
+  &[data-risk='CRITICAL'] {
+    background: var(--p-red-500);
+  }
+}

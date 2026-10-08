@@ -12,6 +12,9 @@ import { TokenService } from '../services/token.service';
 import { AuthService } from '../services/auth.service';
 import { AlertService } from '../../shared/services/alert.service';
 import { LanguageService } from '../services/language.service';
+import { hasApiError } from '../utils/api-error.util';
+
+const TWO_FACTOR_ENROLLMENT_PATH = '/cronos/cuenta/configuracion';
 
 /**
  * HTTP interceptor that handles 401 errors with automatic JWT refresh.
@@ -27,12 +30,15 @@ import { LanguageService } from '../services/language.service';
  * 3. If a refresh IS already in progress, queue the request:
  *    - Wait on refreshTokenSubject until it emits a non-null token,
  *      then retry the request with that token.
- * 4. If refreshTokenSubject emits EMPTY_TOKEN (refresh failed),
+ * 4. A 403 TWO_FACTOR_ENROLLMENT_REQUIRED redirects to the 2FA setup
+ *    (Account Settings → Security) once, keeping the page as `returnUrl`.
+ * 5. If refreshTokenSubject emits EMPTY_TOKEN (refresh failed),
  *    queued requests receive an error instead of hanging forever.
  */
 @Injectable()
 export class ErrorInterceptorService implements HttpInterceptor {
   private isRefreshing = false;
+  private redirectingToEnrollment = false;
   private refreshTokenSubject: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
 
   /** Sentinel value emitted when refresh fails, so queued requests can unblock. */
@@ -62,7 +68,16 @@ export class ErrorInterceptorService implements HttpInterceptor {
           return throwError(() => error.error);
         }
 
-        // Case 3: everything else (403/404/500/...) → do NOT logout, do NOT
+        // Case 3: the account's role requires 2FA and it is not enrolled yet.
+        // Every protected call fails the same way until the user enrols, so
+        // send them to the one screen that can fix it instead of letting each
+        // page toast its own generic error.
+        if (error.status === 403 && hasApiError(error.error, 'TWO_FACTOR_ENROLLMENT_REQUIRED')) {
+          this.redirectToTwoFactorEnrollment();
+          return throwError(() => error.error);
+        }
+
+        // Case 4: everything else (403/404/500/...) → do NOT logout, do NOT
         // toast here. Every caller's `.subscribe({ error })` already toasts
         // its own fallback message (see `apiErrorMessage()` and its uses),
         // so toasting here as well produced two overlapping toasts for the
@@ -116,6 +131,22 @@ export class ErrorInterceptorService implements HttpInterceptor {
         return next.handle(this.cloneWithToken(req, token!));
       })
     );
+  }
+
+  private redirectToTwoFactorEnrollment(): void {
+    // Several requests fail at once on page load; navigate (and toast) once.
+    if (this.router.url.startsWith(TWO_FACTOR_ENROLLMENT_PATH) || this.redirectingToEnrollment) {
+      return;
+    }
+    this.redirectingToEnrollment = true;
+    const returnUrl = this.router.url;
+    this.alertService.warning(
+      this.language.t('ACCOUNT.SIGN_IN.ENROLLMENT.REQUIRED_MESSAGE'),
+      this.language.t('ACCOUNT.SIGN_IN.ENROLLMENT.REQUIRED_TITLE'),
+    );
+    void this.router
+      .navigate([TWO_FACTOR_ENROLLMENT_PATH], { queryParams: { tab: 'security', enroll2fa: 1, returnUrl } })
+      .finally(() => (this.redirectingToEnrollment = false));
   }
 
   private cloneWithToken(req: HttpRequest<unknown>, token: string): HttpRequest<unknown> {

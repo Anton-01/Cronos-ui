@@ -1,40 +1,54 @@
+import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { environment } from 'src/environments/environment';
-import { ApiResponse } from '../../models';
-import { Page, PageRequest } from '../../models';
-import { AllergenResponse, CreateAllergenRequest, UpdateAllergenRequest } from '../../models/domain.model';
+import { Observable, map, shareReplay } from 'rxjs';
 
+import { environment } from 'src/environments/environment';
+import { AllergenRequest, AllergenResponse } from '../../models/kitchen.models';
+import { ApiEnvelope, RecordStatus } from '../../models/unit-catalog.models';
+import { toHttpParams } from '../../utils/http-params.util';
+
+/** `/allergens` — doc §3. A short, closed list: always fetched whole. */
 @Injectable({ providedIn: 'root' })
 export class AllergenService {
-  private readonly API = environment.apiUrl + '/allergen';
-  private http = inject(HttpClient);
+  private readonly API = `${environment.apiUrl}/allergens`;
+  private readonly http = inject(HttpClient);
 
-  getAll(params: PageRequest, search?: string): Observable<ApiResponse<Page<AllergenResponse>>> {
-    let httpParams = new HttpParams()
-      .set('page', params.page.toString())
-      .set('size', params.size.toString())
-      .set('sort', params.sort ?? 'name,asc');
-    if (search) {
-      httpParams = httpParams.set('search', search);
-    }
-    return this.http.get<ApiResponse<Page<AllergenResponse>>>(this.API, { params: httpParams });
+  private active$: Observable<AllergenResponse[]> | null = null;
+
+  list(status?: RecordStatus): Observable<ApiEnvelope<AllergenResponse[]>> {
+    return this.http.get<ApiEnvelope<AllergenResponse[]>>(this.API, { params: toHttpParams({ status }) });
   }
 
-  getById(id: number): Observable<ApiResponse<AllergenResponse>> {
-    return this.http.get<ApiResponse<AllergenResponse>>(`${this.API}/${id}`);
+  /**
+   * ACTIVE allergens shared by every screen that detects or displays them
+   * (ingredient editor, recipe studio, quote configurator). Cached for the
+   * session; `invalidate()` after editing the catalog.
+   */
+  active(): Observable<AllergenResponse[]> {
+    this.active$ ??= this.list('ACTIVE').pipe(
+      map((response) => response.data ?? []),
+      shareReplay({ bufferSize: 1, refCount: false }),
+    );
+    return this.active$;
   }
 
-  create(req: CreateAllergenRequest): Observable<ApiResponse<AllergenResponse>> {
-    return this.http.post<ApiResponse<AllergenResponse>>(this.API, req);
+  invalidate(): void {
+    this.active$ = null;
   }
 
-  update(req: UpdateAllergenRequest): Observable<ApiResponse<AllergenResponse>> {
-    return this.http.put<ApiResponse<AllergenResponse>>(`${this.API}/${req.id}`, req);
+  create(request: AllergenRequest): Observable<ApiEnvelope<AllergenResponse>> {
+    return this.http.post<ApiEnvelope<AllergenResponse>>(this.API, request);
   }
 
-  delete(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.API}/${id}`);
+  update(id: number, request: AllergenRequest): Observable<ApiEnvelope<AllergenResponse>> {
+    return this.http.put<ApiEnvelope<AllergenResponse>>(`${this.API}/${id}`, request);
+  }
+
+  changeStatus(id: number, status: RecordStatus, version: number): Observable<ApiEnvelope<AllergenResponse>> {
+    return this.http.patch<ApiEnvelope<AllergenResponse>>(`${this.API}/${id}/status`, { status, version });
+  }
+
+  delete(id: number): Observable<ApiEnvelope<null>> {
+    return this.http.delete<ApiEnvelope<null>>(`${this.API}/${id}`);
   }
 }

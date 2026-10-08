@@ -69,7 +69,7 @@ export class TokenService {
     const token = this.getAccessToken();
     if (!token) return null;
     const payload = this.parseJwt(token);
-    return payload?.sub ?? null;
+    return payload?.userId ?? payload?.sub ?? null;
   }
 
   getRoles(): string[] {

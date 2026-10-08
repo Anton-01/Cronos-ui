@@ -19,10 +19,6 @@ export interface ChangePasswordRequest {
   confirmPassword: string;
 }
 
-export interface VerifyTwoFactorRequest {
-  code: number;
-}
-
 export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
@@ -42,14 +38,11 @@ export interface TokenResponse {
   expiresIn: number;
 }
 
-export interface TwoFactorSetupResponse {
-  secret: string;
-  qrCodeUrl: string;
-  message: string;
-}
-
 export interface JwtPayload {
+  /** Username on tokens from the IAM backend; the UUID lives in `userId`. */
   sub: string;
+  /** User UUID — the id every `/iam/users/{id}` endpoint uses. */
+  userId?: string;
   roles?: string[];
   /**
    * Fine-grained permission strings (e.g. `MANAGE_CATALOGS`), orthogonal to

@@ -1,117 +1,103 @@
+import { HttpClient, HttpEvent, HttpRequest } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+
 import { environment } from 'src/environments/environment';
 import { ApiResponse } from '../../models/api-response.model';
-import { Page, PageRequest } from '../../models/pagination.model';
 import {
-  RecipeResponse,
-  RecipeDetailResponse,
-  CreateRecipeRequest,
-  RecipeIngredientRequest,
-  RecipeIngredientResponse,
-  SubstituteIngredientRequest,
-  RecipeFixedCostRequest,
-  RecipeFixedCostResponse,
-  RecipeCostBreakdown,
-  RecipeFileResponse,
   CreateRecipeShareRequest,
-  RecipeShareResponse,
   RecipeShareAccessLogResponse,
+  RecipeShareResponse,
 } from '../../models/domain.model';
+import {
+  RecipeCostPreview,
+  RecipeCostPreviewRequest,
+  RecipeDetail,
+  RecipeFile,
+  RecipeFileUpdateRequest,
+  RecipeQuery,
+  RecipeRequest,
+  RecipeRevision,
+  RecipeStats,
+  RecipeStatus,
+  RecipeSummary,
+} from '../../models/kitchen.models';
+import { ApiEnvelope, CatalogPage } from '../../models/unit-catalog.models';
+import { toHttpParams } from '../../utils/http-params.util';
 
+/** `/recipes` — whole-aggregate recipe API (doc §5). Shares keep their legacy envelope. */
 @Injectable({ providedIn: 'root' })
 export class RecipeService {
-  private readonly API = environment.apiUrl + '/recipes';
-  private http = inject(HttpClient);
+  private readonly API = `${environment.apiUrl}/recipes`;
+  private readonly http = inject(HttpClient);
 
-  getAll(params: PageRequest, search?: string): Observable<ApiResponse<Page<RecipeResponse>>> {
-    let httpParams = new HttpParams()
-      .set('page', params.page.toString())
-      .set('size', params.size.toString())
-      .set('sort', params.sort ?? 'name,asc');
-    if (search) {
-      httpParams = httpParams.set('search', search);
-    }
-    return this.http.get<ApiResponse<Page<RecipeResponse>>>(this.API, { params: httpParams });
+  search(query: RecipeQuery): Observable<ApiEnvelope<CatalogPage<RecipeSummary>>> {
+    return this.http.get<ApiEnvelope<CatalogPage<RecipeSummary>>>(this.API, { params: toHttpParams(query) });
   }
 
-  getById(id: string): Observable<ApiResponse<RecipeDetailResponse>> {
-    return this.http.get<ApiResponse<RecipeDetailResponse>>(`${this.API}/${id}`);
+  stats(): Observable<ApiEnvelope<RecipeStats>> {
+    return this.http.get<ApiEnvelope<RecipeStats>>(`${this.API}/stats`);
   }
 
-  create(req: CreateRecipeRequest): Observable<ApiResponse<RecipeResponse>> {
-    return this.http.post<ApiResponse<RecipeResponse>>(this.API, req);
+  getById(id: string): Observable<ApiEnvelope<RecipeDetail>> {
+    return this.http.get<ApiEnvelope<RecipeDetail>>(`${this.API}/${id}`);
   }
 
-  update(id: string, req: CreateRecipeRequest): Observable<ApiResponse<RecipeResponse>> {
-    return this.http.put<ApiResponse<RecipeResponse>>(`${this.API}/${id}`, req);
+  create(request: RecipeRequest): Observable<ApiEnvelope<RecipeDetail>> {
+    return this.http.post<ApiEnvelope<RecipeDetail>>(this.API, request);
   }
 
-  delete(id: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.API}/${id}`);
+  update(id: string, request: RecipeRequest): Observable<ApiEnvelope<RecipeDetail>> {
+    return this.http.put<ApiEnvelope<RecipeDetail>>(`${this.API}/${id}`, request);
   }
 
-  // --- Ingredients ---
-  addIngredient(recipeId: string, req: RecipeIngredientRequest): Observable<ApiResponse<RecipeIngredientResponse>> {
-    return this.http.post<ApiResponse<RecipeIngredientResponse>>(`${this.API}/${recipeId}/ingredients`, req);
+  changeStatus(id: string, status: RecipeStatus, version: number): Observable<ApiEnvelope<RecipeDetail>> {
+    return this.http.patch<ApiEnvelope<RecipeDetail>>(`${this.API}/${id}/status`, { status, version });
   }
 
-  removeIngredient(recipeId: string, ingredientId: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.API}/${recipeId}/ingredients/${ingredientId}`);
+  duplicate(id: string, name: string): Observable<ApiEnvelope<RecipeDetail>> {
+    return this.http.post<ApiEnvelope<RecipeDetail>>(`${this.API}/${id}/duplicate`, { name });
   }
 
-  substituteIngredient(
-    recipeId: string,
-    ingredientId: string,
-    req: SubstituteIngredientRequest
-  ): Observable<ApiResponse<RecipeIngredientResponse>> {
-    return this.http.post<ApiResponse<RecipeIngredientResponse>>(
-      `${this.API}/${recipeId}/ingredients/${ingredientId}/substitute`,
-      req
-    );
+  delete(id: string): Observable<ApiEnvelope<null>> {
+    return this.http.delete<ApiEnvelope<null>>(`${this.API}/${id}`);
   }
 
-  // --- Fixed Costs ---
-  addFixedCost(recipeId: string, req: RecipeFixedCostRequest): Observable<ApiResponse<RecipeFixedCostResponse>> {
-    return this.http.post<ApiResponse<RecipeFixedCostResponse>>(`${this.API}/${recipeId}/fixed-costs`, req);
+  /** Live cost of an unsaved draft or of a saved recipe under a quote configuration. Nothing is persisted. */
+  costPreview(request: RecipeCostPreviewRequest): Observable<ApiEnvelope<RecipeCostPreview>> {
+    return this.http.post<ApiEnvelope<RecipeCostPreview>>(`${this.API}/cost-preview`, request);
   }
 
-  removeFixedCost(recipeId: string, costId: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.API}/${recipeId}/fixed-costs/${costId}`);
+  /** Forces a server recalculation with today's ingredient prices. */
+  recalculate(id: string): Observable<ApiEnvelope<RecipeDetail>> {
+    return this.http.post<ApiEnvelope<RecipeDetail>>(`${this.API}/${id}/recalculate`, {});
   }
 
-  // --- Cost Engine ---
-  getCostBreakdown(recipeId: string, targetYield?: number): Observable<ApiResponse<RecipeCostBreakdown>> {
-    let httpParams = new HttpParams();
-    if (targetYield != null) {
-      httpParams = httpParams.set('targetYield', targetYield.toString());
-    }
-    return this.http.get<ApiResponse<RecipeCostBreakdown>>(`${this.API}/${recipeId}/cost`, { params: httpParams });
-  }
-
-  // --- Sync Costs (Cost Rollup) ---
-  syncCosts(recipeId: string): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.API}/${recipeId}/sync-costs`, {});
+  history(id: string, page: number, size: number): Observable<ApiEnvelope<CatalogPage<RecipeRevision>>> {
+    return this.http.get<ApiEnvelope<CatalogPage<RecipeRevision>>>(`${this.API}/${id}/history`, {
+      params: toHttpParams({ page, size }),
+    });
   }
 
   // --- Files ---
-  getFiles(recipeId: string): Observable<ApiResponse<RecipeFileResponse[]>> {
-    return this.http.get<ApiResponse<RecipeFileResponse[]>>(`${this.API}/${recipeId}/files`);
+
+  /** One file per request so each upload reports its own progress and can be retried alone. */
+  uploadFile(recipeId: string, file: File, description: string | null): Observable<HttpEvent<ApiEnvelope<RecipeFile>>> {
+    const body = new FormData();
+    body.append('file', file, file.name);
+    if (description) {
+      body.append('description', description);
+    }
+    const request = new HttpRequest('POST', `${this.API}/${recipeId}/files`, body, { reportProgress: true });
+    return this.http.request<ApiEnvelope<RecipeFile>>(request);
   }
 
-  uploadFile(recipeId: string, file: File): Observable<ApiResponse<RecipeFileResponse>> {
-    const formData = new FormData();
-    formData.append('file', file);
-    return this.http.post<ApiResponse<RecipeFileResponse>>(`${this.API}/${recipeId}/files`, formData);
+  updateFile(recipeId: string, fileId: string, request: RecipeFileUpdateRequest): Observable<ApiEnvelope<RecipeFile>> {
+    return this.http.patch<ApiEnvelope<RecipeFile>>(`${this.API}/${recipeId}/files/${fileId}`, request);
   }
 
-  updateFile(recipeId: string, fileId: string, data: FormData): Observable<ApiResponse<RecipeFileResponse>> {
-    return this.http.put<ApiResponse<RecipeFileResponse>>(`${this.API}/${recipeId}/files`, data);
-  }
-
-  deleteFile(recipeId: string, fileId: string): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.API}/${recipeId}/files/${fileId}`);
+  deleteFile(recipeId: string, fileId: string): Observable<ApiEnvelope<null>> {
+    return this.http.delete<ApiEnvelope<null>>(`${this.API}/${recipeId}/files/${fileId}`);
   }
 
   // --- Shares ---

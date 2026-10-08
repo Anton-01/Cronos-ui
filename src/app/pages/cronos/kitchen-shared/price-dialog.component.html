@@ -1,0 +1,100 @@
+<p-dialog
+  [header]="'KITCHEN.PRICE.TITLE' | translate: { name: ingredient()?.name ?? '' }"
+  [visible]="visible()"
+  (visibleChange)="!$event && !saving() && visible.set(false)"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '36rem' }"
+  [breakpoints]="{ '640px': '95vw' }"
+>
+  @if (impact(); as result) {
+    <div class="flex flex-column gap-3">
+      <p-message severity="success" styleClass="w-full" [text]="'KITCHEN.PRICE.IMPACT_TITLE' | translate" />
+      <dl class="iam-facts">
+        <dt>{{ 'KITCHEN.PRICE.NEW_COST' | translate }}</dt>
+        <dd class="font-mono">{{ result.ingredient.costPerBaseUnit | number: '1.4-4' }} / {{ result.ingredient.baseUnitCode }}</dd>
+        <dt>{{ 'KITCHEN.PRICE.RECIPES_UPDATED' | translate }}</dt>
+        <dd>{{ result.recipesAffected }}</dd>
+        <dt>{{ 'KITCHEN.PRICE.QUOTES_FLAGGED' | translate }}</dt>
+        <dd>{{ result.quotesFlagged }}</dd>
+      </dl>
+      @if (result.recipesBelowMargin.length > 0) {
+        <p-message severity="warn" styleClass="w-full">
+          <div class="flex flex-column gap-1 text-sm">
+            <strong>{{ 'KITCHEN.PRICE.BELOW_MARGIN' | translate }}</strong>
+            @for (recipe of result.recipesBelowMargin; track recipe.id) {
+              <span>{{ recipe.name }} — {{ recipe.marginPercent | number: '1.0-1' }} %</span>
+            }
+          </div>
+        </p-message>
+      }
+    </div>
+  } @else {
+    <form [formGroup]="form" class="grid" (ngSubmit)="save()">
+      <div class="col-12">
+        <p class="m-0 text-sm text-color-secondary line-height-3">{{ 'KITCHEN.PRICE.INTRO' | translate }}</p>
+      </div>
+      <div class="col-6 flex flex-column gap-1">
+        <label for="prQty" class="font-medium">{{ 'KITCHEN.PRICE.PRESENTATION' | translate }} <span class="text-red-500">*</span></label>
+        <p-inputnumber inputId="prQty" formControlName="purchaseQuantity" [minFractionDigits]="0" [maxFractionDigits]="3" styleClass="w-full" placeholder="1" [invalid]="showError('purchaseQuantity')" />
+        <app-field-error [errors]="form.controls.purchaseQuantity.errors" [visible]="showError('purchaseQuantity')" />
+      </div>
+      <div class="col-6 flex flex-column gap-1">
+        <label for="prUnit" class="font-medium">{{ 'KITCHEN.PRICE.UNIT' | translate }} <span class="text-red-500">*</span></label>
+        <p-select inputId="prUnit" formControlName="purchaseUnitId" [options]="units()" optionLabel="name" optionValue="id" [filter]="true" filterBy="name,codeIdentity" styleClass="w-full" [invalid]="showError('purchaseUnitId')" [placeholder]="'KITCHEN.PRICE.UNIT_PLACEHOLDER' | translate" />
+        <app-field-error [errors]="form.controls.purchaseUnitId.errors" [visible]="showError('purchaseUnitId')" />
+      </div>
+      <div class="col-7 flex flex-column gap-1">
+        <label for="prPrice" class="font-medium">{{ 'KITCHEN.PRICE.PRICE' | translate }} <span class="text-red-500">*</span></label>
+        <p-inputnumber inputId="prPrice" formControlName="price" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="2" styleClass="w-full" [invalid]="showError('price')" />
+        <app-field-error [errors]="form.controls.price.errors" [visible]="showError('price')" />
+      </div>
+      <div class="col-5 flex flex-column gap-1">
+        <label for="prCurrency" class="font-medium">{{ 'INGREDIENTS.FIELDS.CURRENCY' | translate }}</label>
+        <p-select inputId="prCurrency" formControlName="currency" [options]="currencies()" styleClass="w-full" />
+      </div>
+      <div class="col-7 flex flex-column gap-1">
+        <label for="prSupplier" class="font-medium">{{ 'KITCHEN.PRICE.SUPPLIER' | translate }}</label>
+        <input pInputText id="prSupplier" formControlName="supplier" maxlength="120" />
+      </div>
+      <div class="col-5 flex flex-column gap-1">
+        <label for="prDate" class="font-medium">{{ 'KITCHEN.PRICE.DATE' | translate }} <span class="text-red-500">*</span></label>
+        <p-datepicker inputId="prDate" formControlName="pricedAt" [maxDate]="today" [showIcon]="true" styleClass="w-full" />
+      </div>
+      <div class="col-12">
+        <div class="price-preview">
+          <div class="flex flex-column">
+            <span class="text-xs text-color-secondary uppercase font-semibold">{{ 'KITCHEN.PRICE.RESULTING_COST' | translate }}</span>
+            @if (perDisplayUnit() !== null) {
+              <span class="text-xl font-bold font-mono">
+                {{ perDisplayUnit() | number: '1.2-2' }} / {{ ingredient()?.baseDimension === 'COUNT' ? ingredient()?.baseUnitCode : ingredient()?.baseDimension === 'MASS' ? 'kg' : 'L' }}
+              </span>
+              <span class="text-xs text-color-secondary">{{ 'KITCHEN.PRICE.YIELD_APPLIED' | translate: { yield: ingredient()?.yieldPercent ?? 100 } }}</span>
+            } @else {
+              <span class="text-sm text-color-secondary">{{ 'KITCHEN.PRICE.FILL_TO_PREVIEW' | translate }}</span>
+            }
+          </div>
+          @if (change() !== null) {
+            <span class="price-change" [class.price-change-up]="change()! > 0" [class.price-change-down]="change()! < 0">
+              <i class="pi" [class.pi-arrow-up]="change()! > 0" [class.pi-arrow-down]="change()! < 0" [class.pi-minus]="change() === 0" aria-hidden="true"></i>
+              {{ change()! * 100 | number: '1.0-1' }} %
+            </span>
+          }
+        </div>
+      </div>
+      @if (confirmJump()) {
+        <div class="col-12">
+          <p-message severity="warn" styleClass="w-full" [text]="'KITCHEN.PRICE.SUSPICIOUS' | translate: { change: ((change() ?? 0) * 100 | number: '1.0-0') }" />
+        </div>
+      }
+    </form>
+  }
+  <ng-template pTemplate="footer">
+    @if (impact()) {
+      <p-button [label]="'COMMON.CLOSE' | translate" (onClick)="visible.set(false)" />
+    } @else {
+      <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" [disabled]="saving()" (onClick)="visible.set(false)" />
+      <p-button [label]="(confirmJump() ? 'KITCHEN.PRICE.CONFIRM_SAVE' : 'KITCHEN.PRICE.SAVE') | translate" [severity]="confirmJump() ? 'warn' : 'primary'" icon="pi pi-check" [loading]="saving()" (onClick)="save()" />
+    }
+  </ng-template>
+</p-dialog>

@@ -1,0 +1,131 @@
+@switch (loadState()) {
+  @case ('loading') {
+    <p-card><app-detail-skeleton [fields]="8" [showTitle]="true" /></p-card>
+  }
+  @case ('not-found') {
+    <p-card>
+      <div class="flex flex-column align-items-center gap-3 py-6 text-center">
+        <i class="pi pi-user-minus text-4xl text-color-secondary" aria-hidden="true"></i>
+        <h3 class="m-0">{{ 'IAM.DETAIL.NOT_FOUND' | translate }}</h3>
+        <p-button [label]="'IAM.DETAIL.BACK_TO_LIST' | translate" icon="pi pi-arrow-left" [outlined]="true" routerLink="/cronos/admin/usuarios" />
+      </div>
+    </p-card>
+  }
+  @case ('error') {
+    <p-card>
+      <div class="flex flex-column align-items-center gap-3 py-6">
+        <p-message severity="error" [text]="'IAM.DETAIL.LOAD_FAILED' | translate" />
+        <p-button [label]="'COMMON.TRY_AGAIN' | translate" icon="pi pi-refresh" [outlined]="true" (onClick)="load()" />
+      </div>
+    </p-card>
+  }
+  @case ('ready') {
+    @if (user(); as u) {
+      <!-- Identity header -->
+      <p-card styleClass="mb-4">
+        <div class="flex flex-column md:flex-row md:align-items-center gap-4">
+          <app-user-avatar size="xl" [avatarUrl]="u.avatarUrl" [firstName]="u.firstName" [lastName]="u.lastName" [displayName]="u.displayName" />
+          <div class="flex flex-column gap-2 flex-1 min-w-0">
+            <div class="flex flex-wrap align-items-center gap-2">
+              <h2 class="m-0 text-2xl font-bold">{{ u.displayName }}</h2>
+              <app-user-status-tag [status]="u.status" [until]="u.statusUntil" />
+              @if (isSelf()) {
+                <p-tag [value]="'IAM.DETAIL.YOU' | translate" severity="info" />
+              }
+            </div>
+            <div class="flex flex-wrap align-items-center gap-3 text-sm text-color-secondary">
+              <span><i class="pi pi-at text-xs mr-1" aria-hidden="true"></i>{{ u.username }}</span>
+              <span><i class="pi pi-envelope text-xs mr-1" aria-hidden="true"></i>{{ u.email }}
+                @if (u.emailVerified) {
+                  <i class="pi pi-verified text-green-500 text-xs" [pTooltip]="'IAM.DETAIL.EMAIL_VERIFIED' | translate"></i>
+                }
+              </span>
+              @if (u.jobTitle) {
+                <span><i class="pi pi-briefcase text-xs mr-1" aria-hidden="true"></i>{{ u.jobTitle }}{{ u.department ? ' · ' + u.department : '' }}</span>
+              }
+              <span><i class="pi pi-sign-in text-xs mr-1" aria-hidden="true"></i>{{ u.lastLoginAt ? (u.lastLoginAt | date: 'medium') : ('IAM.USERS.NEVER' | translate) }}</span>
+            </div>
+            <div class="flex flex-wrap gap-1">
+              @for (role of u.roles; track role.id) {
+                <app-role-chip [name]="role.name" [color]="role.color" />
+              }
+            </div>
+          </div>
+          <div class="flex align-items-center gap-2 md:align-self-start">
+            @if (statusActions().length > 0) {
+              <p-button [label]="'IAM.DETAIL.CHANGE_STATUS' | translate" icon="pi pi-sliders-h" severity="secondary" [outlined]="true" (onClick)="statusMenu.toggle($event)" />
+            }
+            <p-button icon="pi pi-refresh" [text]="true" [rounded]="true" severity="secondary" [pTooltip]="'COMMON.REFRESH' | translate" [ariaLabel]="'COMMON.REFRESH' | translate" (onClick)="load()" />
+          </div>
+        </div>
+
+        @if (u.status !== 'ACTIVE' && u.statusReason) {
+          <p-message severity="warn" styleClass="w-full mt-3">
+            <span class="text-sm">
+              <strong>{{ 'IAM.STATUS_REASON.' + u.statusReason | translate }}</strong>
+              @if (u.statusComment) {
+                — {{ u.statusComment }}
+              }
+              @if (u.statusChangedBy) {
+                <span class="text-color-secondary"> · {{ u.statusChangedBy.displayName }}, {{ u.statusChangedAt | date: 'medium' }}</span>
+              }
+            </span>
+          </p-message>
+        }
+        @if (accountAlerts().length > 0) {
+          <div class="flex flex-wrap gap-2 mt-3">
+            @for (alertKey of accountAlerts(); track alertKey) {
+              <p-tag severity="warn" icon="pi pi-exclamation-triangle" [value]="alertKey | translate: { count: u.failedLoginAttempts, date: (u.accessExpiresAt | date: 'mediumDate') }" />
+            }
+          </div>
+        }
+      </p-card>
+
+      <p-tabs
+        [value]="activeTab()"
+        (valueChange)="selectTab($event)"
+        [lazy]="true"
+        [scrollable]="true"
+        [dt]="{ tablist: { background: 'transparent' }, tabpanel: { background: 'transparent', padding: '1.5rem 0 0 0' } }"
+      >
+        <p-tablist>
+          @for (tab of tabs(); track tab.value) {
+            <p-tab [value]="tab.value" class="flex align-items-center gap-2">
+              <i [class]="tab.icon" aria-hidden="true"></i>
+              <span>{{ tab.labelKey | translate }}</span>
+            </p-tab>
+          }
+        </p-tablist>
+        <p-tabpanels>
+          <p-tabpanel value="overview">
+            <app-user-profile-panel [user]="u" (userChanged)="onUserChanged($event)" (writeFailed)="handleWriteError($event, 'IAM.DETAIL.PROFILE.SAVE_FAILED')" />
+          </p-tabpanel>
+          <p-tabpanel value="access">
+            <app-user-access-panel [user]="u" (accessSaved)="load()" (writeFailed)="handleWriteError($event, 'IAM.DETAIL.ACCESS.SAVE_FAILED')" />
+          </p-tabpanel>
+          <p-tabpanel value="security">
+            <app-user-security-panel [user]="u" (userChanged)="onUserChanged($event)" (writeFailed)="handleWriteError($event, 'IAM.COMMON.ACTION_FAILED')" />
+          </p-tabpanel>
+          <p-tabpanel value="activity">
+            <p-card>
+              <div class="flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                <span class="text-color-secondary text-sm">{{ 'IAM.DETAIL.ACTIVITY.HINT' | translate }}</span>
+                <p-selectbutton [options]="perspectiveOptions()" [ngModel]="perspective()" (ngModelChange)="perspective.set($event)" optionLabel="label" optionValue="value" [allowEmpty]="false" />
+              </div>
+              <app-audit-event-table [scope]="auditScope()" [showFilters]="true" [rows]="10" />
+            </p-card>
+          </p-tabpanel>
+        </p-tabpanels>
+      </p-tabs>
+
+      <p-menu #statusMenu [model]="statusActions()" [popup]="true" />
+      <app-change-status-dialog
+        [(visible)]="statusDialogOpen"
+        [targetStatus]="statusTarget()"
+        [subject]="u.displayName"
+        [saving]="statusSaving()"
+        (confirmed)="applyStatus($event)"
+      />
+    }
+  }
+}

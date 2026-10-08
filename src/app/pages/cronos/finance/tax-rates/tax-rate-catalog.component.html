@@ -1,0 +1,154 @@
+<p-card>
+  <p-table [value]="filtered()" dataKey="id" [loading]="loading()" [showLoader]="false" [rowHover]="true" sortField="ratePercent" [sortOrder]="-1">
+    <ng-template pTemplate="caption">
+      <div class="flex flex-wrap align-items-center justify-content-between gap-2">
+        <p-iconfield iconPosition="left">
+          <p-inputicon styleClass="pi pi-search" />
+          <input pInputText type="search" [ngModel]="search()" (ngModelChange)="search.set($event)" [placeholder]="'FINANCE.TAX_RATES.SEARCH' | translate" />
+        </p-iconfield>
+        @if (canManage()) {
+          <p-button [label]="'FINANCE.TAX_RATES.CREATE' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
+        }
+      </div>
+    </ng-template>
+    <ng-template pTemplate="header">
+      <tr>
+        <th pSortableColumn="name" style="min-width: 14rem">{{ 'COMMON.TABLE.NAME' | translate }} <p-sortIcon field="name" /></th>
+        <th pSortableColumn="ratePercent" style="width: 9rem" class="text-right">{{ 'FINANCE.TAX_RATES.RATE' | translate }} <p-sortIcon field="ratePercent" /></th>
+        <th style="width: 8rem">{{ 'FINANCE.TAX_RATES.FACTOR_LABEL' | translate }}</th>
+        <th style="min-width: 12rem">{{ 'FINANCE.TAX_RATES.VALIDITY' | translate }}</th>
+        <th style="width: 9rem">{{ 'COMMON.TABLE.STATUS' | translate }}</th>
+        <th style="width: 11rem" class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-item>
+      <tr>
+        <td>
+          <div class="flex flex-column gap-1">
+            <div class="flex align-items-center gap-2">
+              <span class="font-semibold">{{ item.name }}</span>
+              @if (item.isDefault) {
+                <p-tag [value]="'FINANCE.DEFAULT.BADGE' | translate" icon="pi pi-star-fill" severity="success" />
+              }
+              @if (item.inUse) {
+                <i class="pi pi-link text-xs text-color-secondary" [pTooltip]="'FINANCE.IN_USE' | translate"></i>
+              }
+            </div>
+            <span class="text-xs font-mono text-color-secondary">{{ item.code }} · SAT {{ item.satTaxCode }}</span>
+            @if (item.description) {
+              <span class="text-sm text-color-secondary">{{ item.description }}</span>
+            }
+          </div>
+        </td>
+        <td class="text-right font-mono font-semibold">
+          {{ item.ratePercent === null ? '—' : (item.ratePercent | number: '1.0-4') + ' %' }}
+        </td>
+        <td><p-tag [value]="'FINANCE.TAX_RATES.FACTOR.' + item.factorType | translate" [severity]="item.factorType === 'EXENTO' ? 'secondary' : 'info'" /></td>
+        <td class="text-sm">
+          <div class="flex flex-column gap-1">
+            <span>{{ item.validFrom | date: 'mediumDate' }} → {{ item.validTo ? (item.validTo | date: 'mediumDate') : ('FINANCE.TAX_RATES.OPEN_ENDED' | translate) }}</span>
+            @switch (validity(item)) {
+              @case ('SCHEDULED') { <span class="status-pill status-pill-info align-self-start">{{ 'FINANCE.TAX_RATES.SCHEDULED' | translate }}</span> }
+              @case ('EXPIRED') { <span class="status-pill status-pill-inactive align-self-start">{{ 'FINANCE.TAX_RATES.EXPIRED' | translate }}</span> }
+            }
+          </div>
+        </td>
+        <td>
+          <span class="status-pill" [class.status-pill-active]="item.status === 'ACTIVE'" [class.status-pill-inactive]="item.status !== 'ACTIVE'">
+            {{ (item.status === 'ACTIVE' ? 'COMMON.STATUS.ACTIVE' : 'COMMON.STATUS.INACTIVE') | translate }}
+          </span>
+        </td>
+        <td class="text-right white-space-nowrap">
+          @if (canSetDefault() && !item.isDefault && item.status === 'ACTIVE' && validity(item) === 'CURRENT') {
+            <p-button icon="pi pi-star" severity="warn" [text]="true" [rounded]="true" [pTooltip]="'FINANCE.DEFAULT.SET' | translate" [ariaLabel]="'FINANCE.DEFAULT.SET' | translate" (onClick)="setDefault(item)" />
+          }
+          @if (canManage()) {
+            <p-button icon="pi pi-pencil" severity="info" [text]="true" [rounded]="true" [pTooltip]="'COMMON.EDIT' | translate" (onClick)="openEdit(item)" />
+            <p-button
+              [icon]="item.status === 'ACTIVE' ? 'pi pi-ban' : 'pi pi-check-circle'"
+              severity="secondary"
+              [text]="true"
+              [rounded]="true"
+              [disabled]="item.isDefault"
+              [pTooltip]="(item.isDefault ? 'FINANCE.DEFAULT.LOCKED' : item.status === 'ACTIVE' ? 'IAM.ROLES.ACTIONS.DEACTIVATE' : 'IAM.ROLES.ACTIONS.ACTIVATE') | translate"
+              (onClick)="toggleStatus(item)"
+            />
+            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" [disabled]="item.isDefault || item.inUse" [pTooltip]="(item.isDefault ? 'FINANCE.DEFAULT.LOCKED' : item.inUse ? 'FINANCE.IN_USE_DELETE' : 'COMMON.DELETE') | translate" (onClick)="remove(item)" />
+          }
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="loadingbody">
+      @for (row of skeletonRows; track $index) {
+        <tr appTableSkeletonRow [columns]="6"></tr>
+      }
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr><td colspan="6" class="text-center text-color-secondary py-5">{{ 'FINANCE.TAX_RATES.EMPTY' | translate }}</td></tr>
+    </ng-template>
+  </p-table>
+</p-card>
+
+<p-dialog
+  [header]="(editing() ? 'FINANCE.TAX_RATES.EDIT' : 'FINANCE.TAX_RATES.CREATE') | translate"
+  [visible]="dialogOpen()"
+  (visibleChange)="!$event && !saving() && dialogOpen.set(false)"
+  [modal]="true"
+  [draggable]="false"
+  [style]="{ width: '36rem' }"
+  [breakpoints]="{ '640px': '95vw' }"
+>
+  <form [formGroup]="form" class="grid" (ngSubmit)="save()">
+    @if (editing()?.inUse) {
+      <div class="col-12">
+        <p-message severity="info" [text]="'FINANCE.TAX_RATES.IN_USE_LOCK' | translate" styleClass="w-full" />
+      </div>
+    }
+    <div class="col-12 md:col-5 flex flex-column gap-1">
+      <label for="taxCode" class="font-medium">{{ 'COMMON.TABLE.CODE' | translate }} <span class="text-red-500">*</span></label>
+      <input pInputText id="taxCode" formControlName="code" class="font-mono" maxlength="30" placeholder="IVA_16" (blur)="uppercaseCode()" [invalid]="showError('code')" />
+      <app-field-error [errors]="form.controls.code.errors" [visible]="showError('code')" />
+    </div>
+    <div class="col-12 md:col-7 flex flex-column gap-1">
+      <label for="taxName" class="font-medium">{{ 'COMMON.TABLE.NAME' | translate }} <span class="text-red-500">*</span></label>
+      <input pInputText id="taxName" formControlName="name" [maxlength]="nameMax" [placeholder]="'FINANCE.TAX_RATES.NAME_PLACEHOLDER' | translate" [invalid]="showError('name')" />
+      <app-field-error [errors]="form.controls.name.errors" [visible]="showError('name')" />
+    </div>
+    <div class="col-12 flex flex-column gap-1">
+      <span class="font-medium">{{ 'FINANCE.TAX_RATES.FACTOR_LABEL' | translate }}</span>
+      <p-selectbutton formControlName="factorType" [options]="factorOptions()" optionLabel="label" optionValue="value" [allowEmpty]="false" />
+      <small class="text-color-secondary">{{ 'FINANCE.TAX_RATES.FACTOR_HINT' | translate }}</small>
+    </div>
+    <div class="col-12 md:col-6 flex flex-column gap-1">
+      <label for="taxRate" class="font-medium">{{ 'FINANCE.TAX_RATES.RATE' | translate }} @if (!isExempt()) {<span class="text-red-500">*</span>}</label>
+      <p-inputnumber inputId="taxRate" formControlName="ratePercent" [min]="0" [max]="100" [minFractionDigits]="0" [maxFractionDigits]="maxDecimals" suffix=" %" styleClass="w-full" [invalid]="showError('ratePercent')" />
+      <app-field-error [errors]="form.controls.ratePercent.errors" [visible]="showError('ratePercent')" />
+    </div>
+    <div class="col-12 md:col-6 flex flex-column gap-1">
+      <span class="font-medium">{{ 'FINANCE.TAX_RATES.PREVIEW' | translate }}</span>
+      <div class="p-2 border-round-lg surface-ground text-sm font-mono">
+        {{ previewBase | number: '1.2-2' }} + {{ previewTax() | number: '1.2-2' }} = <strong>{{ previewBase + previewTax() | number: '1.2-2' }}</strong>
+      </div>
+    </div>
+    <div class="col-12 md:col-6 flex flex-column gap-1">
+      <label for="taxFrom" class="font-medium">{{ 'FINANCE.TAX_RATES.VALID_FROM' | translate }} <span class="text-red-500">*</span></label>
+      <p-datepicker inputId="taxFrom" formControlName="validFrom" [showIcon]="true" styleClass="w-full" />
+      <app-field-error [errors]="form.controls.validFrom.errors" [visible]="showError('validFrom')" />
+    </div>
+    <div class="col-12 md:col-6 flex flex-column gap-1">
+      <label for="taxTo" class="font-medium">{{ 'FINANCE.TAX_RATES.VALID_TO' | translate }}</label>
+      <p-datepicker inputId="taxTo" formControlName="validTo" [showIcon]="true" [showClear]="true" styleClass="w-full" [placeholder]="'FINANCE.TAX_RATES.OPEN_ENDED' | translate" />
+    </div>
+    @if (form.hasError('validityRange')) {
+      <div class="col-12"><p-message severity="error" [text]="'FINANCE.TAX_RATES.RANGE_ERROR' | translate" styleClass="w-full" /></div>
+    }
+    <div class="col-12 flex flex-column gap-1">
+      <label for="taxDescription" class="font-medium">{{ 'COMMON.TABLE.DESCRIPTION' | translate }}</label>
+      <textarea pTextarea id="taxDescription" rows="2" formControlName="description" maxlength="250" [placeholder]="'FINANCE.TAX_RATES.DESCRIPTION_PLACEHOLDER' | translate"></textarea>
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" [disabled]="saving()" (onClick)="dialogOpen.set(false)" />
+    <p-button [label]="(editing() ? 'COMMON.UPDATE' : 'COMMON.CREATE') | translate" icon="pi pi-check" [loading]="saving()" (onClick)="save()" />
+  </ng-template>
+</p-dialog>

@@ -30,6 +30,7 @@ import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { ProfileStateService } from 'src/app/core/services/profile/ProfileStateService';
 import { ThemeService } from 'src/app/core/services/theme.service';
 import { TokenService } from 'src/app/core/services/token.service';
+import { AuthorizationService } from 'src/app/core/services/authorization.service';
 import { NavItem, NavSection, activePrefixesOf, buildNavSections, buildUserMenu } from './app-menu';
 
 const SLIM_STORAGE_KEY = 'cronos_sidebar_slim';
@@ -75,6 +76,7 @@ const DESKTOP_BREAKPOINT = 992;
 export class MainLayoutComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly tokenService = inject(TokenService);
+  private readonly authorization = inject(AuthorizationService);
   private readonly router = inject(Router);
 
   readonly profileState = inject(ProfileStateService);
@@ -96,8 +98,7 @@ export class MainLayoutComponent implements OnInit {
   readonly searchTerm = signal('');
 
   readonly navSections: NavSection[] = buildNavSections(
-    this.tokenService.hasRole('ADMIN'),
-    this.tokenService.hasRole('SUPER_ADMIN'),
+    (permission) => this.authorization.can(permission),
     this.tokenService.hasRole('SUPER_ADMIN') || this.tokenService.hasPermission('MANAGE_CATALOGS'),
   );
 

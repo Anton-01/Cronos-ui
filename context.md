@@ -917,3 +917,82 @@ Deviations, called out per §10:
 - Phone numbers are stored as E.164 from now on. The quote form still keeps its
   local two-country `PHONE_COUNTRIES` list. Moving it onto `app-phone-input` is
   a follow-up, not part of this change.
+
+---
+
+## 19. Identity & Access Management and Finance Settings — IMPLEMENTED
+
+Replaces the old `user-management` / `roles-management` screens (deleted, with
+their `UserService` / `RoleService` / `PermissionService` and the admin-only
+types in `user.model.ts` / `role.model.ts`). Backend contract and handoff:
+`docs/api/iam-and-finance.md`. Every new endpoint uses the V8 envelope
+(`ApiEnvelope` / `CatalogPage`) — never the legacy `ApiResponse` / `Page`.
+
+| Piece | Path | Notes |
+|---|---|---|
+| Contracts | `core/models/iam.models.ts`, `core/models/finance.models.ts` | Mirror of the doc; change together |
+| Permission codes | `core/constants/permissions.ts` | `MODULE.RESOURCE.ACTION`; only the codes a screen branches on |
+| `AuthorizationService` | `core/services/authorization.service.ts` | Single "may the user do X?" answer. SUPER_ADMIN → all; JWT `permissions` claim is authoritative when present; `LEGACY_ROLE_PERMISSIONS` only for tokens minted before the claim |
+| `permissionGuard` | `core/guards/permission.guard.ts` | `data.permissions` is any-of |
+| `*appCan` | `shared/directives/can.directive.ts` | Structural; string or list |
+| Sidebar | `layout/app-menu.ts` | `buildNavSections(can, canManageCatalogs)` — items filtered by permission |
+| `PermissionMatrixComponent` | `pages/cronos/admin/shared/permission-matrix/` | Module → resource → action chips; dependency closure on grant, dependent closure on revoke (announced inline); `grant` and `grant-deny` (user overrides) modes; inherited cells come from roles/groups |
+| Users | `pages/cronos/admin/users/{user-list,user-create,user-detail}` | Server-paged list with KPI filters + bulk status/roles + CSV export; 3-step create wizard (async availability, avatar crop, invitation vs temporary password); detail tabs Profile / Access (live server preview + SoD) / Security (reset, force change, 2FA reset, invitation, sessions, sign-in history) / Activity |
+| Roles | `pages/cronos/admin/roles/{role-list,role-editor}` | Clone, activate/deactivate, delete-when-unused, colour, groups, members tab |
+| Permission groups | `pages/cronos/admin/permission-groups/` | Groups CRUD + read-only permission catalog tab |
+| Audit log | `pages/cronos/admin/audit-log/` + `shared/audit-event-table/` | Same table embedded in the user Activity tab (actor vs target perspective) |
+| Security policy | `pages/cronos/admin/security-policy/` | Bounds mirrored from the doc; confirms before weakening |
+| Finance | `pages/cronos/finance/` | `/cronos/configuracion/finanzas?tab=overview|currencies|tax-rates` |
+| `FinanceDefaultsStore` | `core/services/finance/finance-defaults.store.ts` | App-wide defaults (currency, IVA %, prices-include-tax). Quote create pre-fills from it; quote create/edit list catalog currencies and IVA presets. Falls back to MXN / 0 % if the API is unreachable |
+
+Rules introduced here:
+
+- **Every privileged write is justified and versioned.** Access changes, member
+  changes, 2FA resets and status changes carry a reason (`ReasonDialogComponent`,
+  `ChangeStatusDialogComponent`); every write echoes `version` and a
+  `409 CONCURRENT_MODIFICATION` reloads the record instead of overwriting.
+- **No self-lockout.** An admin cannot change their own status (except to
+  ACTIVE), access, credentials or sessions from the admin screens; the server
+  enforces the same rule.
+- **Passwords are never typed or shown by administrators** — invitation link or
+  emailed temporary password only.
+- **Status pills**: `.status-pill-info` / `-warn` / `-danger` were added as
+  siblings of the existing pills (§10), not a parallel badge system.
+- **Sticky save bar** (`.sticky-save-bar`, `styles.scss`) is the pattern for
+  long editors with a dirty state (access panel, role editor, security policy,
+  finance settings).
+- Input-dependent loads in child components run in `ngOnInit`, never in the
+  constructor — reading a required signal input there throws `NG0950`.
+
+---
+
+## 20. Kitchen Catalog & Recipe Studio — IMPLEMENTED
+
+Rebuilds allergens, ingredients and recipes on the V8 envelope. Backend
+contract, cost engine and seed data: `docs/api/kitchen-catalog-and-recipes.md`.
+Contracts: `core/models/kitchen.models.ts`.
+
+| Piece | Path | Notes |
+|---|---|---|
+| Allergen catalog | `pages/cronos/allergens/` | Card grid; keywords are the editor's centre, with a live "would this match?" tester. SYSTEM allergens accept extra keywords only |
+| Ingredients list | `pages/cronos/ingredients/ingredients.component` | Server-paged; KPI tiles as filters; effective cost per kg/L/pz with its source (own / reference / none) and staleness |
+| Ingredient editor | `pages/cronos/ingredients/ingredient-editor/` | `/cronos/ingredientes/nuevo` and `/:id` (`editar/:id` redirects). Allergen suggestions from the name, substitutes with ratio and allergen impact, optional first price, price history and recipe usage tabs |
+| Price dialog | `kitchen-shared/price-dialog.component` | Live cost-per-base-unit preview, ±50 % jump confirmation, then shows the ripple (recipes recalculated, quotes flagged, recipes below margin) |
+| Recipes list | `pages/cronos/recipes/recipes.component` | Card grid with cover, allergens, cost/unit, suggested price and cost status; "free of allergens" filter |
+| Recipe studio | `pages/cronos/recipes/recipe-studio/` | Replaces `recipe-form` + `recipe-detail`. Tabs: General, Ingredients, Process (PrimeNG Editor/Quill), Costing, Files, History, Share; sticky live cost panel fed by `POST /recipes/cost-preview` |
+| Lines editor | `recipe-studio/recipe-lines-editor.component` | Keyboard-first add bar; declared allergens auto-linked; keyword matches surface as per-line "link / dismiss" suggestions; substitutes free of the line's allergens |
+| Files panel | `recipe-studio/recipe-files-panel.component` | N files, one request each, 3 concurrent, progress/retry/cancel, client-side type/size/count checks; files added before the first save upload once the recipe gets an id |
+| Configurator | `kitchen-shared/recipe-configurator-dialog.component` | Used by quote create/edit: include/exclude selectable lines, swap allergenic ingredients, server-priced unit cost + allergen declaration written into the quote line |
+| Detection | `kitchen-shared/allergen-detection.ts` | Accent-free whole-word matching; the server runs the same algorithm (doc §3.3) |
+| Lookups | `kitchen-shared/kitchen-lookups.store.ts` | Units, categories, fixed costs cached per session; a failed source is **not** cached (retried on the next screen) |
+
+Rules introduced here:
+
+- **The server is the cost authority.** Client estimates are labelled previews;
+  every saved or quoted cost comes from the API.
+- **Allergens are never linked silently.** Declared ones come from the
+  ingredient; anything inferred from text is a suggestion the user accepts.
+- **A new recipe stays on the same component after its first save**
+  (`Location.replaceState`) so queued attachments keep uploading.
+- Quill (`quill@^2`) is a dependency for `p-editor`; `quill-delta` is listed in
+  `allowedCommonJsDependencies`.

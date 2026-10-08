@@ -1,0 +1,177 @@
+<div class="flex flex-column gap-3">
+  <!-- Toolbar -->
+  <div class="flex flex-wrap align-items-center justify-content-between gap-2">
+    <div class="flex flex-wrap align-items-center gap-2">
+      <p-iconfield iconPosition="left">
+        <p-inputicon styleClass="pi pi-search" />
+        <input
+          pInputText
+          type="search"
+          class="w-16rem"
+          [ngModel]="search()"
+          (ngModelChange)="search.set($event)"
+          [placeholder]="'IAM.MATRIX.SEARCH' | translate"
+          [attr.aria-label]="'IAM.MATRIX.SEARCH' | translate"
+        />
+      </p-iconfield>
+      <p-multiselect
+        [options]="riskOptions()"
+        [ngModel]="riskFilter()"
+        (ngModelChange)="riskFilter.set($event ?? [])"
+        optionLabel="label"
+        optionValue="value"
+        [placeholder]="'IAM.MATRIX.RISK_FILTER' | translate"
+        [showToggleAll]="false"
+        display="chip"
+        styleClass="w-14rem"
+      />
+      <label class="flex align-items-center gap-2 text-sm cursor-pointer">
+        <p-toggleswitch [ngModel]="onlySelected()" (ngModelChange)="onlySelected.set($event)" />
+        {{ 'IAM.MATRIX.ONLY_SELECTED' | translate }}
+      </label>
+    </div>
+    <div class="flex align-items-center gap-1">
+      <p-button icon="pi pi-angle-double-down" [text]="true" size="small" severity="secondary" [pTooltip]="'IAM.MATRIX.EXPAND_ALL' | translate" [ariaLabel]="'IAM.MATRIX.EXPAND_ALL' | translate" (onClick)="expandAll()" />
+      <p-button icon="pi pi-angle-double-up" [text]="true" size="small" severity="secondary" [pTooltip]="'IAM.MATRIX.COLLAPSE_ALL' | translate" [ariaLabel]="'IAM.MATRIX.COLLAPSE_ALL' | translate" (onClick)="collapseAll()" />
+      @if (!readonly()) {
+        <p-button [label]="'IAM.MATRIX.CLEAR' | translate" icon="pi pi-eraser" [text]="true" size="small" severity="danger" (onClick)="clearAll()" />
+      }
+    </div>
+  </div>
+
+  <!-- Summary strip -->
+  <div class="matrix-summary">
+    <span><strong>{{ effectiveCount() }}</strong> / {{ catalog().length }} {{ 'IAM.MATRIX.EFFECTIVE' | translate }}</span>
+    @if (mode() === 'grant-deny') {
+      <span class="text-color-secondary">·</span>
+      <span>{{ 'IAM.MATRIX.DIRECT_GRANTS' | translate: { count: granted().length } }}</span>
+      <span class="text-color-secondary">·</span>
+      <span>{{ 'IAM.MATRIX.DENIALS' | translate: { count: denied().length } }}</span>
+    }
+    @if (highestRisk(); as risk) {
+      <span class="ml-auto flex align-items-center gap-2">
+        {{ 'IAM.MATRIX.HIGHEST_RISK' | translate }}
+        <p-tag [value]="'IAM.RISK.' + risk | translate" [severity]="riskSeverity[risk]" />
+      </span>
+    }
+  </div>
+
+  @if (cascadeNotice(); as notice) {
+    <p-message severity="info" [closable]="true" (onClose)="cascadeNotice.set(null)" styleClass="w-full">
+      <span class="text-sm">
+        {{ notice.key | translate }}
+        @for (code of notice.codes; track code; let last = $last) {
+          <strong>{{ labelOf(code) }}</strong>{{ last ? '' : ', ' }}
+        }
+      </span>
+    </p-message>
+  }
+
+  @if (mode() === 'grant-deny') {
+    <div class="matrix-legend text-sm text-color-secondary">
+      <span><span class="matrix-cell-dot matrix-cell-granted"></span> {{ 'IAM.MATRIX.STATE.GRANTED' | translate }}</span>
+      <span><span class="matrix-cell-dot matrix-cell-inherited"></span> {{ 'IAM.MATRIX.STATE.INHERITED' | translate }}</span>
+      <span><span class="matrix-cell-dot matrix-cell-denied"></span> {{ 'IAM.MATRIX.STATE.DENIED' | translate }}</span>
+      <span class="text-xs">{{ 'IAM.MATRIX.CYCLE_HINT' | translate }}</span>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="flex justify-content-center py-5"><i class="pi pi-spin pi-spinner text-2xl text-primary" aria-hidden="true"></i></div>
+  } @else if (visibleModules().length === 0) {
+    <div class="text-center text-color-secondary py-5">{{ 'IAM.MATRIX.NO_MATCHES' | translate }}</div>
+  } @else {
+    <p-accordion [multiple]="true" [value]="expanded()" (valueChange)="onExpandedChange($event)">
+      @for (block of visibleModules(); track block.module) {
+        <p-accordion-panel [value]="block.module">
+          <p-accordion-header>
+            <div class="flex align-items-center gap-3 w-full pr-3">
+              @if (mode() === 'grant' && !readonly()) {
+                <p-checkbox
+                  [binary]="true"
+                  [ngModel]="allGranted(modulePermissions(block))"
+                  [indeterminate]="someGranted(modulePermissions(block))"
+                  (click)="$event.stopPropagation()"
+                  (onChange)="toggleMany(modulePermissions(block), $event.checked)"
+                  [ariaLabel]="('IAM.MATRIX.SELECT_MODULE' | translate) + ' ' + block.moduleName"
+                />
+              }
+              <span class="font-semibold">{{ block.moduleName }}</span>
+              <span class="text-xs text-color-secondary font-mono">{{ block.module }}</span>
+              <span class="ml-auto matrix-count" [class.matrix-count-active]="selectedInModule(block) > 0">
+                {{ selectedInModule(block) }} / {{ block.total }}
+              </span>
+            </div>
+          </p-accordion-header>
+          <p-accordion-content>
+            <div class="flex flex-column">
+              @for (row of block.resources; track row.resource) {
+                <div class="matrix-row">
+                  <div class="matrix-row-head">
+                    @if (mode() === 'grant' && !readonly()) {
+                      <p-checkbox
+                        [binary]="true"
+                        [ngModel]="allGranted(row.permissions)"
+                        [indeterminate]="someGranted(row.permissions)"
+                        (onChange)="toggleMany(row.permissions, $event.checked)"
+                        [ariaLabel]="('IAM.MATRIX.SELECT_RESOURCE' | translate) + ' ' + row.resourceName"
+                      />
+                    }
+                    <div class="flex flex-column">
+                      <span class="font-medium">{{ row.resourceName }}</span>
+                      <span class="text-xs text-color-secondary">{{ selectedInRow(row) }} / {{ row.permissions.length }}</span>
+                    </div>
+                  </div>
+                  <div class="matrix-cells">
+                    @for (permission of row.permissions; track permission.code) {
+                      @let state = stateOf(permission.code);
+                      <button
+                        type="button"
+                        class="matrix-cell"
+                        [class.matrix-cell-granted]="state === 'granted'"
+                        [class.matrix-cell-inherited]="state === 'inherited'"
+                        [class.matrix-cell-denied]="state === 'denied'"
+                        [class.matrix-cell-readonly]="readonly() || (mode() === 'grant' && state === 'inherited')"
+                        [disabled]="readonly()"
+                        [attr.aria-pressed]="state === 'granted' || state === 'inherited'"
+                        [attr.aria-label]="cellAriaLabel(permission)"
+                        [pTooltip]="tooltip"
+                        [tooltipOptions]="{ showDelay: 350 }"
+                        tooltipPosition="top"
+                        (click)="toggleCell(permission)"
+                      >
+                        <i
+                          class="pi text-xs"
+                          [class.pi-check]="state === 'granted' || state === 'inherited'"
+                          [class.pi-ban]="state === 'denied'"
+                          [class.pi-circle]="state === 'none'"
+                          aria-hidden="true"
+                        ></i>
+                        <span>{{ permission.name }}</span>
+                        <span class="matrix-risk" [attr.data-risk]="permission.risk" aria-hidden="true"></span>
+                      </button>
+                      <ng-template #tooltip>
+                        <div class="flex flex-column gap-1 text-sm">
+                          <strong>{{ permission.name }}</strong>
+                          <span>{{ permission.description }}</span>
+                          <code class="text-xs opacity-80">{{ permission.code }}</code>
+                          <span class="text-xs">{{ 'IAM.MATRIX.RISK' | translate }}: {{ 'IAM.RISK.' + permission.risk | translate }}</span>
+                          @if (inheritedFrom(permission.code); as source) {
+                            <span class="text-xs">{{ 'IAM.MATRIX.INHERITED_FROM' | translate }}: {{ source }}</span>
+                          }
+                          @if (permission.dependsOn.length > 0) {
+                            <span class="text-xs">{{ 'IAM.MATRIX.REQUIRES' | translate }}: {{ permission.dependsOn.join(', ') }}</span>
+                          }
+                        </div>
+                      </ng-template>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </p-accordion-content>
+        </p-accordion-panel>
+      }
+    </p-accordion>
+  }
+</div>

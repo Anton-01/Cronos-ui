@@ -20,26 +20,6 @@ export interface UserResponse {
   updatedAt: string;
 }
 
-export interface CreateUserRequest {
-  username: string;
-  email: string;
-  password: string;
-  firstName?: string;
-  lastName?: string;
-  phoneNumber?: string;
-  roles: string[];
-}
-
-export interface UpdateUserRequest {
-  username?: string;
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  phoneNumber?: string;
-  roles?: string[];
-  enabled?: boolean;
-}
-
 /**
  * `PUT /users/me`. Every field is sent on every save: `null` clears a value,
  * so a user can remove their phone number (an omitted field could not).
@@ -50,21 +30,6 @@ export interface UpdateProfileRequest {
   lastName: string | null;
   /** E.164 (`+525512345678`) or null. */
   phoneNumber: string | null;
-}
-
-export interface AssignRolesRequest {
-  roles: string[];
-}
-
-/** Payload sent as the 'userData' @RequestPart when registering a new user.
- *  Password is intentionally absent — the backend auto-generates a temporary one. */
-export interface RegisterUserRequest {
-  username: string;
-  email: string;
-  firstName?: string | null;
-  lastName?: string | null;
-  phoneNumber?: string | null;
-  roleIds: number[];
 }
 
 export interface ActiveSession {

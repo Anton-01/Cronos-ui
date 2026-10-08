@@ -1,4 +1,13 @@
 <div class="flex flex-column gap-4">
+  @if (enrollmentRequired() && !profileState.user()?.twoFactorEnabled) {
+    <p-message severity="warn" styleClass="w-full">
+      <div class="flex flex-column gap-1">
+        <strong>{{ 'ACCOUNT.SIGN_IN.ENROLLMENT.REQUIRED_TITLE' | translate }}</strong>
+        <span class="text-sm">{{ 'ACCOUNT.SIGN_IN.ENROLLMENT.BANNER' | translate }}</span>
+      </div>
+    </p-message>
+  }
+
   <!-- Password -->
   <div class="flex align-items-start justify-content-between flex-wrap gap-3">
     <div>
@@ -43,64 +52,50 @@
 
   <!-- Two-factor authentication -->
   <div class="flex align-items-start justify-content-between flex-wrap gap-3">
-    <div>
-      <div class="flex align-items-center gap-2">
-        <span class="font-semibold text-color">{{ 'ACCOUNT.SIGN_IN.TWO_FACTOR' | translate }}</span>
-        @if (profileState.user()?.twoFactorEnabled) {
-          <p-tag [value]="'ACCOUNT.SIGN_IN.ENABLED' | translate" severity="success" />
-        } @else {
-          <p-tag [value]="'ACCOUNT.SIGN_IN.DISABLED' | translate" severity="secondary" />
+    <div class="flex align-items-start gap-3">
+      <span class="tf-status-icon" [class.tf-status-icon-on]="twoFactorEnabled()">
+        <i class="pi" [class.pi-shield]="twoFactorEnabled()" [class.pi-exclamation-triangle]="!twoFactorEnabled()" aria-hidden="true"></i>
+      </span>
+      <div class="flex flex-column gap-1">
+        <div class="flex align-items-center flex-wrap gap-2">
+          <span class="font-semibold text-color">{{ 'ACCOUNT.SIGN_IN.TWO_FACTOR' | translate }}</span>
+          @if (twoFactorEnabled()) {
+            <p-tag [value]="'ACCOUNT.SIGN_IN.ENABLED' | translate" severity="success" icon="pi pi-check" />
+          } @else {
+            <p-tag [value]="'ACCOUNT.SIGN_IN.DISABLED' | translate" [severity]="twoFactorRequired() ? 'warn' : 'secondary'" />
+          }
+          @if (twoFactorRequired()) {
+            <p-tag [value]="'ACCOUNT.TWO_FACTOR.STATUS.REQUIRED' | translate" severity="info" [pTooltip]="(twoFactorStatus()?.requiredBy ?? []).join(', ')" />
+          }
+        </div>
+        <span class="text-color-secondary text-sm line-height-3">
+          {{ (twoFactorEnabled() ? 'ACCOUNT.TWO_FACTOR.STATUS.ON_HINT' : 'ACCOUNT.TWO_FACTOR.STATUS.OFF_HINT') | translate }}
+        </span>
+        @if (twoFactorStatus(); as status) {
+          @if (status.enabled) {
+            <span class="text-xs text-color-secondary">
+              {{ 'ACCOUNT.TWO_FACTOR.STATUS.SINCE' | translate }} {{ status.enrolledAt | date: 'mediumDate' }}
+              · {{ 'ACCOUNT.TWO_FACTOR.STATUS.RECOVERY_LEFT' | translate: { count: status.recoveryCodesRemaining } }}
+            </span>
+            @if (status.recoveryCodesRemaining <= 2) {
+              <span class="text-xs text-orange-500"><i class="pi pi-exclamation-circle text-xs" aria-hidden="true"></i> {{ 'ACCOUNT.TWO_FACTOR.STATUS.RECOVERY_LOW' | translate }}</span>
+            }
+          }
         }
       </div>
-      <div class="text-color-secondary text-sm">{{ 'ACCOUNT.SIGN_IN.TWO_FACTOR_HINT' | translate }}</div>
     </div>
-    <p-button
-      [label]="(profileState.user()?.twoFactorEnabled ? 'ACCOUNT.SIGN_IN.DISABLE_2FA' : 'ACCOUNT.SIGN_IN.ENABLE_2FA') | translate"
-      [severity]="profileState.user()?.twoFactorEnabled ? 'danger' : 'primary'"
-      [outlined]="true"
-      icon="pi pi-shield"
-      (onClick)="open2FAModal()"
-    />
+    <div class="flex flex-wrap gap-2">
+      @if (twoFactorEnabled()) {
+        <p-button [label]="'ACCOUNT.TWO_FACTOR.MANAGE.REGENERATE' | translate" icon="pi pi-refresh" severity="secondary" [outlined]="true" (onClick)="openManage('regenerate')" />
+        <span [pTooltip]="twoFactorRequired() ? ('ACCOUNT.TWO_FACTOR.STATUS.CANNOT_DISABLE' | translate) : ''">
+          <p-button [label]="'ACCOUNT.SIGN_IN.DISABLE_2FA' | translate" icon="pi pi-power-off" severity="danger" [outlined]="true" [disabled]="twoFactorRequired()" (onClick)="openManage('disable')" />
+        </span>
+      } @else {
+        <p-button [label]="'ACCOUNT.SIGN_IN.ENABLE_2FA' | translate" icon="pi pi-shield" [loading]="twoFactorLoading()" (onClick)="enrollOpen.set(true)" />
+      }
+    </div>
   </div>
 </div>
 
-<!-- 2FA dialog -->
-<p-dialog
-  [header]="(profileState.user()?.twoFactorEnabled ? 'ACCOUNT.SIGN_IN.DISABLE_2FA' : 'ACCOUNT.SIGN_IN.ENABLE_2FA') | translate"
-  [visible]="show2FAModal()"
-  (visibleChange)="!$event && close2FAModal()"
-  [modal]="true"
-  [draggable]="false"
-  [style]="{ width: '28rem' }"
->
-  <div class="flex flex-column gap-3">
-    @if (!profileState.user()?.twoFactorEnabled) {
-      @if (!twoFactorSetup()) {
-        <p-message severity="info" [text]="'ACCOUNT.SIGN_IN.QR_HINT' | translate" />
-        <p-button [label]="'ACCOUNT.SIGN_IN.GENERATE_QR' | translate" icon="pi pi-qrcode" [loading]="isLoading2FA()" (onClick)="setup2FA()" />
-      } @else {
-        <div class="flex flex-column align-items-center gap-2">
-          <img [src]="twoFactorSetup()!.qrCodeUrl" [alt]="'ACCOUNT.SIGN_IN.QR_ALT' | translate" class="w-12rem h-12rem" />
-          <small class="text-color-secondary">{{ 'ACCOUNT.SIGN_IN.MANUAL_KEY' | translate }} <code>{{ twoFactorSetup()!.secret }}</code></small>
-        </div>
-      }
-    } @else {
-      <p-message severity="warn" [text]="'ACCOUNT.SIGN_IN.DISABLE_HINT' | translate" />
-    }
-
-    @if (twoFactorSetup() || profileState.user()?.twoFactorEnabled) {
-      <form [formGroup]="twoFactorCode" class="flex flex-column gap-1">
-        <label for="twoFactorCodeInput" class="font-medium text-sm">{{ 'ACCOUNT.SIGN_IN.VERIFICATION_CODE' | translate }}</label>
-        <input pInputText id="twoFactorCodeInput" formControlName="code" placeholder="123456" maxlength="6" autocomplete="one-time-code" />
-      </form>
-    }
-  </div>
-  <ng-template pTemplate="footer">
-    <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="close2FAModal()" />
-    @if (profileState.user()?.twoFactorEnabled) {
-      <p-button [label]="'ACCOUNT.SIGN_IN.DISABLE' | translate" severity="danger" [disabled]="twoFactorCode.invalid" (onClick)="disable2FA()" />
-    } @else if (twoFactorSetup()) {
-      <p-button [label]="'ACCOUNT.SIGN_IN.VERIFY_ENABLE' | translate" [disabled]="twoFactorCode.invalid" (onClick)="verify2FA()" />
-    }
-  </ng-template>
-</p-dialog>
+<app-two-factor-enrollment-dialog [(visible)]="enrollOpen" [mandatory]="enrollmentRequired()" (enabled)="onTwoFactorEnabled($event)" />
+<app-two-factor-manage-dialog [(visible)]="manageOpen" [mode]="manageMode()" [accountName]="accountName()" (changed)="applyStatus($event)" />

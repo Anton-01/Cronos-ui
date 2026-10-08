@@ -1,0 +1,260 @@
+<p-stepper [value]="step()" [linear]="true">
+  <p-step-list>
+    <p-step [value]="1"><span class="hidden md:inline">{{ 'IAM.CREATE.STEPS.IDENTITY' | translate }}</span></p-step>
+    <p-step [value]="2"><span class="hidden md:inline">{{ 'IAM.CREATE.STEPS.ACCESS' | translate }}</span></p-step>
+    <p-step [value]="3"><span class="hidden md:inline">{{ 'IAM.CREATE.STEPS.REVIEW' | translate }}</span></p-step>
+  </p-step-list>
+
+  <p-step-panels [dt]="{ background: 'transparent' }">
+    <!-- ═══════════ Step 1 · Identity ═══════════ -->
+    <p-step-panel [value]="1">
+      <ng-template #content>
+        <form #identityFormEl [formGroup]="identity" class="grid" (ngSubmit)="goTo(2)">
+          <div class="col-12 lg:col-4">
+            <p-card styleClass="h-full">
+              <div class="flex flex-column align-items-center text-center gap-3">
+                @if (avatar(); as picked) {
+                  <img [src]="picked.previewUrl" [alt]="'IAM.CREATE.AVATAR_ALT' | translate" class="create-avatar" />
+                } @else {
+                  <app-user-avatar size="xl" [firstName]="identity.controls.firstName.value" [lastName]="identity.controls.lastName.value" [displayName]="displayName()" />
+                }
+                <div>
+                  <div class="font-semibold text-lg">{{ displayName() }}</div>
+                  <div class="text-sm text-color-secondary">{{ identity.controls.email.value || ('IAM.CREATE.EMAIL_PENDING' | translate) }}</div>
+                </div>
+                <div class="flex gap-2">
+                  <p-button [label]="(avatar() ? 'IAM.CREATE.CHANGE_PHOTO' : 'IAM.CREATE.ADD_PHOTO') | translate" icon="pi pi-camera" size="small" [outlined]="true" (onClick)="cropperOpen.set(true)" />
+                  @if (avatar()) {
+                    <p-button icon="pi pi-trash" size="small" severity="danger" [text]="true" [ariaLabel]="'COMMON.REMOVE' | translate" (onClick)="removeAvatar()" />
+                  }
+                </div>
+                <small class="text-color-secondary">{{ 'IAM.CREATE.PHOTO_HINT' | translate }}</small>
+              </div>
+            </p-card>
+          </div>
+
+          <div class="col-12 lg:col-8">
+            <p-card [header]="'IAM.CREATE.SECTIONS.PERSONAL' | translate" styleClass="mb-3">
+              <div class="grid">
+                <div class="col-12 md:col-6 flex flex-column gap-1">
+                  <label for="firstName" class="font-medium">{{ 'IAM.FIELDS.FIRST_NAME' | translate }} <span class="text-red-500">*</span></label>
+                  <input pInputText id="firstName" formControlName="firstName" autocomplete="off" [invalid]="showError('firstName')" />
+                  <app-field-error [errors]="identity.controls.firstName.errors" [visible]="showError('firstName')" />
+                </div>
+                <div class="col-12 md:col-6 flex flex-column gap-1">
+                  <label for="lastName" class="font-medium">{{ 'IAM.FIELDS.LAST_NAME' | translate }} <span class="text-red-500">*</span></label>
+                  <input pInputText id="lastName" formControlName="lastName" autocomplete="off" [invalid]="showError('lastName')" />
+                  <app-field-error [errors]="identity.controls.lastName.errors" [visible]="showError('lastName')" />
+                </div>
+                <div class="col-12 md:col-6 flex flex-column gap-1">
+                  <label for="username" class="font-medium">{{ 'IAM.FIELDS.USERNAME' | translate }} <span class="text-red-500">*</span></label>
+                  <input pInputText id="username" formControlName="username" autocomplete="off" [maxlength]="usernameMax" [invalid]="showError('username')" aria-describedby="usernameHint" />
+                  @if (identity.controls.username.pending) {
+                    <small class="text-color-secondary"><i class="pi pi-spin pi-spinner text-xs" aria-hidden="true"></i> {{ 'IAM.CREATE.CHECKING' | translate }}</small>
+                  } @else if (showError('username')) {
+                    <app-field-error [errors]="identity.controls.username.errors" [visible]="true" />
+                  } @else {
+                    <small id="usernameHint" class="text-color-secondary">{{ 'IAM.FIELDS.USERNAME_HINT' | translate }}</small>
+                  }
+                </div>
+                <div class="col-12 md:col-6 flex flex-column gap-1">
+                  <label for="email" class="font-medium">{{ 'IAM.FIELDS.EMAIL' | translate }} <span class="text-red-500">*</span></label>
+                  <input pInputText id="email" type="email" formControlName="email" autocomplete="off" [invalid]="showError('email')" />
+                  @if (identity.controls.email.pending) {
+                    <small class="text-color-secondary"><i class="pi pi-spin pi-spinner text-xs" aria-hidden="true"></i> {{ 'IAM.CREATE.CHECKING' | translate }}</small>
+                  } @else {
+                    <app-field-error [errors]="identity.controls.email.errors" [visible]="showError('email')" />
+                  }
+                </div>
+                <div class="col-12 md:col-6 flex flex-column gap-1">
+                  <label for="createPhone" class="font-medium">{{ 'IAM.FIELDS.PHONE' | translate }}</label>
+                  <app-phone-input inputId="createPhone" formControlName="phoneNumber" [invalid]="showError('phoneNumber')" />
+                  <app-field-error [errors]="identity.controls.phoneNumber.errors" [visible]="showError('phoneNumber')" />
+                </div>
+                <div class="col-12 md:col-6 flex flex-column gap-1">
+                  <label for="locale" class="font-medium">{{ 'IAM.FIELDS.LOCALE' | translate }}</label>
+                  <p-select inputId="locale" formControlName="locale" [options]="localeOptions" optionLabel="label" optionValue="value" styleClass="w-full" />
+                </div>
+              </div>
+            </p-card>
+
+            <p-card [header]="'IAM.CREATE.SECTIONS.ORGANIZATION' | translate">
+              <div class="grid">
+                <div class="col-12 md:col-6 flex flex-column gap-1">
+                  <label for="jobTitle" class="font-medium">{{ 'IAM.FIELDS.JOB_TITLE' | translate }}</label>
+                  <input pInputText id="jobTitle" formControlName="jobTitle" [invalid]="showError('jobTitle')" />
+                  <app-field-error [errors]="identity.controls.jobTitle.errors" [visible]="showError('jobTitle')" />
+                </div>
+                <div class="col-12 md:col-6 flex flex-column gap-1">
+                  <label for="department" class="font-medium">{{ 'IAM.FIELDS.DEPARTMENT' | translate }}</label>
+                  <input pInputText id="department" formControlName="department" [invalid]="showError('department')" />
+                  <app-field-error [errors]="identity.controls.department.errors" [visible]="showError('department')" />
+                </div>
+                <div class="col-12 md:col-6 flex flex-column gap-1">
+                  <label for="employeeNumber" class="font-medium">{{ 'IAM.FIELDS.EMPLOYEE_NUMBER' | translate }}</label>
+                  <input pInputText id="employeeNumber" formControlName="employeeNumber" [invalid]="showError('employeeNumber')" />
+                  <app-field-error [errors]="identity.controls.employeeNumber.errors" [visible]="showError('employeeNumber')" />
+                </div>
+                <div class="col-12 md:col-6 flex flex-column gap-1">
+                  <label for="accessExpiresAt" class="font-medium">{{ 'IAM.FIELDS.ACCESS_EXPIRES' | translate }}</label>
+                  <p-datepicker inputId="accessExpiresAt" formControlName="accessExpiresAt" [minDate]="minExpiry" [showIcon]="true" [showClear]="true" styleClass="w-full" [placeholder]="'IAM.FIELDS.NEVER_EXPIRES' | translate" />
+                  <small class="text-color-secondary">{{ 'IAM.FIELDS.ACCESS_EXPIRES_HINT' | translate }}</small>
+                </div>
+              </div>
+            </p-card>
+          </div>
+
+          <div class="col-12 flex justify-content-between">
+            <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" routerLink="/cronos/admin/usuarios" />
+            <p-button type="submit" [label]="'IAM.CREATE.NEXT' | translate" icon="pi pi-arrow-right" iconPos="right" [loading]="identityPending()" />
+          </div>
+        </form>
+      </ng-template>
+    </p-step-panel>
+
+    <!-- ═══════════ Step 2 · Access ═══════════ -->
+    <p-step-panel [value]="2">
+      <ng-template #content>
+        <div class="grid" [formGroup]="access">
+          <div class="col-12 xl:col-8">
+            <p-card>
+              <ng-template pTemplate="title">{{ 'IAM.CREATE.SECTIONS.ROLES' | translate }}</ng-template>
+              <ng-template pTemplate="subtitle">{{ 'IAM.CREATE.ROLES_HINT' | translate }}</ng-template>
+              @if (catalogLoading()) {
+                <div class="py-4 text-center"><i class="pi pi-spin pi-spinner text-2xl text-primary" aria-hidden="true"></i></div>
+              } @else {
+                <div class="grid">
+                  @for (role of activeRoles(); track role.id) {
+                    <div class="col-12 md:col-6">
+                      <button type="button" class="role-option" [class.role-option-selected]="isRoleSelected(role.id)" [attr.aria-pressed]="isRoleSelected(role.id)" (click)="toggleRole(role.id)">
+                        <p-checkbox [binary]="true" [ngModel]="isRoleSelected(role.id)" [ngModelOptions]="{ standalone: true }" [readonly]="true" tabindex="-1" />
+                        <div class="flex flex-column gap-1 text-left min-w-0">
+                          <div class="flex align-items-center gap-2">
+                            <app-role-chip [name]="role.name" [color]="role.color" />
+                            @if (role.system) {
+                              <i class="pi pi-verified text-xs text-color-secondary" [pTooltip]="'IAM.ROLES.SYSTEM' | translate"></i>
+                            }
+                          </div>
+                          <span class="text-sm text-color-secondary">{{ role.description || ('IAM.ROLES.NO_DESCRIPTION' | translate) }}</span>
+                          <span class="text-xs text-color-secondary">{{ 'IAM.ROLES.PERMISSION_COUNT' | translate: { count: role.permissionCount } }}</span>
+                        </div>
+                      </button>
+                    </div>
+                  } @empty {
+                    <div class="col-12 text-color-secondary">{{ 'IAM.ROLES.EMPTY' | translate }}</div>
+                  }
+                </div>
+              }
+            </p-card>
+          </div>
+          <div class="col-12 xl:col-4">
+            <p-card [header]="'IAM.CREATE.SECTIONS.EXTRA_ACCESS' | translate" styleClass="mb-3">
+              <div class="flex flex-column gap-3">
+                <div class="flex flex-column gap-1">
+                  <label for="groups" class="font-medium">{{ 'IAM.CREATE.PERMISSION_GROUPS' | translate }}</label>
+                  <p-multiselect inputId="groups" formControlName="permissionGroupIds" [options]="groupOptions()" optionLabel="label" optionValue="value" display="chip" [filter]="true" styleClass="w-full" [placeholder]="'IAM.CREATE.PERMISSION_GROUPS_PLACEHOLDER' | translate" />
+                  <small class="text-color-secondary">{{ 'IAM.CREATE.PERMISSION_GROUPS_HINT' | translate }}</small>
+                </div>
+                <p-divider styleClass="my-0" />
+                <label class="flex align-items-start gap-3 cursor-pointer">
+                  <p-toggleswitch formControlName="requireTwoFactor" />
+                  <span class="flex flex-column">
+                    <span class="font-medium">{{ 'IAM.CREATE.REQUIRE_2FA' | translate }}</span>
+                    <small class="text-color-secondary">{{ 'IAM.CREATE.REQUIRE_2FA_HINT' | translate }}</small>
+                  </span>
+                </label>
+              </div>
+            </p-card>
+            @if (noAccessWarning()) {
+              <p-message severity="warn" [text]="'IAM.CREATE.NO_ACCESS_WARNING' | translate" styleClass="w-full" />
+            }
+          </div>
+          <div class="col-12 flex justify-content-between">
+            <p-button [label]="'COMMON.BACK' | translate" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="goTo(1)" />
+            <p-button [label]="'IAM.CREATE.NEXT' | translate" icon="pi pi-arrow-right" iconPos="right" (onClick)="goTo(3)" />
+          </div>
+        </div>
+      </ng-template>
+    </p-step-panel>
+
+    <!-- ═══════════ Step 3 · Activation & review ═══════════ -->
+    <p-step-panel [value]="3">
+      <ng-template #content>
+        <div class="grid">
+          <div class="col-12 lg:col-5">
+            <p-card [header]="'IAM.CREATE.SECTIONS.ACTIVATION' | translate" styleClass="h-full">
+              <div class="flex flex-column gap-3" [formGroup]="activation">
+                <label class="activation-option" [class.activation-option-selected]="activation.controls.activationMode.value === 'INVITATION'">
+                  <p-radiobutton formControlName="activationMode" value="INVITATION" inputId="modeInvite" />
+                  <span class="flex flex-column gap-1">
+                    <span class="font-semibold"><i class="pi pi-envelope mr-2" aria-hidden="true"></i>{{ 'IAM.CREATE.MODE.INVITATION' | translate }}</span>
+                    <small class="text-color-secondary line-height-3">{{ 'IAM.CREATE.MODE.INVITATION_HINT' | translate }}</small>
+                    <p-tag [value]="'IAM.CREATE.RECOMMENDED' | translate" severity="success" styleClass="align-self-start" />
+                  </span>
+                </label>
+                <label class="activation-option" [class.activation-option-selected]="activation.controls.activationMode.value === 'TEMPORARY_PASSWORD'">
+                  <p-radiobutton formControlName="activationMode" value="TEMPORARY_PASSWORD" inputId="modeTemp" />
+                  <span class="flex flex-column gap-1">
+                    <span class="font-semibold"><i class="pi pi-key mr-2" aria-hidden="true"></i>{{ 'IAM.CREATE.MODE.TEMPORARY' | translate }}</span>
+                    <small class="text-color-secondary line-height-3">{{ 'IAM.CREATE.MODE.TEMPORARY_HINT' | translate }}</small>
+                  </span>
+                </label>
+              </div>
+            </p-card>
+          </div>
+          <div class="col-12 lg:col-7">
+            <p-card [header]="'IAM.CREATE.SECTIONS.SUMMARY' | translate" styleClass="h-full">
+              <div class="flex align-items-center gap-3 mb-3">
+                @if (avatar(); as picked) {
+                  <img [src]="picked.previewUrl" alt="" class="create-avatar create-avatar-sm" />
+                } @else {
+                  <app-user-avatar size="md" [firstName]="identity.controls.firstName.value" [lastName]="identity.controls.lastName.value" [displayName]="displayName()" />
+                }
+                <div class="flex flex-column">
+                  <span class="font-semibold">{{ displayName() }}</span>
+                  <span class="text-sm text-color-secondary">&#64;{{ identity.controls.username.value }} · {{ identity.controls.email.value }}</span>
+                </div>
+              </div>
+              <dl class="iam-facts text-sm">
+                <dt>{{ 'IAM.FIELDS.JOB_TITLE' | translate }}</dt>
+                <dd>{{ identity.controls.jobTitle.value || '—' }}</dd>
+                <dt>{{ 'IAM.FIELDS.DEPARTMENT' | translate }}</dt>
+                <dd>{{ identity.controls.department.value || '—' }}</dd>
+                <dt>{{ 'IAM.FIELDS.PHONE' | translate }}</dt>
+                <dd>{{ identity.controls.phoneNumber.value || '—' }}</dd>
+                <dt>{{ 'IAM.FIELDS.ACCESS_EXPIRES' | translate }}</dt>
+                <dd>{{ identity.controls.accessExpiresAt.value ? identity.controls.accessExpiresAt.value.toLocaleDateString() : ('IAM.FIELDS.NEVER_EXPIRES' | translate) }}</dd>
+                <dt>{{ 'IAM.CREATE.SECTIONS.ROLES' | translate }}</dt>
+                <dd>
+                  <div class="flex flex-wrap gap-1">
+                    @for (role of selectedRoles(); track role.id) {
+                      <app-role-chip [name]="role.name" [color]="role.color" />
+                    } @empty {
+                      <span class="text-color-secondary">—</span>
+                    }
+                  </div>
+                </dd>
+                <dt>{{ 'IAM.CREATE.PERMISSION_GROUPS' | translate }}</dt>
+                <dd>
+                  @for (group of selectedGroups(); track group.id; let last = $last) {
+                    {{ group.name }}{{ last ? '' : ', ' }}
+                  } @empty {
+                    —
+                  }
+                </dd>
+                <dt>2FA</dt>
+                <dd>{{ (access.controls.requireTwoFactor.value ? 'IAM.CREATE.REQUIRED' : 'IAM.CREATE.OPTIONAL') | translate }}</dd>
+              </dl>
+            </p-card>
+          </div>
+          <div class="col-12 flex justify-content-between">
+            <p-button [label]="'COMMON.BACK' | translate" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" [disabled]="saving()" (onClick)="goTo(2)" />
+            <p-button [label]="'IAM.CREATE.SUBMIT' | translate" icon="pi pi-user-plus" [loading]="saving()" (onClick)="submit()" />
+          </div>
+        </div>
+      </ng-template>
+    </p-step-panel>
+  </p-step-panels>
+</p-stepper>
+
+<app-avatar-cropper-dialog [(visible)]="cropperOpen" (confirmed)="onAvatarCropped($event)" />

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import {
   FormsModule,
   ReactiveFormsModule,
@@ -28,6 +28,10 @@ import {
   RecipeSimpleResponse,
 } from 'src/app/core/models/domain.model';
 import { LanguageService } from 'src/app/core/services/language.service';
+import { AllergenRef, RecipeConfiguration } from 'src/app/core/models/kitchen.models';
+import { AllergenBadgesComponent } from '../../kitchen-shared/allergen-badges.component';
+import { ConfiguredProduct, RecipeConfiguratorDialogComponent } from '../../kitchen-shared/recipe-configurator-dialog.component';
+import { FinanceDefaultsStore } from 'src/app/core/services/finance/finance-defaults.store';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { ToastService } from 'src/app/shared/services/toast.service';
@@ -64,10 +68,15 @@ export const PHONE_COUNTRIES: PhoneCountry[] = [
   },
 ];
 
+/** Used only until the finance catalog answers (or if it is unreachable). */
+const LEGACY_CURRENCIES = ['MXN', 'USD', 'EUR', 'COP', 'ARS', 'CLP', 'PEN', 'GTQ'];
+
 @Component({
   selector: 'app-quote-form',
   standalone: true,
   imports: [
+    AllergenBadgesComponent,
+    RecipeConfiguratorDialogComponent,
     TranslatePipe,
     FormsModule,
     ReactiveFormsModule,
@@ -123,7 +132,18 @@ export class QuoteFormComponent implements OnInit, OnDestroy {
   readonly extraFeeValue = signal(0);
   readonly total = signal(0);
 
-  readonly currencies = ['MXN', 'USD', 'EUR', 'COP', 'ARS', 'CLP', 'PEN', 'GTQ'];
+  private readonly financeDefaults = inject(FinanceDefaultsStore);
+
+  /** ACTIVE catalog currencies (doc §9); the legacy list only until the catalog answers. */
+  readonly currencies = computed(() => {
+    const codes = this.financeDefaults.currencyOptions().map((option) => option.code);
+    return codes.length > 0 ? codes : LEGACY_CURRENCIES;
+  });
+
+  /** Catalog IVA presets: picking one fills the tax-rate field. */
+  readonly taxRatePresets = computed(() =>
+    this.financeDefaults.taxRateOptions().map((option) => ({ label: option.name, value: option.ratePercent ?? 0 })),
+  );
 
   get items(): FormArray {
     return this.form.get('items') as FormArray;
@@ -139,11 +159,44 @@ export class QuoteFormComponent implements OnInit, OnDestroy {
     ]);
 
     this.addItem();
+    this.applyFinanceDefaults();
 
     this.items.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.recalcTotals());
     for (const field of ['taxRate', 'deliveryFee', 'extraFee']) {
       this.form.get(field)!.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.recalcTotals());
     }
+  }
+
+  /**
+   * New quotes start from the tenant's default currency and IVA (doc §11),
+   * unless the user already touched those fields while the defaults loaded.
+   */
+  private applyFinanceDefaults(): void {
+    this.financeDefaults
+      .load()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          const currency = this.form.controls.currency;
+          const taxRate = this.form.controls.taxRate;
+          if (!currency.dirty) {
+            currency.setValue(this.financeDefaults.defaultCurrency().code);
+          }
+          if (!taxRate.dirty) {
+            taxRate.setValue(this.financeDefaults.defaultTaxPercent());
+          }
+        },
+        // Unreachable finance API: keep the historical MXN / 0 % starting point.
+        error: () => undefined,
+      });
+  }
+
+  applyTaxPreset(ratePercent: number | null): void {
+    if (ratePercent === null) {
+      return;
+    }
+    this.form.controls.taxRate.setValue(ratePercent);
+    this.form.controls.taxRate.markAsDirty();
   }
 
   ngOnDestroy(): void {
@@ -157,6 +210,8 @@ export class QuoteFormComponent implements OnInit, OnDestroy {
     return this.fb.group({
       recipeId: [''],
       recipeSearch: [null as RecipeSimpleResponse | string | null],
+      recipeConfiguration: [null as RecipeConfiguration | null],
+      allergens: [[] as AllergenRef[]],
       productName: ['', [Validators.required, Validators.maxLength(200)]],
       productDescription: [''],
       productSize: [''],
@@ -247,8 +302,48 @@ export class QuoteFormComponent implements OnInit, OnDestroy {
       productName: recipe.name,
       productDescription: recipe.description || '',
       unitCost: cost,
+      recipeConfiguration: null,
+      allergens: [],
     });
     this.onCostOrProfitChange(rowIndex);
+    // Configure right away: allergens and optional ingredients belong in the quote, not after it.
+    this.openConfigurator(rowIndex);
+  }
+
+  // ─── Recipe configuration (selectable ingredients, swaps, allergens) ───
+
+  readonly configuratorOpen = signal(false);
+  private readonly configuringIndex = signal<number | null>(null);
+  readonly configuringRecipeId = signal<string | null>(null);
+  readonly configuringInitial = signal<RecipeConfiguration | null>(null);
+
+  openConfigurator(index: number): void {
+    const group = this.getItemGroup(index);
+    const recipeId = group.get('recipeId')!.value as string;
+    if (!recipeId) {
+      return;
+    }
+    this.configuringIndex.set(index);
+    this.configuringRecipeId.set(recipeId);
+    this.configuringInitial.set((group.get('recipeConfiguration')!.value as RecipeConfiguration | null) ?? null);
+    this.configuratorOpen.set(true);
+  }
+
+  /** The server-priced configuration becomes the line's cost; price follows the line's margin. */
+  onConfigured(product: ConfiguredProduct): void {
+    const index = this.configuringIndex();
+    if (index === null) {
+      return;
+    }
+    const group = this.getItemGroup(index);
+    group.patchValue({
+      recipeConfiguration: product.configuration,
+      allergens: product.allergens,
+      unitCost: +product.unitCost.toFixed(2),
+      productDescription: product.summary || group.get('productDescription')!.value,
+    });
+    group.markAsDirty();
+    this.onCostOrProfitChange(index);
   }
 
   // ─── Phone helpers ───
@@ -318,6 +413,7 @@ export class QuoteFormComponent implements OnInit, OnDestroy {
         (item) =>
           ({
             recipeId: item.recipeId || undefined,
+            recipeConfiguration: item.recipeId ? (item.recipeConfiguration ?? null) : null,
             productName: item.productName,
             productDescription: item.productDescription || undefined,
             productSize: item.productSize || undefined,

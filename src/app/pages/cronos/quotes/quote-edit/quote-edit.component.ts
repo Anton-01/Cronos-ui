@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -29,6 +29,10 @@ import {
   QuoteItemRequest,
 } from 'src/app/core/models/domain.model';
 import { LanguageService } from 'src/app/core/services/language.service';
+import { AllergenRef, RecipeConfiguration } from 'src/app/core/models/kitchen.models';
+import { AllergenBadgesComponent } from '../../kitchen-shared/allergen-badges.component';
+import { ConfiguredProduct, RecipeConfiguratorDialogComponent } from '../../kitchen-shared/recipe-configurator-dialog.component';
+import { FinanceDefaultsStore } from 'src/app/core/services/finance/finance-defaults.store';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
 import { DetailSkeletonComponent } from 'src/app/shared/components/detail-skeleton/detail-skeleton.component';
@@ -38,10 +42,15 @@ const LOCKED_STATUSES = ['ACCEPTED', 'REJECTED'] as const;
 
 type TagSeverity = 'success' | 'info' | 'warn' | 'danger' | 'secondary';
 
+/** Used only until the finance catalog answers (or if it is unreachable). */
+const LEGACY_CURRENCIES = ['MXN', 'USD', 'EUR', 'COP', 'ARS', 'CLP', 'PEN', 'GTQ'];
+
 @Component({
   selector: 'app-quote-edit',
   standalone: true,
   imports: [
+    AllergenBadgesComponent,
+    RecipeConfiguratorDialogComponent,
     TranslatePipe,
     ReactiveFormsModule,
     ButtonModule,
@@ -86,7 +95,22 @@ export class QuoteEditComponent implements OnInit, OnDestroy {
   readonly extraFeeValue = signal(0);
   readonly total = signal(0);
 
-  readonly currencies = ['MXN', 'USD', 'EUR', 'COP', 'ARS', 'CLP', 'PEN', 'GTQ'];
+  private readonly financeDefaults = inject(FinanceDefaultsStore);
+
+  /** ACTIVE catalog currencies (doc §9); the legacy list only until the catalog answers. */
+  readonly currencies = computed(() => {
+    const codes = this.financeDefaults.currencyOptions().map((option) => option.code);
+    const list = codes.length > 0 ? codes : LEGACY_CURRENCIES;
+    // A quote keeps the currency it was issued in, even if that currency was later deactivated.
+    const current = this.quoteCurrency();
+    return current && !list.includes(current) ? [current, ...list] : list;
+  });
+
+  /** Catalog IVA presets: picking one fills the tax-rate field. */
+  readonly taxRatePresets = computed(() =>
+    this.financeDefaults.taxRateOptions().map((option) => ({ label: option.name, value: option.ratePercent ?? 0 })),
+  );
+  private readonly quoteCurrency = signal<string | null>(null);
 
   readonly form = this.fb.group({
     clientName: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(150)]],
@@ -128,6 +152,15 @@ export class QuoteEditComponent implements OnInit, OnDestroy {
     this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.recalcTotals());
 
     this.loadQuote(id);
+    this.financeDefaults.load().pipe(takeUntil(this.destroy$)).subscribe({ error: () => undefined });
+  }
+
+  applyTaxPreset(ratePercent: number | null): void {
+    if (ratePercent === null) {
+      return;
+    }
+    this.form.controls.taxRate.setValue(ratePercent);
+    this.form.controls.taxRate.markAsDirty();
   }
 
   ngOnDestroy(): void {
@@ -156,6 +189,7 @@ export class QuoteEditComponent implements OnInit, OnDestroy {
   private hydrateForm(data: QuoteDetailResponse): void {
     this.quoteNumber.set(data.quoteNumber);
     this.status.set(data.status);
+    this.quoteCurrency.set(data.currency ?? null);
 
     this.items.clear();
     (data.items ?? []).forEach((item) => this.items.push(this.createItemGroup(item)));
@@ -167,7 +201,7 @@ export class QuoteEditComponent implements OnInit, OnDestroy {
       clientAddress: data.clientAddress ?? '',
       notes: data.notes ?? '',
       taxRate: data.taxRate ?? 0,
-      currency: data.currency ?? 'MXN',
+      currency: data.currency ?? this.financeDefaults.defaultCurrency().code,
       validDays: data.validDays ?? 15,
       deliveryFee: data.deliveryFee ?? 0,
       extraFee: data.extraFee ?? 0,
@@ -186,6 +220,8 @@ export class QuoteEditComponent implements OnInit, OnDestroy {
   private createItemGroup(item?: QuoteItemDetailResponse): FormGroup {
     return this.fb.group({
       recipeId: [item?.recipeId ?? ''],
+      recipeConfiguration: [(item?.recipeConfiguration ?? null) as RecipeConfiguration | null],
+      allergens: [(item?.allergens ?? []) as AllergenRef[]],
       productName: [item?.productName ?? '', [Validators.required, Validators.maxLength(200)]],
       productDescription: [item?.productDescription ?? ''],
       productSize: [item?.productSize ?? ''],
@@ -202,6 +238,42 @@ export class QuoteEditComponent implements OnInit, OnDestroy {
       return false;
     }
     return LOCKED_STATUSES.includes(status.toUpperCase() as (typeof LOCKED_STATUSES)[number]);
+  }
+
+  // ─── Recipe configuration (selectable ingredients, swaps, allergens) ───
+
+  readonly configuratorOpen = signal(false);
+  private readonly configuringIndex = signal<number | null>(null);
+  readonly configuringRecipeId = signal<string | null>(null);
+  readonly configuringInitial = signal<RecipeConfiguration | null>(null);
+
+  openConfigurator(index: number): void {
+    const group = this.getItemGroup(index);
+    const recipeId = group.get('recipeId')!.value as string;
+    if (!recipeId) {
+      return;
+    }
+    this.configuringIndex.set(index);
+    this.configuringRecipeId.set(recipeId);
+    this.configuringInitial.set((group.get('recipeConfiguration')!.value as RecipeConfiguration | null) ?? null);
+    this.configuratorOpen.set(true);
+  }
+
+  /** The server-priced configuration becomes the line's cost; price follows the line's margin. */
+  onConfigured(product: ConfiguredProduct): void {
+    const index = this.configuringIndex();
+    if (index === null) {
+      return;
+    }
+    const group = this.getItemGroup(index);
+    group.patchValue({
+      recipeConfiguration: product.configuration,
+      allergens: product.allergens,
+      unitCost: +product.unitCost.toFixed(2),
+      productDescription: product.summary || group.get('productDescription')!.value,
+    });
+    group.markAsDirty();
+    this.onCostOrProfitChange(index);
   }
 
   // ─── Item management ───
@@ -327,6 +399,7 @@ export class QuoteEditComponent implements OnInit, OnDestroy {
         (item) =>
           ({
             recipeId: item.recipeId || undefined,
+            recipeConfiguration: item.recipeId ? (item.recipeConfiguration ?? null) : null,
             productName: item.productName,
             productDescription: item.productDescription || undefined,
             productSize: item.productSize || undefined,

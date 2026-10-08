@@ -1,152 +1,154 @@
+<div class="grid mb-2">
+  <div class="col-12 sm:col-6 xl:col-3">
+    <button type="button" class="kpi-button" (click)="quickFilter('ALL')">
+      <app-stat-card [label]="'KITCHEN.INGREDIENTS.KPI.TOTAL' | translate" [value]="stats()?.total ?? 0" icon="pi pi-shopping-bag" accent="navy" [loading]="statsLoading()"
+        [caption]="'KITCHEN.INGREDIENTS.KPI.SYSTEM' | translate: { count: stats()?.system ?? 0 }" />
+    </button>
+  </div>
+  <div class="col-12 sm:col-6 xl:col-3">
+    <button type="button" class="kpi-button" (click)="quickFilter('OWN')">
+      <app-stat-card [label]="'KITCHEN.INGREDIENTS.KPI.OWN' | translate" [value]="stats()?.own ?? 0" icon="pi pi-user" accent="green" [loading]="statsLoading()"
+        [caption]="'KITCHEN.INGREDIENTS.KPI.OWN_HINT' | translate" />
+    </button>
+  </div>
+  <div class="col-12 sm:col-6 xl:col-3">
+    <button type="button" class="kpi-button" (click)="quickFilter('ALLERGENS')">
+      <app-stat-card [label]="'KITCHEN.INGREDIENTS.KPI.ALLERGENS' | translate" [value]="stats()?.withAllergens ?? 0" icon="pi pi-exclamation-triangle" accent="slate" [loading]="statsLoading()"
+        [caption]="'KITCHEN.INGREDIENTS.KPI.ALLERGENS_HINT' | translate" />
+    </button>
+  </div>
+  <div class="col-12 sm:col-6 xl:col-3">
+    <button type="button" class="kpi-button" (click)="quickFilter('STALE')">
+      <app-stat-card [label]="'KITCHEN.INGREDIENTS.KPI.STALE' | translate" [value]="stats()?.stalePrices ?? 0" icon="pi pi-clock" accent="amber" [loading]="statsLoading()"
+        [caption]="'KITCHEN.INGREDIENTS.KPI.UNPRICED' | translate: { count: stats()?.unpriced ?? 0 }" />
+    </button>
+  </div>
+</div>
+
 <p-card>
   <p-table
-    #table
-    [value]="items()"
+    [value]="rows()"
     dataKey="id"
-    paginatorPosition="bottom"
-    [stripedRows]="true"
-    [loading]="isLoading()"
-    [showLoader]="false"
+    [lazy]="true"
+    (onLazyLoad)="onLazyLoad($event)"
+    [totalRecords]="total()"
+    [first]="first()"
+    [rows]="15"
     [paginator]="true"
-    [rows]="10"
-    [rowsPerPageOptions]="[10, 25, 50]"
-    [globalFilterFields]="['name', 'categoryName', 'purchaseUnitCode']"
+    [rowsPerPageOptions]="[15, 30, 60]"
     sortField="name"
     [sortOrder]="1"
+    [loading]="loading()"
+    [showLoader]="false"
     [rowHover]="true"
     [showCurrentPageReport]="true"
     [currentPageReportTemplate]="'COMMON.TABLE.PAGE_REPORT' | translate"
   >
     <ng-template pTemplate="caption">
-      <div class="flex align-items-center justify-content-between flex-wrap gap-2">
-        <p-iconfield iconPosition="left">
-          <p-inputicon styleClass="pi pi-search" />
-          <input
-            pInputText
-            type="text"
-            [placeholder]="'INGREDIENTS.SEARCH_PLACEHOLDER' | translate"
-            (input)="table.filterGlobal($any($event.target).value, 'contains')"
-          />
-        </p-iconfield>
-        <div class="flex align-items-center gap-3">
-          <p-button [label]="'INGREDIENTS.CREATE' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" (onClick)="openCreate()" />
+      <div class="flex flex-column gap-2">
+        <div class="flex flex-wrap align-items-center justify-content-between gap-2">
+          <div class="flex flex-wrap align-items-center gap-2">
+            <p-iconfield iconPosition="left">
+              <p-inputicon styleClass="pi pi-search" />
+              <input pInputText type="search" class="w-16rem" [placeholder]="'KITCHEN.INGREDIENTS.SEARCH' | translate" (input)="onSearch($any($event.target).value)" />
+            </p-iconfield>
+            <p-multiselect [options]="categoryOptions()" [ngModel]="categoryIds()" (ngModelChange)="setCategories($event ?? [])" optionLabel="label" optionValue="value" [filter]="true" [maxSelectedLabels]="1" [selectedItemsLabel]="'IAM.AUDIT.N_SELECTED' | translate" [placeholder]="'KITCHEN.INGREDIENTS.FILTER_CATEGORY' | translate" styleClass="w-12rem" />
+            <p-multiselect [options]="allergenOptions()" [ngModel]="allergenIds()" (ngModelChange)="setAllergens($event ?? [])" optionLabel="label" optionValue="value" [maxSelectedLabels]="1" [selectedItemsLabel]="'IAM.AUDIT.N_SELECTED' | translate" [placeholder]="'KITCHEN.INGREDIENTS.FILTER_ALLERGEN' | translate" styleClass="w-12rem" />
+            @if (allergenIds().length > 0) {
+              <label class="flex align-items-center gap-2 text-sm cursor-pointer">
+                <p-toggleswitch [ngModel]="excludeAllergens()" (ngModelChange)="setExclude($event)" />
+                {{ 'KITCHEN.INGREDIENTS.FREE_OF' | translate }}
+              </label>
+            }
+            <p-select [options]="scopeOptions()" [ngModel]="scope()" (ngModelChange)="setScope($event ?? null)" optionLabel="label" optionValue="value" [showClear]="true" [placeholder]="'KITCHEN.INGREDIENTS.FILTER_SCOPE' | translate" styleClass="w-10rem" />
+            @if (hasFilters()) {
+              <p-button [label]="'IAM.COMMON.CLEAR_FILTERS' | translate" icon="pi pi-filter-slash" [text]="true" severity="secondary" (onClick)="clearFilters()" />
+            }
+          </div>
+          <div class="flex align-items-center gap-2">
+            <p-button icon="pi pi-refresh" [text]="true" [rounded]="true" severity="secondary" [ariaLabel]="'COMMON.REFRESH' | translate" (onClick)="reload()" />
+            @if (canCreate()) {
+              <p-button [label]="'KITCHEN.INGREDIENTS.CREATE' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" routerLink="/cronos/ingredientes/nuevo" />
+            }
+          </div>
         </div>
+        @if (staleOnly()) {
+          <span class="text-sm text-orange-600"><i class="pi pi-clock text-xs" aria-hidden="true"></i> {{ 'KITCHEN.INGREDIENTS.STALE_FILTER_ON' | translate }}</span>
+        }
       </div>
     </ng-template>
 
     <ng-template pTemplate="header">
       <tr>
-        <th pSortableColumn="name" style="min-width: 11rem">
-          {{ 'COMMON.TABLE.NAME' | translate }}
-          <p-sortIcon field="name" />
-          <p-columnFilter
-            type="text"
-            field="name"
-            display="menu"
-            [placeholder]="'COMMON.TABLE.FILTER_BY_NAME' | translate"
-          />
-        </th>
-        <th pSortableColumn="categoryName" style="min-width: 9rem">
-          {{ 'INGREDIENTS.FIELDS.CATEGORY' | translate }}
-          <p-sortIcon field="categoryName" />
-          <p-columnFilter
-            type="text"
-            field="categoryName"
-            display="menu"
-            [placeholder]="'INGREDIENTS.FILTER_BY_CATEGORY' | translate"
-          />
-        </th>
-        <th style="min-width: 8rem">{{ 'INGREDIENTS.FIELDS.PURCHASE_UNIT' | translate }}</th>
-        <th pSortableColumn="purchaseQuantity" style="min-width: 8rem">
-          {{ 'INGREDIENTS.FIELDS.PURCHASE_QTY' | translate }}
-          <p-sortIcon field="purchaseQuantity" />
-        </th>
-        <th pSortableColumn="unitCost" style="min-width: 8rem">
-          {{ 'INGREDIENTS.FIELDS.UNIT_COST' | translate }}
-          <p-sortIcon field="unitCost" />
-        </th>
-        <th pSortableColumn="yieldPercentage" style="min-width: 8rem">
-          {{ 'INGREDIENTS.FIELDS.YIELD' | translate }}
-          <p-sortIcon field="yieldPercentage" />
-        </th>
-        <th pSortableColumn="baseUnitCost" style="min-width: 8rem">
-          {{ 'INGREDIENTS.FIELDS.BASE_COST' | translate }}
-          <p-sortIcon field="baseUnitCost" />
-        </th>
-        <th style="width: 10rem">
-          {{ 'COMMON.TABLE.STATUS' | translate }}
-          <p-columnFilter field="status" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
-            <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-              <p-select
-                [ngModel]="value"
-                [options]="statusFilterOptions()"
-                optionLabel="label"
-                optionValue="value"
-                [placeholder]="'COMMON.ALL' | translate"
-                [showClear]="true"
-                (onChange)="filter($event.value)"
-              />
-            </ng-template>
-          </p-columnFilter>
-        </th>
-        <th style="width: 8rem" class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
+        <th pSortableColumn="name" style="min-width: 15rem">{{ 'KITCHEN.INGREDIENTS.COLUMNS.INGREDIENT' | translate }} <p-sortIcon field="name" /></th>
+        <th style="min-width: 8rem">{{ 'KITCHEN.INGREDIENTS.COLUMNS.ALLERGENS' | translate }}</th>
+        <th pSortableColumn="costPerBaseUnit" style="min-width: 10rem" class="text-right">{{ 'KITCHEN.INGREDIENTS.COLUMNS.COST' | translate }} <p-sortIcon field="costPerBaseUnit" /></th>
+        <th style="width: 7rem" class="text-center">{{ 'KITCHEN.INGREDIENTS.COLUMNS.YIELD' | translate }}</th>
+        <th pSortableColumn="pricedAt" style="min-width: 9rem">{{ 'KITCHEN.INGREDIENTS.COLUMNS.PRICED_AT' | translate }} <p-sortIcon field="pricedAt" /></th>
+        <th style="width: 7rem" class="text-center">{{ 'KITCHEN.INGREDIENTS.COLUMNS.USAGE' | translate }}</th>
+        <th style="width: 7rem" class="text-right">{{ 'COMMON.ACTIONS' | translate }}</th>
       </tr>
     </ng-template>
 
-    <ng-template pTemplate="body" let-item let-rowIndex="rowIndex">
-      <tr>
-        <td class="font-semibold">{{ item.name }}</td>
-        <td>{{ item.categoryName || ('COMMON.EMPTY_VALUE' | translate) }}</td>
+    <ng-template pTemplate="body" let-row>
+      <tr [class.opacity-60]="row.status !== 'ACTIVE'">
         <td>
-          @if (item.purchaseUnitCode) {
-            <p-tag [value]="item.purchaseUnitCode" severity="info" />
+          <a [routerLink]="['/cronos/ingredientes', row.id]" class="flex flex-column no-underline text-color">
+            <span class="font-semibold">
+              {{ row.name }}
+              @if (row.scope === 'SYSTEM') {
+                <i class="pi pi-verified text-xs text-color-secondary ml-1" [pTooltip]="'KITCHEN.SCOPE.SYSTEM_HINT' | translate" aria-hidden="true"></i>
+              }
+            </span>
+            <span class="text-xs text-color-secondary">{{ row.categoryName }} · <span class="font-mono">{{ row.code }}</span></span>
+          </a>
+        </td>
+        <td><app-allergen-badges [allergens]="row.allergens" [compact]="true" /></td>
+        <td class="text-right">
+          @if (displayCost(row) !== null) {
+            <div class="flex flex-column align-items-end gap-1">
+              <span class="font-mono font-semibold">{{ displayCost(row) | number: '1.2-2' }} / {{ displayUnit(row) }}</span>
+              <p-tag [value]="'KITCHEN.PRICE_SOURCE.' + row.priceSource | translate" [severity]="priceSeverity[row.priceSource]" />
+            </div>
           } @else {
-            -
+            <p-tag [value]="'KITCHEN.PRICE_SOURCE.NONE' | translate" severity="danger" icon="pi pi-exclamation-circle" />
           }
         </td>
-        <td>{{ formatQuantity(item.purchaseQuantity) }}</td>
-        <td>{{ formatCurrency(item.unitCost) }}</td>
-        <td>{{ formatPercentage(item.yieldPercentage) }}</td>
-        <td>{{ formatCurrency(item.baseUnitCost) }}</td>
-        <td>
-          <app-status-toggle
-            [item]="item"
-            endpoint="raw-material"
-            [nameEntity]="item.name"
-            (statusChanged)="updateItemStatus(item.id, $event)"
-          />
+        <td class="text-center">{{ row.yieldPercent | number: '1.0-1' }} %</td>
+        <td class="text-sm">
+          @if (row.pricedAt) {
+            <span [class.text-orange-600]="row.priceStale">
+              @if (row.priceStale) {
+                <i class="pi pi-clock text-xs" [pTooltip]="'KITCHEN.INGREDIENTS.STALE_HINT' | translate" aria-hidden="true"></i>
+              }
+              {{ row.pricedAt | date: 'mediumDate' }}
+            </span>
+          } @else {
+            <span class="text-color-secondary">—</span>
+          }
         </td>
-        <td class="text-right">
-          <p-button
-            icon="pi pi-pencil"
-            severity="info"
-            [text]="true"
-            [rounded]="true"
-            [pTooltip]="'COMMON.EDIT' | translate"
-            (onClick)="openEdit(item)"
-          />
-          <p-button
-            icon="pi pi-trash"
-            severity="danger"
-            [text]="true"
-            [rounded]="true"
-            [pTooltip]="'COMMON.DELETE' | translate"
-            (onClick)="confirmDelete(item)"
-          />
+        <td class="text-center">{{ row.usedInRecipes }}</td>
+        <td class="text-right white-space-nowrap">
+          <p-button icon="pi pi-dollar" severity="success" [text]="true" [rounded]="true" [pTooltip]="'KITCHEN.INGREDIENTS.ACTIONS.PRICE' | translate" [ariaLabel]="'KITCHEN.INGREDIENTS.ACTIONS.PRICE' | translate" (onClick)="openPrice(row)" />
+          <p-button icon="pi pi-ellipsis-v" severity="secondary" [text]="true" [rounded]="true" [ariaLabel]="'COMMON.ACTIONS' | translate" (onClick)="openRowMenu(row); menuRef.toggle($event)" />
         </td>
       </tr>
     </ng-template>
 
     <ng-template pTemplate="loadingbody">
       @for (row of skeletonRows; track $index) {
-        <tr appTableSkeletonRow [columns]="9"></tr>
+        <tr appTableSkeletonRow [columns]="7"></tr>
       }
     </ng-template>
-
     <ng-template pTemplate="emptymessage">
       <tr>
-        <td colspan="9" class="text-center text-color-secondary py-5">{{ 'INGREDIENTS.EMPTY' | translate }}</td>
+        <td colspan="7" class="text-center py-6 text-color-secondary">
+          {{ (hasFilters() ? 'KITCHEN.INGREDIENTS.EMPTY_FILTERED' : 'KITCHEN.INGREDIENTS.EMPTY') | translate }}
+        </td>
       </tr>
     </ng-template>
   </p-table>
 </p-card>
+
+<p-menu #menuRef [model]="rowMenu()" [popup]="true" />
+<app-price-dialog [(visible)]="priceOpen" [ingredient]="priceTarget()" (saved)="onPriceSaved($event)" />

@@ -9,8 +9,6 @@ import {
   LoginResponse,
   RegisterRequest,
   TokenResponse,
-  TwoFactorSetupResponse,
-  VerifyTwoFactorRequest,
   ChangePasswordRequest,
 } from '../models';
 import { ActiveSession, LoginHistoryEntry, UserResponse } from '../models';
@@ -49,18 +47,6 @@ export class AuthService {
       .post<ApiResponse<void>>(`${this.API}/logout`, { refreshToken: rt })
       .pipe(finalize(() => this.clearAndRedirect()))
       .subscribe();
-  }
-
-  setup2FA(): Observable<ApiResponse<TwoFactorSetupResponse>> {
-    return this.http.post<ApiResponse<TwoFactorSetupResponse>>(`${this.API}/2fa/setup`, {});
-  }
-
-  verify2FA(req: VerifyTwoFactorRequest): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.API}/2fa/verify`, req);
-  }
-
-  disable2FA(req: VerifyTwoFactorRequest): Observable<ApiResponse<void>> {
-    return this.http.post<ApiResponse<void>>(`${this.API}/2fa/disable`, req);
   }
 
   changePassword(req: ChangePasswordRequest): Observable<ApiResponse<void>> {

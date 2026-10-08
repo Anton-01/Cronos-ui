@@ -1,6 +1,8 @@
 import { inject } from '@angular/core';
 import { Router, Routes, UrlTree } from '@angular/router';
 import { roleGuard } from '../core/guards/role.guard';
+import { permissionGuard } from '../core/guards/permission.guard';
+import { PERMISSIONS } from '../core/constants/permissions';
 import { unsavedChangesGuard } from '../core/guards/unsaved-changes.guard';
 import { CategoryType } from '../core/models/category.model';
 import { AccountSettingsTab } from '../core/models/account.model';
@@ -52,11 +54,14 @@ const Routing: Routes = [
   },
   {
     path: 'cronos/ingredientes/nuevo',
-    loadComponent: () => import('./cronos/ingredients/ingredient-form/ingredient-form.component').then(m => m.IngredientFormComponent),
+    loadComponent: () => import('./cronos/ingredients/ingredient-editor/ingredient-editor.component').then(m => m.IngredientEditorComponent),
+    canDeactivate: [unsavedChangesGuard],
   },
+  { path: 'cronos/ingredientes/editar/:id', redirectTo: 'cronos/ingredientes/:id' },
   {
-    path: 'cronos/ingredientes/editar/:id',
-    loadComponent: () => import('./cronos/ingredients/ingredient-form/ingredient-form.component').then(m => m.IngredientFormComponent),
+    path: 'cronos/ingredientes/:id',
+    loadComponent: () => import('./cronos/ingredients/ingredient-editor/ingredient-editor.component').then(m => m.IngredientEditorComponent),
+    canDeactivate: [unsavedChangesGuard],
   },
   // ─── Recetas ───
   {
@@ -65,15 +70,14 @@ const Routing: Routes = [
   },
   {
     path: 'cronos/recetas/nueva',
-    loadComponent: () => import('./cronos/recipes/recipe-form/recipe-form.component').then(m => m.RecipeFormComponent),
+    loadComponent: () => import('./cronos/recipes/recipe-studio/recipe-studio.component').then(m => m.RecipeStudioComponent),
+    canDeactivate: [unsavedChangesGuard],
   },
-  {
-    path: 'cronos/recetas/editar/:id',
-    loadComponent: () => import('./cronos/recipes/recipe-form/recipe-form.component').then(m => m.RecipeFormComponent),
-  },
+  { path: 'cronos/recetas/editar/:id', redirectTo: 'cronos/recetas/:id' },
   {
     path: 'cronos/recetas/:id',
-    loadComponent: () => import('./cronos/recipes/recipe-detail/recipe-detail.component').then(m => m.RecipeDetailComponent),
+    loadComponent: () => import('./cronos/recipes/recipe-studio/recipe-studio.component').then(m => m.RecipeStudioComponent),
+    canDeactivate: [unsavedChangesGuard],
   },
   // ─── Cotizaciones ───
   {
@@ -106,18 +110,74 @@ const Routing: Routes = [
   },
   { path: 'cronos/cuenta/mi-cuenta', redirectTo: redirectToAccountTab('profile') },
   { path: 'cronos/cuenta/seguridad', redirectTo: redirectToAccountTab('security') },
-  // ─── Admin (role-guarded) ───
+  // ─── Administration: identity & access (permission-guarded, doc §1.4) ───
+  {
+    path: 'cronos/admin/usuarios/nuevo',
+    loadComponent: () => import('./cronos/admin/users/user-create/user-create.component').then(m => m.UserCreateComponent),
+    canActivate: [permissionGuard],
+    canDeactivate: [unsavedChangesGuard],
+    data: { permissions: [PERMISSIONS.IAM_USER_CREATE] },
+  },
+  {
+    path: 'cronos/admin/usuarios/:id',
+    loadComponent: () => import('./cronos/admin/users/user-detail/user-detail.component').then(m => m.UserDetailComponent),
+    canActivate: [permissionGuard],
+    canDeactivate: [unsavedChangesGuard],
+    data: { permissions: [PERMISSIONS.IAM_USER_READ] },
+  },
   {
     path: 'cronos/admin/usuarios',
-    loadComponent: () => import('./cronos/admin/user-management/user-management.component').then(m => m.UserManagementComponent),
-    canActivate: [roleGuard],
-    data: { role: 'ADMIN' },
+    loadComponent: () => import('./cronos/admin/users/user-list/user-list.component').then(m => m.UserListComponent),
+    canActivate: [permissionGuard],
+    data: { permissions: [PERMISSIONS.IAM_USER_READ] },
+  },
+  {
+    path: 'cronos/admin/roles/nuevo',
+    loadComponent: () => import('./cronos/admin/roles/role-editor/role-editor.component').then(m => m.RoleEditorComponent),
+    canActivate: [permissionGuard],
+    canDeactivate: [unsavedChangesGuard],
+    data: { permissions: [PERMISSIONS.IAM_ROLE_CREATE] },
+  },
+  {
+    path: 'cronos/admin/roles/:id',
+    loadComponent: () => import('./cronos/admin/roles/role-editor/role-editor.component').then(m => m.RoleEditorComponent),
+    canActivate: [permissionGuard],
+    canDeactivate: [unsavedChangesGuard],
+    data: { permissions: [PERMISSIONS.IAM_ROLE_READ] },
   },
   {
     path: 'cronos/admin/roles',
-    loadComponent: () => import('./cronos/admin/roles-management/roles-management.component').then(m => m.RolesManagementComponent),
-    canActivate: [roleGuard],
-    data: { role: 'SUPER_ADMIN' },
+    loadComponent: () => import('./cronos/admin/roles/role-list/role-list.component').then(m => m.RoleListComponent),
+    canActivate: [permissionGuard],
+    data: { permissions: [PERMISSIONS.IAM_ROLE_READ] },
+  },
+  {
+    path: 'cronos/admin/grupos-permisos',
+    loadComponent: () =>
+      import('./cronos/admin/permission-groups/permission-groups.component').then(m => m.PermissionGroupsComponent),
+    canActivate: [permissionGuard],
+    data: { permissions: [PERMISSIONS.IAM_GROUP_READ] },
+  },
+  {
+    path: 'cronos/admin/auditoria',
+    loadComponent: () => import('./cronos/admin/audit-log/audit-log.component').then(m => m.AuditLogComponent),
+    canActivate: [permissionGuard],
+    data: { permissions: [PERMISSIONS.IAM_AUDIT_READ] },
+  },
+  {
+    path: 'cronos/admin/politica-seguridad',
+    loadComponent: () =>
+      import('./cronos/admin/security-policy/security-policy.component').then(m => m.SecurityPolicyComponent),
+    canActivate: [permissionGuard],
+    canDeactivate: [unsavedChangesGuard],
+    data: { permissions: [PERMISSIONS.IAM_POLICY_READ] },
+  },
+  // ─── Settings ───
+  {
+    path: 'cronos/configuracion/finanzas',
+    loadComponent: () => import('./cronos/finance/finance-settings.component').then(m => m.FinanceSettingsComponent),
+    canActivate: [permissionGuard],
+    data: { permissions: [PERMISSIONS.FINANCE_CURRENCY_READ, PERMISSIONS.FINANCE_TAX_READ] },
   },
   {
     path: 'cronos/admin/importaciones',

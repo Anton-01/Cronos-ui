@@ -1,0 +1,322 @@
+@switch (loadState()) {
+  @case ('loading') {
+    <p-card><app-detail-skeleton [fields]="8" [showTitle]="true" /></p-card>
+  }
+  @case ('error') {
+    <p-card>
+      <div class="flex flex-column align-items-center gap-3 py-6">
+        <p-message severity="error" [text]="'KITCHEN.INGREDIENTS.LOAD_FAILED' | translate" />
+        <div class="flex gap-2">
+          <p-button [label]="'COMMON.BACK' | translate" severity="secondary" [outlined]="true" routerLink="/cronos/ingredientes" />
+          <p-button [label]="'COMMON.TRY_AGAIN' | translate" icon="pi pi-refresh" (onClick)="load()" />
+        </div>
+      </div>
+    </p-card>
+  }
+  @case ('ready') {
+    @if (ingredient(); as current) {
+      <!-- Header strip: identity + effective cost -->
+      <p-card styleClass="mb-4">
+        <div class="flex flex-wrap align-items-center justify-content-between gap-3">
+          <div class="flex flex-column gap-1">
+            <div class="flex flex-wrap align-items-center gap-2">
+              <span class="text-xl font-bold">{{ current.name }}</span>
+              <p-tag [value]="'KITCHEN.SCOPE.' + current.scope | translate" [severity]="current.scope === 'SYSTEM' ? 'contrast' : 'success'" [icon]="current.scope === 'SYSTEM' ? 'pi pi-verified' : 'pi pi-user'" />
+            </div>
+            <span class="text-sm text-color-secondary">{{ current.categoryName }} · <span class="font-mono">{{ current.code }}</span></span>
+            <app-allergen-badges [allergens]="current.allergens" [showEmpty]="true" />
+          </div>
+          <div class="flex align-items-center gap-4">
+            <div class="flex flex-column align-items-end">
+              <span class="text-xs text-color-secondary uppercase font-semibold">{{ 'KITCHEN.INGREDIENTS.EFFECTIVE_COST' | translate }}</span>
+              @if (current.costPerBaseUnit !== null) {
+                <span class="text-2xl font-bold font-mono">{{ (current.baseDimension === 'COUNT' ? current.costPerBaseUnit : current.costPerBaseUnit * 1000) | number: '1.2-2' }} <span class="text-base font-normal">/ {{ current.baseDimension === 'COUNT' ? 'pz' : current.baseDimension === 'MASS' ? 'kg' : 'L' }}</span></span>
+                <span class="text-xs" [class.text-orange-600]="current.priceStale" [class.text-color-secondary]="!current.priceStale">
+                  {{ 'KITCHEN.PRICE_SOURCE.' + current.priceSource | translate }} · {{ current.pricedAt | date: 'mediumDate' }}
+                  @if (current.priceStale) {
+                    · {{ 'KITCHEN.INGREDIENTS.STALE' | translate }}
+                  }
+                </span>
+              } @else {
+                <span class="text-lg font-semibold text-red-500">{{ 'KITCHEN.PRICE_SOURCE.NONE' | translate }}</span>
+              }
+            </div>
+            <p-button [label]="'KITCHEN.INGREDIENTS.ACTIONS.PRICE' | translate" icon="pi pi-dollar" (onClick)="priceOpen.set(true)" />
+          </div>
+        </div>
+        @if (current.scope === 'SYSTEM' && current.priceSource === 'REFERENCE') {
+          <p-message severity="info" styleClass="w-full mt-3" [text]="'KITCHEN.INGREDIENTS.REFERENCE_HINT' | translate" />
+        }
+      </p-card>
+    }
+
+    <p-tabs [value]="activeTab()" (valueChange)="selectTab($event)" [lazy]="true" [dt]="{ tablist: { background: 'transparent' }, tabpanel: { background: 'transparent', padding: '1.5rem 0 0 0' } }">
+      <p-tablist>
+        <p-tab value="data" class="flex align-items-center gap-2"><i class="pi pi-file-edit" aria-hidden="true"></i>{{ 'KITCHEN.INGREDIENTS.TABS.DATA' | translate }}</p-tab>
+        @if (!isNew) {
+          <p-tab value="prices" class="flex align-items-center gap-2"><i class="pi pi-chart-line" aria-hidden="true"></i>{{ 'KITCHEN.INGREDIENTS.TABS.PRICES' | translate }}</p-tab>
+          <p-tab value="usage" class="flex align-items-center gap-2"><i class="pi pi-book" aria-hidden="true"></i>{{ 'KITCHEN.INGREDIENTS.TABS.USAGE' | translate }} <p-tag [value]="'' + (ingredient()?.usedInRecipes ?? 0)" severity="secondary" /></p-tab>
+        }
+      </p-tablist>
+      <p-tabpanels>
+        <p-tabpanel value="data">
+          @if (!canEditData()) {
+            <p-message severity="info" styleClass="w-full mb-3" [text]="(isSystem() ? 'KITCHEN.INGREDIENTS.SYSTEM_READONLY' : 'KITCHEN.INGREDIENTS.READONLY') | translate" />
+          }
+          <form #ingredientFormEl [formGroup]="form" (ngSubmit)="save()" class="grid">
+            <div class="col-12 xl:col-7">
+              <p-card [header]="'KITCHEN.INGREDIENTS.SECTIONS.IDENTITY' | translate" styleClass="mb-3">
+                <div class="grid">
+                  <div class="col-12 md:col-8 flex flex-column gap-1">
+                    <label for="inName" class="font-medium">{{ 'COMMON.TABLE.NAME' | translate }} <span class="text-red-500">*</span></label>
+                    <input pInputText id="inName" formControlName="name" maxlength="120" (blur)="onNameBlur()" [invalid]="showError('name')" [placeholder]="'KITCHEN.INGREDIENTS.NAME_PLACEHOLDER' | translate" />
+                    <app-field-error [errors]="form.controls.name.errors" [visible]="showError('name')" />
+                  </div>
+                  <div class="col-12 md:col-4 flex flex-column gap-1">
+                    <label for="inCode" class="font-medium">{{ 'COMMON.TABLE.CODE' | translate }} <span class="text-red-500">*</span></label>
+                    <input pInputText id="inCode" formControlName="code" class="font-mono" maxlength="50" [invalid]="showError('code')" />
+                    <app-field-error [errors]="form.controls.code.errors" [visible]="showError('code')" />
+                  </div>
+                  <div class="col-12 md:col-6 flex flex-column gap-1">
+                    <label for="inCategory" class="font-medium">{{ 'KITCHEN.INGREDIENTS.CATEGORY' | translate }} <span class="text-red-500">*</span></label>
+                    <p-select inputId="inCategory" formControlName="categoryId" [options]="categoryOptions()" optionLabel="name" optionValue="id" [filter]="true" styleClass="w-full" [invalid]="showError('categoryId')" [placeholder]="'KITCHEN.INGREDIENTS.CATEGORY_PLACEHOLDER' | translate" />
+                    <app-field-error [errors]="form.controls.categoryId.errors" [visible]="showError('categoryId')" />
+                  </div>
+                  <div class="col-12 md:col-6 flex flex-column gap-1">
+                    <label for="inBrand" class="font-medium">{{ 'KITCHEN.INGREDIENTS.BRAND' | translate }}</label>
+                    <input pInputText id="inBrand" formControlName="brand" maxlength="80" />
+                  </div>
+                  <div class="col-12 flex flex-column gap-1">
+                    <label for="inDescription" class="font-medium">{{ 'COMMON.TABLE.DESCRIPTION' | translate }}</label>
+                    <textarea pTextarea id="inDescription" rows="2" formControlName="description" maxlength="500"></textarea>
+                  </div>
+                </div>
+              </p-card>
+
+              <p-card styleClass="mb-3">
+                <ng-template pTemplate="title">{{ 'KITCHEN.INGREDIENTS.SECTIONS.MEASURE' | translate }}</ng-template>
+                <ng-template pTemplate="subtitle">{{ 'KITCHEN.INGREDIENTS.MEASURE_HINT' | translate }}</ng-template>
+                <div class="grid">
+                  <div class="col-12 md:col-6 flex flex-column gap-1">
+                    <label for="inDimension" class="font-medium">{{ 'KITCHEN.INGREDIENTS.BASE_DIMENSION' | translate }} <span class="text-red-500">*</span></label>
+                    <p-select inputId="inDimension" formControlName="baseDimension" [options]="dimensionOptions()" optionLabel="label" optionValue="value" styleClass="w-full" />
+                    @if (dimensionLocked()) {
+                      <small class="text-color-secondary"><i class="pi pi-lock text-xs" aria-hidden="true"></i> {{ 'KITCHEN.INGREDIENTS.DIMENSION_LOCKED' | translate }}</small>
+                    }
+                  </div>
+                  <div class="col-12 md:col-6 flex flex-column gap-1">
+                    <label for="inYield" class="font-medium">{{ 'KITCHEN.INGREDIENTS.YIELD' | translate }} <span class="text-red-500">*</span></label>
+                    <p-inputnumber inputId="inYield" formControlName="yieldPercent" [min]="1" [max]="100" suffix=" %" [maxFractionDigits]="1" styleClass="w-full" [invalid]="showError('yieldPercent')" />
+                    <p-slider formControlName="yieldPercent" [min]="1" [max]="100" styleClass="mt-2" [ariaLabel]="'KITCHEN.INGREDIENTS.YIELD' | translate" />
+                    <small class="text-color-secondary">{{ 'KITCHEN.INGREDIENTS.YIELD_HINT' | translate }}</small>
+                  </div>
+                  @if (needsDensity()) {
+                    <div class="col-12 md:col-6 flex flex-column gap-1">
+                      <label for="inDensity" class="font-medium">{{ 'KITCHEN.INGREDIENTS.DENSITY' | translate }}</label>
+                      <p-inputnumber inputId="inDensity" formControlName="densityGPerMl" [minFractionDigits]="0" [maxFractionDigits]="3" suffix=" g/ml" styleClass="w-full" [invalid]="showError('densityGPerMl')" />
+                      <app-field-error [errors]="form.controls.densityGPerMl.errors" [visible]="showError('densityGPerMl')" />
+                      <small class="text-color-secondary">{{ 'KITCHEN.INGREDIENTS.DENSITY_HINT' | translate }}</small>
+                    </div>
+                  }
+                </div>
+              </p-card>
+
+              @if (isNew) {
+                <p-card styleClass="mb-3" formGroupName="price">
+                  <ng-template pTemplate="title">{{ 'KITCHEN.INGREDIENTS.SECTIONS.FIRST_PRICE' | translate }}</ng-template>
+                  <ng-template pTemplate="subtitle">{{ 'KITCHEN.INGREDIENTS.FIRST_PRICE_HINT' | translate }}</ng-template>
+                  <div class="grid">
+                    <div class="col-6 md:col-3 flex flex-column gap-1">
+                      <label for="fpQty" class="font-medium">{{ 'KITCHEN.PRICE.PRESENTATION' | translate }}</label>
+                      <p-inputnumber inputId="fpQty" formControlName="purchaseQuantity" [maxFractionDigits]="3" styleClass="w-full" />
+                    </div>
+                    <div class="col-6 md:col-3 flex flex-column gap-1">
+                      <label for="fpUnit" class="font-medium">{{ 'KITCHEN.PRICE.UNIT' | translate }}</label>
+                      <p-select inputId="fpUnit" formControlName="purchaseUnitId" [options]="priceUnits()" optionLabel="name" optionValue="id" [filter]="true" styleClass="w-full" [showClear]="true" />
+                    </div>
+                    <div class="col-6 md:col-3 flex flex-column gap-1">
+                      <label for="fpPrice" class="font-medium">{{ 'KITCHEN.PRICE.PRICE' | translate }}</label>
+                      <p-inputnumber inputId="fpPrice" formControlName="price" [minFractionDigits]="2" [maxFractionDigits]="2" styleClass="w-full" />
+                    </div>
+                    <div class="col-6 md:col-3 flex flex-column gap-1">
+                      <label for="fpCurrency" class="font-medium">{{ 'INGREDIENTS.FIELDS.CURRENCY' | translate }}</label>
+                      <p-select inputId="fpCurrency" formControlName="currency" [options]="currencies()" styleClass="w-full" />
+                    </div>
+                    <div class="col-12 md:col-6 flex flex-column gap-1">
+                      <label for="fpSupplier" class="font-medium">{{ 'KITCHEN.PRICE.SUPPLIER' | translate }}</label>
+                      <input pInputText id="fpSupplier" formControlName="supplier" maxlength="120" />
+                    </div>
+                    <div class="col-12 md:col-6 flex flex-column gap-1">
+                      <label for="fpDate" class="font-medium">{{ 'KITCHEN.PRICE.DATE' | translate }}</label>
+                      <p-datepicker inputId="fpDate" formControlName="pricedAt" [maxDate]="today" [showIcon]="true" styleClass="w-full" />
+                    </div>
+                    <div class="col-12">
+                      <div class="price-preview">
+                        <span class="text-sm text-color-secondary">{{ 'KITCHEN.PRICE.RESULTING_COST' | translate }}</span>
+                        <span class="font-mono font-bold">{{ initialCostEstimate() === null ? '—' : (initialCostEstimate() | number: '1.2-2') + ' / ' + displayUnit() }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </p-card>
+              }
+            </div>
+
+            <div class="col-12 xl:col-5">
+              <p-card styleClass="mb-3">
+                <ng-template pTemplate="title">{{ 'KITCHEN.INGREDIENTS.SECTIONS.ALLERGENS' | translate }}</ng-template>
+                <ng-template pTemplate="subtitle">{{ 'KITCHEN.INGREDIENTS.ALLERGENS_HINT' | translate }}</ng-template>
+                <div class="flex flex-column gap-3">
+                  @for (match of suggestions(); track match.allergen.id) {
+                    <div class="suggestion-row" role="status">
+                      <i [class]="match.allergen.icon + ' text-orange-500'" aria-hidden="true"></i>
+                      <span class="flex-1 text-sm">{{ 'KITCHEN.DETECTION.SUGGESTION' | translate: { allergen: match.allergen.name, keyword: match.keyword } }}</span>
+                      @if (canEditData()) {
+                        <p-button [label]="'KITCHEN.DETECTION.LINK' | translate" size="small" icon="pi pi-link" (onClick)="acceptSuggestion(match)" />
+                        <p-button icon="pi pi-times" size="small" [text]="true" severity="secondary" [ariaLabel]="'KITCHEN.DETECTION.DISMISS' | translate" [pTooltip]="'KITCHEN.DETECTION.DISMISS' | translate" (onClick)="dismissSuggestion(match)" />
+                      }
+                    </div>
+                  }
+                  <p-multiselect formControlName="allergenIds" [options]="allergenOptions()" optionLabel="label" optionValue="value" display="chip" [filter]="true" [showToggleAll]="false" styleClass="w-full" [placeholder]="'KITCHEN.INGREDIENTS.ALLERGENS_PLACEHOLDER' | translate">
+                    <ng-template let-option #item>
+                      <div class="flex align-items-center gap-2"><i [class]="option.icon" aria-hidden="true"></i>{{ option.label }}</div>
+                    </ng-template>
+                  </p-multiselect>
+                  <app-allergen-badges [allergens]="selectedAllergens()" [showEmpty]="true" />
+                </div>
+              </p-card>
+
+              <p-card>
+                <ng-template pTemplate="title">{{ 'KITCHEN.INGREDIENTS.SECTIONS.SUBSTITUTES' | translate }}</ng-template>
+                <ng-template pTemplate="subtitle">{{ 'KITCHEN.INGREDIENTS.SUBSTITUTES_HINT' | translate }}</ng-template>
+                <div class="flex flex-column gap-3" formArrayName="substitutes">
+                  @for (row of substitutes.controls; track row; let i = $index) {
+                    <div class="substitute-row" [formGroupName]="i">
+                      <div class="grid">
+                        <div class="col-12 flex flex-column gap-1">
+                          <p-autocomplete formControlName="ingredient" [suggestions]="substituteSuggestions()" (completeMethod)="searchSubstitutes($event)" optionLabel="name" [minQueryLength]="2" [delay]="250" [forceSelection]="true" styleClass="w-full" inputStyleClass="w-full" [placeholder]="'KITCHEN.INGREDIENTS.SUBSTITUTE_SEARCH' | translate" />
+                        </div>
+                        <div class="col-5 flex flex-column gap-1">
+                          <label class="text-xs text-color-secondary" [for]="'subRatio' + i">{{ 'KITCHEN.INGREDIENTS.RATIO' | translate }}</label>
+                          <p-inputnumber [inputId]="'subRatio' + i" formControlName="ratio" [minFractionDigits]="0" [maxFractionDigits]="3" prefix="× " styleClass="w-full" />
+                        </div>
+                        <div class="col-7 flex flex-column gap-1">
+                          <label class="text-xs text-color-secondary" [for]="'subNotes' + i">{{ 'KITCHEN.INGREDIENTS.NOTES' | translate }}</label>
+                          <input pInputText [id]="'subNotes' + i" formControlName="notes" maxlength="200" />
+                        </div>
+                      </div>
+                      @if (substituteImpact(i); as impact) {
+                        <div class="flex flex-wrap gap-2 text-xs mt-1">
+                          @if (impact.freeOf.length > 0) {
+                            <span class="text-green-600"><i class="pi pi-check text-xs" aria-hidden="true"></i> {{ 'KITCHEN.INGREDIENTS.FREE_OF_LABEL' | translate }} {{ names(impact.freeOf) }}</span>
+                          }
+                          @if (impact.introduces.length > 0) {
+                            <span class="text-orange-600"><i class="pi pi-exclamation-triangle text-xs" aria-hidden="true"></i> {{ 'KITCHEN.INGREDIENTS.INTRODUCES_LABEL' | translate }} {{ names(impact.introduces) }}</span>
+                          }
+                        </div>
+                      }
+                      @if (canEditData()) {
+                        <p-button icon="pi pi-trash" size="small" [text]="true" severity="danger" styleClass="substitute-remove" [ariaLabel]="'COMMON.REMOVE' | translate" (onClick)="removeSubstitute(i)" />
+                      }
+                    </div>
+                  } @empty {
+                    <span class="text-sm text-color-secondary">{{ 'KITCHEN.INGREDIENTS.NO_SUBSTITUTES' | translate }}</span>
+                  }
+                  @if (canEditData()) {
+                    <p-button [label]="'KITCHEN.INGREDIENTS.ADD_SUBSTITUTE' | translate" icon="pi pi-plus" [outlined]="true" size="small" styleClass="align-self-start" (onClick)="addSubstitute()" />
+                  }
+                </div>
+              </p-card>
+            </div>
+          </form>
+
+          @if (canEditData() && (isDirty() || isNew)) {
+            <div class="sticky-save-bar">
+              <span class="font-medium"><i class="pi pi-info-circle mr-2" aria-hidden="true"></i>{{ (isNew ? 'KITCHEN.INGREDIENTS.NEW_HINT' : 'IAM.COMMON.UNSAVED_CHANGES') | translate }}</span>
+              <div class="flex gap-2">
+                @if (isNew) {
+                  <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" routerLink="/cronos/ingredientes" />
+                } @else {
+                  <p-button [label]="'IAM.COMMON.DISCARD' | translate" severity="secondary" [outlined]="true" [disabled]="saving()" (onClick)="discard()" />
+                }
+                <p-button [label]="(isNew ? 'KITCHEN.INGREDIENTS.CREATE' : 'COMMON.SAVE_CHANGES') | translate" icon="pi pi-check" [loading]="saving()" (onClick)="save()" />
+              </div>
+            </div>
+          }
+        </p-tabpanel>
+
+        <p-tabpanel value="prices">
+          <p-card>
+            <p-table [value]="history()" [lazy]="true" (onLazyLoad)="loadHistory($event)" [totalRecords]="historyTotal()" [rows]="10" [paginator]="true" [loading]="historyLoading()" [showLoader]="false" dataKey="id">
+              <ng-template pTemplate="caption">
+                <div class="flex align-items-center justify-content-between">
+                  <span class="text-sm text-color-secondary">{{ 'KITCHEN.INGREDIENTS.HISTORY_HINT' | translate }}</span>
+                  <p-button [label]="'KITCHEN.INGREDIENTS.ACTIONS.PRICE' | translate" icon="pi pi-plus" size="small" (onClick)="priceOpen.set(true)" />
+                </div>
+              </ng-template>
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>{{ 'KITCHEN.PRICE.DATE' | translate }}</th>
+                  <th>{{ 'KITCHEN.PRICE.PRESENTATION' | translate }}</th>
+                  <th class="text-right">{{ 'KITCHEN.PRICE.PRICE' | translate }}</th>
+                  <th class="text-right">{{ 'KITCHEN.INGREDIENTS.COLUMNS.COST' | translate }}</th>
+                  <th class="text-right">{{ 'KITCHEN.INGREDIENTS.CHANGE' | translate }}</th>
+                  <th>{{ 'KITCHEN.PRICE.SUPPLIER' | translate }}</th>
+                  <th>{{ 'IAM.AUDIT.ACTOR' | translate }}</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-entry>
+                <tr>
+                  <td class="text-sm">{{ entry.price.pricedAt | date: 'mediumDate' }}</td>
+                  <td class="text-sm">{{ entry.price.purchaseQuantity | number: '1.0-3' }} {{ entry.price.purchaseUnitCode }}</td>
+                  <td class="text-right font-mono">{{ entry.price.price | number: '1.2-2' }} {{ entry.price.currency }}</td>
+                  <td class="text-right font-mono">{{ entry.costPerBaseUnit | number: '1.4-4' }} / {{ ingredient()?.baseUnitCode }}</td>
+                  <td class="text-right">
+                    @if (entry.changePercent !== null) {
+                      <span class="price-change" [class.price-change-up]="entry.changePercent > 0" [class.price-change-down]="entry.changePercent < 0">{{ entry.changePercent | number: '1.0-1' }} %</span>
+                    } @else {
+                      —
+                    }
+                  </td>
+                  <td class="text-sm">{{ entry.price.supplier ?? '—' }}</td>
+                  <td class="text-sm text-color-secondary">{{ entry.recordedBy?.displayName ?? ('IAM.AUDIT.SYSTEM' | translate) }}</td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="loadingbody">
+                @for (row of [1, 2, 3, 4]; track row) {
+                  <tr appTableSkeletonRow [columns]="7"></tr>
+                }
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr><td colspan="7" class="text-center text-color-secondary py-5">{{ 'KITCHEN.INGREDIENTS.HISTORY_EMPTY' | translate }}</td></tr>
+              </ng-template>
+            </p-table>
+          </p-card>
+        </p-tabpanel>
+
+        <p-tabpanel value="usage">
+          <p-card>
+            <p-table [value]="usage()" [loading]="usageLoading()" [showLoader]="false" dataKey="id">
+              <ng-template pTemplate="header">
+                <tr>
+                  <th>{{ 'KITCHEN.RECIPES.RECIPE' | translate }}</th>
+                  <th class="text-right">{{ 'KITCHEN.RECIPES.QUANTITY' | translate }}</th>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="body" let-recipe>
+                <tr>
+                  <td><a [routerLink]="['/cronos/recetas', recipe.id]" class="font-medium">{{ recipe.name }}</a></td>
+                  <td class="text-right font-mono">{{ recipe.quantity | number: '1.0-3' }} {{ recipe.unitCode }}</td>
+                </tr>
+              </ng-template>
+              <ng-template pTemplate="emptymessage">
+                <tr><td colspan="2" class="text-center text-color-secondary py-5">{{ 'KITCHEN.INGREDIENTS.USAGE_EMPTY' | translate }}</td></tr>
+              </ng-template>
+            </p-table>
+          </p-card>
+        </p-tabpanel>
+      </p-tabpanels>
+    </p-tabs>
+
+    <app-price-dialog [(visible)]="priceOpen" [ingredient]="summaryForPrice()" [densityGPerMl]="ingredient()?.densityGPerMl ?? null" (saved)="onPriceSaved($event)" />
+  }
+}
