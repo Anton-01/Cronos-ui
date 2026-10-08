@@ -66,7 +66,7 @@
         </th>
         <th style="min-width: 7rem">{{ 'FIXED_COSTS.FIELDS.AMOUNT' | translate }}</th>
         <th style="min-width: 12rem">{{ 'FIXED_COSTS.FIELDS.METHOD' | translate }}</th>
-        <th style="width: 8rem">
+        <th style="width: 10rem">
           {{ 'COMMON.TABLE.STATUS' | translate }}
           <p-columnFilter field="isActive" matchMode="equals" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
             <ng-template pTemplate="filter" let-value let-filter="filterCallback">
@@ -88,18 +88,32 @@
 
     <ng-template pTemplate="body" let-item>
       <tr>
-        <td class="font-semibold">{{ item.name }}</td>
+        <td>
+          <div class="flex flex-column gap-1">
+            <span class="font-semibold">{{ item.name }}</span>
+            @if (item.appliesByDefault) {
+              <span class="text-xs text-color-secondary"><i class="pi pi-bolt text-xs mr-1" aria-hidden="true"></i>{{ 'FIXED_COSTS.APPLIES_BY_DEFAULT_BADGE' | translate }}</span>
+            }
+          </div>
+        </td>
         <td>{{ item.description || '-' }}</td>
         <td>
           <p-tag [value]="getTypeLabel(item.type)" [severity]="getTypeSeverity(item.type)" />
         </td>
-        <td>{{ formatAmountDisplay(item) }}</td>
+        <td class="font-mono white-space-nowrap">{{ formatAmountDisplay(item) }}</td>
         <td>{{ getCalculationMethodLabel(item.calculationMethod) }}</td>
         <td>
-          <p-tag
-            [value]="item.isActive ? 'Activo' : 'Inactivo'"
-            [severity]="item.isActive ? 'success' : 'danger'"
-          />
+          <div class="flex align-items-center gap-2">
+            <p-toggleswitch
+              [ngModel]="item.isActive"
+              (ngModelChange)="toggleActive(item, $event)"
+              [disabled]="togglingIds().has(item.id)"
+              [ariaLabel]="('COMMON.TABLE.STATUS' | translate) + ' ' + item.name"
+            />
+            <span class="status-pill" [class.status-pill-active]="item.isActive" [class.status-pill-inactive]="!item.isActive">
+              {{ (item.isActive ? 'COMMON.STATUS.ACTIVE' : 'COMMON.STATUS.INACTIVE') | translate }}
+            </span>
+          </div>
         </td>
         <td class="text-right">
           <p-button
@@ -234,15 +248,48 @@
           inputId="fixedCostAmount"
           formControlName="defaultAmount"
           mode="currency"
-          currency="MXN"
-          locale="es-MX"
+          [currency]="currency().code"
+          [locale]="locale()"
+          [minFractionDigits]="currency().decimalPlaces"
+          [maxFractionDigits]="4"
           [min]="0"
+          [suffix]="perLabel(form.controls.calculationMethod.value ?? '')"
         />
         @if (form.controls.defaultAmount.hasError('required') && form.controls.defaultAmount.touched) {
           <small class="text-red-500">{{ 'FIXED_COSTS.ERRORS.AMOUNT_REQUIRED' | translate }}</small>
         }
       </div>
+
+      @if (monthlyBasisKey(); as basisKey) {
+        <div class="monthly-helper">
+          <span class="text-sm font-semibold"><i class="pi pi-calculator mr-1" aria-hidden="true"></i>{{ 'FIXED_COSTS.MONTHLY.TITLE' | translate }}</span>
+          <small class="text-color-secondary">{{ 'FIXED_COSTS.MONTHLY.HINT' | translate }}</small>
+          <div class="grid mt-1">
+            <div class="col-12 sm:col-6 flex flex-column gap-1">
+              <label for="fixedCostMonthly" class="text-xs text-color-secondary">{{ 'FIXED_COSTS.MONTHLY.AMOUNT' | translate }}</label>
+              <p-inputnumber inputId="fixedCostMonthly" formControlName="monthlyAmount" mode="currency" [currency]="currency().code" [locale]="locale()" [min]="0" styleClass="w-full" inputStyleClass="w-full" />
+            </div>
+            <div class="col-12 sm:col-6 flex flex-column gap-1">
+              <label for="fixedCostBasis" class="text-xs text-color-secondary">{{ basisKey | translate }}</label>
+              <p-inputnumber inputId="fixedCostBasis" formControlName="monthlyBasis" [min]="0" [maxFractionDigits]="2" styleClass="w-full" inputStyleClass="w-full" [placeholder]="basisKey + '_PLACEHOLDER' | translate" />
+            </div>
+          </div>
+          @if (derivedAmount() !== null) {
+            <div class="flex flex-wrap align-items-center justify-content-between gap-2">
+              <span class="text-sm">= <span class="font-mono font-semibold">{{ derivedAmount() }}</span> {{ currency().code }}{{ perLabel(form.controls.calculationMethod.value ?? '') }}</span>
+              <p-button [label]="'FIXED_COSTS.MONTHLY.APPLY' | translate" icon="pi pi-arrow-up" size="small" [outlined]="true" (onClick)="applyDerivedAmount()" />
+            </div>
+          }
+        </div>
+      }
     }
+    <div class="flex align-items-start gap-2">
+      <p-checkbox inputId="fixedCostDefault" formControlName="appliesByDefault" [binary]="true" />
+      <label for="fixedCostDefault" class="flex flex-column gap-1 cursor-pointer">
+        <span class="font-medium">{{ 'FIXED_COSTS.APPLIES_BY_DEFAULT' | translate }}</span>
+        <small class="text-color-secondary">{{ 'FIXED_COSTS.APPLIES_BY_DEFAULT_HINT' | translate }}</small>
+      </label>
+    </div>
   </form>
   <ng-template pTemplate="footer">
     <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="closeForm()" />

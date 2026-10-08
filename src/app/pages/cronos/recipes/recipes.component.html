@@ -47,7 +47,7 @@
     }
   } @else {
     @for (recipe of recipes(); track recipe.id) {
-      <a class="recipe-card" [routerLink]="['/cronos/recetas', recipe.id]">
+      <article class="recipe-card">
         <div class="recipe-cover">
           @if (recipe.coverImageUrl) {
             <img [src]="recipe.coverImageUrl" [alt]="recipe.name" loading="lazy" />
@@ -58,7 +58,8 @@
         </div>
         <div class="flex flex-column gap-2 p-3 flex-1">
           <div class="flex flex-column gap-1">
-            <span class="font-semibold text-color recipe-name">{{ recipe.name }}</span>
+            <!-- Stretched link: the whole card opens the studio; the book button sits above it. -->
+            <a class="font-semibold text-color recipe-name recipe-card-link" [routerLink]="['/cronos/recetas', recipe.id]">{{ recipe.name }}</a>
             <span class="text-xs text-color-secondary">{{ recipe.categoryName ?? ('KITCHEN.RECIPES.NO_CATEGORY' | translate) }}</span>
           </div>
           <div class="flex flex-wrap gap-3 text-xs text-color-secondary">
@@ -78,8 +79,9 @@
             </div>
           </div>
           <app-cost-status-tag [status]="recipe.costStatus" [calculatedAt]="recipe.costCalculatedAt" />
+          <p-button class="w-full" icon="pi pi-book" [label]="'KITCHEN.BOOK.OPEN' | translate" size="small" [outlined]="true" severity="secondary" styleClass="recipe-card-action w-full" [routerLink]="['/cronos/recetas', recipe.id, 'libro']" [pTooltip]="'KITCHEN.BOOK.OPEN_HINT' | translate" tooltipPosition="bottom" [ariaLabel]="('KITCHEN.BOOK.OPEN' | translate) + ': ' + recipe.name" />
         </div>
-      </a>
+      </article>
     } @empty {
       <div class="recipe-empty">
         <i class="pi pi-book text-4xl text-color-secondary" aria-hidden="true"></i>

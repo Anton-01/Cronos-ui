@@ -67,7 +67,10 @@
     </div>
     <div class="flex flex-column gap-1">
       <label for="addSection" class="text-xs font-semibold text-color-secondary">{{ 'KITCHEN.RECIPES.SECTION' | translate }}</label>
-      <p-autocomplete inputId="addSection" [ngModel]="addSection()" (ngModelChange)="addSection.set($event ?? '')" [suggestions]="sectionSuggestions()" (completeMethod)="searchSections($event)" [dropdown]="sections().length > 0" inputStyleClass="w-10rem" [placeholder]="'KITCHEN.RECIPES.SECTION_PLACEHOLDER' | translate" />
+      <div class="flex align-items-center gap-1">
+        <p-autocomplete inputId="addSection" [ngModel]="addSection()" (ngModelChange)="addSection.set($event ?? '')" [suggestions]="sectionSuggestions()" (completeMethod)="searchSections($event)" [dropdown]="sectionNames().length > 0" [completeOnFocus]="true" inputStyleClass="w-10rem" [placeholder]="'KITCHEN.RECIPES.SECTION_PLACEHOLDER' | translate" />
+        <p-button icon="pi pi-tags" [text]="true" [rounded]="true" severity="secondary" [pTooltip]="'KITCHEN.SECTIONS.MANAGE' | translate" [ariaLabel]="'KITCHEN.SECTIONS.MANAGE' | translate" (onClick)="sectionsDialogOpen.set(true)" />
+      </div>
     </div>
     <p-button icon="pi pi-plus" [label]="'KITCHEN.RECIPES.ADD.BUTTON' | translate" [disabled]="!canAdd()" styleClass="add-bar-button" (onClick)="add()" />
   </div>
@@ -78,7 +81,9 @@
 @for (group of groups(); track group.section ?? '__none') {
   <section class="line-group">
     @if (group.section) {
-      <h4 class="line-group-title">{{ group.section }}</h4>
+      <h4 class="line-group-title" [style.color]="sectionColor(group.section)">
+        <span class="line-group-dot" [style.background]="sectionColor(group.section)" aria-hidden="true"></span>{{ group.section }}
+      </h4>
     }
     @for (line of group.lines; track line.key) {
       @let issue = issueByKey().get(line.key);
@@ -124,6 +129,9 @@
             <p-toggleswitch [ngModel]="line.quoteSelectable || line.optional" (ngModelChange)="patch(line.key, { quoteSelectable: $event })" [disabled]="readonly() || line.optional" />
             {{ 'KITCHEN.RECIPES.QUOTE_SELECTABLE' | translate }}
           </label>
+          @if (!readonly()) {
+            <p-select [options]="sectionNames()" [ngModel]="line.section" (ngModelChange)="setLineSection(line.key, $event)" [filter]="sectionNames().length > 8" [showClear]="!!line.section" styleClass="recipe-line-section" [placeholder]="'KITCHEN.RECIPES.SECTION' | translate" [ariaLabel]="'KITCHEN.RECIPES.SECTION' | translate" />
+          }
           <input pInputText class="recipe-line-notes" [ngModel]="line.notes" (ngModelChange)="patch(line.key, { notes: $event })" maxlength="200" [disabled]="readonly()" [placeholder]="'KITCHEN.RECIPES.LINE_NOTES' | translate" [attr.aria-label]="'KITCHEN.RECIPES.LINE_NOTES' | translate" />
         </div>
         @if (!readonly()) {
@@ -202,3 +210,5 @@
     <p-button [label]="'IAM.COMMON.APPLY' | translate" icon="pi pi-check" (onClick)="saveAllergenEdit()" />
   </ng-template>
 </p-dialog>
+
+<app-recipe-sections-dialog [(visible)]="sectionsDialogOpen" [usedInRecipe]="sections()" (renamed)="onSectionRenamed($event)" />

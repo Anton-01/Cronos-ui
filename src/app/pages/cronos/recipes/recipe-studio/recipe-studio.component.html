@@ -37,6 +37,7 @@
       </div>
       <div class="flex align-items-center gap-2">
         @if (recipe(); as current) {
+          <p-button [label]="'KITCHEN.BOOK.OPEN' | translate" icon="pi pi-book" severity="secondary" [outlined]="true" [routerLink]="['/cronos/recetas', current.id, 'libro']" [pTooltip]="isDirty() ? ('KITCHEN.BOOK.SAVED_VERSION' | translate) : ''" />
           @if (current.status === 'DRAFT' && canWrite()) {
             <p-button [label]="'KITCHEN.STUDIO.ACTIONS.PUBLISH' | translate" icon="pi pi-check-circle" severity="success" [outlined]="true" (onClick)="changeStatus('ACTIVE')" />
           }
@@ -161,12 +162,24 @@
                   <ng-template pTemplate="title">{{ 'KITCHEN.STUDIO.SECTIONS.MARGINS' | translate }}</ng-template>
                   <ng-template pTemplate="subtitle">{{ 'KITCHEN.STUDIO.MARGINS_HINT' | translate }}</ng-template>
                   <div class="grid">
-                    <div class="col-12 md:col-6 flex flex-column gap-1">
-                      <label for="rcMargin" class="font-medium">{{ 'KITCHEN.STUDIO.TARGET_MARGIN' | translate }}</label>
+                    <div class="col-12 md:col-4 flex flex-column gap-1">
+                      <label for="rcPricing" class="font-medium">{{ 'KITCHEN.PRICING.METHOD' | translate }}</label>
+                      <p-select inputId="rcPricing" formControlName="pricingMethod" [options]="pricingMethodOptions()" optionLabel="label" optionValue="value" styleClass="w-full">
+                        <ng-template pTemplate="item" let-option>
+                          <div class="flex flex-column">
+                            <span>{{ option.label }}</span>
+                            <small class="text-color-secondary">{{ option.hint }}</small>
+                          </div>
+                        </ng-template>
+                      </p-select>
+                      <small class="text-color-secondary">{{ 'KITCHEN.PRICING.' + form.controls.pricingMethod.value + '.FORMULA' | translate }}</small>
+                    </div>
+                    <div class="col-12 md:col-4 flex flex-column gap-1">
+                      <label for="rcMargin" class="font-medium">{{ 'KITCHEN.PRICING.' + form.controls.pricingMethod.value + '.TARGET' | translate }}</label>
                       <p-inputnumber inputId="rcMargin" formControlName="targetMarginPercent" suffix=" %" [maxFractionDigits]="1" styleClass="w-full" [invalid]="showError('targetMarginPercent')" />
                       <small class="text-color-secondary">{{ 'KITCHEN.STUDIO.TARGET_MARGIN_HINT' | translate }}</small>
                     </div>
-                    <div class="col-12 md:col-6 flex flex-column gap-1">
+                    <div class="col-12 md:col-4 flex flex-column gap-1">
                       <label for="rcWaste" class="font-medium">{{ 'KITCHEN.STUDIO.WASTE' | translate }}</label>
                       <p-inputnumber inputId="rcWaste" formControlName="wastePercent" suffix=" %" [maxFractionDigits]="1" styleClass="w-full" [invalid]="showError('wastePercent')" />
                       <small class="text-color-secondary">{{ 'KITCHEN.STUDIO.WASTE_HINT' | translate }}</small>
@@ -179,26 +192,41 @@
                   <div class="flex flex-column gap-2" formArrayName="fixedCosts">
                     @for (row of fixedCosts.controls; track row; let i = $index) {
                       @let catalogCost = fixedCostOf(i);
-                      <div class="grid align-items-end" [formGroupName]="i">
-                        <div class="col-12 md:col-6 flex flex-column gap-1">
+                      @let rowCost = fixedCostAmount(i);
+                      <div class="grid align-items-end fixed-cost-row" [formGroupName]="i">
+                        <div class="col-12 md:col-5 flex flex-column gap-1">
                           <label class="text-xs text-color-secondary" [for]="'fc' + i">{{ 'KITCHEN.STUDIO.FIXED_COST' | translate }}</label>
-                          <p-select [inputId]="'fc' + i" formControlName="userFixedCostId" [options]="fixedCostCatalog()" optionLabel="name" optionValue="id" [filter]="true" styleClass="w-full" [placeholder]="'KITCHEN.STUDIO.FIXED_COST_PLACEHOLDER' | translate" />
+                          <p-select [inputId]="'fc' + i" formControlName="userFixedCostId" [options]="fixedCostOptionsFor(i)" optionLabel="name" optionValue="id" [filter]="true" styleClass="w-full" [placeholder]="'KITCHEN.STUDIO.FIXED_COST_PLACEHOLDER' | translate" />
                           @if (catalogCost) {
-                            <small class="text-color-secondary">{{ 'FIXED_COSTS.METHODS.' + catalogCost.calculationMethod + '.LABEL' | translate }}</small>
+                            <small class="text-color-secondary">
+                              {{ 'FIXED_COSTS.METHODS.' + catalogCost.calculationMethod + '.LABEL' | translate }} ·
+                              @if (catalogCost.calculationMethod === 'PERCENTAGE') {
+                                {{ catalogCost.percentage | number: '1.0-2' }} %
+                              } @else {
+                                {{ catalogCost.defaultAmount | number: '1.2-2' }} {{ currency() }}{{ 'FIXED_COSTS.PER.' + catalogCost.calculationMethod | translate }}
+                              }
+                            </small>
                           }
                         </div>
-                        <div class="col-8 md:col-4 flex flex-column gap-1">
+                        <div class="col-12 sm:col-7 md:col-4 flex flex-column gap-1">
                           @if (catalogCost?.calculationMethod === 'HOURLY_RATE') {
                             <label class="text-xs text-color-secondary" [for]="'fcMin' + i">{{ 'KITCHEN.STUDIO.MINUTES' | translate }} <span class="text-red-500">*</span></label>
                             <p-inputnumber [inputId]="'fcMin' + i" formControlName="minutes" suffix=" min" styleClass="w-full" />
+                            @if (canWrite() && totalMinutes() > 0 && row.controls.minutes.value !== totalMinutes()) {
+                              <button type="button" class="link-button text-xs" (click)="useRecipeMinutes(i)">{{ 'KITCHEN.STUDIO.USE_RECIPE_TIME' | translate: { time: totalTime() } }}</button>
+                            }
                           } @else if (catalogCost?.calculationMethod === 'PERCENTAGE') {
                             <label class="text-xs text-color-secondary" [for]="'fcPct' + i">{{ 'KITCHEN.STUDIO.PERCENTAGE_OVERRIDE' | translate }}</label>
                             <p-inputnumber [inputId]="'fcPct' + i" formControlName="percentage" suffix=" %" [maxFractionDigits]="2" styleClass="w-full" [placeholder]="'' + (catalogCost?.percentage ?? '')" />
+                          } @else if (catalogCost?.calculationMethod === 'PER_UNIT') {
+                            <label class="text-xs text-color-secondary" [for]="'fcQty' + i">{{ 'KITCHEN.STUDIO.UNITS_PER_BATCH' | translate }}</label>
+                            <p-inputnumber [inputId]="'fcQty' + i" formControlName="quantity" [maxFractionDigits]="2" styleClass="w-full" [placeholder]="'KITCHEN.STUDIO.UNITS_PER_BATCH_PLACEHOLDER' | translate: { count: form.controls.yieldQuantity.value ?? 1, unit: form.controls.yieldUnit.value }" />
                           } @else if (catalogCost) {
                             <span class="text-sm text-color-secondary">{{ 'KITCHEN.STUDIO.NO_INPUT_NEEDED' | translate }}</span>
                           }
                         </div>
-                        <div class="col-4 md:col-2 flex justify-content-end">
+                        <div class="col-12 sm:col-5 md:col-3 flex align-items-center justify-content-end gap-2">
+                          <span class="font-mono font-semibold" [pTooltip]="'KITCHEN.STUDIO.FIXED_ROW_COST_HINT' | translate">{{ rowCost === null ? '—' : (rowCost | number: '1.2-2') }}</span>
                           @if (canWrite()) {
                             <p-button icon="pi pi-trash" [text]="true" severity="danger" [ariaLabel]="'COMMON.REMOVE' | translate" (onClick)="removeFixedCost(i)" />
                           }
@@ -207,9 +235,15 @@
                     } @empty {
                       <span class="text-sm text-color-secondary">{{ 'KITCHEN.STUDIO.NO_FIXED_COSTS' | translate }}</span>
                     }
-                    @if (canWrite()) {
-                      <p-button [label]="'KITCHEN.STUDIO.ADD_FIXED_COST' | translate" icon="pi pi-plus" size="small" [outlined]="true" styleClass="align-self-start" [disabled]="fixedCostCatalog().length === 0" (onClick)="addFixedCost()" />
-                    }
+                    <div class="flex flex-wrap align-items-center justify-content-between gap-2">
+                      @if (canWrite()) {
+                        <p-button [label]="'KITCHEN.STUDIO.ADD_FIXED_COST' | translate" icon="pi pi-plus" size="small" [outlined]="true" [disabled]="!canAddFixedCost()" (onClick)="addFixedCost()" />
+                      }
+                      @if (cost(); as c) {
+                        <span class="text-sm ml-auto">{{ 'KITCHEN.STUDIO.COST.FIXED' | translate }}: <span class="font-mono font-semibold">{{ c.fixedCosts | number: '1.2-2' }} {{ c.currency }}</span></span>
+                      }
+                    </div>
+                    <small class="text-color-secondary"><a routerLink="/cronos/costos-fijos">{{ 'KITCHEN.STUDIO.MANAGE_FIXED_COSTS' | translate }}</a></small>
                     @if (fixedCostCatalog().length === 0) {
                       <small class="text-color-secondary">{{ 'KITCHEN.STUDIO.NO_FIXED_COST_CATALOG' | translate }} <a routerLink="/cronos/costos-fijos">{{ 'NAV.ITEMS.FIXED_COSTS' | translate }}</a></small>
                     }
@@ -237,8 +271,10 @@
         </p-tabs>
       </div>
 
-      <!-- Live cost summary -->
+      <!-- Cover + live cost summary -->
       <div class="col-12 xl:col-3">
+        <div class="studio-aside">
+        <app-recipe-cover [recipeId]="recipeId()" [recipeName]="form.controls.name.value" [(files)]="files" [readonly]="!canWrite()" />
         <div class="cost-panel">
           <div class="flex align-items-center justify-content-between gap-2">
             <span class="font-semibold">{{ 'KITCHEN.STUDIO.COST.TITLE' | translate }}</span>
@@ -265,9 +301,15 @@
               <span class="text-2xl font-bold font-mono">{{ c.costPerUnit | number: '1.2-2' }}</span>
             </div>
             <div class="suggested-price">
-              <span class="text-xs uppercase font-semibold">{{ 'KITCHEN.STUDIO.COST.SUGGESTED' | translate: { margin: margin() } }}</span>
+              <span class="text-xs uppercase font-semibold">{{ 'KITCHEN.PRICING.' + appliedPricingMethod() + '.SUGGESTED' | translate: { percent: margin() } }}</span>
               <span class="text-2xl font-bold font-mono">{{ c.suggestedUnitPrice | number: '1.2-2' }}</span>
+              @if (realMargin() !== null) {
+                <span class="text-xs">{{ 'KITCHEN.PRICING.REAL' | translate: { margin: (realMargin() | number: '1.0-1'), markup: (realMarkup() | number: '1.0-1') } }}</span>
+              }
             </div>
+            @if (appliedPricingMethod() !== form.controls.pricingMethod.value) {
+              <p-message severity="info" styleClass="w-full" [text]="'KITCHEN.PRICING.PENDING_METHOD' | translate" />
+            }
             @if (c.unpricedLines > 0) {
               <p-message severity="error" styleClass="w-full" [text]="'KITCHEN.STUDIO.COST.UNPRICED' | translate: { count: c.unpricedLines }" />
             }
@@ -288,6 +330,7 @@
               }
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>

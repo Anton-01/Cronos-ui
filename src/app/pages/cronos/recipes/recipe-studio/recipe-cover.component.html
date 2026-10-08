@@ -1,0 +1,135 @@
+<div class="cover-card">
+  <div
+    class="cover-thumb"
+    [class.cover-thumb-empty]="!displayUrl()"
+    [class.cover-thumb-drag]="isDragOver()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave()"
+    (drop)="onDrop($event)"
+  >
+    @if (displayUrl(); as url) {
+      <img [src]="url" [alt]="'KITCHEN.COVER.ALT' | translate: { name: recipeName() }" />
+      @if (pending()) {
+        <span class="status-pill status-pill-info cover-badge">{{ 'KITCHEN.COVER.PENDING' | translate }}</span>
+      }
+      @if (!readonly()) {
+        <div class="cover-overlay">
+          @if (pending() && recipeId() && !uploading()) {
+            <p-button icon="pi pi-refresh" [label]="'COMMON.TRY_AGAIN' | translate" size="small" severity="contrast" (onClick)="retryPending()" />
+          }
+          <p-button icon="pi pi-camera" [label]="'KITCHEN.COVER.CHANGE' | translate" size="small" severity="contrast" [disabled]="busy()" (onClick)="open()" />
+          <p-button icon="pi pi-trash" size="small" severity="danger" [disabled]="busy()" [pTooltip]="'KITCHEN.COVER.REMOVE' | translate" [ariaLabel]="'KITCHEN.COVER.REMOVE' | translate" (onClick)="remove()" />
+        </div>
+      }
+    } @else if (readonly()) {
+      <div class="cover-empty-content">
+        <i class="pi pi-image text-3xl" aria-hidden="true"></i>
+        <span class="text-sm">{{ 'KITCHEN.COVER.NONE' | translate }}</span>
+      </div>
+    } @else {
+      <button type="button" class="cover-empty-content cover-empty-button" [disabled]="busy()" (click)="open()">
+        <i class="pi pi-camera text-3xl" aria-hidden="true"></i>
+        <span class="font-semibold text-color">{{ 'KITCHEN.COVER.ADD' | translate }}</span>
+        <span class="text-xs">{{ 'KITCHEN.COVER.ADD_HINT' | translate }}</span>
+      </button>
+    }
+    @if (uploading()) {
+      <p-progressbar class="cover-progress" [value]="progress()" [showValue]="false" [mode]="progress() > 0 ? 'determinate' : 'indeterminate'" />
+    }
+  </div>
+</div>
+
+<input #coverInput type="file" class="hidden" [accept]="acceptedTypes" (change)="onFileSelected($event)" />
+
+<p-dialog
+  [header]="'KITCHEN.COVER.TITLE' | translate"
+  [visible]="dialogOpen()"
+  (visibleChange)="onDialogVisible($event)"
+  (onHide)="onDialogHide()"
+  [modal]="true"
+  [draggable]="false"
+  [resizable]="false"
+  [closable]="!uploading()"
+  [style]="{ width: '46rem' }"
+  [breakpoints]="{ '768px': '95vw' }"
+>
+  @if (fileError(); as error) {
+    <p-message severity="error" styleClass="mb-3 w-full" [text]="'KITCHEN.COVER.ERRORS.' + error | translate: { max: maxMegabytes, min: minWidth }" />
+  }
+
+  @if (!sourceFile()) {
+    <button
+      type="button"
+      class="cover-dropzone"
+      [class.cover-dropzone-active]="isDragOver()"
+      (click)="browse()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave()"
+      (drop)="onDrop($event)"
+    >
+      <i class="pi pi-cloud-upload text-primary text-4xl" aria-hidden="true"></i>
+      <span class="font-semibold text-color">{{ 'KITCHEN.COVER.DROP' | translate }}</span>
+      <span class="text-color-secondary text-sm text-center">{{ 'KITCHEN.COVER.LIMITS' | translate: { max: maxMegabytes, min: minWidth } }}</span>
+    </button>
+
+    @if (recipeId() && images().length > 0) {
+      <div class="flex flex-column gap-2 mt-4">
+        <span class="text-xs font-semibold uppercase text-color-secondary">{{ 'KITCHEN.COVER.FROM_FILES' | translate }}</span>
+        <div class="cover-picker">
+          @for (image of images(); track image.id) {
+            <button type="button" class="cover-option" [class.cover-option-current]="image.isCover" [disabled]="image.isCover || busy()" (click)="choose(image)" [attr.aria-label]="image.fileName">
+              <img [src]="image.thumbnailUrl ?? image.url" [alt]="image.description ?? image.fileName" loading="lazy" />
+              @if (image.isCover) {
+                <span class="cover-option-check"><i class="pi pi-check" aria-hidden="true"></i></span>
+              }
+            </button>
+          }
+        </div>
+      </div>
+    }
+  } @else {
+    <div class="cover-stage">
+      <image-cropper
+        [imageFile]="sourceFile() ?? undefined"
+        [maintainAspectRatio]="true"
+        [aspectRatio]="aspect"
+        [containWithinAspectRatio]="false"
+        [allowMoveImage]="true"
+        [onlyScaleDown]="true"
+        [resizeToWidth]="outputWidth"
+        [imageQuality]="88"
+        [transform]="transform()"
+        [disabled]="uploading()"
+        backgroundColor="#ffffff"
+        format="jpeg"
+        output="blob"
+        (imageLoaded)="onImageLoaded($event)"
+        (cropperReady)="onCropperReady()"
+        (loadImageFailed)="onLoadFailed()"
+        (imageCropped)="onImageCropped($event)"
+        (transformChange)="onTransformChange($event)"
+      />
+    </div>
+    <div class="flex flex-wrap align-items-center gap-3 mt-3">
+      <i class="pi pi-search-minus text-color-secondary" aria-hidden="true"></i>
+      <p-slider class="flex-1 min-w-0" [ngModel]="zoom()" (ngModelChange)="setZoom($event)" [min]="1" [max]="4" [step]="0.05" [disabled]="uploading()" [ariaLabel]="'AVATAR_CROPPER.ZOOM' | translate" />
+      <i class="pi pi-search-plus text-color-secondary" aria-hidden="true"></i>
+      <p-button icon="pi pi-replay" [outlined]="true" severity="secondary" size="small" [disabled]="uploading()" [pTooltip]="'AVATAR_CROPPER.ROTATE_LEFT' | translate" [ariaLabel]="'AVATAR_CROPPER.ROTATE_LEFT' | translate" (onClick)="rotate(-90)" />
+      <p-button icon="pi pi-refresh" [outlined]="true" severity="secondary" size="small" [disabled]="uploading()" [pTooltip]="'AVATAR_CROPPER.ROTATE_RIGHT' | translate" [ariaLabel]="'AVATAR_CROPPER.ROTATE_RIGHT' | translate" (onClick)="rotate(90)" />
+      <p-button icon="pi pi-undo" [text]="true" severity="secondary" size="small" [disabled]="uploading()" [label]="'AVATAR_CROPPER.RESET' | translate" (onClick)="resetTransform()" />
+    </div>
+    @if (uploading()) {
+      <p-progressbar styleClass="mt-3" [value]="progress()" />
+    }
+  }
+
+  <ng-template pTemplate="footer">
+    @if (sourceFile()) {
+      <p-button [label]="'AVATAR_CROPPER.CHANGE_IMAGE' | translate" icon="pi pi-image" [text]="true" severity="secondary" class="mr-auto" [disabled]="uploading()" (onClick)="browse()" />
+    }
+    <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" [disabled]="uploading()" (onClick)="dialogOpen.set(false)" />
+    @if (sourceFile()) {
+      <p-button [label]="'KITCHEN.COVER.APPLY' | translate" icon="pi pi-check" [loading]="uploading()" [disabled]="!cropperReady() || !cropped()?.blob" (onClick)="apply()" />
+    }
+  </ng-template>
+</p-dialog>

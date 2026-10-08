@@ -1,0 +1,67 @@
+.calc-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 30rem), 1fr));
+  gap: 1rem;
+}
+
+.calc-result {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--p-green-500) 10%, transparent);
+}
+
+.calc-result-main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 11rem;
+  color: var(--p-green-700);
+}
+
+:host-context(.app-dark) .calc-result-main {
+  color: var(--p-green-300);
+}
+
+.calc-stats {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+  gap: 0.6rem 1rem;
+  margin: 0;
+
+  dt {
+    color: var(--text-color-secondary);
+    font-size: 0.75rem;
+  }
+
+  dd {
+    margin: 0.1rem 0 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 600;
+  }
+}
+
+.temp-chip {
+  padding: 0.25rem 0.6rem;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--text-color);
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--primary-color);
+    outline: none;
+  }
+}
+
+.temp-chip-active {
+  border-color: var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+}

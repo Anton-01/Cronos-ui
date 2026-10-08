@@ -29,6 +29,9 @@
 }
 
 .line-group-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
   margin: 0 0 0.5rem;
   font-size: 0.8rem;
   font-weight: 700;
@@ -107,4 +110,15 @@
     outline: 2px solid var(--primary-color);
     outline-offset: 2px;
   }
+}
+
+.line-group-dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: transparent;
+}
+
+:host ::ng-deep .recipe-line-section {
+  width: 11rem;
 }

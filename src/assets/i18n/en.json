@@ -75,7 +75,8 @@
       "CATALOGS": "Catalogs",
       "ACCOUNT": "Account",
       "ADMINISTRATION": "Administration",
-      "SETTINGS": "Settings"
+      "SETTINGS": "Settings",
+      "RESOURCES": "Resources"
     },
     "ITEMS": {
       "DASHBOARD": "Dashboard",
@@ -101,7 +102,8 @@
       "PERMISSION_GROUPS": "Permission groups",
       "AUDIT_LOG": "Audit log",
       "SECURITY_POLICY": "Security policy",
-      "FINANCE": "Currencies & taxes"
+      "FINANCE": "Currencies & taxes",
+      "BAKING_GUIDE": "Baker's guide"
     }
   },
   "BREADCRUMB": {
@@ -456,20 +458,20 @@
     },
     "METHODS": {
       "HOURLY_RATE": {
-        "LABEL": "Hourly Rate",
-        "HINT": "Best for LABOR or UTILITY"
+        "LABEL": "Hourly rate",
+        "HINT": "Labour and time-based utilities (gas, power)"
       },
       "PER_UNIT": {
-        "LABEL": "Cost per Unit",
-        "HINT": "Best for PACKAGING"
+        "LABEL": "Cost per unit",
+        "HINT": "Packaging and per-piece supplies (boxes, domes, labels)"
       },
       "FIXED_PER_BATCH": {
-        "LABEL": "Fixed cost per batch produced",
-        "HINT": "Best for RENT or OVERHEAD"
+        "LABEL": "Fixed cost per batch",
+        "HINT": "Rent, depreciation or overhead spread over batches"
       },
       "PERCENTAGE": {
-        "LABEL": "Percentage (%) of inputs",
-        "HINT": "Applies a global % to the recipe's total cost"
+        "LABEL": "Percentage (%) of ingredients",
+        "HINT": "A % of the recipe's ingredient and waste cost"
       }
     },
     "ERRORS": {
@@ -484,6 +486,28 @@
       "UPDATED": "Fixed cost updated successfully",
       "DELETED": "Fixed cost deleted successfully",
       "LOAD_FAILED": "Fixed costs could not be loaded"
+    },
+    "PER": {
+      "HOURLY_RATE": " / h",
+      "PER_UNIT": " / unit",
+      "FIXED_PER_BATCH": " / batch"
+    },
+    "APPLIES_BY_DEFAULT": "Apply to new recipes",
+    "APPLIES_BY_DEFAULT_HINT": "Added automatically to the costing of every recipe you create.",
+    "APPLIES_BY_DEFAULT_BADGE": "Applied to new recipes",
+    "MONTHLY": {
+      "TITLE": "Know it per month?",
+      "HINT": "Enter the monthly expense and what it is spread over; Cronos works out the amount.",
+      "AMOUNT": "Monthly expense",
+      "APPLY": "Use this amount",
+      "BASIS": {
+        "HOURLY_RATE": "Productive hours per month",
+        "HOURLY_RATE_PLACEHOLDER": "e.g. 160",
+        "PER_UNIT": "Units per month",
+        "PER_UNIT_PLACEHOLDER": "e.g. 300",
+        "FIXED_PER_BATCH": "Batches per month",
+        "FIXED_PER_BATCH_PLACEHOLDER": "e.g. 200"
+      }
     }
   },
   "INGREDIENTS": {
@@ -2348,7 +2372,12 @@
         "UNPRICED": "{{ count }} ingredients without price: the cost is understated.",
         "STALE": "A price changed since the last calculation; save or recalculate.",
         "EMPTY": "Add ingredients to see the cost."
-      }
+      },
+      "USE_RECIPE_TIME": "Use the recipe time ({{ time }})",
+      "UNITS_PER_BATCH": "Units per batch",
+      "UNITS_PER_BATCH_PLACEHOLDER": "One per {{ unit }} ({{ count }})",
+      "FIXED_ROW_COST_HINT": "Cost of this row at the base yield, calculated by the server.",
+      "MANAGE_FIXED_COSTS": "Manage fixed costs"
     },
     "FILES": {
       "DROP": "Drag files here or click to select them",
@@ -2396,6 +2425,244 @@
       "WITHOUT": "Without",
       "LOAD_FAILED": "Could not load the recipe",
       "BELOW_COST": "The unit price is below cost: this sale loses money."
+    },
+    "PRICING": {
+      "METHOD": "Pricing method",
+      "MARKUP": {
+        "LABEL": "Markup on cost",
+        "SHORT": "Markup",
+        "HINT": "Profit is a % of the cost",
+        "TARGET": "Target markup",
+        "FORMULA": "Price = cost × (1 + %)",
+        "SUGGESTED": "Suggested price (markup {{ percent }} %)"
+      },
+      "MARGIN": {
+        "LABEL": "Margin on price",
+        "SHORT": "Margin",
+        "HINT": "Profit is a % of the selling price",
+        "TARGET": "Target margin",
+        "FORMULA": "Price = cost ÷ (1 − %)",
+        "SUGGESTED": "Suggested price (margin {{ percent }} %)"
+      },
+      "REAL": "Real margin {{ margin }} % · markup {{ markup }} %",
+      "PENDING_METHOD": "The price shown still uses the previous method; it updates once the server recalculates with the method chosen.",
+      "MARGIN_TOO_HIGH": "With margin on price the percentage must be below 100 %."
+    },
+    "SECTIONS": {
+      "TITLE": "Ingredient sections",
+      "MANAGE": "Manage sections",
+      "HINT": "Labels to group ingredients (sponge, soak, filling…). They are yours: add, rename, reorder or delete them.",
+      "NEW_PLACEHOLDER": "New section, e.g. Syrup",
+      "UNSAVED": "Used in this recipe, not saved",
+      "SAVE_TAG": "Save as section",
+      "USAGE": "In {{ count }} ingredients of your recipes",
+      "UNUSED": "Unused",
+      "COLOR": "Colour",
+      "NO_COLOR": "No colour",
+      "EMPTY": "No sections yet. Add the first one or restore the defaults.",
+      "RESTORE": "Restore defaults",
+      "RESTORED": "Default sections restored",
+      "CREATED": "Section “{{ name }}” added",
+      "DELETED": "Section “{{ name }}” deleted",
+      "DELETE_MESSAGE": "The section “{{ name }}” will be deleted.",
+      "DELETE_IN_USE": "“{{ name }}” is used by {{ count }} ingredients. Recipes keep the name; it just stops being suggested.",
+      "ERRORS": {
+        "DUPLICATE": "A section with that name already exists.",
+        "TOO_LONG": "{{ max }} characters at most."
+      }
+    },
+    "COVER": {
+      "TITLE": "Recipe image",
+      "ADD": "Add image",
+      "ADD_HINT": "Drop a photo or click",
+      "CHANGE": "Change",
+      "REMOVE": "Remove image",
+      "NONE": "No image",
+      "ALT": "Image of {{ name }}",
+      "PENDING": "Uploads on save",
+      "DROP": "Drop a photo here or click to choose one",
+      "LIMITS": "JPG, PNG or WebP · up to {{ max }} MB · at least {{ min }} px wide. Cropped to 4:3.",
+      "FROM_FILES": "Or use an image from the recipe files",
+      "APPLY": "Use this image",
+      "WAITING_SAVE": "The image will upload when you save the recipe.",
+      "UPLOAD_FAILED": "The image could not be uploaded",
+      "REMOVE_TITLE": "Remove the image?",
+      "REMOVE_MESSAGE": "The recipe will have no cover. The image stays in Files.",
+      "REMOVED": "Image removed",
+      "ERRORS": {
+        "TYPE": "Format not allowed. Use JPG, PNG or WebP.",
+        "SIZE": "The image is over {{ max }} MB.",
+        "DIMENSIONS": "The image is too small: at least {{ min }} px wide.",
+        "LOAD": "The image could not be read."
+      }
+    },
+    "BOOK": {
+      "TITLE": "Book mode",
+      "OPEN": "View as book",
+      "OPEN_SHORT": "Book mode",
+      "OPEN_HINT": "Read the recipe step by step, like a cookbook",
+      "SAVED_VERSION": "Shows the last saved version",
+      "SCALE": "Quantity",
+      "CUSTOM_YIELD": "Custom yield",
+      "TARGET_YIELD": "I want to make ({{ unit }})",
+      "BASE_YIELD": "The recipe yields {{ count }} {{ unit }}.",
+      "TYPE_SIZE": "Text size",
+      "TYPE_SM": "Small text",
+      "TYPE_MD": "Normal text",
+      "TYPE_LG": "Large text",
+      "AWAKE_ON": "Screen kept on (active)",
+      "AWAKE_OFF": "Keep the screen on",
+      "AWAKE_FAILED": "The browser did not allow keeping the screen on.",
+      "PRINT": "Print",
+      "PREV": "Previous page",
+      "NEXT": "Next page",
+      "CONTENTS": "Contents",
+      "CHAPTERS": {
+        "COVER": "Cover",
+        "INGREDIENTS": "Ingredients",
+        "PROCESS": "Method",
+        "NOTES": "Notes & storage"
+      },
+      "PAGE_OF": "Page {{ from }}–{{ to }} of {{ total }}",
+      "KEYS_HINT": "Use ← → or swipe to turn the page",
+      "YIELDS": "Yields",
+      "TOTAL_TIME": "Total time",
+      "FOR_YIELD": "For {{ count }} {{ unit }}",
+      "CONTINUED": "continued",
+      "STEP_COUNT": "{{ count }} steps · tap the number to tick it",
+      "MARK_STEP": "Mark step {{ number }}",
+      "NO_PROCESS": "This recipe has no documented method yet.",
+      "WRITE_PROCESS": "Write the method",
+      "TIMES": "Times",
+      "NO_STORAGE": "No storage instructions.",
+      "INGREDIENT_NOTES": "Ingredient notes",
+      "RESET_CHECKS": "Clear all ticks"
+    }
+  },
+  "GUIDE": {
+    "TITLE": "Baker's guide",
+    "DESCRIPTION": "Calculators, pans, food safety, techniques and costing rules",
+    "LOAD_FAILED": "The guide could not be loaded",
+    "OFFLINE": "Showing the content bundled with the app. Your custom pans will be available once the server publishes the guide.",
+    "OFFLINE_SHORT": "Available once the server publishes the guide",
+    "SEARCH": "Search the guide…",
+    "NO_RESULTS": "No results",
+    "SOURCES": "Sources",
+    "TABS": {
+      "CALCULATORS": "Calculators",
+      "PANS": "Pans",
+      "SAFETY": "Food safety",
+      "TECHNIQUES": "Techniques & types",
+      "COSTING": "Costing rules"
+    },
+    "SHAPES": {
+      "ROUND": "Round",
+      "SPRINGFORM": "Springform",
+      "SQUARE": "Square",
+      "RECTANGULAR": "Rectangular",
+      "SHEET": "Sheet",
+      "LOAF": "Loaf",
+      "BUNDT": "Bundt / tube",
+      "MUFFIN": "Cupcake / muffin"
+    },
+    "PORTIONS": {
+      "EVENT": "Event slice",
+      "DESSERT": "Dessert slice"
+    },
+    "PANS": {
+      "ADD": "Add pan",
+      "EDIT": "Edit pan",
+      "ALL_SHAPES": "All shapes",
+      "PORTION_STYLE": "Portion type",
+      "SHAPE": "Shape",
+      "SIZE": "Size",
+      "CAPACITY": "Capacity",
+      "CAPACITY_HINT": "Volume of the pan filled to the rim",
+      "BATTER": "Suggested batter",
+      "BATTER_HINT": "Half full (cake, sheet) or two thirds (loaf, bundt, cupcake)",
+      "SERVINGS": "Servings",
+      "SERVINGS_HINT": "Event: 2.5 × 5 cm · Dessert: 4 × 5 cm, for 10 cm tall cakes",
+      "MINE": "Mine",
+      "NAME_PLACEHOLDER": "e.g. Tall round 20 cm",
+      "DIAMETER": "Diameter",
+      "LENGTH": "Length",
+      "WIDTH": "Width",
+      "HEIGHT": "Height",
+      "VOLUME_OVERRIDE": "Capacity (optional)",
+      "SERVINGS_OVERRIDE": "Servings (optional)",
+      "OVERRIDE_HINT": "Leave empty to calculate them from the size. Use them for pans with special shapes.",
+      "NOTES": "Notes",
+      "SIZE_REQUIRED": "Enter the pan size.",
+      "CREATED": "Pan “{{ name }}” added",
+      "UPDATED": "Pan “{{ name }}” updated",
+      "DELETED": "Pan “{{ name }}” deleted",
+      "FOOTNOTE": "Approximate values. Servings are calculated from the pan area; real capacity varies by manufacturer."
+    },
+    "CALC": {
+      "PRICE": {
+        "TITLE": "Price & margin",
+        "SUBTITLE": "Work out a selling price or analyse a price you already have.",
+        "MODES": {
+          "FORWARD": "Calculate price",
+          "REVERSE": "I have a price"
+        },
+        "UNIT_COST": "Unit cost",
+        "INGREDIENT_COST": "Ingredient cost (optional)",
+        "SAME_AS_COST": "Same as cost",
+        "ROUND_TO": "Round to",
+        "NO_ROUNDING": "No rounding",
+        "TAX": "Tax",
+        "SALE_PRICE": "Selling price (before tax)",
+        "PRICE": "Selling price (before tax)",
+        "WITH_TAX": "Tax {{ tax }} · total {{ total }}",
+        "PROFIT": "Profit",
+        "FOOD_COST": "Food cost",
+        "FOOD_COST_HINT": "Ingredients ÷ price before tax. Common reference: 25–35 %.",
+        "BELOW_COST": "The price is below cost.",
+        "FILL_IN": "Enter the cost and the percentage."
+      },
+      "PAN": {
+        "TITLE": "Pan conversion",
+        "SUBTITLE": "Adapt a recipe to another pan size or shape.",
+        "FROM": "The recipe is for",
+        "TO": "I want to use",
+        "SWAP": "Swap",
+        "FACTOR": "Multiply every ingredient by",
+        "BASIS": {
+          "AREA": "Same batter depth: pan areas are compared.",
+          "VOLUME": "Batter volume is compared (bundt or cavities)."
+        },
+        "BATTER_FROM": "Batter (from)",
+        "BATTER_TO": "Batter (to)",
+        "SERVINGS": "Servings (event)",
+        "CAVITIES": "Cavities from the original recipe",
+        "APPLY_TO_RECIPE": "Open a recipe with this factor",
+        "PICK": "Choose both pans."
+      },
+      "TEMP": {
+        "TITLE": "Oven temperature",
+        "SUBTITLE": "°C, °F, gas mark and fan ovens.",
+        "GAS_MARK": "Gas mark",
+        "CONVECTION": "Fan oven",
+        "CONVECTION_HINT": "Fan ovens bake hotter: lower by about 20 °C."
+      },
+      "VOLUME": {
+        "TITLE": "Cups and spoons to grams",
+        "SUBTITLE": "Convert volume measures to each ingredient's weight.",
+        "MEASURE": "Measure",
+        "US_CUP": "US cup (237 ml)",
+        "METRIC_CUP": "Metric cup (250 ml)",
+        "WEIGHS": "Weighs",
+        "MEASURES": {
+          "CUP": "Cup",
+          "HALF_CUP": "½ cup",
+          "THIRD_CUP": "⅓ cup",
+          "QUARTER_CUP": "¼ cup",
+          "TABLESPOON": "Tablespoon (15 ml)",
+          "TEASPOON": "Teaspoon (5 ml)"
+        },
+        "HINT": "Averages for a spooned and levelled cup. To cost and repeat results, always weigh."
+      }
     }
   }
 }

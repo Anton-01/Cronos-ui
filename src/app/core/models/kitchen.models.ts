@@ -207,6 +207,13 @@ export type RecipeStatus = 'DRAFT' | 'ACTIVE' | 'ARCHIVED';
 export type RecipeDifficulty = 'EASY' | 'MEDIUM' | 'ADVANCED';
 export type CostStatus = 'CURRENT' | 'STALE' | 'INCOMPLETE';
 export type AllergenSource = 'INGREDIENT' | 'DETECTED' | 'MANUAL';
+/**
+ * How `targetMarginPercent` turns a cost into a suggested price.
+ * `MARKUP`: price = cost × (1 + p/100) — what every server before
+ * `pricingMethod` existed computes, so an absent value means MARKUP.
+ * `MARGIN`: price = cost ÷ (1 − p/100), p < 100 — the profit is p % of the price.
+ */
+export type PricingMethod = 'MARKUP' | 'MARGIN';
 
 export interface RecipeLineAllergen {
   allergenId: number;
@@ -246,6 +253,8 @@ export interface RecipeFixedCost {
   method: FixedCostMethod;
   minutes: number | null;
   percentage: number | null;
+  /** PER_UNIT only: units consumed per batch (e.g. 1 box per cake). `null` = one per yield unit. */
+  quantity?: number | null;
   cost: number;
 }
 
@@ -256,8 +265,10 @@ export interface RecipeCost {
   fixedCosts: number;
   totalCost: number;
   costPerUnit: number;
-  /** `costPerUnit × (1 + targetMarginPercent/100)`, rounded per finance settings. */
+  /** From `costPerUnit` and `targetMarginPercent` by `pricingMethod`, rounded per finance settings. */
   suggestedUnitPrice: number;
+  /** Method the server actually applied. Absent on servers that predate it, which apply MARKUP. */
+  pricingMethod?: PricingMethod;
   currency: string;
   status: CostStatus;
   /** Lines without a price (cost is understated while > 0). */
@@ -296,6 +307,7 @@ export interface RecipeSummary {
   costPerUnit: number | null;
   suggestedUnitPrice: number | null;
   targetMarginPercent: number;
+  pricingMethod?: PricingMethod;
   costStatus: CostStatus;
   costCalculatedAt: string | null;
   totalMinutes: number;
@@ -343,6 +355,8 @@ export interface RecipeFixedCostRequest {
   userFixedCostId: string;
   minutes: number | null;
   percentage: number | null;
+  /** PER_UNIT only; see `RecipeFixedCost.quantity`. */
+  quantity: number | null;
 }
 
 /** Whole-aggregate save (POST create / PUT update). */
@@ -362,6 +376,7 @@ export interface RecipeRequest {
   storageInstructions: string | null;
   processHtml: string | null;
   targetMarginPercent: number;
+  pricingMethod: PricingMethod;
   wastePercent: number;
   lines: RecipeLineRequest[];
   fixedCosts: RecipeFixedCostRequest[];
@@ -405,11 +420,14 @@ export interface RecipeCostPreviewRequest {
   yieldQuantity: number;
   wastePercent: number;
   targetMarginPercent: number;
+  pricingMethod: PricingMethod;
   configuration: RecipeConfiguration | null;
 }
 
 export interface RecipeCostPreview {
   lines: { lineKey: string; ingredientId: string; lineCost: number | null; priceSource: PriceSource }[];
+  /** Cost of each fixed-cost row; absent on servers that predate it. */
+  fixedCosts?: { userFixedCostId: string; cost: number }[];
   cost: RecipeCost;
   allergens: AllergenRef[];
 }
@@ -427,4 +445,27 @@ export interface RecipeRevision {
 export interface RecipeFileUpdateRequest {
   description: string | null;
   isCover: boolean;
+}
+
+// ─── Recipe sections (ingredient group labels) ───
+
+/**
+ * A reusable label for grouping recipe lines ("Bizcocho", "Baño", "Decoración").
+ * Owned by the user: seeded with defaults, then freely renamed, reordered or
+ * removed. Lines keep the section as text, so deleting a label never touches
+ * a saved recipe.
+ */
+export interface RecipeSection {
+  id: string;
+  name: string;
+  /** Hex colour (`#RRGGBB`) for the group heading, or `null` for the default. */
+  color: string | null;
+  displayOrder: number;
+  /** Lines in the user's recipes that use this name (case-insensitive). */
+  usageCount: number;
+}
+
+export interface RecipeSectionRequest {
+  name: string;
+  color: string | null;
 }

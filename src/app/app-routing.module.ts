@@ -67,6 +67,12 @@ export const routes: Routes = [
       },
     ],
   },
+  // Full-screen cookbook view: outside the app shell so it reads (and prints) like a book.
+  {
+    path: 'cronos/recetas/:id/libro',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/cronos/recipes/recipe-book/recipe-book.component').then((m) => m.RecipeBookComponent),
+  },
   {
     path: '',
     canActivate: [authGuard],

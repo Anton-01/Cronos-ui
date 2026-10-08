@@ -70,6 +70,10 @@ export function buildNavSections(can: (permission: string) => boolean, canManage
       ],
     },
     {
+      labelKey: 'NAV.SECTIONS.RESOURCES',
+      items: [{ labelKey: 'NAV.ITEMS.BAKING_GUIDE', icon: 'pi pi-compass', route: '/cronos/guia-reposteria' }],
+    },
+    {
       labelKey: 'NAV.SECTIONS.CATALOGS',
       items: [
         { labelKey: 'NAV.ITEMS.UNIT_TYPES', icon: 'pi pi-sitemap', route: '/cronos/tipos-unidad' },

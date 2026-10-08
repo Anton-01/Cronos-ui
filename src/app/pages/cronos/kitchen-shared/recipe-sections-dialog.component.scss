@@ -1,0 +1,81 @@
+.unsaved-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  background: var(--surface-hover);
+}
+
+.section-list {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  max-height: 22rem;
+  overflow-y: auto;
+}
+
+.section-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.25rem;
+
+  & + & {
+    border-top: 1px solid var(--surface-border);
+  }
+}
+
+.section-chip {
+  --section-color: var(--p-primary-color);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid transparent;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--section-color) 14%, transparent);
+  color: var(--section-color);
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+:host-context(.app-dark) .section-chip {
+  color: color-mix(in srgb, var(--section-color) 55%, white);
+}
+
+.section-chip-ghost {
+  border-style: dashed;
+  border-color: var(--surface-border);
+  background: transparent;
+  color: var(--text-color);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    border-color: var(--p-primary-color);
+  }
+}
+
+.color-swatch {
+  width: 1.6rem;
+  height: 1.6rem;
+  border: 2px solid var(--surface-card);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--surface-border);
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--p-primary-color);
+    outline-offset: 2px;
+  }
+}
+
+.color-swatch-none {
+  background: linear-gradient(135deg, transparent 45%, var(--p-red-400) 45% 55%, transparent 55%), var(--surface-card);
+}
+
+.color-swatch-selected {
+  box-shadow: 0 0 0 2px var(--p-primary-color);
+}

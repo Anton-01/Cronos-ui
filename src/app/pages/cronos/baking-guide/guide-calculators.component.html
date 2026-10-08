@@ -1,0 +1,176 @@
+<div class="calc-grid">
+  <!-- Price & margin -->
+  <p-card styleClass="h-full">
+    <ng-template pTemplate="title"><i class="pi pi-dollar mr-2 text-primary" aria-hidden="true"></i>{{ 'GUIDE.CALC.PRICE.TITLE' | translate }}</ng-template>
+    <ng-template pTemplate="subtitle">{{ 'GUIDE.CALC.PRICE.SUBTITLE' | translate }}</ng-template>
+    <div class="flex flex-column gap-3">
+      <p-selectbutton [options]="priceModeOptions()" [ngModel]="priceMode()" (ngModelChange)="priceMode.set($event)" optionLabel="label" optionValue="value" [allowEmpty]="false" size="small" />
+      <div class="grid">
+        <div class="col-12 sm:col-6 flex flex-column gap-1">
+          <label for="calcCost" class="text-sm font-medium">{{ 'GUIDE.CALC.PRICE.UNIT_COST' | translate }}</label>
+          <p-inputnumber inputId="calcCost" [ngModel]="unitCost()" (ngModelChange)="unitCost.set($event)" [minFractionDigits]="2" [maxFractionDigits]="4" [min]="0" [suffix]="' ' + currency()" styleClass="w-full" />
+        </div>
+        <div class="col-12 sm:col-6 flex flex-column gap-1">
+          <label for="calcIngredients" class="text-sm font-medium">{{ 'GUIDE.CALC.PRICE.INGREDIENT_COST' | translate }}</label>
+          <p-inputnumber inputId="calcIngredients" [ngModel]="ingredientCost()" (ngModelChange)="ingredientCost.set($event)" [minFractionDigits]="2" [maxFractionDigits]="4" [min]="0" [suffix]="' ' + currency()" styleClass="w-full" [placeholder]="'GUIDE.CALC.PRICE.SAME_AS_COST' | translate" />
+        </div>
+        @if (priceMode() === 'FORWARD') {
+          <div class="col-12 sm:col-6 flex flex-column gap-1">
+            <label for="calcMethod" class="text-sm font-medium">{{ 'KITCHEN.PRICING.METHOD' | translate }}</label>
+            <p-select inputId="calcMethod" [options]="methodOptions()" [ngModel]="method()" (ngModelChange)="method.set($event)" optionLabel="label" optionValue="value" styleClass="w-full" />
+          </div>
+          <div class="col-6 sm:col-3 flex flex-column gap-1">
+            <label for="calcPercent" class="text-sm font-medium">{{ 'KITCHEN.PRICING.' + method() + '.TARGET' | translate }}</label>
+            <p-inputnumber inputId="calcPercent" [ngModel]="percent()" (ngModelChange)="percent.set($event)" suffix=" %" [maxFractionDigits]="1" [min]="0" [max]="method() === 'MARGIN' ? 99.9 : 1000" styleClass="w-full" />
+          </div>
+          <div class="col-6 sm:col-3 flex flex-column gap-1">
+            <label for="calcRound" class="text-sm font-medium">{{ 'GUIDE.CALC.PRICE.ROUND_TO' | translate }}</label>
+            <p-select inputId="calcRound" [options]="roundingOptions()" [ngModel]="rounding()" (ngModelChange)="rounding.set($event)" optionLabel="label" optionValue="value" styleClass="w-full" />
+          </div>
+        } @else {
+          <div class="col-12 sm:col-6 flex flex-column gap-1">
+            <label for="calcSale" class="text-sm font-medium">{{ 'GUIDE.CALC.PRICE.SALE_PRICE' | translate }}</label>
+            <p-inputnumber inputId="calcSale" [ngModel]="salePrice()" (ngModelChange)="salePrice.set($event)" [minFractionDigits]="2" [maxFractionDigits]="2" [min]="0" [suffix]="' ' + currency()" styleClass="w-full" />
+          </div>
+        }
+        <div class="col-6 sm:col-3 flex flex-column gap-1">
+          <label for="calcTax" class="text-sm font-medium">{{ 'GUIDE.CALC.PRICE.TAX' | translate }}</label>
+          <p-inputnumber inputId="calcTax" [ngModel]="taxPercent()" (ngModelChange)="setTax($event)" suffix=" %" [maxFractionDigits]="2" [min]="0" [max]="100" styleClass="w-full" />
+        </div>
+      </div>
+
+      @if (priceResult(); as r) {
+        <div class="calc-result">
+          <div class="calc-result-main">
+            <span class="text-xs uppercase font-semibold">{{ 'GUIDE.CALC.PRICE.PRICE' | translate }}</span>
+            <span class="text-3xl font-bold font-mono">{{ r.price | number: '1.2-2' }} <small class="text-base">{{ currency() }}</small></span>
+            <span class="text-sm">{{ 'GUIDE.CALC.PRICE.WITH_TAX' | translate: { tax: (r.tax | number: '1.2-2'), total: (r.withTax | number: '1.2-2') } }}</span>
+          </div>
+          <dl class="calc-stats">
+            <div><dt>{{ 'GUIDE.CALC.PRICE.PROFIT' | translate }}</dt><dd [class.text-red-500]="r.profit < 0">{{ r.profit | number: '1.2-2' }}</dd></div>
+            <div><dt>{{ 'KITCHEN.PRICING.MARGIN.SHORT' | translate }}</dt><dd>{{ r.margin === null ? '—' : (r.margin | number: '1.0-1') + ' %' }}</dd></div>
+            <div><dt>{{ 'KITCHEN.PRICING.MARKUP.SHORT' | translate }}</dt><dd>{{ r.markup === null ? '—' : (r.markup | number: '1.0-1') + ' %' }}</dd></div>
+            <div [pTooltip]="'GUIDE.CALC.PRICE.FOOD_COST_HINT' | translate"><dt>{{ 'GUIDE.CALC.PRICE.FOOD_COST' | translate }}</dt><dd [class.text-orange-500]="(r.foodCost ?? 0) > 35">{{ r.foodCost === null ? '—' : (r.foodCost | number: '1.0-1') + ' %' }}</dd></div>
+          </dl>
+        </div>
+        @if (r.profit < 0) {
+          <small class="text-red-500"><i class="pi pi-exclamation-circle mr-1" aria-hidden="true"></i>{{ 'GUIDE.CALC.PRICE.BELOW_COST' | translate }}</small>
+        }
+      } @else {
+        <small class="text-color-secondary">{{ 'GUIDE.CALC.PRICE.FILL_IN' | translate }}</small>
+      }
+    </div>
+  </p-card>
+
+  <!-- Pan converter -->
+  <p-card styleClass="h-full">
+    <ng-template pTemplate="title"><i class="pi pi-stop-circle mr-2 text-primary" aria-hidden="true"></i>{{ 'GUIDE.CALC.PAN.TITLE' | translate }}</ng-template>
+    <ng-template pTemplate="subtitle">{{ 'GUIDE.CALC.PAN.SUBTITLE' | translate }}</ng-template>
+    <div class="flex flex-column gap-3">
+      <div class="flex flex-wrap align-items-end gap-2">
+        <div class="flex flex-column gap-1 flex-1 min-w-0">
+          <label for="panFrom" class="text-sm font-medium">{{ 'GUIDE.CALC.PAN.FROM' | translate }}</label>
+          <p-select inputId="panFrom" [options]="panGroups()" [group]="true" [ngModel]="fromPanId()" (ngModelChange)="fromPanId.set($event)" optionLabel="label" optionValue="value" [filter]="true" styleClass="w-full" />
+        </div>
+        <p-button icon="pi pi-arrow-right-arrow-left" [text]="true" [rounded]="true" severity="secondary" [pTooltip]="'GUIDE.CALC.PAN.SWAP' | translate" [ariaLabel]="'GUIDE.CALC.PAN.SWAP' | translate" (onClick)="swapPans()" />
+        <div class="flex flex-column gap-1 flex-1 min-w-0">
+          <label for="panTo" class="text-sm font-medium">{{ 'GUIDE.CALC.PAN.TO' | translate }}</label>
+          <p-select inputId="panTo" [options]="panGroups()" [group]="true" [ngModel]="toPanId()" (ngModelChange)="toPanId.set($event)" optionLabel="label" optionValue="value" [filter]="true" styleClass="w-full" />
+        </div>
+      </div>
+      @if (panResult(); as r) {
+        <div class="calc-result">
+          <div class="calc-result-main">
+            <span class="text-xs uppercase font-semibold">{{ 'GUIDE.CALC.PAN.FACTOR' | translate }}</span>
+            <span class="text-3xl font-bold font-mono">× {{ r.factor | number: '1.2-2' }}</span>
+            <span class="text-sm">{{ 'GUIDE.CALC.PAN.BASIS.' + r.basis | translate }}</span>
+          </div>
+          <dl class="calc-stats">
+            <div><dt>{{ 'GUIDE.CALC.PAN.BATTER_FROM' | translate }}</dt><dd>{{ r.fromBatter === null ? '—' : '≈ ' + (r.fromBatter | number: '1.0-0') + ' ml' }}</dd></div>
+            <div><dt>{{ 'GUIDE.CALC.PAN.BATTER_TO' | translate }}</dt><dd>{{ r.toBatter === null ? '—' : '≈ ' + (r.toBatter | number: '1.0-0') + ' ml' }}</dd></div>
+            <div><dt>{{ 'GUIDE.CALC.PAN.SERVINGS' | translate }}</dt><dd>{{ r.fromServings ?? '—' }} → {{ r.toServings ?? '—' }}</dd></div>
+            @if (r.cavities !== null) {
+              <div><dt>{{ 'GUIDE.CALC.PAN.CAVITIES' | translate }}</dt><dd>≈ {{ r.cavities }}</dd></div>
+            }
+          </dl>
+        </div>
+        <p-divider styleClass="my-0" />
+        <div class="flex flex-column gap-1">
+          <label for="panRecipe" class="text-sm font-medium">{{ 'GUIDE.CALC.PAN.APPLY_TO_RECIPE' | translate }}</label>
+          <div class="flex gap-2">
+            <p-autocomplete inputId="panRecipe" [ngModel]="pickedRecipe()" (ngModelChange)="onRecipeModel($event)" [suggestions]="recipeSuggestions()" (completeMethod)="searchRecipes($event)" optionLabel="name" [minQueryLength]="2" [delay]="250" [forceSelection]="true" styleClass="flex-1" inputStyleClass="w-full" [placeholder]="'KITCHEN.RECIPES.SEARCH' | translate" />
+            <p-button icon="pi pi-book" [label]="'KITCHEN.BOOK.OPEN_SHORT' | translate" [disabled]="!pickedRecipe()" (onClick)="openScaled()" />
+          </div>
+        </div>
+      } @else {
+        <small class="text-color-secondary">{{ 'GUIDE.CALC.PAN.PICK' | translate }}</small>
+      }
+    </div>
+  </p-card>
+
+  <!-- Temperature -->
+  <p-card styleClass="h-full">
+    <ng-template pTemplate="title"><i class="pi pi-sun mr-2 text-primary" aria-hidden="true"></i>{{ 'GUIDE.CALC.TEMP.TITLE' | translate }}</ng-template>
+    <ng-template pTemplate="subtitle">{{ 'GUIDE.CALC.TEMP.SUBTITLE' | translate }}</ng-template>
+    <div class="flex flex-column gap-3">
+      <div class="grid">
+        <div class="col-6 flex flex-column gap-1">
+          <label for="tempC" class="text-sm font-medium">°C</label>
+          <p-inputnumber inputId="tempC" [ngModel]="celsius()" (ngModelChange)="celsius.set($event)" suffix=" °C" [min]="-50" [max]="400" styleClass="w-full" />
+        </div>
+        <div class="col-6 flex flex-column gap-1">
+          <label for="tempF" class="text-sm font-medium">°F</label>
+          <p-inputnumber inputId="tempF" [ngModel]="fahrenheit()" (ngModelChange)="setFahrenheit($event)" suffix=" °F" [min]="-60" [max]="750" styleClass="w-full" />
+        </div>
+      </div>
+      <dl class="calc-stats">
+        <div><dt>{{ 'GUIDE.CALC.TEMP.GAS_MARK' | translate }}</dt><dd>{{ gasMark() ?? '—' }}</dd></div>
+        <div [pTooltip]="'GUIDE.CALC.TEMP.CONVECTION_HINT' | translate"><dt>{{ 'GUIDE.CALC.TEMP.CONVECTION' | translate }}</dt><dd>{{ convection() === null ? '—' : convection() + ' °C' }}</dd></div>
+      </dl>
+      <div class="flex flex-wrap gap-2">
+        @for (entry of gasMarks; track entry.mark) {
+          <button type="button" class="temp-chip" [class.temp-chip-active]="gasMark() === entry.mark" (click)="celsius.set(entry.celsius)">{{ entry.mark }} · {{ entry.celsius }} °C</button>
+        }
+      </div>
+    </div>
+  </p-card>
+
+  <!-- Volume ↔ weight -->
+  <p-card styleClass="h-full">
+    <ng-template pTemplate="title"><i class="pi pi-filter mr-2 text-primary" aria-hidden="true"></i>{{ 'GUIDE.CALC.VOLUME.TITLE' | translate }}</ng-template>
+    <ng-template pTemplate="subtitle">{{ 'GUIDE.CALC.VOLUME.SUBTITLE' | translate }}</ng-template>
+    <div class="flex flex-column gap-3">
+      <div class="grid">
+        <div class="col-12 flex flex-column gap-1">
+          <label for="volIngredient" class="text-sm font-medium">{{ 'KITCHEN.RECIPES.ADD.INGREDIENT' | translate }}</label>
+          <p-select inputId="volIngredient" [options]="conversionOptions()" [ngModel]="conversionCode()" (ngModelChange)="conversionCode.set($event)" optionLabel="label" optionValue="value" [filter]="true" styleClass="w-full" />
+        </div>
+        <div class="col-4 flex flex-column gap-1">
+          <label for="volAmount" class="text-sm font-medium">{{ 'KITCHEN.RECIPES.QUANTITY' | translate }}</label>
+          <p-inputnumber inputId="volAmount" [ngModel]="amount()" (ngModelChange)="amount.set($event)" [maxFractionDigits]="2" [min]="0" styleClass="w-full" />
+        </div>
+        <div class="col-8 flex flex-column gap-1">
+          <label for="volMeasure" class="text-sm font-medium">{{ 'GUIDE.CALC.VOLUME.MEASURE' | translate }}</label>
+          <p-select inputId="volMeasure" [options]="measureOptions()" [ngModel]="measure()" (ngModelChange)="measure.set($event)" optionLabel="label" optionValue="value" styleClass="w-full" />
+        </div>
+        <div class="col-12">
+          <p-selectbutton [options]="cupOptions()" [ngModel]="cupMl()" (ngModelChange)="cupMl.set($event)" optionLabel="label" optionValue="value" [allowEmpty]="false" size="small" />
+        </div>
+      </div>
+      @if (grams() !== null) {
+        <div class="calc-result">
+          <div class="calc-result-main">
+            <span class="text-xs uppercase font-semibold">{{ 'GUIDE.CALC.VOLUME.WEIGHS' | translate }}</span>
+            <span class="text-3xl font-bold font-mono">≈ {{ grams() | number: '1.0-1' }} g</span>
+          </div>
+          <dl class="calc-stats">
+            @for (row of perMeasure(); track row.measure) {
+              <div><dt>{{ 'GUIDE.CALC.VOLUME.MEASURES.' + row.measure | translate }}</dt><dd>{{ row.grams | number: '1.0-1' }} g</dd></div>
+            }
+          </dl>
+        </div>
+      }
+      <small class="text-color-secondary">{{ 'GUIDE.CALC.VOLUME.HINT' | translate }}</small>
+    </div>
+  </p-card>
+</div>

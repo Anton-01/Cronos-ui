@@ -3,23 +3,28 @@ import { Observable, catchError, forkJoin, map, of, shareReplay } from 'rxjs';
 
 import { CategoryResponse, CategoryType } from 'src/app/core/models/category.model';
 import { UserFixedCostResponse } from 'src/app/core/models/domain.model';
+import { RecipeSection } from 'src/app/core/models/kitchen.models';
 import { MeasurementUnitOptionResponse, UnitDimension } from 'src/app/core/models/unit-catalog.models';
 import { CategoryService } from 'src/app/core/services/domain/category.service';
 import { MeasurementUnitService } from 'src/app/core/services/domain/measurement-unit.service';
+import { RecipeSectionService } from 'src/app/core/services/domain/recipe-section.service';
 import { UserFixedCostService } from 'src/app/core/services/domain/user-fixed-cost.service';
 
 export interface KitchenLookups {
   units: MeasurementUnitOptionResponse[];
   ingredientCategories: CategoryResponse[];
   productCategories: CategoryResponse[];
+  /** Active and inactive; screens offer only the active ones for new assignments. */
   fixedCosts: UserFixedCostResponse[];
+  /** The user's ingredient-group labels, in their display order. */
+  recipeSections: RecipeSection[];
 }
 
-const EMPTY: KitchenLookups = { units: [], ingredientCategories: [], productCategories: [], fixedCosts: [] };
+const EMPTY: KitchenLookups = { units: [], ingredientCategories: [], productCategories: [], fixedCosts: [], recipeSections: [] };
 
 /**
  * Reference data every kitchen screen needs (units, categories, fixed
- * costs), fetched once per session and shared. A failing source degrades to
+ * costs, recipe sections), fetched once per session and shared. A failing source degrades to
  * an empty list instead of failing the screen.
  */
 @Injectable({ providedIn: 'root' })
@@ -27,6 +32,7 @@ export class KitchenLookupsStore {
   private readonly units = inject(MeasurementUnitService);
   private readonly categories = inject(CategoryService);
   private readonly fixedCostService = inject(UserFixedCostService);
+  private readonly sectionService = inject(RecipeSectionService);
 
   private cache$: Observable<KitchenLookups> | null = null;
   readonly snapshot = signal<KitchenLookups>(EMPTY);
@@ -46,7 +52,11 @@ export class KitchenLookupsStore {
         ingredientCategories: safe(this.categoriesOf('INGREDIENT')),
         productCategories: safe(this.categoriesOf('PRODUCT')),
         fixedCosts: safe(
-          this.fixedCostService.getAll({ page: 0, size: 200 }).pipe(map((response) => (response.data?.content ?? []).filter((cost) => cost.isActive))),
+          // All of them: a recipe may still reference one that was deactivated after it was assigned.
+          this.fixedCostService.getAll({ page: 0, size: 200 }).pipe(map((response) => response.data?.content ?? [])),
+        ),
+        recipeSections: safe(
+          this.sectionService.list().pipe(map((response) => (response.data ?? []).slice().sort((a, b) => a.displayOrder - b.displayOrder))),
         ),
       }).pipe(
         map((lookups) => {
@@ -65,6 +75,11 @@ export class KitchenLookupsStore {
 
   invalidate(): void {
     this.cache$ = null;
+  }
+
+  /** Applies a section-catalog edit in place, so open editors see it without a refetch. */
+  setRecipeSections(sections: RecipeSection[]): void {
+    this.snapshot.update((current) => ({ ...current, recipeSections: sections.slice().sort((a, b) => a.displayOrder - b.displayOrder) }));
   }
 
   /** Units usable for an ingredient of `dimension`; MASS⇄VOLUME only when it has a density. */

@@ -75,7 +75,8 @@
       "CATALOGS": "Catálogos",
       "ACCOUNT": "Cuenta",
       "ADMINISTRATION": "Administración",
-      "SETTINGS": "Configuración"
+      "SETTINGS": "Configuración",
+      "RESOURCES": "Recursos"
     },
     "ITEMS": {
       "DASHBOARD": "Tablero",
@@ -101,7 +102,8 @@
       "PERMISSION_GROUPS": "Grupos de permisos",
       "AUDIT_LOG": "Bitácora de auditoría",
       "SECURITY_POLICY": "Política de seguridad",
-      "FINANCE": "Monedas e impuestos"
+      "FINANCE": "Monedas e impuestos",
+      "BAKING_GUIDE": "Guía del repostero"
     }
   },
   "BREADCRUMB": {
@@ -456,20 +458,20 @@
     },
     "METHODS": {
       "HOURLY_RATE": {
-        "LABEL": "Tarifa por Hora",
-        "HINT": "Ideal para LABOR o UTILITY"
+        "LABEL": "Tarifa por hora",
+        "HINT": "Mano de obra y servicios que dependen del tiempo (gas, luz)"
       },
       "PER_UNIT": {
-        "LABEL": "Costo por Unidad",
-        "HINT": "Ideal para PACKAGING"
+        "LABEL": "Costo por unidad",
+        "HINT": "Empaque e insumos por pieza (cajas, domos, etiquetas)"
       },
       "FIXED_PER_BATCH": {
         "LABEL": "Costo fijo por lote producido",
-        "HINT": "Ideal para RENT u OVERHEAD"
+        "HINT": "Renta, depreciación o gastos generales prorrateados"
       },
       "PERCENTAGE": {
         "LABEL": "Porcentaje (%) sobre insumos",
-        "HINT": "Aplica un % global al costo total de la receta"
+        "HINT": "Un % del costo de ingredientes y merma de la receta"
       }
     },
     "ERRORS": {
@@ -484,6 +486,28 @@
       "UPDATED": "Costo fijo actualizado correctamente",
       "DELETED": "Costo fijo eliminado correctamente",
       "LOAD_FAILED": "Error al cargar costos fijos"
+    },
+    "PER": {
+      "HOURLY_RATE": " / h",
+      "PER_UNIT": " / unidad",
+      "FIXED_PER_BATCH": " / lote"
+    },
+    "APPLIES_BY_DEFAULT": "Aplicar a recetas nuevas",
+    "APPLIES_BY_DEFAULT_HINT": "Se agrega automáticamente al costeo de cada receta que crees.",
+    "APPLIES_BY_DEFAULT_BADGE": "Se aplica a recetas nuevas",
+    "MONTHLY": {
+      "TITLE": "¿Lo conoces por mes?",
+      "HINT": "Captura el gasto mensual y entre cuánto se reparte; Cronos calcula el monto.",
+      "AMOUNT": "Gasto mensual",
+      "APPLY": "Usar este monto",
+      "BASIS": {
+        "HOURLY_RATE": "Horas productivas al mes",
+        "HOURLY_RATE_PLACEHOLDER": "Ej. 160",
+        "PER_UNIT": "Unidades al mes",
+        "PER_UNIT_PLACEHOLDER": "Ej. 300",
+        "FIXED_PER_BATCH": "Lotes producidos al mes",
+        "FIXED_PER_BATCH_PLACEHOLDER": "Ej. 200"
+      }
     }
   },
   "INGREDIENTS": {
@@ -2348,7 +2372,12 @@
         "UNPRICED": "{{ count }} ingredientes sin precio: el costo está subestimado.",
         "STALE": "Algún precio cambió desde el último cálculo; guarda o recalcula.",
         "EMPTY": "Agrega ingredientes para ver el costo."
-      }
+      },
+      "USE_RECIPE_TIME": "Usar el tiempo de la receta ({{ time }})",
+      "UNITS_PER_BATCH": "Unidades por lote",
+      "UNITS_PER_BATCH_PLACEHOLDER": "Una por {{ unit }} ({{ count }})",
+      "FIXED_ROW_COST_HINT": "Costo de esta línea para el rendimiento base, calculado por el servidor.",
+      "MANAGE_FIXED_COSTS": "Administrar costos fijos"
     },
     "FILES": {
       "DROP": "Arrastra archivos aquí o haz clic para seleccionarlos",
@@ -2396,6 +2425,244 @@
       "WITHOUT": "Sin",
       "LOAD_FAILED": "No se pudo cargar la receta",
       "BELOW_COST": "El precio unitario está por debajo del costo: esta venta genera pérdida."
+    },
+    "PRICING": {
+      "METHOD": "Método de precio",
+      "MARKUP": {
+        "LABEL": "Markup sobre costo",
+        "SHORT": "Markup",
+        "HINT": "La utilidad es un % del costo",
+        "TARGET": "Markup objetivo",
+        "FORMULA": "Precio = costo × (1 + %)",
+        "SUGGESTED": "Precio sugerido (markup {{ percent }} %)"
+      },
+      "MARGIN": {
+        "LABEL": "Margen sobre precio",
+        "SHORT": "Margen",
+        "HINT": "La utilidad es un % del precio de venta",
+        "TARGET": "Margen objetivo",
+        "FORMULA": "Precio = costo ÷ (1 − %)",
+        "SUGGESTED": "Precio sugerido (margen {{ percent }} %)"
+      },
+      "REAL": "Margen real {{ margin }} % · markup {{ markup }} %",
+      "PENDING_METHOD": "El precio mostrado aún usa el método anterior; se actualizará cuando el servidor recalcule con el método elegido.",
+      "MARGIN_TOO_HIGH": "Con margen sobre precio el porcentaje debe ser menor a 100 %."
+    },
+    "SECTIONS": {
+      "TITLE": "Secciones de ingredientes",
+      "MANAGE": "Administrar secciones",
+      "HINT": "Etiquetas para agrupar ingredientes (bizcocho, baño, relleno…). Son tuyas: agrégalas, renómbralas, ordénalas o elimínalas.",
+      "NEW_PLACEHOLDER": "Nueva sección, ej. Almíbar",
+      "UNSAVED": "Usadas en esta receta, sin guardar",
+      "SAVE_TAG": "Guardar como sección",
+      "USAGE": "En {{ count }} ingredientes de tus recetas",
+      "UNUSED": "Sin usar",
+      "COLOR": "Color",
+      "NO_COLOR": "Sin color",
+      "EMPTY": "Aún no tienes secciones. Agrega la primera o restaura las predeterminadas.",
+      "RESTORE": "Restaurar predeterminadas",
+      "RESTORED": "Secciones predeterminadas restauradas",
+      "CREATED": "Sección «{{ name }}» agregada",
+      "DELETED": "Sección «{{ name }}» eliminada",
+      "DELETE_MESSAGE": "Se eliminará la sección «{{ name }}».",
+      "DELETE_IN_USE": "«{{ name }}» se usa en {{ count }} ingredientes. Las recetas conservan el nombre; solo deja de sugerirse.",
+      "ERRORS": {
+        "DUPLICATE": "Ya existe una sección con ese nombre.",
+        "TOO_LONG": "Máximo {{ max }} caracteres."
+      }
+    },
+    "COVER": {
+      "TITLE": "Imagen de la receta",
+      "ADD": "Agregar imagen",
+      "ADD_HINT": "Arrastra una foto o haz clic",
+      "CHANGE": "Cambiar",
+      "REMOVE": "Quitar imagen",
+      "NONE": "Sin imagen",
+      "ALT": "Imagen de {{ name }}",
+      "PENDING": "Se subirá al guardar",
+      "DROP": "Arrastra una foto aquí o haz clic para elegirla",
+      "LIMITS": "JPG, PNG o WebP · hasta {{ max }} MB · mínimo {{ min }} px de ancho. Se recorta en 4:3.",
+      "FROM_FILES": "O usa una imagen de los archivos de la receta",
+      "APPLY": "Usar esta imagen",
+      "WAITING_SAVE": "La imagen se subirá cuando guardes la receta.",
+      "UPLOAD_FAILED": "No se pudo subir la imagen",
+      "REMOVE_TITLE": "¿Quitar la imagen?",
+      "REMOVE_MESSAGE": "La receta quedará sin portada. La imagen seguirá en Archivos.",
+      "REMOVED": "Imagen quitada",
+      "ERRORS": {
+        "TYPE": "Formato no permitido. Usa JPG, PNG o WebP.",
+        "SIZE": "La imagen supera {{ max }} MB.",
+        "DIMENSIONS": "La imagen es muy pequeña: mínimo {{ min }} px de ancho.",
+        "LOAD": "No se pudo leer la imagen."
+      }
+    },
+    "BOOK": {
+      "TITLE": "Modo libro",
+      "OPEN": "Ver como libro",
+      "OPEN_SHORT": "Modo libro",
+      "OPEN_HINT": "Lee la receta paso a paso, como en un libro de cocina",
+      "SAVED_VERSION": "Muestra la última versión guardada",
+      "SCALE": "Cantidad",
+      "CUSTOM_YIELD": "Rendimiento personalizado",
+      "TARGET_YIELD": "Quiero preparar ({{ unit }})",
+      "BASE_YIELD": "La receta rinde {{ count }} {{ unit }}.",
+      "TYPE_SIZE": "Tamaño de letra",
+      "TYPE_SM": "Letra chica",
+      "TYPE_MD": "Letra normal",
+      "TYPE_LG": "Letra grande",
+      "AWAKE_ON": "Pantalla siempre encendida (activado)",
+      "AWAKE_OFF": "Mantener la pantalla encendida",
+      "AWAKE_FAILED": "El navegador no permitió mantener la pantalla encendida.",
+      "PRINT": "Imprimir",
+      "PREV": "Página anterior",
+      "NEXT": "Página siguiente",
+      "CONTENTS": "Contenido",
+      "CHAPTERS": {
+        "COVER": "Portada",
+        "INGREDIENTS": "Ingredientes",
+        "PROCESS": "Preparación",
+        "NOTES": "Notas y conservación"
+      },
+      "PAGE_OF": "Página {{ from }}–{{ to }} de {{ total }}",
+      "KEYS_HINT": "Usa ← → o desliza para pasar página",
+      "YIELDS": "Rinde",
+      "TOTAL_TIME": "Tiempo total",
+      "FOR_YIELD": "Para {{ count }} {{ unit }}",
+      "CONTINUED": "continuación",
+      "STEP_COUNT": "{{ count }} pasos · toca el número para marcarlo",
+      "MARK_STEP": "Marcar paso {{ number }}",
+      "NO_PROCESS": "Esta receta aún no tiene proceso documentado.",
+      "WRITE_PROCESS": "Escribir el proceso",
+      "TIMES": "Tiempos",
+      "NO_STORAGE": "Sin instrucciones de conservación.",
+      "INGREDIENT_NOTES": "Notas de ingredientes",
+      "RESET_CHECKS": "Desmarcar todo"
+    }
+  },
+  "GUIDE": {
+    "TITLE": "Guía del repostero",
+    "DESCRIPTION": "Calculadoras, moldes, inocuidad, técnicas y reglas de costeo",
+    "LOAD_FAILED": "No se pudo cargar la guía",
+    "OFFLINE": "Mostrando el contenido incluido en la aplicación. Tus moldes personalizados estarán disponibles cuando el servidor publique la guía.",
+    "OFFLINE_SHORT": "Disponible cuando el servidor publique la guía",
+    "SEARCH": "Buscar en la guía…",
+    "NO_RESULTS": "Sin resultados",
+    "SOURCES": "Fuentes",
+    "TABS": {
+      "CALCULATORS": "Calculadoras",
+      "PANS": "Moldes",
+      "SAFETY": "Inocuidad",
+      "TECHNIQUES": "Técnicas y tipos",
+      "COSTING": "Reglas de costeo"
+    },
+    "SHAPES": {
+      "ROUND": "Redondo",
+      "SPRINGFORM": "Desmontable",
+      "SQUARE": "Cuadrado",
+      "RECTANGULAR": "Rectangular",
+      "SHEET": "Charola",
+      "LOAF": "Panqué",
+      "BUNDT": "Bundt / rosca",
+      "MUFFIN": "Cupcake / muffin"
+    },
+    "PORTIONS": {
+      "EVENT": "Porción evento",
+      "DESSERT": "Porción postre"
+    },
+    "PANS": {
+      "ADD": "Agregar molde",
+      "EDIT": "Editar molde",
+      "ALL_SHAPES": "Todas las formas",
+      "PORTION_STYLE": "Tipo de porción",
+      "SHAPE": "Forma",
+      "SIZE": "Medidas",
+      "CAPACITY": "Capacidad",
+      "CAPACITY_HINT": "Volumen del molde lleno hasta el borde",
+      "BATTER": "Masa sugerida",
+      "BATTER_HINT": "Llenado a la mitad (pastel, charola) o a dos tercios (panqué, bundt, cupcake)",
+      "SERVINGS": "Porciones",
+      "SERVINGS_HINT": "Evento: 2.5 × 5 cm · Postre: 4 × 5 cm, para pasteles de 10 cm de alto",
+      "MINE": "Mío",
+      "NAME_PLACEHOLDER": "Ej. Redondo 20 cm alto",
+      "DIAMETER": "Diámetro",
+      "LENGTH": "Largo",
+      "WIDTH": "Ancho",
+      "HEIGHT": "Alto",
+      "VOLUME_OVERRIDE": "Capacidad (opcional)",
+      "SERVINGS_OVERRIDE": "Porciones (opcional)",
+      "OVERRIDE_HINT": "Déjalos vacíos para calcularlos con las medidas. Úsalos en moldes con formas especiales.",
+      "NOTES": "Notas",
+      "SIZE_REQUIRED": "Captura las medidas del molde.",
+      "CREATED": "Molde «{{ name }}» agregado",
+      "UPDATED": "Molde «{{ name }}» actualizado",
+      "DELETED": "Molde «{{ name }}» eliminado",
+      "FOOTNOTE": "Valores aproximados. Las porciones se calculan con el área del molde; la capacidad real varía según el fabricante."
+    },
+    "CALC": {
+      "PRICE": {
+        "TITLE": "Precio y margen",
+        "SUBTITLE": "Calcula el precio de venta o analiza un precio que ya tienes.",
+        "MODES": {
+          "FORWARD": "Calcular precio",
+          "REVERSE": "Ya tengo precio"
+        },
+        "UNIT_COST": "Costo unitario",
+        "INGREDIENT_COST": "Costo de ingredientes (opcional)",
+        "SAME_AS_COST": "Igual al costo",
+        "ROUND_TO": "Redondear a",
+        "NO_ROUNDING": "Sin redondeo",
+        "TAX": "IVA",
+        "SALE_PRICE": "Precio de venta (sin IVA)",
+        "PRICE": "Precio de venta (sin IVA)",
+        "WITH_TAX": "IVA {{ tax }} · total {{ total }}",
+        "PROFIT": "Utilidad",
+        "FOOD_COST": "Food cost",
+        "FOOD_COST_HINT": "Ingredientes ÷ precio sin IVA. Referencia común: 25–35 %.",
+        "BELOW_COST": "El precio está por debajo del costo.",
+        "FILL_IN": "Captura el costo y el porcentaje."
+      },
+      "PAN": {
+        "TITLE": "Conversión de moldes",
+        "SUBTITLE": "Adapta una receta a otro tamaño o forma de molde.",
+        "FROM": "La receta es para",
+        "TO": "Quiero usar",
+        "SWAP": "Intercambiar",
+        "FACTOR": "Multiplica cada ingrediente por",
+        "BASIS": {
+          "AREA": "Misma altura de masa: se compara el área de los moldes.",
+          "VOLUME": "Se compara el volumen de masa (bundt o cavidades)."
+        },
+        "BATTER_FROM": "Masa (origen)",
+        "BATTER_TO": "Masa (destino)",
+        "SERVINGS": "Porciones (evento)",
+        "CAVITIES": "Cavidades con la receta original",
+        "APPLY_TO_RECIPE": "Abrir una receta con este factor",
+        "PICK": "Elige los dos moldes."
+      },
+      "TEMP": {
+        "TITLE": "Temperatura de horno",
+        "SUBTITLE": "°C, °F, marca de gas y horno de convección.",
+        "GAS_MARK": "Marca de gas",
+        "CONVECTION": "Con convección",
+        "CONVECTION_HINT": "Los hornos con ventilador hornean más fuerte: baja unos 20 °C."
+      },
+      "VOLUME": {
+        "TITLE": "Tazas y cucharadas a gramos",
+        "SUBTITLE": "Convierte medidas de volumen al peso de cada ingrediente.",
+        "MEASURE": "Medida",
+        "US_CUP": "Taza EE. UU. (237 ml)",
+        "METRIC_CUP": "Taza métrica (250 ml)",
+        "WEIGHS": "Pesa",
+        "MEASURES": {
+          "CUP": "Taza",
+          "HALF_CUP": "½ taza",
+          "THIRD_CUP": "⅓ taza",
+          "QUARTER_CUP": "¼ taza",
+          "TABLESPOON": "Cucharada (15 ml)",
+          "TEASPOON": "Cucharadita (5 ml)"
+        },
+        "HINT": "Valores promedio con la taza llenada a cucharadas y rasada. Para costear y repetir resultados, pesa siempre."
+      }
     }
   }
 }

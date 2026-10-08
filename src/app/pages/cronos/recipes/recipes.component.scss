@@ -14,6 +14,7 @@
 }
 
 .recipe-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -28,10 +29,37 @@
     transform: translateY(-2px);
   }
 
-  &:focus-visible {
-    outline: 2px solid var(--primary-color);
-    outline-offset: 2px;
+  &:focus-within {
+    box-shadow: var(--shadow-hover);
   }
+}
+
+.recipe-card-link {
+  text-decoration: none;
+
+  // Covers the whole card so any click on it opens the recipe.
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    border-radius: inherit;
+  }
+
+  &:focus-visible {
+    outline: none;
+
+    &::after {
+      outline: 2px solid var(--primary-color);
+      outline-offset: 2px;
+    }
+  }
+}
+
+// Interactive controls inside the card stay clickable above the stretched link.
+:host ::ng-deep .recipe-card-action {
+  position: relative;
+  z-index: 2;
 }
 
 .recipe-cover {

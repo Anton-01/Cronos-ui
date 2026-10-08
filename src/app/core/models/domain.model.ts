@@ -64,6 +64,11 @@ export interface UserFixedCostRequest {
   defaultAmount?: number;
   percentage?: number;
   calculationMethod: string;
+  /** Pre-filled on every new recipe. */
+  appliesByDefault?: boolean;
+  /** What the amount was derived from: a monthly figure and the monthly hours / batches / units it spreads over. */
+  monthlyAmount?: number | null;
+  monthlyBasis?: number | null;
 }
 
 export interface UserFixedCostResponse {
@@ -75,6 +80,10 @@ export interface UserFixedCostResponse {
   percentage: number | null;
   calculationMethod: string;
   isActive: boolean;
+  /** Optional on the wire until the server ships it (doc baking-studio §4). */
+  appliesByDefault?: boolean;
+  monthlyAmount?: number | null;
+  monthlyBasis?: number | null;
   createdAt: string;
   updatedAt: string;
 }

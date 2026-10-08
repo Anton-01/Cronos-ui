@@ -32,6 +32,10 @@ export class UserFixedCostService {
     return this.http.put<ApiResponse<UserFixedCostResponse>>(`${this.API}/${id}`, req);
   }
 
+  setActive(id: string, isActive: boolean): Observable<ApiResponse<UserFixedCostResponse>> {
+    return this.http.patch<ApiResponse<UserFixedCostResponse>>(`${this.API}/${id}/status`, { isActive });
+  }
+
   delete(id: string): Observable<ApiResponse<void>> {
     return this.http.delete<ApiResponse<void>>(`${this.API}/${id}`);
   }
