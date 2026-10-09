@@ -996,3 +996,26 @@ Rules introduced here:
   (`Location.replaceState`) so queued attachments keep uploading.
 - Quill (`quill@^2`) is a dependency for `p-editor`; `quill-delta` is listed in
   `allowedCommonJsDependencies`.
+
+---
+
+## 21. Baking Studio — cover, sections, book view, fixed costs, pricing method, guide — IMPLEMENTED
+
+Backend contract and seeds: `docs/api/baking-studio.md`. Builds on §20.
+
+| Piece | Path | Notes |
+|---|---|---|
+| Cover thumbnail | `recipes/recipe-studio/recipe-cover.component` | Above the live cost panel (`.studio-aside`, sticky on xl). Upload → 4:3 crop (`ngx-image-cropper`, 1600 px JPEG) → `PUT /recipes/{id}/cover`; pick an attached image; clear. A new recipe holds the crop and uploads after its first save; the leave guard counts it |
+| Section labels | `kitchen-shared/recipe-sections-dialog.component` | Per-user catalog (`/recipe-sections`) cached in `KitchenLookupsStore.recipeSections`; add/rename/colour/reorder/delete/restore. Lines keep `section` as text — a rename re-labels only the recipe open in the editor. Each line has a section picker |
+| Book view | `recipes/recipe-book/` | `/cronos/recetas/:id/libro`, registered in `app-routing.module.ts` **outside** the main layout (immersive, prints every page). Spread on ≥ 1100 px, one page below; ← → / swipe; scale presets, target yield, `?scale=`; ingredient + step checklists; type size (remembered in `localStorage`); Wake Lock. `book-pages.ts` splits Quill 2 HTML into steps and paginates |
+| Fixed costs | `fixed-costs/fixed-costs.component` | Active switch, finance-default currency (no hardcoded MXN/`$`), per-method suffix, "know it per month?" helper, "apply to new recipes". Any write calls `KitchenLookupsStore.invalidate()` |
+| Pricing method | `recipe-studio` + `kitchen-shared/pricing.ts` | `MARKUP` (legacy, `cost × (1+p)`) or `MARGIN` (`cost ÷ (1−p)`). The suggested-price label follows `cost.pricingMethod` from the server, never the form, so it always names what was computed; real margin/markup shown beside it |
+| Baker's guide | `pages/cronos/baking-guide/` | `/cronos/guia-reposteria?tab=…` — calculators (price & margin, pans, oven, volume→grams), pan sizes (+ user pans), food safety, techniques, costing rules. `BakingGuideService` falls back to `assets/baking-guide/seed.es-MX.json` (read via `HttpBackend`, no auth) and the page says so |
+
+Rules introduced here:
+
+- **Never `form.reset()` a group that holds a `FormArray` without passing the array's value.** The studio's `hydrate()` used to push the fixed-cost rows and then reset without `fixedCosts`, which blanked them; the next save sent `fixedCosts: []`. The reset now carries the rows.
+- **The lookups store keeps inactive fixed costs.** Screens offer only active ones for new assignments; a row keeps showing (labelled inactive) the cost it already references.
+- **Guide content is structured blocks rendered as text** — no `[innerHTML]` for API content. The book view's `[innerHTML]` is only for `processHtml`, which the server sanitises (kitchen K5) and Angular sanitises again.
+- **Calculator results are labelled "≈" and never saved or quoted**; the server stays the cost authority (§20).
+- The book stylesheet is split (`recipe-book.component.scss` shell, `recipe-book-pages.scss` page content) to stay under the 8 kB component-style budget.

@@ -23,6 +23,7 @@ import { AlertService } from 'src/app/shared/services/alert.service';
 import { AllergenBadgesComponent } from '../../kitchen-shared/allergen-badges.component';
 import { AllergenMatch, detectAllergens } from '../../kitchen-shared/allergen-detection';
 import { KitchenLookupsStore } from '../../kitchen-shared/kitchen-lookups.store';
+import { RecipeSectionsDialogComponent, sectionKey } from '../../kitchen-shared/recipe-sections-dialog.component';
 import { LineDraft, LineIssue, groupBySection, lineAllergens, lineFromIngredient, summarizeAllergens } from './recipe-draft';
 
 const MAX_LINES = 150;
@@ -56,6 +57,7 @@ const MAX_LINES = 150;
     ToggleSwitchModule,
     TooltipModule,
     AllergenBadgesComponent,
+    RecipeSectionsDialogComponent,
   ],
   templateUrl: './recipe-lines-editor.component.html',
   styleUrl: './recipe-lines-editor.component.scss',
@@ -84,6 +86,7 @@ export class RecipeLinesEditorComponent {
   protected readonly addUnitId = signal<number | null>(null);
   protected readonly addSection = signal<string>('');
   protected readonly sectionSuggestions = signal<string[]>([]);
+  protected readonly sectionsDialogOpen = signal(false);
 
   // Substitute dialog
   protected readonly substituteFor = signal<LineDraft | null>(null);
@@ -96,7 +99,17 @@ export class RecipeLinesEditorComponent {
 
   protected readonly groups = computed(() => groupBySection(this.lines()));
   protected readonly summary = computed(() => summarizeAllergens(this.lines()));
+  /** Sections used by this recipe, in first-appearance order. */
   protected readonly sections = computed(() => [...new Set(this.lines().map((line) => line.section?.trim()).filter((name): name is string => !!name))]);
+  /** The user's saved labels first (their order), then any used here that are not saved. */
+  protected readonly sectionNames = computed(() => {
+    const names = this.lookups.snapshot().recipeSections.map((section) => section.name);
+    const known = new Set(names.map(sectionKey));
+    return [...names, ...this.sections().filter((name) => !known.has(sectionKey(name)))];
+  });
+  private readonly sectionColors = computed(
+    () => new Map(this.lookups.snapshot().recipeSections.filter((section) => section.color).map((section) => [sectionKey(section.name), section.color!])),
+  );
   protected readonly issueByKey = computed(() => {
     const map = new Map<string, string>();
     for (const issue of this.issues()) {
@@ -148,8 +161,28 @@ export class RecipeLinesEditorComponent {
   }
 
   protected searchSections(event: AutoCompleteCompleteEvent): void {
-    const term = event.query.toLowerCase();
-    this.sectionSuggestions.set(this.sections().filter((section) => section.toLowerCase().includes(term)));
+    const term = event.query;
+    this.sectionSuggestions.set(this.sectionNames().filter((section) => sectionKey(section).includes(sectionKey(term))));
+  }
+
+  protected sectionColor(name: string | null): string | null {
+    return this.sectionColors().get(sectionKey(name)) ?? null;
+  }
+
+  /** A label renamed in the catalog re-labels the lines of the recipe open here (saved with it). */
+  protected onSectionRenamed(change: { from: string; to: string }): void {
+    const from = sectionKey(change.from);
+    if (!this.lines().some((line) => sectionKey(line.section) === from)) {
+      return;
+    }
+    this.lines.update((list) => list.map((line) => (sectionKey(line.section) === from ? { ...line, section: change.to } : line)));
+    if (sectionKey(this.addSection()) === from) {
+      this.addSection.set(change.to);
+    }
+  }
+
+  protected setLineSection(key: string, value: string | null): void {
+    this.patch(key, { section: value?.trim() || null });
   }
 
   protected add(): void {

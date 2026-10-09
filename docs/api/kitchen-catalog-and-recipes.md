@@ -3,6 +3,7 @@
 > **Audience:** the Claude agent (or engineer) implementing the Cronos backend.
 > **Frontend:** `cronos-system-ui`, branch `feature/catalog-and-recipe-studio` — already built against this contract.
 > **TypeScript mirror of every shape:** `src/app/core/models/kitchen.models.ts` (allergens, ingredients, recipes) and the quote additions in `src/app/core/models/domain.model.ts`. **Change the doc and those files together.**
+> **Amended by:** `docs/api/baking-studio.md` — `pricingMethod` (replaces the `suggestedUnitPrice` formula of §5.5), `PER_UNIT` `quantity`, fixed-cost status/seeds, recipe cover and section endpoints.
 > **Read first:** `docs/api/iam-and-finance.md` §0–§1 (envelope, error codes, permissions, optimistic locking, audit). Everything there applies here and is not repeated.
 
 ---

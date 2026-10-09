@@ -1,0 +1,181 @@
+.cover-card {
+  padding: 0.6rem;
+  border-radius: var(--radius-lg);
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+}
+
+.cover-thumb {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-md);
+  background: var(--surface-hover);
+
+  img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &:hover .cover-overlay,
+  &:focus-within .cover-overlay {
+    opacity: 1;
+  }
+}
+
+.cover-thumb-empty {
+  border: 2px dashed var(--surface-border);
+}
+
+.cover-thumb-drag {
+  border: 2px dashed var(--primary-color);
+}
+
+.cover-overlay {
+  position: absolute;
+  inset: auto 0 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 1.5rem 0.6rem 0.6rem;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.7), transparent);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+// Touch screens have no hover: keep the actions visible.
+@media (hover: none) {
+  .cover-overlay {
+    opacity: 1;
+  }
+}
+
+.cover-badge {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+}
+
+.cover-empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
+  color: var(--text-color-secondary);
+  text-align: center;
+}
+
+.cover-empty-button {
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    color: var(--primary-color);
+    outline: none;
+  }
+}
+
+.cover-progress {
+  position: absolute;
+  inset: auto 0 0 0;
+}
+
+:host ::ng-deep .cover-progress .p-progressbar {
+  height: 0.3rem;
+  border-radius: 0;
+}
+
+.cover-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 13rem;
+  padding: 1.5rem;
+  border: 2px dashed var(--surface-border);
+  border-radius: var(--radius-lg);
+  background: var(--surface-ground);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+
+  &:hover,
+  &:focus-visible,
+  &.cover-dropzone-active {
+    border-color: var(--primary-color);
+    outline: none;
+  }
+}
+
+.cover-picker {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(6.5rem, 1fr));
+  gap: 0.5rem;
+}
+
+.cover-option {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--surface-hover);
+  cursor: pointer;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    border-color: var(--primary-color);
+    outline: none;
+  }
+}
+
+.cover-option-current {
+  border-color: var(--p-green-500);
+  cursor: default;
+}
+
+.cover-option-check {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-radius: 50%;
+  background: var(--p-green-500);
+  color: #fff;
+  font-size: 0.7rem;
+}
+
+.cover-stage {
+  height: 22rem;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background: var(--surface-ground);
+
+  image-cropper {
+    height: 100%;
+    --cropper-outline-color: rgba(15, 23, 42, 0.55);
+  }
+}

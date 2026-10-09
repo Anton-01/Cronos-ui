@@ -1,0 +1,114 @@
+<div class="guide-articles">
+  <aside class="article-nav">
+    <p-iconfield iconPosition="left" styleClass="w-full">
+      <p-inputicon styleClass="pi pi-search" />
+      <input pInputText type="search" class="w-full" [value]="query()" (input)="query.set($any($event.target).value)" [placeholder]="'GUIDE.SEARCH' | translate" [attr.aria-label]="'GUIDE.SEARCH' | translate" />
+    </p-iconfield>
+    <ul class="article-list">
+      @for (article of filtered(); track article.code) {
+        <li>
+          <button type="button" class="article-link" [class.article-link-active]="selected()?.code === article.code" (click)="select(article)" [attr.aria-current]="selected()?.code === article.code ? 'true' : null">
+            <i [class]="article.icon" aria-hidden="true"></i>
+            <span class="flex flex-column gap-1 text-left min-w-0">
+              <span class="font-semibold">{{ article.title }}</span>
+              <span class="text-xs text-color-secondary article-summary">{{ article.summary }}</span>
+            </span>
+          </button>
+        </li>
+      } @empty {
+        <li class="text-sm text-color-secondary p-3">{{ 'GUIDE.NO_RESULTS' | translate }}</li>
+      }
+    </ul>
+  </aside>
+
+  @if (selected(); as article) {
+    <article class="article-body">
+      <header class="flex flex-column gap-2 mb-3">
+        <div class="flex align-items-center gap-2">
+          <span class="article-icon"><i [class]="article.icon" aria-hidden="true"></i></span>
+          <h2 class="m-0 text-xl font-bold">{{ article.title }}</h2>
+        </div>
+        <p class="m-0 text-color-secondary">{{ article.summary }}</p>
+        <div class="flex flex-wrap gap-1">
+          @for (tag of article.tags; track tag) {
+            <p-tag [value]="tag" severity="secondary" />
+          }
+        </div>
+      </header>
+
+      @for (block of article.blocks; track $index) {
+        @switch (block.type) {
+          @case ('paragraph') {
+            <p class="article-paragraph">{{ block.text }}</p>
+          }
+          @case ('list') {
+            @if (block.ordered) {
+              <ol class="article-list-block">
+                @for (item of block.items; track $index) {
+                  <li>{{ item }}</li>
+                }
+              </ol>
+            } @else {
+              <ul class="article-list-block">
+                @for (item of block.items; track $index) {
+                  <li>{{ item }}</li>
+                }
+              </ul>
+            }
+          }
+          @case ('table') {
+            <div class="article-table-wrap">
+              <table class="article-table">
+                <thead>
+                  <tr>
+                    @for (column of block.columns; track $index) {
+                      <th scope="col">{{ column }}</th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of block.rows; track $index) {
+                    <tr>
+                      @for (cell of row; track $index; let first = $first) {
+                        @if (first) {
+                          <th scope="row">{{ cell }}</th>
+                        } @else {
+                          <td>{{ cell }}</td>
+                        }
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+          @case ('callout') {
+            <div class="article-callout" [class]="'article-callout article-callout-' + block.tone" role="note">
+              <i [class]="block.tone === 'warn' ? 'pi pi-exclamation-triangle' : block.tone === 'tip' ? 'pi pi-lightbulb' : 'pi pi-info-circle'" aria-hidden="true"></i>
+              <span>{{ block.text }}</span>
+            </div>
+          }
+          @case ('formula') {
+            <div class="article-formula">
+              <code>{{ block.expression }}</code>
+              <span class="text-sm text-color-secondary">{{ block.description }}</span>
+            </div>
+          }
+        }
+      }
+
+      @if (article.sources.length > 0) {
+        <footer class="article-sources">
+          <span class="text-xs font-semibold uppercase text-color-secondary">{{ 'GUIDE.SOURCES' | translate }}</span>
+          <ul>
+            @for (source of article.sources; track source) {
+              <li>{{ source }}</li>
+            }
+          </ul>
+        </footer>
+      }
+    </article>
+  } @else {
+    <div class="article-body flex align-items-center justify-content-center text-color-secondary">{{ 'GUIDE.NO_RESULTS' | translate }}</div>
+  }
+</div>

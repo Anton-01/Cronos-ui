@@ -104,6 +104,7 @@ export class RecipeConfiguratorDialogComponent {
               yieldQuantity: configuration.yieldQuantity,
               wastePercent: recipe.wastePercent,
               targetMarginPercent: recipe.targetMarginPercent,
+              pricingMethod: recipe.pricingMethod ?? 'MARKUP',
               configuration,
             })
             .pipe(catchError(() => of(null)));

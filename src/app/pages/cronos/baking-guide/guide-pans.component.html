@@ -1,0 +1,110 @@
+<p-card>
+  <p-table [value]="rows()" dataKey="pan.id" [rowHover]="true" [scrollable]="true">
+    <ng-template pTemplate="caption">
+      <div class="flex flex-wrap align-items-center justify-content-between gap-2">
+        <div class="flex flex-wrap align-items-center gap-2">
+          <p-select [options]="shapeOptions()" [ngModel]="shapeFilter()" (ngModelChange)="shapeFilter.set($event)" optionLabel="label" optionValue="value" [showClear]="true" [placeholder]="'GUIDE.PANS.ALL_SHAPES' | translate" styleClass="w-12rem" />
+          <p-selectbutton [options]="portionOptions()" [ngModel]="portionStyle()" (ngModelChange)="portionStyle.set($event)" optionLabel="label" optionValue="value" [allowEmpty]="false" size="small" [ariaLabel]="'GUIDE.PANS.PORTION_STYLE' | translate" />
+        </div>
+        <p-button [label]="'GUIDE.PANS.ADD' | translate" icon="pi pi-plus" severity="contrast" styleClass="p-button-page-action" [disabled]="offline()" [pTooltip]="offline() ? ('GUIDE.OFFLINE_SHORT' | translate) : ''" (onClick)="openCreate()" />
+      </div>
+    </ng-template>
+    <ng-template pTemplate="header">
+      <tr>
+        <th style="min-width: 14rem">{{ 'COMMON.TABLE.NAME' | translate }}</th>
+        <th style="min-width: 9rem">{{ 'GUIDE.PANS.SHAPE' | translate }}</th>
+        <th style="min-width: 11rem">{{ 'GUIDE.PANS.SIZE' | translate }}</th>
+        <th class="text-right" style="min-width: 8rem" [pTooltip]="'GUIDE.PANS.CAPACITY_HINT' | translate">{{ 'GUIDE.PANS.CAPACITY' | translate }}</th>
+        <th class="text-right" style="min-width: 8rem" [pTooltip]="'GUIDE.PANS.BATTER_HINT' | translate">{{ 'GUIDE.PANS.BATTER' | translate }}</th>
+        <th class="text-right" style="min-width: 8rem" [pTooltip]="'GUIDE.PANS.SERVINGS_HINT' | translate">{{ 'GUIDE.PANS.SERVINGS' | translate }}</th>
+        <th style="width: 7rem"></th>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="body" let-row>
+      <tr>
+        <td>
+          <div class="flex flex-column gap-1">
+            <span class="font-semibold">{{ row.pan.name }}
+              @if (row.pan.scope === 'USER') {
+                <p-tag [value]="'GUIDE.PANS.MINE' | translate" severity="info" styleClass="ml-1" />
+              }
+            </span>
+            @if (row.pan.notes) {
+              <small class="text-color-secondary">{{ row.pan.notes }}</small>
+            }
+          </div>
+        </td>
+        <td>{{ 'GUIDE.SHAPES.' + row.pan.shape | translate }}</td>
+        <td class="font-mono text-sm">{{ dimensions(row.pan) }}</td>
+        <td class="text-right font-mono">{{ row.volume === null ? '—' : (row.volume / 1000 | number: '1.1-2') + ' L' }}</td>
+        <td class="text-right font-mono">{{ row.batter === null ? '—' : '≈ ' + (row.batter | number: '1.0-0') + ' ml' }}</td>
+        <td class="text-right font-mono">{{ row.servings === null ? '—' : (row.pan.servings ? '' : '≈ ') + row.servings }}</td>
+        <td class="text-right">
+          @if (row.pan.scope === 'USER' && !offline()) {
+            <p-button icon="pi pi-pencil" severity="info" [text]="true" [rounded]="true" [pTooltip]="'COMMON.EDIT' | translate" [ariaLabel]="'COMMON.EDIT' | translate" (onClick)="openEdit(row.pan)" />
+            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" [pTooltip]="'COMMON.DELETE' | translate" [ariaLabel]="'COMMON.DELETE' | translate" (onClick)="remove(row.pan)" />
+          }
+        </td>
+      </tr>
+    </ng-template>
+    <ng-template pTemplate="emptymessage">
+      <tr>
+        <td colspan="7" class="text-center text-color-secondary py-5">{{ 'GUIDE.NO_RESULTS' | translate }}</td>
+      </tr>
+    </ng-template>
+  </p-table>
+  <small class="block text-color-secondary mt-3">{{ 'GUIDE.PANS.FOOTNOTE' | translate }}</small>
+</p-card>
+
+<p-dialog [header]="(editing() ? 'GUIDE.PANS.EDIT' : 'GUIDE.PANS.ADD') | translate" [visible]="dialogOpen()" (visibleChange)="dialogOpen.set($event)" [modal]="true" [draggable]="false" [style]="{ width: '34rem' }" [breakpoints]="{ '640px': '95vw' }">
+  <form [formGroup]="form" (ngSubmit)="save()" class="grid">
+    <div class="col-12 md:col-6 flex flex-column gap-1">
+      <label for="panShape" class="font-medium">{{ 'GUIDE.PANS.SHAPE' | translate }} <span class="text-red-500">*</span></label>
+      <p-select inputId="panShape" formControlName="shape" [options]="shapeOptions()" optionLabel="label" optionValue="value" styleClass="w-full" />
+    </div>
+    <div class="col-12 md:col-6 flex flex-column gap-1">
+      <label for="panName" class="font-medium">{{ 'COMMON.TABLE.NAME' | translate }} <span class="text-red-500">*</span></label>
+      <input pInputText id="panName" formControlName="name" maxlength="80" [placeholder]="'GUIDE.PANS.NAME_PLACEHOLDER' | translate" />
+    </div>
+    @if (usesDiameter()) {
+      <div class="col-6 flex flex-column gap-1">
+        <label for="panDiameter" class="font-medium">{{ 'GUIDE.PANS.DIAMETER' | translate }} <span class="text-red-500">*</span></label>
+        <p-inputnumber inputId="panDiameter" formControlName="diameterCm" suffix=" cm" [maxFractionDigits]="1" styleClass="w-full" />
+      </div>
+    } @else {
+      <div class="col-6 md:col-3 flex flex-column gap-1">
+        <label for="panLength" class="font-medium">{{ 'GUIDE.PANS.LENGTH' | translate }} <span class="text-red-500">*</span></label>
+        <p-inputnumber inputId="panLength" formControlName="lengthCm" suffix=" cm" [maxFractionDigits]="1" styleClass="w-full" />
+      </div>
+      @if (formShape() !== 'SQUARE') {
+        <div class="col-6 md:col-3 flex flex-column gap-1">
+          <label for="panWidth" class="font-medium">{{ 'GUIDE.PANS.WIDTH' | translate }} <span class="text-red-500">*</span></label>
+          <p-inputnumber inputId="panWidth" formControlName="widthCm" suffix=" cm" [maxFractionDigits]="1" styleClass="w-full" />
+        </div>
+      }
+    }
+    <div class="col-6 flex flex-column gap-1">
+      <label for="panHeight" class="font-medium">{{ 'GUIDE.PANS.HEIGHT' | translate }} <span class="text-red-500">*</span></label>
+      <p-inputnumber inputId="panHeight" formControlName="heightCm" suffix=" cm" [maxFractionDigits]="1" styleClass="w-full" />
+    </div>
+    <div class="col-6 flex flex-column gap-1">
+      <label for="panVolume" class="font-medium">{{ 'GUIDE.PANS.VOLUME_OVERRIDE' | translate }}</label>
+      <p-inputnumber inputId="panVolume" formControlName="volumeMl" suffix=" ml" styleClass="w-full" />
+    </div>
+    <div class="col-6 flex flex-column gap-1">
+      <label for="panServings" class="font-medium">{{ 'GUIDE.PANS.SERVINGS_OVERRIDE' | translate }}</label>
+      <p-inputnumber inputId="panServings" formControlName="servings" styleClass="w-full" />
+    </div>
+    <div class="col-12">
+      <small class="text-color-secondary">{{ 'GUIDE.PANS.OVERRIDE_HINT' | translate }}</small>
+    </div>
+    <div class="col-12 flex flex-column gap-1">
+      <label for="panNotes" class="font-medium">{{ 'GUIDE.PANS.NOTES' | translate }}</label>
+      <textarea pTextarea id="panNotes" rows="2" formControlName="notes" maxlength="200"></textarea>
+    </div>
+  </form>
+  <ng-template pTemplate="footer">
+    <p-button [label]="'COMMON.CANCEL' | translate" severity="secondary" [outlined]="true" (onClick)="dialogOpen.set(false)" />
+    <p-button [label]="(editing() ? 'COMMON.UPDATE' : 'COMMON.CREATE') | translate" icon="pi pi-check" [loading]="saving()" (onClick)="save()" />
+  </ng-template>
+</p-dialog>

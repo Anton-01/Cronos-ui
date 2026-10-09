@@ -25,9 +25,24 @@
   font-weight: 700;
 }
 
-.cost-panel {
+.studio-aside {
   position: sticky;
   top: 5.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  // Beside the tabs (xl) the aside must fit the viewport, or its bottom is unreachable while sticky.
+  @media (min-width: 1200px) {
+    max-height: calc(100vh - 6.5rem);
+    overflow-y: auto;
+    // Room for the cards' shadows inside the scroll box.
+    margin: -0.75rem -0.75rem 0;
+    padding: 0.75rem;
+  }
+}
+
+.cost-panel {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -67,4 +82,23 @@
 
 :host-context(.app-dark) .suggested-price {
   color: var(--p-green-300);
+}
+
+.fixed-cost-row + .fixed-cost-row {
+  border-top: 1px solid var(--surface-border);
+}
+
+.link-button {
+  align-self: flex-start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--primary-color);
+  font: inherit;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    text-decoration: underline;
+  }
 }

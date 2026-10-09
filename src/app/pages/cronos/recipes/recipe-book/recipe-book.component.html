@@ -1,0 +1,272 @@
+<div class="book-shell" [class]="'book-shell book-type-' + typeSize()">
+  <!-- Toolbar -->
+  <header class="book-toolbar">
+    <div class="flex align-items-center gap-2 min-w-0">
+      <p-button icon="pi pi-arrow-left" [text]="true" [rounded]="true" severity="secondary" [ariaLabel]="'COMMON.BACK' | translate" [pTooltip]="'COMMON.BACK' | translate" routerLink="/cronos/recetas" />
+      <div class="flex flex-column min-w-0">
+        <span class="text-xs uppercase font-semibold text-color-secondary">{{ 'KITCHEN.BOOK.TITLE' | translate }}</span>
+        <span class="font-semibold text-color white-space-nowrap overflow-hidden text-overflow-ellipsis">{{ recipe()?.name ?? '' }}</span>
+      </div>
+    </div>
+    @if (loadState() === 'ready') {
+      <div class="book-controls">
+        <div class="flex align-items-center gap-2">
+          <span class="text-sm text-color-secondary hidden md:inline">{{ 'KITCHEN.BOOK.SCALE' | translate }}</span>
+          <p-selectbutton [options]="scaleOptions()" [ngModel]="scale()" (ngModelChange)="setScale($event)" optionLabel="label" optionValue="value" [allowEmpty]="false" size="small" [ariaLabel]="'KITCHEN.BOOK.SCALE' | translate" />
+          <p-button icon="pi pi-sliders-h" [text]="true" [rounded]="true" severity="secondary" [pTooltip]="'KITCHEN.BOOK.CUSTOM_YIELD' | translate" [ariaLabel]="'KITCHEN.BOOK.CUSTOM_YIELD' | translate" (onClick)="yieldPopover.toggle($event)" />
+        </div>
+        <div class="flex align-items-center gap-1" role="group" [attr.aria-label]="'KITCHEN.BOOK.TYPE_SIZE' | translate">
+          <button type="button" class="type-button type-button-sm" [class.type-button-active]="typeSize() === 'sm'" (click)="setTypeSize('sm')" [attr.aria-pressed]="typeSize() === 'sm'" [attr.aria-label]="'KITCHEN.BOOK.TYPE_SM' | translate">A</button>
+          <button type="button" class="type-button type-button-md" [class.type-button-active]="typeSize() === 'md'" (click)="setTypeSize('md')" [attr.aria-pressed]="typeSize() === 'md'" [attr.aria-label]="'KITCHEN.BOOK.TYPE_MD' | translate">A</button>
+          <button type="button" class="type-button type-button-lg" [class.type-button-active]="typeSize() === 'lg'" (click)="setTypeSize('lg')" [attr.aria-pressed]="typeSize() === 'lg'" [attr.aria-label]="'KITCHEN.BOOK.TYPE_LG' | translate">A</button>
+        </div>
+        @if (wakeLockSupported) {
+          <p-button [icon]="awake() ? 'pi pi-sun' : 'pi pi-moon'" [text]="!awake()" [rounded]="true" [severity]="awake() ? 'warn' : 'secondary'" [pTooltip]="(awake() ? 'KITCHEN.BOOK.AWAKE_ON' : 'KITCHEN.BOOK.AWAKE_OFF') | translate" [ariaLabel]="'KITCHEN.BOOK.AWAKE_OFF' | translate" [attr.aria-pressed]="awake()" (onClick)="toggleAwake()" />
+        }
+        <p-button icon="pi pi-print" [text]="true" [rounded]="true" severity="secondary" [pTooltip]="'KITCHEN.BOOK.PRINT' | translate" [ariaLabel]="'KITCHEN.BOOK.PRINT' | translate" (onClick)="print()" />
+        @if (canEdit()) {
+          <p-button icon="pi pi-pencil" [label]="'COMMON.EDIT' | translate" size="small" [outlined]="true" severity="secondary" [routerLink]="['/cronos/recetas', recipeId]" />
+        }
+      </div>
+    }
+  </header>
+
+  <p-popover #yieldPopover>
+    <div class="flex flex-column gap-2 w-15rem">
+      <label for="bookYield" class="text-sm font-medium">{{ 'KITCHEN.BOOK.TARGET_YIELD' | translate: { unit: recipe()?.yieldUnit ?? '' } }}</label>
+      <p-inputnumber inputId="bookYield" [ngModel]="targetYield()" (ngModelChange)="setTargetYield($event)" [min]="0.01" [maxFractionDigits]="2" [showButtons]="true" styleClass="w-full" inputStyleClass="w-full" />
+      <small class="text-color-secondary">{{ 'KITCHEN.BOOK.BASE_YIELD' | translate: { count: recipe()?.yieldQuantity ?? 0, unit: recipe()?.yieldUnit ?? '' } }}</small>
+    </div>
+  </p-popover>
+
+  @switch (loadState()) {
+    @case ('loading') {
+      <div class="book-stage">
+        <div class="book book-spread">
+          <div class="book-page"><p-skeleton height="100%" /></div>
+          <div class="book-page hidden lg:block"><p-skeleton height="100%" /></div>
+        </div>
+      </div>
+    }
+    @case ('error') {
+      <div class="flex flex-column align-items-center gap-3 py-8">
+        <p-message severity="error" [text]="'KITCHEN.RECIPES.LOAD_FAILED' | translate" />
+        <div class="flex gap-2">
+          <p-button [label]="'COMMON.BACK' | translate" severity="secondary" [outlined]="true" routerLink="/cronos/recetas" />
+          <p-button [label]="'COMMON.TRY_AGAIN' | translate" icon="pi pi-refresh" (onClick)="load()" />
+        </div>
+      </div>
+    }
+    @case ('ready') {
+      <main class="book-stage" (touchstart)="onTouchStart($event)" (touchend)="onTouchEnd($event)">
+        <button type="button" class="book-nav" [disabled]="!canPrev()" (click)="prev()" [attr.aria-label]="'KITCHEN.BOOK.PREV' | translate">
+          <i class="pi pi-chevron-left" aria-hidden="true"></i>
+        </button>
+        <div class="book" [class.book-spread]="perView() === 2" [attr.data-turn]="turn()" aria-live="polite">
+          @for (entry of visible(); track entry.number; let left = $first) {
+            <article class="book-page" [class.book-page-left]="perView() === 2 && left" [class.book-page-right]="perView() === 2 && !left">
+              <ng-container *ngTemplateOutlet="pageTpl; context: { $implicit: entry.page, number: entry.number }" />
+            </article>
+          }
+        </div>
+        <button type="button" class="book-nav" [disabled]="!canNext()" (click)="next()" [attr.aria-label]="'KITCHEN.BOOK.NEXT' | translate">
+          <i class="pi pi-chevron-right" aria-hidden="true"></i>
+        </button>
+      </main>
+
+      <footer class="book-footer">
+        <nav class="flex flex-wrap justify-content-center gap-2" [attr.aria-label]="'KITCHEN.BOOK.CONTENTS' | translate">
+          <button type="button" class="chapter-link" (click)="goTo(0)">{{ 'KITCHEN.BOOK.CHAPTERS.COVER' | translate }}</button>
+          <button type="button" class="chapter-link" (click)="goTo(chapterStart('ingredients'))">{{ 'KITCHEN.BOOK.CHAPTERS.INGREDIENTS' | translate }}</button>
+          <button type="button" class="chapter-link" (click)="goTo(chapterStart('process'))">{{ 'KITCHEN.BOOK.CHAPTERS.PROCESS' | translate }}</button>
+          <button type="button" class="chapter-link" (click)="goTo(chapterStart('notes'))">{{ 'KITCHEN.BOOK.CHAPTERS.NOTES' | translate }}</button>
+        </nav>
+        <span class="text-sm text-color-secondary">
+          {{ 'KITCHEN.BOOK.PAGE_OF' | translate: { from: index() + 1, to: index() + visible().length, total: pages().length } }}
+          · {{ 'KITCHEN.BOOK.KEYS_HINT' | translate }}
+        </span>
+      </footer>
+
+      <!-- Every page, in order, for printing only -->
+      <div class="book-print" aria-hidden="true">
+        @for (page of pages(); track $index) {
+          <article class="book-page">
+            <ng-container *ngTemplateOutlet="pageTpl; context: { $implicit: page, number: $index + 1 }" />
+          </article>
+        }
+      </div>
+    }
+  }
+</div>
+
+<ng-template #pageTpl let-page let-number="number">
+  @if (recipe(); as r) {
+    <div class="page-body">
+      @switch (page.kind) {
+        <!-- Cover -->
+        @case ('cover') {
+          <div class="page-cover">
+            @if (r.coverImageUrl) {
+              <img class="cover-image" [src]="r.coverImageUrl" [alt]="r.name" />
+            } @else {
+              <div class="cover-image cover-image-empty"><i class="pi pi-image" aria-hidden="true"></i></div>
+            }
+            <span class="book-kicker">{{ r.categoryName ?? ('KITCHEN.RECIPES.NO_CATEGORY' | translate) }}</span>
+            <h1 class="book-title">{{ r.name }}</h1>
+            @if (r.description) {
+              <p class="book-lead">{{ r.description }}</p>
+            }
+            <dl class="cover-meta">
+              <div>
+                <dt>{{ 'KITCHEN.BOOK.YIELDS' | translate }}</dt>
+                <dd>{{ targetYield() | number: '1.0-2' }} {{ r.yieldUnit }}</dd>
+              </div>
+              <div>
+                <dt>{{ 'KITCHEN.BOOK.TOTAL_TIME' | translate }}</dt>
+                <dd>{{ time(r.totalMinutes) }}</dd>
+              </div>
+              @if (r.ovenTemperatureC) {
+                <div>
+                  <dt>{{ 'KITCHEN.STUDIO.OVEN' | translate }}</dt>
+                  <dd>{{ r.ovenTemperatureC }} °C</dd>
+                </div>
+              }
+              <div>
+                <dt>{{ 'KITCHEN.STUDIO.DIFFICULTY' | translate }}</dt>
+                <dd>{{ 'KITCHEN.DIFFICULTY.' + r.difficulty | translate }}</dd>
+              </div>
+            </dl>
+            <div class="flex flex-column align-items-center gap-1">
+              <span class="book-kicker">{{ 'KITCHEN.RECIPES.CONTAINS' | translate }}</span>
+              <app-allergen-badges [allergens]="r.allergens" [showEmpty]="true" />
+            </div>
+          </div>
+        }
+
+        <!-- Ingredients -->
+        @case ('ingredients') {
+          @if (page.first) {
+            <h2 class="book-heading">{{ 'KITCHEN.BOOK.CHAPTERS.INGREDIENTS' | translate }}</h2>
+            <p class="book-subheading">
+              {{ 'KITCHEN.BOOK.FOR_YIELD' | translate: { count: (targetYield() | number: '1.0-2'), unit: r.yieldUnit } }}
+              @if (scale() !== 1) {
+                <span class="scale-chip">×{{ scale() }}</span>
+              }
+            </p>
+          }
+          <ul class="ingredient-list">
+            @for (row of page.rows; track $index) {
+              @if (row.kind === 'section') {
+                <li class="ingredient-section">{{ row.section }}{{ row.continued ? ' · ' + ('KITCHEN.BOOK.CONTINUED' | translate) : '' }}</li>
+              } @else {
+                @let line = row.line!;
+                <li>
+                  <button type="button" class="ingredient-row" [class.ingredient-done]="checkedLines().has(line.id)" (click)="toggleLine(line.id)" [attr.aria-pressed]="checkedLines().has(line.id)">
+                    <span class="check" aria-hidden="true"><i class="pi pi-check"></i></span>
+                    <span class="ingredient-qty">{{ quantity(line.quantity) | number: '1.0-2' }} {{ line.unitCode }}</span>
+                    <span class="ingredient-name">
+                      {{ line.ingredientName }}
+                      @if (line.optional) {
+                        <em class="ingredient-optional">({{ 'COMMON.OPTIONAL' | translate | lowercase }})</em>
+                      }
+                      @if (line.notes) {
+                        <small class="ingredient-note">{{ line.notes }}</small>
+                      }
+                    </span>
+                  </button>
+                </li>
+              }
+            } @empty {
+              <li class="text-color-secondary">{{ 'KITCHEN.RECIPES.NO_LINES' | translate }}</li>
+            }
+          </ul>
+        }
+
+        <!-- Process -->
+        @case ('process') {
+          @if (page.first) {
+            <h2 class="book-heading">{{ 'KITCHEN.BOOK.CHAPTERS.PROCESS' | translate }}</h2>
+            @if (stepCount() > 0) {
+              <p class="book-subheading">{{ 'KITCHEN.BOOK.STEP_COUNT' | translate: { count: stepCount() } }}</p>
+            }
+          }
+          <div class="process">
+            @for (block of page.blocks; track $index) {
+              @switch (block.kind) {
+                @case ('heading') {
+                  <h3 class="process-heading" [innerHTML]="block.html"></h3>
+                }
+                @case ('step') {
+                  <div class="process-step" [class.process-step-done]="doneSteps().has(block.number)">
+                    <button type="button" class="step-number" (click)="toggleStep(block.number)" [attr.aria-pressed]="doneSteps().has(block.number)" [attr.aria-label]="'KITCHEN.BOOK.MARK_STEP' | translate: { number: block.number }">
+                      @if (doneSteps().has(block.number)) {
+                        <i class="pi pi-check" aria-hidden="true"></i>
+                      } @else {
+                        {{ block.number }}
+                      }
+                    </button>
+                    <div class="step-text" [innerHTML]="block.html"></div>
+                  </div>
+                }
+                @case ('bullet') {
+                  <div class="process-bullet" [innerHTML]="block.html"></div>
+                }
+                @default {
+                  <p class="process-text" [innerHTML]="block.html"></p>
+                }
+              }
+            } @empty {
+              <div class="page-empty">
+                <i class="pi pi-list" aria-hidden="true"></i>
+                <span>{{ 'KITCHEN.BOOK.NO_PROCESS' | translate }}</span>
+                @if (canEdit()) {
+                  <a [routerLink]="['/cronos/recetas', recipeId]" [queryParams]="{ tab: 'process' }">{{ 'KITCHEN.BOOK.WRITE_PROCESS' | translate }}</a>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        <!-- Notes -->
+        @case ('notes') {
+          <h2 class="book-heading">{{ 'KITCHEN.BOOK.CHAPTERS.NOTES' | translate }}</h2>
+          <section class="notes-section">
+            <h3 class="process-heading">{{ 'KITCHEN.BOOK.TIMES' | translate }}</h3>
+            <dl class="times">
+              <dt>{{ 'KITCHEN.STUDIO.PREP' | translate }}</dt>
+              <dd>{{ time(r.prepMinutes) }}</dd>
+              <dt>{{ 'KITCHEN.STUDIO.BAKE' | translate }}</dt>
+              <dd>{{ time(r.bakeMinutes) }}{{ r.ovenTemperatureC ? ' · ' + r.ovenTemperatureC + ' °C' : '' }}</dd>
+              <dt>{{ 'KITCHEN.STUDIO.COOL' | translate }}</dt>
+              <dd>{{ time(r.coolMinutes) }}</dd>
+            </dl>
+          </section>
+          <section class="notes-section">
+            <h3 class="process-heading">{{ 'KITCHEN.STUDIO.SECTIONS.STORAGE' | translate }}</h3>
+            <p class="process-text">{{ r.storageInstructions || ('KITCHEN.BOOK.NO_STORAGE' | translate) }}</p>
+            @if (r.shelfLifeDays) {
+              <p class="process-text"><strong>{{ 'KITCHEN.STUDIO.SHELF_LIFE' | translate }}:</strong> {{ r.shelfLifeDays }} {{ 'KITCHEN.UNITS.DAYS' | translate }}</p>
+            }
+          </section>
+          @if (lineNotes().length > 0) {
+            <section class="notes-section">
+              <h3 class="process-heading">{{ 'KITCHEN.BOOK.INGREDIENT_NOTES' | translate }}</h3>
+              <ul class="note-list">
+                @for (line of lineNotes(); track line.id) {
+                  <li><strong>{{ line.ingredientName }}:</strong> {{ line.notes }}</li>
+                }
+              </ul>
+            </section>
+          }
+          <div class="book-end">
+            <span aria-hidden="true">❦</span>
+            @if (checkedLines().size > 0 || doneSteps().size > 0) {
+              <button type="button" class="chapter-link screen-only" (click)="resetChecks()">{{ 'KITCHEN.BOOK.RESET_CHECKS' | translate }}</button>
+            }
+          </div>
+        }
+      }
+    </div>
+    <span class="book-folio">{{ number }}</span>
+  }
+</ng-template>

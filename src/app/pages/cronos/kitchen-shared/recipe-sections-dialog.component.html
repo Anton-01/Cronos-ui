@@ -1,0 +1,72 @@
+<p-dialog [header]="'KITCHEN.SECTIONS.TITLE' | translate" [visible]="visible()" (visibleChange)="visible.set($event)" [modal]="true" [draggable]="false" [style]="{ width: '34rem' }" [breakpoints]="{ '640px': '95vw' }">
+  <p class="text-sm text-color-secondary mt-0 mb-3">{{ 'KITCHEN.SECTIONS.HINT' | translate }}</p>
+
+  <!-- Add -->
+  <div class="flex gap-2 align-items-start">
+    <div class="flex flex-column gap-1 flex-1">
+      <input pInputText class="w-full" [ngModel]="newName()" (ngModelChange)="newName.set($event ?? '')" (keydown)="onAddKey($event)" [maxlength]="nameMax + 1" [placeholder]="'KITCHEN.SECTIONS.NEW_PLACEHOLDER' | translate" [attr.aria-label]="'KITCHEN.SECTIONS.NEW_PLACEHOLDER' | translate" [invalid]="!!newNameError()" />
+      @if (newNameError(); as error) {
+        <small class="text-red-500">{{ error | translate: { max: nameMax } }}</small>
+      }
+    </div>
+    <p-button icon="pi pi-plus" [label]="'KITCHEN.RECIPES.ADD.BUTTON' | translate" [disabled]="!newName().trim() || !!newNameError() || busy()" (onClick)="add()" />
+  </div>
+
+  <!-- Used in this recipe, not in the catalog -->
+  @if (unsaved().length > 0) {
+    <div class="unsaved-sections">
+      <span class="text-xs font-semibold uppercase text-color-secondary">{{ 'KITCHEN.SECTIONS.UNSAVED' | translate }}</span>
+      <div class="flex flex-wrap gap-2">
+        @for (name of unsaved(); track name) {
+          <button type="button" class="section-chip section-chip-ghost" [disabled]="busy()" (click)="add(name)" [pTooltip]="'KITCHEN.SECTIONS.SAVE_TAG' | translate">
+            <i class="pi pi-plus text-xs" aria-hidden="true"></i>{{ name }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Catalog -->
+  <ul class="section-list" [attr.aria-label]="'KITCHEN.SECTIONS.TITLE' | translate">
+    @for (section of sections(); track section.id; let i = $index, first = $first, last = $last) {
+      <li class="section-row">
+        @if (editingId() === section.id) {
+          <div class="flex flex-column gap-2 flex-1">
+            <input pInputText class="w-full" [ngModel]="editName()" (ngModelChange)="editName.set($event ?? '')" (keydown)="onEditKey($event, section)" [maxlength]="nameMax + 1" [attr.aria-label]="'COMMON.TABLE.NAME' | translate" [invalid]="!!editNameError()" />
+            @if (editNameError(); as error) {
+              <small class="text-red-500">{{ error | translate: { max: nameMax } }}</small>
+            }
+            <div class="flex flex-wrap align-items-center gap-2" role="radiogroup" [attr.aria-label]="'KITCHEN.SECTIONS.COLOR' | translate">
+              <button type="button" class="color-swatch color-swatch-none" role="radio" [attr.aria-checked]="editColor() === null" [class.color-swatch-selected]="editColor() === null" (click)="editColor.set(null)" [pTooltip]="'KITCHEN.SECTIONS.NO_COLOR' | translate" [attr.aria-label]="'KITCHEN.SECTIONS.NO_COLOR' | translate"></button>
+              @for (color of colors; track color) {
+                <button type="button" class="color-swatch" role="radio" [style.background]="color" [attr.aria-checked]="editColor() === color" [class.color-swatch-selected]="editColor() === color" (click)="editColor.set(color)" [attr.aria-label]="color"></button>
+              }
+            </div>
+            <div class="flex justify-content-end gap-2">
+              <p-button [label]="'COMMON.CANCEL' | translate" size="small" severity="secondary" [outlined]="true" (onClick)="cancelEdit()" />
+              <p-button [label]="'COMMON.SAVE' | translate" size="small" icon="pi pi-check" [loading]="busy()" [disabled]="!editName().trim() || !!editNameError()" (onClick)="saveEdit(section)" />
+            </div>
+          </div>
+        } @else {
+          <span class="section-chip" [style.--section-color]="section.color">{{ section.name }}</span>
+          <span class="text-xs text-color-secondary flex-1">
+            {{ (section.usageCount > 0 ? 'KITCHEN.SECTIONS.USAGE' : 'KITCHEN.SECTIONS.UNUSED') | translate: { count: section.usageCount } }}
+          </span>
+          <div class="flex align-items-center">
+            <p-button icon="pi pi-arrow-up" [text]="true" [rounded]="true" size="small" severity="secondary" [disabled]="first || busy()" [ariaLabel]="'KITCHEN.RECIPES.MOVE_UP' | translate" (onClick)="move(i, -1)" />
+            <p-button icon="pi pi-arrow-down" [text]="true" [rounded]="true" size="small" severity="secondary" [disabled]="last || busy()" [ariaLabel]="'KITCHEN.RECIPES.MOVE_DOWN' | translate" (onClick)="move(i, 1)" />
+            <p-button icon="pi pi-pencil" [text]="true" [rounded]="true" size="small" severity="info" [disabled]="busy()" [pTooltip]="'COMMON.EDIT' | translate" [ariaLabel]="'COMMON.EDIT' | translate" (onClick)="startEdit(section)" />
+            <p-button icon="pi pi-trash" [text]="true" [rounded]="true" size="small" severity="danger" [disabled]="busy()" [pTooltip]="'COMMON.DELETE' | translate" [ariaLabel]="'COMMON.DELETE' | translate" (onClick)="remove(section)" />
+          </div>
+        }
+      </li>
+    } @empty {
+      <li class="text-sm text-color-secondary py-3 text-center">{{ 'KITCHEN.SECTIONS.EMPTY' | translate }}</li>
+    }
+  </ul>
+
+  <ng-template pTemplate="footer">
+    <p-button [label]="'KITCHEN.SECTIONS.RESTORE' | translate" icon="pi pi-replay" [text]="true" severity="secondary" [disabled]="busy()" (onClick)="restoreDefaults()" />
+    <p-button [label]="'COMMON.CLOSE' | translate" (onClick)="visible.set(false)" />
+  </ng-template>
+</p-dialog>

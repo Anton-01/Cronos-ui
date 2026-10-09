@@ -79,6 +79,11 @@ const Routing: Routes = [
     loadComponent: () => import('./cronos/recipes/recipe-studio/recipe-studio.component').then(m => m.RecipeStudioComponent),
     canDeactivate: [unsavedChangesGuard],
   },
+  // ─── Guía del repostero ───
+  {
+    path: 'cronos/guia-reposteria',
+    loadComponent: () => import('./cronos/baking-guide/baking-guide.component').then(m => m.BakingGuideComponent),
+  },
   // ─── Cotizaciones ───
   {
     path: 'cronos/cotizaciones',

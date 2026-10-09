@@ -100,6 +100,21 @@ export class RecipeService {
     return this.http.delete<ApiEnvelope<null>>(`${this.API}/${recipeId}/files/${fileId}`);
   }
 
+  // --- Cover ---
+
+  /** Uploads a new (already cropped) cover image; it is also listed among the recipe files. */
+  uploadCover(recipeId: string, file: File): Observable<HttpEvent<ApiEnvelope<RecipeFile>>> {
+    const body = new FormData();
+    body.append('file', file, file.name);
+    const request = new HttpRequest('PUT', `${this.API}/${recipeId}/cover`, body, { reportProgress: true });
+    return this.http.request<ApiEnvelope<RecipeFile>>(request);
+  }
+
+  /** Clears the cover. The image stays in the recipe files. */
+  clearCover(recipeId: string): Observable<ApiEnvelope<null>> {
+    return this.http.delete<ApiEnvelope<null>>(`${this.API}/${recipeId}/cover`);
+  }
+
   // --- Shares ---
   getShares(recipeId: string): Observable<ApiResponse<RecipeShareResponse[]>> {
     return this.http.get<ApiResponse<RecipeShareResponse[]>>(`${this.API}/${recipeId}/shares`);

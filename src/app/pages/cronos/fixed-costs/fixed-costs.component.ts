@@ -12,14 +12,19 @@ import { InputIconModule } from 'primeng/inputicon';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { MessageModule } from 'primeng/message';
+import { CheckboxModule } from 'primeng/checkbox';
 import { SelectModule } from 'primeng/select';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { TooltipModule } from 'primeng/tooltip';
 
 import { UserFixedCostService } from 'src/app/core/services/domain/user-fixed-cost.service';
-import { UserFixedCostResponse } from 'src/app/core/models/domain.model';
+import { UserFixedCostRequest, UserFixedCostResponse } from 'src/app/core/models/domain.model';
+import { FinanceDefaultsStore } from 'src/app/core/services/finance/finance-defaults.store';
+import { catalogErrorMessage } from 'src/app/core/utils/catalog-error.util';
+import { KitchenLookupsStore } from '../kitchen-shared/kitchen-lookups.store';
 import { LanguageService } from 'src/app/core/services/language.service';
 import { PageInfoService } from 'src/app/core/services/page-info.service';
 import { AlertService } from 'src/app/shared/services/alert.service';
@@ -79,6 +84,7 @@ const TYPE_TAG_SEVERITY: Record<string, TagSeverity> = {
     TranslatePipe,
     ButtonModule,
     CardModule,
+    CheckboxModule,
     DialogModule,
     IconFieldModule,
     InputIconModule,
@@ -89,10 +95,12 @@ const TYPE_TAG_SEVERITY: Record<string, TagSeverity> = {
     TableModule,
     TagModule,
     TextareaModule,
+    ToggleSwitchModule,
     TooltipModule,
     TableSkeletonRowComponent,
   ],
   templateUrl: './fixed-costs.component.html',
+  styleUrl: './fixed-costs.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FixedCostsComponent implements OnInit, OnDestroy {
@@ -102,7 +110,18 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
   private readonly pageInfoService = inject(PageInfoService);
   private readonly language = inject(LanguageService);
   private readonly fb = inject(FormBuilder);
+  private readonly finance = inject(FinanceDefaultsStore);
+  private readonly lookups = inject(KitchenLookupsStore);
   private readonly destroy$ = new Subject<void>();
+
+  /** Currency the amounts are captured in — the finance default, never a hardcoded MXN. */
+  protected readonly currency = computed(() => this.finance.defaultCurrency());
+  protected readonly locale = computed(() => this.language.current());
+  /** Ids whose active flag is being changed. */
+  protected readonly togglingIds = signal<ReadonlySet<string>>(new Set());
+  protected readonly selectedMethod = signal<string>('');
+  /** Monthly figure the amount can be derived from (rent, a salary, a utility bill). */
+  protected readonly derivedAmount = signal<number | null>(null);
 
   readonly items = signal<UserFixedCostResponse[]>([]);
   readonly isLoading = signal(false);
@@ -143,6 +162,9 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
     defaultAmount: [null as number | null, [Validators.required, Validators.min(0)]],
     calculationMethod: ['', [Validators.required]],
     percentage: [null as number | null],
+    appliesByDefault: [false],
+    monthlyAmount: [null as number | null, [Validators.min(0)]],
+    monthlyBasis: [null as number | null, [Validators.min(0.01)]],
   });
 
   constructor() {
@@ -160,6 +182,10 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.load();
+    this.finance.load().subscribe({ error: () => undefined });
+
+    this.form.controls.monthlyAmount.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.updateDerivedAmount());
+    this.form.controls.monthlyBasis.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => this.updateDerivedAmount());
 
     this.form.controls.calculationMethod.valueChanges
       .pipe(takeUntil(this.destroy$))
@@ -201,9 +227,70 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
 
   formatAmountDisplay(item: UserFixedCostResponse): string {
     if (item.calculationMethod === 'PERCENTAGE' && item.percentage != null) {
-      return item.percentage + '%';
+      return `${item.percentage} %`;
     }
-    return '$' + item.defaultAmount.toFixed(2);
+    const currency = this.currency();
+    const amount = new Intl.NumberFormat(this.language.current(), {
+      minimumFractionDigits: currency.decimalPlaces,
+      maximumFractionDigits: currency.decimalPlaces,
+    }).format(item.defaultAmount);
+    const money = currency.symbolPosition === 'AFTER' ? `${amount} ${currency.symbol}` : `${currency.symbol}${amount}`;
+    return money + this.perLabel(item.calculationMethod);
+  }
+
+  /** "/ h", "/ unidad", "/ lote" — what one amount buys. */
+  perLabel(method: string): string {
+    return CALCULATION_METHOD_VALUES.includes(method) && method !== 'PERCENTAGE' ? this.language.t(`FIXED_COSTS.PER.${method}`) : '';
+  }
+
+  // ─── Monthly helper ───
+
+  /** HOURLY_RATE spreads over hours, FIXED_PER_BATCH over batches, PER_UNIT over units — per month. */
+  protected readonly monthlyBasisKey = computed(() => {
+    const method = this.selectedMethod();
+    return method && method !== 'PERCENTAGE' ? `FIXED_COSTS.MONTHLY.BASIS.${method}` : null;
+  });
+
+  private updateDerivedAmount(): void {
+    const { monthlyAmount, monthlyBasis } = this.form.getRawValue();
+    this.derivedAmount.set(monthlyAmount != null && monthlyBasis ? Math.round((monthlyAmount / monthlyBasis) * 10_000) / 10_000 : null);
+  }
+
+  protected applyDerivedAmount(): void {
+    const amount = this.derivedAmount();
+    if (amount !== null) {
+      this.form.controls.defaultAmount.setValue(Math.round(amount * 100) / 100);
+      this.form.controls.defaultAmount.markAsDirty();
+    }
+  }
+
+  // ─── Active flag ───
+
+  protected toggleActive(item: UserFixedCostResponse, isActive: boolean): void {
+    if (this.togglingIds().has(item.id)) {
+      return;
+    }
+    this.togglingIds.update((ids) => new Set(ids).add(item.id));
+    // Optimistic: the switch moves at once and rolls back on failure.
+    this.items.update((list) => list.map((entry) => (entry.id === item.id ? { ...entry, isActive } : entry)));
+    const settle = () =>
+      this.togglingIds.update((ids) => {
+        const next = new Set(ids);
+        next.delete(item.id);
+        return next;
+      });
+    this.fixedCostService.setActive(item.id, isActive).subscribe({
+      next: () => {
+        settle();
+        this.lookups.invalidate();
+        this.alertService.success(this.language.t('COMMON.STATUS_TOGGLE.SUCCESS'));
+      },
+      error: (err: unknown) => {
+        settle();
+        this.items.update((list) => list.map((entry) => (entry.id === item.id ? { ...entry, isActive: item.isActive } : entry)));
+        this.alertService.error(catalogErrorMessage(err, this.language.t('COMMON.STATUS_TOGGLE.FAILED')));
+      },
+    });
   }
 
   onTypeChange(): void {
@@ -222,6 +309,7 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
   }
 
   private onCalculationMethodChange(method: string | null): void {
+    this.selectedMethod.set(method ?? '');
     const percentageControl = this.form.controls.percentage;
     const defaultAmountControl = this.form.controls.defaultAmount;
 
@@ -241,7 +329,8 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
 
   openCreate(): void {
     this.selectedItem.set(null);
-    this.form.reset();
+    this.form.reset({ appliesByDefault: false });
+    this.derivedAmount.set(null);
     this.isPercentageMethod.set(false);
     this.allowedMethodValues.set(CALCULATION_METHOD_VALUES);
     this.form.controls.defaultAmount.setValidators([Validators.required, Validators.min(0)]);
@@ -260,6 +349,9 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
       defaultAmount: item.calculationMethod !== 'PERCENTAGE' ? item.defaultAmount : null,
       percentage: item.percentage ?? null,
       calculationMethod: item.calculationMethod,
+      appliesByDefault: item.appliesByDefault ?? false,
+      monthlyAmount: item.monthlyAmount ?? null,
+      monthlyBasis: item.monthlyBasis ?? null,
     });
     // Trigger type-based filtering, then restore the saved method
     this.onTypeChange();
@@ -280,13 +372,16 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
     this.isSaving.set(true);
     const isEdit = !!this.selectedItem();
     const isPercentage = this.form.value.calculationMethod === 'PERCENTAGE';
-    const payload = {
+    const payload: UserFixedCostRequest = {
       name: this.form.value.name!,
       description: this.form.value.description || undefined,
       type: this.form.value.type!,
       defaultAmount: isPercentage ? undefined : this.form.value.defaultAmount!,
       percentage: isPercentage ? this.form.value.percentage! : undefined,
       calculationMethod: this.form.value.calculationMethod!,
+      appliesByDefault: !!this.form.value.appliesByDefault,
+      monthlyAmount: isPercentage ? null : (this.form.value.monthlyAmount ?? null),
+      monthlyBasis: isPercentage ? null : (this.form.value.monthlyBasis ?? null),
     };
 
     const request$ = isEdit
@@ -298,11 +393,13 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
         this.isSaving.set(false);
         this.closeForm();
         this.load();
+        // Recipe screens cache the catalog for the session.
+        this.lookups.invalidate();
         this.alertService.success(isEdit ? this.language.t('FIXED_COSTS.TOAST.UPDATED') : this.language.t('FIXED_COSTS.TOAST.CREATED'));
       },
-      error: (err) => {
+      error: (err: unknown) => {
         this.isSaving.set(false);
-        this.alertService.error(err?.error?.message || err?.message || this.language.t('COMMON.TOAST.SAVE_FAILED'));
+        this.alertService.error(catalogErrorMessage(err, this.language.t('COMMON.TOAST.SAVE_FAILED')));
       },
     });
   }
@@ -315,10 +412,11 @@ export class FixedCostsComponent implements OnInit, OnDestroy {
     this.fixedCostService.delete(item.id).subscribe({
       next: () => {
         this.load();
+        this.lookups.invalidate();
         this.alertService.success(this.language.t('FIXED_COSTS.TOAST.DELETED'));
       },
-      error: (err) => {
-        this.alertService.error(err?.error?.message || err?.message || this.language.t('COMMON.TOAST.DELETE_FAILED'));
+      error: (err: unknown) => {
+        this.alertService.error(catalogErrorMessage(err, this.language.t('COMMON.TOAST.DELETE_FAILED')));
       },
     });
   }

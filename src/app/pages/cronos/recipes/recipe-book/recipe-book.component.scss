@@ -1,0 +1,285 @@
+// Paper tones are the one place the book departs from the surface tokens:
+// a warm page is what makes it read as a cookbook. Dark mode keeps the warmth
+// on a dark surface instead of flipping to grey.
+:host {
+  --book-paper: #fffaf2;
+  --book-paper-edge: #f1e6d3;
+  --book-ink: #2b2118;
+  --book-ink-soft: #6f5f4f;
+  --book-accent: #b45309;
+  --book-rule: #e6d8c2;
+  --book-check: var(--p-green-600);
+  --book-serif: Georgia, 'Times New Roman', serif;
+  display: block;
+  min-height: 100vh;
+  background: var(--surface-ground);
+}
+
+:host-context(.app-dark) {
+  --book-paper: #221c16;
+  --book-paper-edge: #2c241c;
+  --book-ink: #f3eadf;
+  --book-ink-soft: #c2b3a1;
+  --book-accent: #f59e0b;
+  --book-rule: #3d3328;
+  --book-check: var(--p-green-400);
+}
+
+.book-shell {
+  --book-font: 1rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.book-type-sm {
+  --book-font: 0.92rem;
+}
+
+.book-type-lg {
+  --book-font: 1.16rem;
+}
+
+// ─── Toolbar ───
+
+.book-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.6rem 1rem;
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+}
+
+.book-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.type-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-color);
+  font-family: var(--book-serif);
+  cursor: pointer;
+
+  &:focus-visible { outline: 2px solid var(--primary-color); }
+}
+
+.type-button-sm { font-size: 0.8rem; }
+.type-button-lg { font-size: 1.25rem; }
+
+.type-button-active {
+  border-color: var(--primary-color);
+  background: color-mix(in srgb, var(--primary-color) 12%, transparent);
+}
+
+// ─── Stage ───
+
+.book-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 1.5rem 0.75rem 0.5rem;
+}
+
+.book-nav {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-card);
+  box-shadow: var(--shadow-card);
+  color: var(--text-color);
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.35;
+    cursor: default;
+  }
+
+  &:hover:not(:disabled),
+  &:focus-visible {
+    color: var(--primary-color);
+    outline: none;
+  }
+}
+
+.book {
+  display: flex;
+  justify-content: center;
+  width: min(38rem, 100%);
+  filter: drop-shadow(0 20px 30px rgba(15, 23, 42, 0.16));
+}
+
+.book-spread {
+  width: min(72rem, 100%);
+}
+
+.book-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  height: min(calc(100vh - 12.5rem), 54rem);
+  min-height: 30rem;
+  padding: 2.5rem 2.75rem 2.25rem;
+  border-radius: 6px;
+  background: var(--book-paper);
+  color: var(--book-ink);
+  font-size: var(--book-font);
+  overflow: hidden;
+}
+
+// Spine: the inner edges darken towards the gutter.
+.book-page-left {
+  border-radius: 6px 0 0 6px;
+  background: linear-gradient(to left, var(--book-paper-edge), var(--book-paper) 2.5rem);
+}
+
+.book-page-right {
+  border-radius: 0 6px 6px 0;
+  background: linear-gradient(to right, var(--book-paper-edge), var(--book-paper) 2.5rem);
+}
+
+.book[data-turn='next'] .book-page {
+  animation: page-in-next 0.32s ease-out;
+}
+
+.book[data-turn='prev'] .book-page {
+  animation: page-in-prev 0.32s ease-out;
+}
+
+@keyframes page-in-next { from { opacity: 0; transform: translateX(1.5rem); } }
+@keyframes page-in-prev { from { opacity: 0; transform: translateX(-1.5rem); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .book .book-page {
+    animation: none !important;
+  }
+}
+
+.page-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  // Keep the scrollbar off the text.
+  padding-right: 0.25rem;
+}
+
+.book-folio {
+  position: absolute;
+  bottom: 0.9rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  color: var(--book-ink-soft);
+  font-family: var(--book-serif);
+  font-size: 0.8rem;
+}
+
+.book-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem 1.25rem;
+}
+
+.chapter-link {
+  padding: 0.3rem 0.8rem;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-pill);
+  background: var(--surface-card);
+  color: var(--text-color);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+
+  &:hover,
+  &:focus-visible {
+    border-color: var(--primary-color);
+    outline: none;
+  }
+}
+
+// ─── Phones ───
+
+@media (max-width: 640px) {
+  // Arrows move under the page so they never cover the text.
+  .book-stage {
+    flex-wrap: wrap;
+    padding: 0.75rem 0.5rem 0.25rem;
+    gap: 0.75rem 2rem;
+  }
+
+  .book {
+    order: -1;
+    flex-basis: 100%;
+  }
+
+  .book-page {
+    // The toolbar wraps to two rows on phones.
+    height: calc(100dvh - 15rem);
+    min-height: 24rem;
+    padding: 1.5rem 1.25rem 2rem;
+  }
+}
+
+// ─── Print: every page, one per sheet, no chrome ───
+
+.book-print {
+  display: none;
+}
+
+@media print {
+  :host {
+    min-height: 0;
+    background: #fff;
+  }
+
+  .book-toolbar,
+  .book-stage,
+  .book-footer,
+  .screen-only {
+    display: none !important;
+  }
+
+  .book-print {
+    display: block;
+
+    .book-page {
+      height: auto;
+      min-height: 0;
+      padding: 0 0 1.5rem;
+      background: #fff;
+      color: #000;
+      overflow: visible;
+      break-after: page;
+    }
+
+    .page-body {
+      overflow: visible;
+    }
+  }
+}

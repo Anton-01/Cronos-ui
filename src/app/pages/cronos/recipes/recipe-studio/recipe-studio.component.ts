@@ -31,6 +31,7 @@ import {
   RecipeDetail,
   RecipeDifficulty,
   RecipeFile,
+  PricingMethod,
   RecipeFixedCostRequest,
   RecipeRequest,
   RecipeStatus,
@@ -52,6 +53,8 @@ import { CostStatusTagComponent } from '../../kitchen-shared/cost-status-tag.com
 import { RECIPE_STATUS_PILL, difficultyOptions, formatMinutes } from '../../kitchen-shared/kitchen-labels';
 import { KitchenLookupsStore } from '../../kitchen-shared/kitchen-lookups.store';
 import { LineDraft, lineFromServer, lineToRequest, summarizeAllergens, validateLines } from './recipe-draft';
+import { RecipeCoverComponent } from './recipe-cover.component';
+import { effectiveMargin, effectiveMarkup } from '../../kitchen-shared/pricing';
 import { RecipeFilesPanelComponent } from './recipe-files-panel.component';
 import { RecipeHistoryPanelComponent } from './recipe-history-panel.component';
 import { RecipeLinesEditorComponent } from './recipe-lines-editor.component';
@@ -115,6 +118,7 @@ function stripHtml(html: string | null): string {
     DetailSkeletonComponent,
     FieldErrorComponent,
     CostStatusTagComponent,
+    RecipeCoverComponent,
     RecipeFilesPanelComponent,
     RecipeHistoryPanelComponent,
     RecipeLinesEditorComponent,
@@ -142,6 +146,7 @@ export class RecipeStudioComponent implements HasUnsavedChanges {
 
   private readonly formRef = viewChild<ElementRef<HTMLFormElement>>('generalFormEl');
   private readonly filesPanel = viewChild(RecipeFilesPanelComponent);
+  private readonly coverPanel = viewChild(RecipeCoverComponent);
 
   protected readonly statusPill = RECIPE_STATUS_PILL;
   protected readonly processMax = PROCESS_HTML_MAX;
@@ -184,6 +189,7 @@ export class RecipeStudioComponent implements HasUnsavedChanges {
     storageInstructions: this.fb.control<string | null>(null, Validators.maxLength(1000)),
     processHtml: this.fb.control<string | null>(null, Validators.maxLength(PROCESS_HTML_MAX)),
     targetMarginPercent: this.fb.nonNullable.control(60, [Validators.required, Validators.min(0), Validators.max(1000)]),
+    pricingMethod: this.fb.nonNullable.control<PricingMethod>('MARKUP', Validators.required),
     wastePercent: this.fb.nonNullable.control(3, [Validators.required, Validators.min(0), Validators.max(50)]),
     fixedCosts: this.fb.array<ReturnType<typeof buildFixedCostGroup>>([]),
   });
@@ -199,7 +205,36 @@ export class RecipeStudioComponent implements HasUnsavedChanges {
   protected readonly allergens = computed(() => summarizeAllergens(this.lines()));
   protected readonly difficultyOptions = computed(() => difficultyOptions((key) => this.language.t(key)));
   protected readonly categoryOptions = computed(() => this.lookups.snapshot().productCategories);
-  protected readonly fixedCostCatalog = computed(() => this.lookups.snapshot().fixedCosts);
+  private readonly allFixedCosts = computed(() => this.lookups.snapshot().fixedCosts);
+  /** Active costs: the only ones that can be newly assigned or pre-filled. */
+  protected readonly fixedCostCatalog = computed(() => this.allFixedCosts().filter((cost) => cost.isActive));
+  protected readonly pricingMethodOptions = computed(() =>
+    (['MARKUP', 'MARGIN'] as const).map((value) => ({
+      value,
+      label: this.language.t(`KITCHEN.PRICING.${value}.LABEL`),
+      hint: this.language.t(`KITCHEN.PRICING.${value}.HINT`),
+    })),
+  );
+  protected readonly totalMinutes = computed(() => {
+    const value = this.formValue();
+    return (value.prepMinutes ?? 0) + (value.bakeMinutes ?? 0) + (value.coolMinutes ?? 0);
+  });
+  /** userFixedCostId → cost of that row: the live preview when the server sends it, else the saved recipe. */
+  protected readonly fixedCostAmounts = computed<ReadonlyMap<string, number>>(() => {
+    const live = this.preview()?.fixedCosts;
+    const entries = live ?? this.recipe()?.fixedCosts.map((row) => ({ userFixedCostId: row.userFixedCostId, cost: row.cost })) ?? [];
+    return new Map(entries.map((entry) => [entry.userFixedCostId, entry.cost]));
+  });
+  /** Which method the server used for the suggested price shown; servers that predate the field apply MARKUP. */
+  protected readonly appliedPricingMethod = computed<PricingMethod>(() => this.cost()?.pricingMethod ?? 'MARKUP');
+  protected readonly realMargin = computed(() => {
+    const cost = this.cost();
+    return cost ? effectiveMargin(cost.costPerUnit, cost.suggestedUnitPrice) : null;
+  });
+  protected readonly realMarkup = computed(() => {
+    const cost = this.cost();
+    return cost ? effectiveMarkup(cost.costPerUnit, cost.suggestedUnitPrice) : null;
+  });
   protected readonly totalTime = computed(() => {
     const value = this.formValue();
     return formatMinutes((value.prepMinutes ?? 0) + (value.bakeMinutes ?? 0) + (value.coolMinutes ?? 0), (key) => this.language.t(key));
@@ -308,6 +343,8 @@ export class RecipeStudioComponent implements HasUnsavedChanges {
         this.allergenCatalog.set(allergens);
         if (recipe?.data) {
           this.hydrate(recipe.data);
+        } else if (!id) {
+          this.prefillDefaultFixedCosts();
         }
         this.loadState.set('ready');
       },
@@ -328,7 +365,9 @@ export class RecipeStudioComponent implements HasUnsavedChanges {
     this.linesDirty.set(false);
     this.form.controls.fixedCosts.clear({ emitEvent: false });
     for (const cost of recipe.fixedCosts) {
-      this.form.controls.fixedCosts.push(buildFixedCostGroup(this.fb, cost.id, cost.userFixedCostId, cost.minutes, cost.percentage), { emitEvent: false });
+      this.form.controls.fixedCosts.push(buildFixedCostGroup(this.fb, cost.id, cost.userFixedCostId, cost.minutes, cost.percentage, cost.quantity ?? null), {
+        emitEvent: false,
+      });
     }
     this.form.reset({
       name: recipe.name,
@@ -346,7 +385,17 @@ export class RecipeStudioComponent implements HasUnsavedChanges {
       storageInstructions: recipe.storageInstructions,
       processHtml: recipe.processHtml,
       targetMarginPercent: recipe.targetMarginPercent,
+      pricingMethod: recipe.pricingMethod ?? 'MARKUP',
       wastePercent: recipe.wastePercent,
+      // Must be passed: a reset without it blanks every row pushed above, and the
+      // next save would then send `fixedCosts: []` and delete them server-side.
+      fixedCosts: recipe.fixedCosts.map((cost) => ({
+        id: cost.id,
+        userFixedCostId: cost.userFixedCostId,
+        minutes: cost.minutes,
+        percentage: cost.percentage,
+        quantity: cost.quantity ?? null,
+      })),
     });
     if (!this.isNew()) {
       this.form.controls.code.disable({ emitEvent: false });
@@ -378,8 +427,50 @@ export class RecipeStudioComponent implements HasUnsavedChanges {
   }
 
   protected addFixedCost(): void {
-    this.fixedCosts.push(buildFixedCostGroup(this.fb, null, null, null, null));
+    this.fixedCosts.push(buildFixedCostGroup(this.fb, null, null, null, null, null));
     this.form.markAsDirty();
+  }
+
+  /** Some active cost is still unassigned. */
+  protected canAddFixedCost(): boolean {
+    const taken = new Set(this.fixedCosts.controls.map((row) => row.controls.userFixedCostId.value));
+    return this.fixedCostCatalog().some((cost) => !taken.has(cost.id));
+  }
+
+  /** A new recipe starts with the fixed costs the user marked "apply by default". */
+  private prefillDefaultFixedCosts(): void {
+    for (const cost of this.fixedCostCatalog().filter((entry) => entry.appliesByDefault)) {
+      this.fixedCosts.push(buildFixedCostGroup(this.fb, null, cost.id, null, null, null), { emitEvent: false });
+    }
+  }
+
+  /**
+   * Options for row `index`: active costs not used by another row (the server
+   * rejects duplicates), plus the row's own cost even if it was deactivated
+   * since — the server keeps an inactive cost already on the recipe.
+   */
+  protected fixedCostOptionsFor(index: number): UserFixedCostResponse[] {
+    const own = this.fixedCosts.at(index).controls.userFixedCostId.value;
+    const taken = new Set(this.fixedCosts.controls.filter((_, i) => i !== index).map((row) => row.controls.userFixedCostId.value));
+    const inactive = this.language.t('COMMON.STATUS.INACTIVE');
+    return this.allFixedCosts()
+      .filter((cost) => !taken.has(cost.id) && (cost.isActive || cost.id === own))
+      .map((cost) => (cost.isActive ? cost : { ...cost, name: `${cost.name} (${inactive})` }));
+  }
+
+  /** Fills the minutes of an hourly cost with the recipe's prep + bake + cool time. */
+  protected useRecipeMinutes(index: number): void {
+    const minutes = this.totalMinutes();
+    if (minutes > 0) {
+      this.fixedCosts.at(index).controls.minutes.setValue(minutes);
+      this.fixedCosts.at(index).markAsDirty();
+      this.form.markAsDirty();
+    }
+  }
+
+  protected fixedCostAmount(index: number): number | null {
+    const id = this.fixedCosts.at(index).controls.userFixedCostId.value;
+    return id ? (this.fixedCostAmounts().get(id) ?? null) : null;
   }
 
   protected removeFixedCost(index: number): void {
@@ -389,7 +480,7 @@ export class RecipeStudioComponent implements HasUnsavedChanges {
 
   protected fixedCostOf(index: number): UserFixedCostResponse | undefined {
     const id = this.fixedCosts.at(index).controls.userFixedCostId.value;
-    return this.fixedCostCatalog().find((cost) => cost.id === id);
+    return this.allFixedCosts().find((cost) => cost.id === id);
   }
 
   // ─── Save ───
@@ -412,6 +503,7 @@ export class RecipeStudioComponent implements HasUnsavedChanges {
       storageInstructions: value.storageInstructions?.trim() || null,
       processHtml: stripHtml(value.processHtml) ? value.processHtml : null,
       targetMarginPercent: value.targetMarginPercent,
+      pricingMethod: value.pricingMethod,
       wastePercent: value.wastePercent,
       lines: this.lines().map((line, index) => lineToRequest(line, index)),
       fixedCosts: this.fixedCostRequests(),
@@ -423,7 +515,17 @@ export class RecipeStudioComponent implements HasUnsavedChanges {
     return this.form.controls.fixedCosts
       .getRawValue()
       .filter((row) => !!row.userFixedCostId)
-      .map((row) => ({ ...(row.id ? { id: row.id } : {}), userFixedCostId: row.userFixedCostId!, minutes: row.minutes, percentage: row.percentage }));
+      .map((row) => {
+        const method = this.allFixedCosts().find((cost) => cost.id === row.userFixedCostId)?.calculationMethod;
+        return {
+          ...(row.id ? { id: row.id } : {}),
+          userFixedCostId: row.userFixedCostId!,
+          // Only the input the method uses is sent (doc kitchen §5.3: the others must be null).
+          minutes: method === 'HOURLY_RATE' ? row.minutes : null,
+          percentage: method === 'PERCENTAGE' ? row.percentage : null,
+          quantity: method === 'PER_UNIT' ? row.quantity : null,
+        };
+      });
   }
 
   private buildPreviewRequest(): RecipeCostPreviewRequest {
@@ -439,12 +541,21 @@ export class RecipeStudioComponent implements HasUnsavedChanges {
       yieldQuantity: value.yieldQuantity ?? 1,
       wastePercent: value.wastePercent,
       targetMarginPercent: value.targetMarginPercent,
+      pricingMethod: value.pricingMethod,
       configuration: null,
     };
   }
 
   /** Validates everything and jumps to the tab holding the first problem. */
   private validate(): boolean {
+    const value = this.form.getRawValue();
+    if (value.pricingMethod === 'MARGIN' && value.targetMarginPercent >= 100) {
+      this.form.controls.targetMarginPercent.setErrors({ max: { max: 99.9, actual: value.targetMarginPercent } });
+      this.form.controls.targetMarginPercent.markAsTouched();
+      this.selectTab('costing');
+      this.alert.warning(this.language.t('KITCHEN.PRICING.MARGIN_TOO_HIGH'));
+      return false;
+    }
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       const general = ['name', 'code', 'yieldQuantity', 'yieldUnit', 'prepMinutes', 'bakeMinutes', 'coolMinutes', 'ovenTemperatureC', 'shelfLifeDays', 'description'];
@@ -459,7 +570,7 @@ export class RecipeStudioComponent implements HasUnsavedChanges {
       return false;
     }
     const missingMinutes = this.fixedCosts.controls.findIndex(
-      (row) => this.fixedCostCatalog().find((cost) => cost.id === row.controls.userFixedCostId.value)?.calculationMethod === 'HOURLY_RATE' && !row.controls.minutes.value,
+      (row) => this.allFixedCosts().find((cost) => cost.id === row.controls.userFixedCostId.value)?.calculationMethod === 'HOURLY_RATE' && !row.controls.minutes.value,
     );
     if (missingMinutes >= 0) {
       this.fixedCosts.at(missingMinutes).controls.minutes.setErrors({ required: true });
@@ -652,7 +763,7 @@ export class RecipeStudioComponent implements HasUnsavedChanges {
   }
 
   async canDeactivate(): Promise<boolean> {
-    const uploading = this.filesPanel()?.hasPendingUploads() ?? false;
+    const uploading = (this.filesPanel()?.hasPendingUploads() ?? false) || (this.coverPanel()?.hasPendingCover() ?? false);
     if (!uploading && !this.isDirty()) {
       return true;
     }
@@ -665,11 +776,19 @@ export class RecipeStudioComponent implements HasUnsavedChanges {
   }
 }
 
-function buildFixedCostGroup(fb: FormBuilder, id: string | null, userFixedCostId: string | null, minutes: number | null, percentage: number | null) {
+function buildFixedCostGroup(
+  fb: FormBuilder,
+  id: string | null,
+  userFixedCostId: string | null,
+  minutes: number | null,
+  percentage: number | null,
+  quantity: number | null,
+) {
   return fb.group({
     id: fb.control<string | null>(id),
     userFixedCostId: fb.control<string | null>(userFixedCostId, Validators.required),
     minutes: fb.control<number | null>(minutes, [Validators.min(1), Validators.max(10_080)]),
     percentage: fb.control<number | null>(percentage, [Validators.min(0), Validators.max(100)]),
+    quantity: fb.control<number | null>(quantity, [Validators.min(0.01), Validators.max(100_000)]),
   });
 }
